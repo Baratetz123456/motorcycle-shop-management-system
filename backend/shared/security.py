@@ -4,10 +4,11 @@ from typing import List, Dict, Any, Optional
 from uuid import UUID
 from fastapi import Request, HTTPException, status, Depends
 from jose import jwt, JWTError
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.audit import log_audit_event
-from shared.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
+from shared.database import get_db, AsyncSessionLocal
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-for-local-dev")
 ALGORITHM = "HS256"
@@ -32,14 +33,40 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_str: str = payload.get("sub")
         role: str = payload.get("role")
+        token_version: Optional[int] = payload.get("token_version")
+        
         if not user_id_str or not role:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token payload",
             )
+            
+        user_id = UUID(user_id_str)
+
+        # Database session check for token_version and user existence
+        async with AsyncSessionLocal() as session:
+            # Inline text/query to check token_version & existence
+            result = await session.execute(
+                select(text("role, token_version")).select_from(text("auth.users")).where(text("id = :user_id")),
+                {"user_id": user_id}
+            )
+            row = result.first()
+            if not row:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="User account no longer exists",
+                )
+            
+            db_role, db_token_version = row
+            if token_version is not None and db_token_version != token_version:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Session has been invalidated due to role or security update",
+                )
+
         return {
-            "user_id": UUID(user_id_str),
-            "role": role,
+            "user_id": user_id,
+            "role": db_role, # Always return live db role
             "email": payload.get("email")
         }
     except (JWTError, ValueError):
@@ -57,7 +84,6 @@ def require_roles(allowed_roles: List[str]):
     ) -> Dict[str, Any]:
         user_role = user.get("role")
         if user_role not in allowed_roles:
-            # Log ACCESS_DENIED security audit event
             ip = get_client_ip(request)
             await log_audit_event(
                 session=session,

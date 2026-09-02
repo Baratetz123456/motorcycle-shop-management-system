@@ -8,9 +8,12 @@ CREATE SCHEMA IF NOT EXISTS audit;
 -- Auth Schema
 CREATE TABLE auth.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name VARCHAR(100) NOT NULL DEFAULT '',
+    last_name VARCHAR(100) NOT NULL DEFAULT '',
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'cashier',
+    token_version INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -121,7 +124,7 @@ CREATE TABLE repairs.outbox_events (
 CREATE TABLE audit.logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    user_id UUID REFERENCES auth.users(id),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     user_role VARCHAR(50),
     action VARCHAR(100) NOT NULL,
     resource VARCHAR(255) NOT NULL,
@@ -129,12 +132,24 @@ CREATE TABLE audit.logs (
     ip_address VARCHAR(45)
 );
 
--- Immutability Trigger: Block UPDATE and DELETE on audit.logs
+-- Immutability Trigger: Block UPDATE (except FK cascade set null) and DELETE on audit.logs
 CREATE OR REPLACE FUNCTION audit.prevent_audit_log_modification()
 RETURNS TRIGGER AS $$
 BEGIN
-    RAISE EXCEPTION 'Audit log entries are immutable and cannot be updated or deleted.';
-    RETURN NULL;
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION 'Audit log entries are immutable and cannot be deleted.';
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF OLD.action <> NEW.action OR 
+           OLD.resource <> NEW.resource OR 
+           OLD.timestamp <> NEW.timestamp OR 
+           OLD.ip_address IS DISTINCT FROM NEW.ip_address OR 
+           OLD.user_role IS DISTINCT FROM NEW.user_role OR
+           OLD.details IS DISTINCT FROM NEW.details OR
+           (OLD.user_id IS NOT NULL AND NEW.user_id IS NOT NULL AND OLD.user_id <> NEW.user_id) THEN
+            RAISE EXCEPTION 'Audit log entries are immutable and cannot be updated.';
+        END IF;
+    END IF;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 

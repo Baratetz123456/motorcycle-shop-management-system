@@ -4,6 +4,7 @@ import csv
 import io
 from datetime import datetime, timedelta
 from typing import Optional, List
+from uuid import UUID
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -64,7 +65,12 @@ async def login(credentials: schemas.LoginRequest, request: Request, session: As
         
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.id), "role": user.role, "email": user.email}, 
+        data={
+            "sub": str(user.id), 
+            "role": user.role, 
+            "email": user.email,
+            "token_version": user.token_version
+        }, 
         expires_delta=access_token_expires
     )
     
@@ -82,7 +88,9 @@ async def login(credentials: schemas.LoginRequest, request: Request, session: As
         "access_token": access_token, 
         "token_type": "bearer",
         "user_id": user.id,
-        "role": user.role
+        "role": user.role,
+        "first_name": user.first_name,
+        "last_name": user.last_name
     }
 
 @app.post("/logout")
@@ -99,27 +107,293 @@ async def logout(request: Request, current_user: dict = Depends(get_current_user
     )
     return {"msg": "Successfully logged out"}
 
+@app.post("/change-password")
+async def change_password(
+    request: Request,
+    body: schemas.ChangePasswordRequest,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    if body.new_password != body.confirm_password:
+        raise HTTPException(status_code=400, detail="New passwords do not match")
+
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters long")
+
+    user_id = current_user.get("user_id")
+    stmt = select(models.User).where(models.User.id == user_id)
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if verify_password(body.new_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+
+    user.password_hash = get_password_hash(body.new_password)
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="PASSWORD_CHANGED",
+        resource="/api/v1/auth/change-password",
+        user_id=user.id,
+        user_role=user.role,
+        details={"email": user.email},
+        ip_address=client_ip
+    )
+
+    await session.commit()
+    return {"msg": "Password updated successfully"}
+
 @app.post("/seed-admin", status_code=201)
 async def seed_admin(session: AsyncSession = Depends(get_db)):
     users_to_seed = [
-        {"email": "admin@motoshop.com", "password": "admin123", "role": "admin"},
-        {"email": "manager@motoshop.com", "password": "manager123", "role": "manager"},
-        {"email": "cashier@motoshop.com", "password": "cashier123", "role": "cashier"},
-        {"email": "mechanic@motoshop.com", "password": "mechanic123", "role": "mechanic"},
+        {"email": "admin@motoshop.com", "password": "admin123", "role": "admin", "first_name": "System", "last_name": "Admin"},
+        {"email": "manager@motoshop.com", "password": "manager123", "role": "manager", "first_name": "Shop", "last_name": "Manager"},
+        {"email": "cashier@motoshop.com", "password": "cashier123", "role": "cashier", "first_name": "Main", "last_name": "Cashier"},
+        {"email": "mechanic@motoshop.com", "password": "mechanic123", "role": "mechanic", "first_name": "Lead", "last_name": "Mechanic"},
     ]
     
     created_users = []
     for u in users_to_seed:
         stmt = select(models.User).where(models.User.email == u["email"])
         res = await session.execute(stmt)
-        if not res.scalar_one_or_none():
+        db_user = res.scalar_one_or_none()
+        if not db_user:
             hashed_pw = get_password_hash(u["password"])
-            db_u = models.User(email=u["email"], password_hash=hashed_pw, role=u["role"])
+            db_u = models.User(
+                email=u["email"], 
+                password_hash=hashed_pw, 
+                role=u["role"],
+                first_name=u["first_name"],
+                last_name=u["last_name"]
+            )
             session.add(db_u)
             created_users.append(u["email"])
+        else:
+            db_user.first_name = u["first_name"]
+            db_user.last_name = u["last_name"]
             
     await session.commit()
     return {"msg": "Seeding complete", "created": created_users}
+
+# --- User Management Endpoints (Admin-Only) ---
+
+@app.post("/users/register", response_model=schemas.UserResponse, status_code=201)
+async def register_user(
+    request: Request,
+    user_data: schemas.UserRegisterRequest,
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.User).where(models.User.email == user_data.email)
+    result = await session.execute(stmt)
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="A user with this email address already exists.")
+
+    hashed_pw = get_password_hash(user_data.password)
+    new_user = models.User(
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        email=user_data.email,
+        password_hash=hashed_pw,
+        role=user_data.role
+    )
+    session.add(new_user)
+    await session.flush()
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="CREATE_USER",
+        resource="/api/v1/auth/users/register",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={
+            "created_user_id": str(new_user.id),
+            "created_email": new_user.email,
+            "assigned_role": new_user.role,
+            "name": f"{new_user.first_name} {new_user.last_name}"
+        },
+        ip_address=client_ip
+    )
+
+    await session.commit()
+    await session.refresh(new_user)
+    return new_user
+
+@app.get("/users")
+async def get_users(
+    request: Request,
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(15, ge=1, le=100),
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    query = select(models.User)
+    
+    if search:
+        pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                models.User.email.ilike(pattern),
+                models.User.first_name.ilike(pattern),
+                models.User.last_name.ilike(pattern),
+                models.User.role.ilike(pattern)
+            )
+        )
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total_res = await session.execute(count_query)
+    total_count = total_res.scalar_one()
+
+    offset = (page - 1) * page_size
+    query = query.order_by(desc(models.User.created_at)).offset(offset).limit(page_size)
+    
+    result = await session.execute(query)
+    users = result.scalars().all()
+
+    items = [
+        {
+            "id": str(u.id),
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+            "email": u.email,
+            "role": u.role,
+            "created_at": u.created_at.isoformat() if u.created_at else None
+        }
+        for u in users
+    ]
+
+    return {
+        "items": items,
+        "total": total_count,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total_count + page_size - 1) // page_size
+    }
+
+@app.put("/users/{user_id}", response_model=schemas.UserResponse)
+async def update_user(
+    request: Request,
+    user_id: UUID,
+    update_data: schemas.UserUpdateRequest,
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.User).where(models.User.id == user_id)
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Rule: Admin cannot change their own role
+    is_self = str(user_id) == str(current_user.get("user_id"))
+    if is_self and update_data.role != db_user.role:
+        raise HTTPException(status_code=400, detail="Admin cannot change their own role")
+
+    # Check email uniqueness if email changed
+    if update_data.email != db_user.email:
+        email_check = select(models.User).where(models.User.email == update_data.email)
+        check_res = await session.execute(email_check)
+        if check_res.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Email is already in use by another account.")
+
+    role_changed = update_data.role != db_user.role
+    old_role = db_user.role
+
+    db_user.first_name = update_data.first_name
+    db_user.last_name = update_data.last_name
+    db_user.email = update_data.email
+    db_user.role = update_data.role
+
+    if role_changed:
+        db_user.token_version += 1 # Invalidate active user tokens immediately!
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="UPDATE_USER",
+        resource=f"/api/v1/auth/users/{user_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={
+            "target_user_id": str(user_id),
+            "updated_email": update_data.email,
+            "role": update_data.role
+        },
+        ip_address=client_ip
+    )
+
+    if role_changed:
+        await log_audit_event(
+            session=session,
+            action="CHANGE_ROLE",
+            resource=f"/api/v1/auth/users/{user_id}",
+            user_id=current_user.get("user_id"),
+            user_role=current_user.get("role"),
+            details={
+                "target_user_id": str(user_id),
+                "old_role": old_role,
+                "new_role": update_data.role
+            },
+            ip_address=client_ip
+        )
+
+    await session.commit()
+    await session.refresh(db_user)
+    return db_user
+
+@app.delete("/users/{user_id}")
+async def delete_user(
+    request: Request,
+    user_id: UUID,
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    # Rule: Admin cannot delete their own account
+    is_self = str(user_id) == str(current_user.get("user_id"))
+    if is_self:
+        raise HTTPException(status_code=400, detail="Admin cannot delete their own account")
+
+    stmt = select(models.User).where(models.User.id == user_id)
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    target_email = db_user.email
+    target_role = db_user.role
+
+    await session.delete(db_user)
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="DELETE_USER",
+        resource=f"/api/v1/auth/users/{user_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={
+            "deleted_user_id": str(user_id),
+            "deleted_email": target_email,
+            "deleted_role": target_role
+        },
+        ip_address=client_ip
+    )
+
+    await session.commit()
+    return {"msg": f"User {target_email} deleted successfully"}
+
+# --- Audit Logs Endpoints ---
 
 @app.get("/audit-logs")
 async def get_audit_logs(
@@ -134,7 +408,6 @@ async def get_audit_logs(
     current_user: dict = Depends(require_roles(["admin"])),
     session: AsyncSession = Depends(get_db)
 ):
-    # Log that admin accessed audit log page
     client_ip = get_client_ip(request)
     await log_audit_event(
         session=session,
@@ -167,12 +440,10 @@ async def get_audit_logs(
             )
         )
         
-    # Get total count
     count_query = select(func.count()).select_from(query.subquery())
     total_res = await session.execute(count_query)
     total_count = total_res.scalar_one()
 
-    # Pagination
     offset = (page - 1) * page_size
     query = query.order_by(desc(AuditLog.timestamp)).offset(offset).limit(page_size)
     

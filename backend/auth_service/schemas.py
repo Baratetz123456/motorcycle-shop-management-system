@@ -1,5 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from uuid import UUID
+from typing import Optional, List
+from datetime import datetime
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -10,3 +12,34 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     user_id: UUID
     role: str
+    first_name: Optional[str] = ""
+    last_name: Optional[str] = ""
+
+class UserRegisterRequest(BaseModel):
+    first_name: str = Field(..., min_length=1)
+    last_name: str = Field(..., min_length=1)
+    email: EmailStr
+    role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
+    password: str = Field(default="Welcome123!")
+
+class UserUpdateRequest(BaseModel):
+    first_name: str = Field(..., min_length=1)
+    last_name: str = Field(..., min_length=1)
+    email: EmailStr
+    role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=6)
+    confirm_password: str
+
+class UserResponse(BaseModel):
+    id: UUID
+    first_name: str
+    last_name: str
+    email: EmailStr
+    role: str
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

@@ -4,6 +4,8 @@ export interface UserSession {
   user_id: string;
   role: UserRole;
   email?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export const ROLE_LANDING_PAGES: Record<UserRole, string> = {
@@ -21,14 +23,15 @@ export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/reports": ["admin", "cashier", "manager"],
   "/dashboard": ["admin", "cashier", "manager"],
   "/audit-logs": ["admin"],
+  "/users": ["admin"],
+  "/users/register": ["admin"],
 };
 
 export function isRouteAllowed(path: string, role: UserRole): bool {
-  // Find matching route rule
   const matchedKey = Object.keys(ROUTE_PERMISSIONS).find(
     (key) => path === key || path.startsWith(`${key}/`)
   );
 
-  if (!matchedKey) return true; // Default allow if unlisted
+  if (!matchedKey) return true;
   return ROUTE_PERMISSIONS[matchedKey].includes(role);
 }
