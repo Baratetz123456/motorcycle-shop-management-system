@@ -6,7 +6,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from shared.database import get_db
@@ -17,15 +17,13 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-for-local-dev")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 24 hours
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+def get_password_hash(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 app = FastAPI(title="Auth Service")
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -67,7 +65,7 @@ async def login(credentials: schemas.LoginRequest, session: AsyncSession = Depen
 # Helper endpoint to seed a default admin user for testing
 @app.post("/seed-admin", status_code=201)
 async def seed_admin(session: AsyncSession = Depends(get_db)):
-    admin_email = "admin@motoshop.local"
+    admin_email = "admin@motoshop.com"
     stmt = select(models.User).where(models.User.email == admin_email)
     result = await session.execute(stmt)
     if result.scalar_one_or_none():

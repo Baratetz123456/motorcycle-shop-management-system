@@ -70,6 +70,87 @@ Each service needs to be running. For local development, you can run them direct
    ```
 4. Access the application at **http://localhost:3000**.
 
+### 📍 Application Entry Points
+| Service | Entry Point URL | Description |
+|---|---|---|
+| **Web App (Frontend)** | [`http://localhost:3000`](http://localhost:3000) | Main Portal (Redirects to `/login`) |
+| **Login Page** | [`http://localhost:3000/login`](http://localhost:3000/login) | Interactive JWT Login UI |
+| **API Gateway (KrakenD)** | `http://localhost:8080/api/v1` | Unified Microservices Gateway |
+| **Auth Service** | `http://localhost:8001` | JWT Auth & Seeding Service |
+| **RabbitMQ Dashboard** | `http://localhost:15672` | Messaging & Event Monitoring (`guest`/`guest`) |
+
+---
+
+## 🔐 Authentication & Onboarding Guide
+
+The system uses JWT-based Role-Based Access Control (RBAC) powered by `auth_service` and routed through the KrakenD API Gateway.
+
+### Supported Roles
+- **`admin`**: Full administrative access across all management modules.
+- **`cashier`**: Default role for POS checkout and sales handling.
+- **`mechanic`**: Assigned to repair job orders to earn labor commissions.
+
+### 1. Seed Initial Admin Account
+Before logging in for the first time, seed the initial administrator account:
+
+**PowerShell:**
+```powershell
+Invoke-RestMethod -Method Post -Uri http://localhost:8001/seed-admin
+```
+
+**Curl:**
+```bash
+curl.exe -X POST http://localhost:8001/seed-admin
+```
+
+**Response:**
+```json
+{
+  "msg": "Admin user created",
+  "email": "admin@motoshop.com",
+  "password": "admin123"
+}
+```
+
+### 2. Login & Token Authentication
+Authenticate via the KrakenD API Gateway (`http://localhost:8080/api/v1/auth/login`) or direct auth service (`http://localhost:8001/login`):
+
+**PowerShell:**
+```powershell
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/auth/login -ContentType "application/json" -Body '{"email":"admin@motoshop.com","password":"admin123"}'
+```
+
+**Curl:**
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@motoshop.com","password":"admin123"}'
+```
+
+**Response:**
+```json
+{
+  "access_token": "<JWT_BEARER_TOKEN>",
+  "token_type": "bearer",
+  "user_id": "<USER_UUID>",
+  "role": "admin"
+}
+```
+
+### 3. Registering & Provisioning Users with Roles
+Users are stored in PostgreSQL under `auth.users`. Passwords are encrypted using **bcrypt**:
+
+**SQL Insertion Example:**
+```sql
+-- Connect to Postgres (port 5432, db: motorcycle_shop, user: postgres)
+INSERT INTO auth.users (email, password_hash, role)
+VALUES (
+  'cashier1@motoshop.com',
+  '$2b$12$eImiTXuWVxfM37uY4JANjO...', -- Bcrypt hash of password
+  'cashier'
+);
+```
+
 ---
 
 ## 📖 Operation Guide
