@@ -10,8 +10,15 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor to inject Idempotency-Key for mutations
+// Interceptor to inject Auth Token and Idempotency-Key
 apiClient.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
   if (config.method && ['post', 'put', 'patch'].includes(config.method.toLowerCase())) {
     if (!config.headers['Idempotency-Key']) {
       config.headers['Idempotency-Key'] = uuidv4();

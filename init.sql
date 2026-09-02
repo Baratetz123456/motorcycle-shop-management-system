@@ -3,6 +3,7 @@ CREATE SCHEMA IF NOT EXISTS inventory;
 CREATE SCHEMA IF NOT EXISTS sales;
 CREATE SCHEMA IF NOT EXISTS repairs;
 CREATE SCHEMA IF NOT EXISTS auth;
+CREATE SCHEMA IF NOT EXISTS audit;
 
 -- Auth Schema
 CREATE TABLE auth.users (
@@ -115,3 +116,29 @@ CREATE TABLE repairs.outbox_events (
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Audit Schema & Immutable Audit Logs
+CREATE TABLE audit.logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    user_id UUID REFERENCES auth.users(id),
+    user_role VARCHAR(50),
+    action VARCHAR(100) NOT NULL,
+    resource VARCHAR(255) NOT NULL,
+    details JSONB,
+    ip_address VARCHAR(45)
+);
+
+-- Immutability Trigger: Block UPDATE and DELETE on audit.logs
+CREATE OR REPLACE FUNCTION audit.prevent_audit_log_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Audit log entries are immutable and cannot be updated or deleted.';
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_audit_logs_immutable
+BEFORE UPDATE OR DELETE ON audit.logs
+FOR EACH ROW EXECUTE FUNCTION audit.prevent_audit_log_modification();
+

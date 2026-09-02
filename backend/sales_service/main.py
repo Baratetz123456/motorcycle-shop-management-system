@@ -14,6 +14,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from shared.database import get_db, AsyncSessionLocal
 from shared.idempotency import idempotent
 from shared.outbox import run_outbox_worker
+from shared.audit import log_audit_event
+from shared.security import require_roles, get_client_ip
 from sales_service import models, schemas
 from uuid import UUID
 
@@ -57,7 +59,6 @@ async def consume_inventory_events():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start outbox worker and consumer
     outbox_task = asyncio.create_task(run_outbox_worker("sales", AsyncSessionLocal))
     consumer_task = asyncio.create_task(consume_inventory_events())
     yield
@@ -67,11 +68,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Sales Service", lifespan=lifespan)
 
 def generate_invoice_no():
-    # Simplistic invoice generator for local testing
     return f"INV-{uuid.uuid4().hex[:8].upper()}"
 
 @app.get("/transactions/{transaction_id}", response_model=schemas.TransactionResponse)
-async def get_transaction(transaction_id: UUID, session: AsyncSession = Depends(get_db)):
+async def get_transaction(
+    transaction_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
+    session: AsyncSession = Depends(get_db)
+):
     stmt = select(models.Transaction).where(models.Transaction.id == transaction_id)
     result = await session.execute(stmt)
     db_tx = result.scalar_one_or_none()
@@ -81,12 +85,15 @@ async def get_transaction(transaction_id: UUID, session: AsyncSession = Depends(
 
 @app.post("/checkout", response_model=schemas.TransactionResponse, status_code=202)
 @idempotent
-async def checkout(request: Request, checkout_data: schemas.CheckoutRequest, session: AsyncSession = Depends(get_db)):
-    # Calculate totals
+async def checkout(
+    request: Request,
+    checkout_data: schemas.CheckoutRequest,
+    current_user: dict = Depends(require_roles(["admin", "cashier"])),
+    session: AsyncSession = Depends(get_db)
+):
     subtotal = sum(item.qty * item.price for item in checkout_data.items)
-    total = subtotal # Add tax logic here if needed
+    total = subtotal
     
-    # Create PENDING transaction
     db_tx = models.Transaction(
         invoice_no=generate_invoice_no(),
         customer_id=checkout_data.customer_id,
@@ -96,9 +103,8 @@ async def checkout(request: Request, checkout_data: schemas.CheckoutRequest, ses
         status=models.TransactionStatus.PENDING
     )
     session.add(db_tx)
-    await session.flush() # To get db_tx.id
+    await session.flush()
     
-    # Add items
     for item in checkout_data.items:
         db_item = models.TransactionItem(
             transaction_id=db_tx.id,
@@ -108,7 +114,6 @@ async def checkout(request: Request, checkout_data: schemas.CheckoutRequest, ses
         )
         session.add(db_item)
         
-    # Add Payment
     db_payment = models.Payment(
         transaction_id=db_tx.id,
         amount=checkout_data.amount_paid,
@@ -116,7 +121,6 @@ async def checkout(request: Request, checkout_data: schemas.CheckoutRequest, ses
     )
     session.add(db_payment)
     
-    # Outbox Event: SaleCreated
     payload_items = [{"item_id": str(item.item_id), "qty": item.qty} for item in checkout_data.items]
     outbox = models.OutboxEvent(
         event_type="SaleCreated",
@@ -126,6 +130,23 @@ async def checkout(request: Request, checkout_data: schemas.CheckoutRequest, ses
         }
     )
     session.add(outbox)
+    
+    # Audit Logging
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="POS_CHECKOUT",
+        resource="/api/v1/sales/checkout",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={
+            "invoice_no": db_tx.invoice_no,
+            "total": float(total),
+            "item_count": len(checkout_data.items),
+            "payment_method": checkout_data.payment_method
+        },
+        ip_address=client_ip
+    )
     
     await session.commit()
     await session.refresh(db_tx)

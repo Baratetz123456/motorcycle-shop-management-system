@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
-import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2 } from "lucide-react";
+import { ROLE_LANDING_PAGES, UserRole } from "@/lib/permissions";
+import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2, UserCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +13,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    // If already logged in, redirect to role home
+    const token = localStorage.getItem("auth_token");
+    const role = localStorage.getItem("user_role") as UserRole;
+    if (token && role && ROLE_LANDING_PAGES[role]) {
+      router.push(ROLE_LANDING_PAGES[role]);
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,17 +36,19 @@ export default function LoginPage() {
       });
 
       const { access_token, role, user_id } = response.data;
+      const userRole = role as UserRole;
 
-      // Store auth session
       localStorage.setItem("auth_token", access_token);
-      localStorage.setItem("user_role", role);
+      localStorage.setItem("user_role", userRole);
       localStorage.setItem("user_id", user_id);
+      localStorage.setItem("user_email", email);
 
-      setSuccess(`Authenticated as ${role.toUpperCase()}! Redirecting...`);
+      const landingPage = ROLE_LANDING_PAGES[userRole] || "/reports";
+      setSuccess(`Authenticated as ${userRole.toUpperCase()}! Redirecting to ${landingPage}...`);
       
       setTimeout(() => {
-        router.push("/pos");
-      }, 1000);
+        router.push(landingPage);
+      }, 800);
     } catch (err: any) {
       console.error("Login error:", err);
       const detail = err.response?.data?.detail;
@@ -45,7 +57,7 @@ export default function LoginPage() {
       } else if (Array.isArray(detail) && detail.length > 0) {
         setError(detail[0].msg || "Invalid credentials");
       } else {
-        setError("Failed to log in. Please ensure auth service is running and credentials are correct.");
+        setError("Failed to log in. Please ensure services are running.");
       }
     } finally {
       setIsLoading(false);
@@ -59,13 +71,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 relative overflow-hidden font-sans">
-      {/* Background ambient lighting */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md p-8 relative z-10">
-        {/* Logo / Branding */}
-        <div className="flex flex-col items-center text-center mb-8">
+      <div className="w-full max-w-md p-6 relative z-10">
+        <div className="flex flex-col items-center text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20 mb-4 flex items-center justify-center">
             <div className="w-full h-full bg-zinc-950 rounded-[14px] flex items-center justify-center">
               <Wrench className="w-8 h-8 text-cyan-400" />
@@ -74,11 +84,10 @@ export default function LoginPage() {
           <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
             MotoShop Enterprise
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">Management & POS Portal</p>
+          <p className="text-sm text-zinc-400 mt-1">Role-Based POS & Management System</p>
         </div>
 
-        {/* Login Form Card */}
-        <div className="bg-zinc-900/60 border border-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-2xl">
+        <div className="bg-zinc-900/70 border border-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-2xl">
           <h2 className="text-lg font-semibold text-zinc-100 mb-6 flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-cyan-400" />
             Sign in to your account
@@ -111,7 +120,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@motoshop.com"
+                  placeholder="user@motoshop.com"
                   className="w-full bg-zinc-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all"
                 />
               </div>
@@ -152,21 +161,43 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Quick Demo Credentials */}
+          {/* Quick Demo Credentials for All 4 Roles */}
           <div className="mt-6 pt-4 border-t border-white/10">
-            <p className="text-xs text-zinc-400 mb-2 flex items-center gap-1.5 font-medium">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Demo Credentials:
+            <p className="text-xs text-zinc-400 mb-2.5 flex items-center gap-1.5 font-medium">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Select Role Demo Login:
             </p>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => fillQuickCredentials("admin@motoshop.com", "admin123")}
-                className="text-left text-xs bg-zinc-950/60 hover:bg-zinc-800/60 border border-white/5 rounded-lg p-2 transition-colors flex items-center justify-between group"
+                className="text-left text-xs bg-zinc-950/80 hover:bg-zinc-800 border border-white/5 rounded-lg p-2.5 transition-all group"
               >
-                <div>
-                  <span className="font-semibold text-cyan-400">Admin:</span> admin@motoshop.com / admin123
-                </div>
-                <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300">Click to fill</span>
+                <div className="font-semibold text-cyan-400">Admin</div>
+                <div className="text-[10px] text-zinc-400 font-mono">admin@motoshop.com</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillQuickCredentials("cashier@motoshop.com", "cashier123")}
+                className="text-left text-xs bg-zinc-950/80 hover:bg-zinc-800 border border-white/5 rounded-lg p-2.5 transition-all group"
+              >
+                <div className="font-semibold text-emerald-400">Cashier</div>
+                <div className="text-[10px] text-zinc-400 font-mono">cashier@motoshop.com</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillQuickCredentials("mechanic@motoshop.com", "mechanic123")}
+                className="text-left text-xs bg-zinc-950/80 hover:bg-zinc-800 border border-white/5 rounded-lg p-2.5 transition-all group"
+              >
+                <div className="font-semibold text-amber-400">Mechanic</div>
+                <div className="text-[10px] text-zinc-400 font-mono">mechanic@motoshop.com</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillQuickCredentials("manager@motoshop.com", "manager123")}
+                className="text-left text-xs bg-zinc-950/80 hover:bg-zinc-800 border border-white/5 rounded-lg p-2.5 transition-all group"
+              >
+                <div className="font-semibold text-purple-400">Manager</div>
+                <div className="text-[10px] text-zinc-400 font-mono">manager@motoshop.com</div>
               </button>
             </div>
           </div>
