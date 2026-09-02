@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Supabase equivalent local DB (using standard Postgres for simplicity of microservices, can be swapped to full supabase local stack if needed, but this is lighter)
   db:
