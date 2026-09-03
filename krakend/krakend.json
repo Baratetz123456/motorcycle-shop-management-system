@@ -220,6 +220,21 @@
       ]
     },
     {
+      "endpoint": "/api/v1/sales/transactions/{id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/transactions/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://sales_service:8000"]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/sales/transactions/{id}/void",
       "method": "POST",
       "output_encoding": "json",

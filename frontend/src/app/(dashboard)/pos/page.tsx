@@ -77,6 +77,7 @@ export default function POSPage() {
       customer: selectedRepair.customer_name,
       model: selectedRepair.motorcycle_name,
       mechanic: "Mike Smith",
+      labor: selectedRepair.labor_charge.toString(),
     }).toString();
     router.push(`/pos/checkout?${query}`);
   };

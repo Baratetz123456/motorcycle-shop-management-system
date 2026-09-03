@@ -24,9 +24,26 @@ import {
   Coins,
   AlertTriangle,
   Receipt,
-  RotateCcw
+  RotateCcw,
+  Printer
 } from "lucide-react";
 import clsx from "clsx";
+
+interface ReceiptSummary {
+  invoiceNo: string;
+  customerName: string;
+  motorcycleName: string;
+  mechanicName: string;
+  paymentMethod: "CASH" | "CARD";
+  grossSubtotal: number;
+  discountPercent: number;
+  discountAmount: number;
+  netTotalDue: number;
+  netAmountPaid: number;
+  cashReceivedVal: number;
+  cashChange: number;
+  items: Array<{ name: string; qty: number; price: number }>;
+}
 
 function POSCheckoutContent() {
   const router = useRouter();
@@ -36,6 +53,8 @@ function POSCheckoutContent() {
   const customerName = searchParams.get("customer") || "Walk-in Customer";
   const motorcycleName = searchParams.get("model") || "Standard Motorcycle";
   const mechanicName = searchParams.get("mechanic") || "Mike Smith";
+  const laborFeeParam = searchParams.get("labor");
+  const baseLaborPrice = laborFeeParam ? Number(laborFeeParam) : 150.0;
 
   const { cart, getTotals, clearCart, addToCart } = usePosStore();
   const { subtotal } = getTotals();
@@ -46,6 +65,7 @@ function POSCheckoutContent() {
   const [cashReceivedInput, setCashReceivedInput] = useState<string>("");
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [invoiceNo, setInvoiceNo] = useState<string>("");
+  const [receiptSummary, setReceiptSummary] = useState<ReceiptSummary | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
 
   const { initiateCheckout, isCheckingOut, resetSaga } = useCheckoutSaga();
@@ -57,7 +77,7 @@ function POSCheckoutContent() {
       addToCart({
         id: `labor-${jobId}`,
         name: `Repair Labor Fee`,
-        price: 150.0,
+        price: baseLaborPrice,
       });
 
       // 2. Restore persistent cart items for this customer job (persisted across cashier logins)
@@ -188,6 +208,23 @@ function POSCheckoutContent() {
         payment_method: paymentMethod,
       });
 
+      // 5. Snapshot completed transaction details into receiptSummary BEFORE clearing store cart
+      const completedSummary: ReceiptSummary = {
+        invoiceNo: generatedInvoice,
+        customerName,
+        motorcycleName,
+        mechanicName,
+        paymentMethod,
+        grossSubtotal: subtotal,
+        discountPercent,
+        discountAmount,
+        netTotalDue,
+        netAmountPaid: netTotalDue,
+        cashReceivedVal,
+        cashChange,
+        items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price }))
+      };
+      setReceiptSummary(completedSummary);
       setIsSuccess(true);
       clearCart();
     } catch (e: any) {
@@ -256,58 +293,102 @@ function POSCheckoutContent() {
             <div className="bg-zinc-950 p-6 rounded-2xl border border-white/10 text-sm space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-white/10">
                 <span className="text-zinc-400">Customer Name:</span>
-                <span className="text-white font-bold">{customerName}</span>
+                <span className="text-white font-bold">{receiptSummary?.customerName || customerName}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-400">Motorcycle Model:</span>
-                <span className="text-zinc-200">{motorcycleName}</span>
+                <span className="text-zinc-200">{receiptSummary?.motorcycleName || motorcycleName}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-400">Assigned Mechanic:</span>
-                <span className="text-purple-300 font-semibold">{mechanicName}</span>
+                <span className="text-purple-300 font-semibold">{receiptSummary?.mechanicName || mechanicName}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-400">Payment Method:</span>
-                <span className="font-mono text-cyan-300 font-bold uppercase">{paymentMethod}</span>
+                <span className="font-mono text-cyan-300 font-bold uppercase">{receiptSummary?.paymentMethod || paymentMethod}</span>
               </div>
+
+              {/* Itemized breakdown on receipt */}
+              {receiptSummary?.items && receiptSummary.items.length > 0 && (
+                <div className="pt-3 border-t border-white/10 space-y-1.5">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+                    Purchased Items & Service Breakdown ({receiptSummary.items.length})
+                  </span>
+                  {receiptSummary.items.map((it, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-xs text-zinc-300">
+                      <span>
+                        {it.name} <span className="text-zinc-500 font-mono">x{it.qty}</span>
+                      </span>
+                      <span className="font-mono text-zinc-200">₱{(it.price * it.qty).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="pt-3 border-t border-white/10 space-y-2">
                 <div className="flex justify-between text-zinc-400 text-xs">
                   <span>Gross Subtotal:</span>
-                  <span className="font-mono text-zinc-200">₱{subtotal.toFixed(2)}</span>
+                  <span className="font-mono text-zinc-200 text-sm font-semibold">
+                    ₱{(receiptSummary?.grossSubtotal ?? subtotal).toFixed(2)}
+                  </span>
                 </div>
-                {discountPercent > 0 && (
+                {(receiptSummary?.discountPercent ?? discountPercent) > 0 ? (
                   <div className="flex justify-between text-amber-400 text-xs">
-                    <span>Discount ({discountPercent}%):</span>
-                    <span className="font-mono">-₱{discountAmount.toFixed(2)}</span>
+                    <span>Discount ({(receiptSummary?.discountPercent ?? discountPercent)}%):</span>
+                    <span className="font-mono font-semibold">
+                      -₱{(receiptSummary?.discountAmount ?? discountAmount).toFixed(2)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between text-zinc-500 text-xs">
+                    <span>Discount (0%):</span>
+                    <span className="font-mono">₱0.00</span>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-bold text-white pt-1">
+                <div className="flex justify-between text-base font-bold text-white pt-1 border-t border-white/5">
                   <span>Net Amount Paid:</span>
-                  <span className="font-mono text-emerald-400 text-lg">₱{netTotalDue.toFixed(2)}</span>
+                  <span className="font-mono text-emerald-400 text-xl font-black">
+                    ₱{(receiptSummary?.netAmountPaid ?? netTotalDue).toFixed(2)}
+                  </span>
                 </div>
-                {paymentMethod === "CASH" && (
+                {(receiptSummary?.paymentMethod || paymentMethod) === "CASH" && (
                   <>
                     <div className="flex justify-between text-zinc-400 text-xs pt-1">
                       <span>Cash Tendered:</span>
-                      <span className="font-mono text-zinc-200">₱{cashReceivedVal.toFixed(2)}</span>
+                      <span className="font-mono text-zinc-200">
+                        ₱{(receiptSummary?.cashReceivedVal ?? cashReceivedVal).toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-cyan-400 text-sm font-bold">
                       <span>Cash Change Given:</span>
-                      <span className="font-mono">₱{cashChange.toFixed(2)}</span>
+                      <span className="font-mono text-base">
+                        ₱{(receiptSummary?.cashChange ?? cashChange).toFixed(2)}
+                      </span>
                     </div>
                   </>
                 )}
               </div>
             </div>
 
-            <button
-              onClick={handleReturnToPOS}
-              className="w-full py-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-base rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2"
-            >
-              <span>Return to POS Checkout Page</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-3.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm rounded-2xl border border-white/10 transition-colors flex items-center justify-center gap-2"
+              >
+                <Printer className="w-4 h-4 text-cyan-400" />
+                <span>Print Official Receipt</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReturnToPOS}
+                className="flex-1 py-3.5 px-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2"
+              >
+                <span>Return to POS Checkout</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         ) : (
           /* Full-Page Dual-Panel Workspace */
