@@ -298,7 +298,7 @@ function SalesReceiptContent() {
               </div>
               <div>
                 <h1 className="text-2xl font-black tracking-wide text-white">Official Sales Receipt</h1>
-                <p className="text-xs text-zinc-400">MotoShop Enterprise POS & Service Management</p>
+                <p className="text-xs text-zinc-400">Versiklo Enterprise POS & Service Management</p>
               </div>
             </div>
           </div>

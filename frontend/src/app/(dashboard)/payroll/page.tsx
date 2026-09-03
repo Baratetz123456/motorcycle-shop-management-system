@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { 
   DollarSign, 
   Wrench, 
@@ -9,9 +10,8 @@ import {
   Printer, 
   CheckCircle, 
   Clock, 
-  Sliders, 
   ShieldCheck, 
-  User, 
+  ShieldAlert,
   Percent, 
   ChevronDown, 
   ChevronRight,
@@ -20,7 +20,10 @@ import {
   AlertCircle,
   X,
   Calendar,
-  Activity
+  CalendarDays,
+  Activity,
+  ArrowLeft,
+  Settings
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -51,8 +54,13 @@ interface CashierPayrollRecord {
   transactions_processed: number;
   total_volume_handled: number;
   total_pay: number;
+  created_at: string;
   status: "PENDING" | "DISBURSED";
 }
+
+// Initial records distributed across days, weeks, and months
+const NOW = Date.now();
+const ONE_DAY = 24 * 3600 * 1000;
 
 const INITIAL_MECHANICS_COMMISSIONS: CommissionRecord[] = [
   {
@@ -66,7 +74,7 @@ const INITIAL_MECHANICS_COMMISSIONS: CommissionRecord[] = [
     labor_base: 150.00,
     rate_percentage: 40,
     amount_earned: 60.00,
-    created_at: new Date(Date.now() - 3600000).toISOString(),
+    created_at: new Date(NOW - 2 * 3600 * 1000).toISOString(), // today
     status: "PENDING"
   },
   {
@@ -80,7 +88,7 @@ const INITIAL_MECHANICS_COMMISSIONS: CommissionRecord[] = [
     labor_base: 80.00,
     rate_percentage: 40,
     amount_earned: 32.00,
-    created_at: new Date(Date.now() - 7200000).toISOString(),
+    created_at: new Date(NOW - 3 * ONE_DAY).toISOString(), // 3 days ago (this week)
     status: "PENDING"
   },
   {
@@ -92,9 +100,9 @@ const INITIAL_MECHANICS_COMMISSIONS: CommissionRecord[] = [
     mechanic_id: "mech-2",
     mechanic_name: "Alex Rivera",
     labor_base: 120.00,
-    rate_percentage: 40,
-    amount_earned: 48.00,
-    created_at: new Date(Date.now() - 14400000).toISOString(),
+    rate_percentage: 45,
+    amount_earned: 54.00,
+    created_at: new Date(NOW - 4 * ONE_DAY).toISOString(), // 4 days ago (this week)
     status: "PENDING"
   },
   {
@@ -106,9 +114,51 @@ const INITIAL_MECHANICS_COMMISSIONS: CommissionRecord[] = [
     mechanic_id: "mech-2",
     mechanic_name: "Alex Rivera",
     labor_base: 180.00,
+    rate_percentage: 45,
+    amount_earned: 81.00,
+    created_at: new Date(NOW - 12 * ONE_DAY).toISOString(), // 12 days ago (this month)
+    status: "DISBURSED"
+  },
+  {
+    id: "comm-5",
+    job_order_id: "jo-5",
+    jo_number: "JO-H9J0",
+    customer_name: "Eduardo Santos",
+    motorcycle_name: "KTM Duke 390",
+    mechanic_id: "mech-3",
+    mechanic_name: "Carlos Gomez",
+    labor_base: 220.00,
+    rate_percentage: 35,
+    amount_earned: 77.00,
+    created_at: new Date(NOW - 18 * ONE_DAY).toISOString(), // 18 days ago (this month)
+    status: "PENDING"
+  },
+  {
+    id: "comm-6",
+    job_order_id: "jo-6",
+    jo_number: "JO-K1L2",
+    customer_name: "Rico Blanco",
+    motorcycle_name: "Yamaha NMAX 155",
+    mechanic_id: "mech-1",
+    mechanic_name: "Mike Smith",
+    labor_base: 95.00,
     rate_percentage: 40,
-    amount_earned: 72.00,
-    created_at: new Date(Date.now() - 28800000).toISOString(),
+    amount_earned: 38.00,
+    created_at: new Date(NOW - 45 * ONE_DAY).toISOString(), // 45 days ago (this year)
+    status: "DISBURSED"
+  },
+  {
+    id: "comm-7",
+    job_order_id: "jo-7",
+    jo_number: "JO-M3N4",
+    customer_name: "Arthur Pendelton",
+    motorcycle_name: "Honda CB650R",
+    mechanic_id: "mech-2",
+    mechanic_name: "Alex Rivera",
+    labor_base: 310.00,
+    rate_percentage: 45,
+    amount_earned: 139.50,
+    created_at: new Date(NOW - 80 * ONE_DAY).toISOString(), // 80 days ago (this year)
     status: "DISBURSED"
   }
 ];
@@ -123,6 +173,7 @@ const INITIAL_CASHIERS_PAYROLL: CashierPayrollRecord[] = [
     transactions_processed: 24,
     total_volume_handled: 8420.50,
     total_pay: 3250.00,
+    created_at: new Date(NOW - 2 * ONE_DAY).toISOString(), // this week
     status: "PENDING"
   },
   {
@@ -134,21 +185,68 @@ const INITIAL_CASHIERS_PAYROLL: CashierPayrollRecord[] = [
     transactions_processed: 18,
     total_volume_handled: 5120.00,
     total_pay: 2600.00,
+    created_at: new Date(NOW - 15 * ONE_DAY).toISOString(), // this month
+    status: "DISBURSED"
+  },
+  {
+    id: "cpay-3",
+    cashier_email: "sarah.alt@motoshop.com",
+    cashier_name: "Sarah Connor",
+    shifts_count: 12,
+    base_daily_rate: 650.00,
+    transactions_processed: 58,
+    total_volume_handled: 19800.00,
+    total_pay: 7800.00,
+    created_at: new Date(NOW - 60 * ONE_DAY).toISOString(), // this year
     status: "DISBURSED"
   }
 ];
 
+const DEFAULT_MECHANIC_RATES: Record<string, number> = {
+  "Mike Smith": 40,
+  "Alex Rivera": 45,
+  "Carlos Gomez": 35,
+};
+
+type PeriodOption = "WEEKLY" | "MONTHLY" | "YEARLY" | "ALL";
+
 export default function PayrollPage() {
+  const router = useRouter();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
   const [activeTab, setActiveTab] = useState<"MECHANICS" | "CASHIERS">("MECHANICS");
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>("MONTHLY");
+  
   const [commissions, setCommissions] = useState<CommissionRecord[]>(INITIAL_MECHANICS_COMMISSIONS);
   const [cashierPayroll, setCashierPayroll] = useState<CashierPayrollRecord[]>(INITIAL_CASHIERS_PAYROLL);
-  const [commissionRate, setCommissionRate] = useState<number>(40);
+  
+  // Per-mechanic commission rates map
+  const [mechanicRates, setMechanicRates] = useState<Record<string, number>>(DEFAULT_MECHANIC_RATES);
+  const [customRateInput, setCustomRateInput] = useState<{ [name: string]: string }>({});
+
   const [selectedPayslip, setSelectedPayslip] = useState<any | null>(null);
   const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false);
   const [expandedMechanic, setExpandedMechanic] = useState<string | null>("Mike Smith");
   const [disbursing, setDisbursing] = useState<boolean>(false);
 
   useEffect(() => {
+    // 1. Role verification: Restricted to admin and manager
+    const role = localStorage.getItem("user_role");
+    setUserRole(role);
+    setCheckingAuth(false);
+
+    // 2. Load stored per-mechanic rates
+    const savedRates = localStorage.getItem("versiklo_mechanic_rates");
+    if (savedRates) {
+      try {
+        const parsed = JSON.parse(savedRates);
+        setMechanicRates((prev) => ({ ...prev, ...parsed }));
+      } catch (e) {
+        // use defaults
+      }
+    }
+
     fetchCommissions();
   }, []);
 
@@ -156,14 +254,14 @@ export default function PayrollPage() {
     try {
       const res = await apiClient.get<CommissionRecord[]>("/repairs/commissions");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        // Merge with initial rich mock metadata
         const merged = res.data.map((item, idx) => ({
           ...item,
           mechanic_name: item.mechanic_name || (idx % 2 === 0 ? "Mike Smith" : "Alex Rivera"),
           jo_number: item.jo_number || `JO-${(item.job_order_id || "A1B2").slice(0, 4).toUpperCase()}`,
           customer_name: item.customer_name || "Valued Customer",
           motorcycle_name: item.motorcycle_name || "Standard Motorcycle",
-          status: item.status || "PENDING"
+          status: item.status || "PENDING",
+          created_at: item.created_at || new Date().toISOString()
         }));
         setCommissions(merged);
       }
@@ -172,47 +270,90 @@ export default function PayrollPage() {
     }
   };
 
-  // Group commissions by mechanic
-  const mechanicSummaries = commissions.reduce((acc, comm) => {
-    const name = comm.mechanic_name || "Mike Smith";
-    if (!acc[name]) {
-      acc[name] = {
-        name,
-        jobs_count: 0,
-        total_labor: 0,
-        total_earned: 0,
-        pending_amount: 0,
-        disbursed_amount: 0,
-        records: [] as CommissionRecord[]
-      };
-    }
-    // Recompute based on active commissionRate slider
-    const recomputedEarned = Number((comm.labor_base * (commissionRate / 100)).toFixed(2));
-    acc[name].jobs_count += 1;
-    acc[name].total_labor += Number(comm.labor_base);
-    acc[name].total_earned += recomputedEarned;
-    if (comm.status === "DISBURSED") {
-      acc[name].disbursed_amount += recomputedEarned;
-    } else {
-      acc[name].pending_amount += recomputedEarned;
-    }
-    acc[name].records.push({
-      ...comm,
-      rate_percentage: commissionRate,
-      amount_earned: recomputedEarned
+  // Update specific mechanic commission rate
+  const handleUpdateMechanicRate = (mechanicName: string, newRate: number) => {
+    const validRate = Math.max(0, Math.min(100, Math.round(newRate)));
+    const updated = { ...mechanicRates, [mechanicName]: validRate };
+    setMechanicRates(updated);
+    localStorage.setItem("versiklo_mechanic_rates", JSON.stringify(updated));
+
+    recordUserAuditLog("UPDATE_MECHANIC_RATE", "/payroll", {
+      mechanic: mechanicName,
+      new_rate: validRate,
+      timestamp: new Date().toISOString()
     });
-    return acc;
-  }, {} as Record<string, any>);
+  };
+
+  // Filter items by selected period
+  const isDateInPeriod = (dateStr: string, period: PeriodOption) => {
+    if (period === "ALL") return true;
+    const itemDate = new Date(dateStr).getTime();
+    if (isNaN(itemDate)) return true;
+    const diffMs = NOW - itemDate;
+    if (period === "WEEKLY") return diffMs <= 7 * ONE_DAY;
+    if (period === "MONTHLY") return diffMs <= 30 * ONE_DAY;
+    if (period === "YEARLY") return diffMs <= 365 * ONE_DAY;
+    return true;
+  };
+
+  // Filtered commissions based on active period
+  const filteredCommissions = useMemo(() => {
+    return commissions.filter((c) => isDateInPeriod(c.created_at, selectedPeriod));
+  }, [commissions, selectedPeriod]);
+
+  // Filtered cashier payroll based on active period
+  const filteredCashiers = useMemo(() => {
+    return cashierPayroll.filter((c) => isDateInPeriod(c.created_at, selectedPeriod));
+  }, [cashierPayroll, selectedPeriod]);
+
+  // Group commissions by mechanic, computing earned amounts using EACH mechanic's assigned rate
+  const mechanicSummaries = useMemo(() => {
+    return filteredCommissions.reduce((acc, comm) => {
+      const name = comm.mechanic_name || "Mike Smith";
+      const assignedRate = mechanicRates[name] ?? DEFAULT_MECHANIC_RATES[name] ?? 40;
+
+      if (!acc[name]) {
+        acc[name] = {
+          name,
+          assignedRate,
+          jobs_count: 0,
+          total_labor: 0,
+          total_earned: 0,
+          pending_amount: 0,
+          disbursed_amount: 0,
+          records: [] as CommissionRecord[]
+        };
+      }
+
+      const recomputedEarned = Number((comm.labor_base * (assignedRate / 100)).toFixed(2));
+      acc[name].jobs_count += 1;
+      acc[name].total_labor += Number(comm.labor_base);
+      acc[name].total_earned += recomputedEarned;
+
+      if (comm.status === "DISBURSED") {
+        acc[name].disbursed_amount += recomputedEarned;
+      } else {
+        acc[name].pending_amount += recomputedEarned;
+      }
+
+      acc[name].records.push({
+        ...comm,
+        rate_percentage: assignedRate,
+        amount_earned: recomputedEarned
+      });
+      return acc;
+    }, {} as Record<string, any>);
+  }, [filteredCommissions, mechanicRates]);
 
   const mechanicList = Object.values(mechanicSummaries);
 
   // Totals
   const totalMechanicCommission = mechanicList.reduce((sum, m) => sum + m.total_earned, 0);
-  const totalCashierPayroll = cashierPayroll.reduce((sum, c) => sum + c.total_pay, 0);
+  const totalCashierPayroll = filteredCashiers.reduce((sum, c) => sum + c.total_pay, 0);
   const grandTotalPayroll = totalMechanicCommission + totalCashierPayroll;
   const totalPendingPayroll = 
     mechanicList.reduce((sum, m) => sum + m.pending_amount, 0) +
-    cashierPayroll.filter(c => c.status === "PENDING").reduce((sum, c) => sum + c.total_pay, 0);
+    filteredCashiers.filter(c => c.status === "PENDING").reduce((sum, c) => sum + c.total_pay, 0);
 
   const handleDisbursePayroll = (type: "ALL" | "MECHANIC" | "CASHIER", targetName?: string) => {
     setDisbursing(true);
@@ -234,7 +375,7 @@ export default function PayrollPage() {
       recordUserAuditLog("PAYROLL_DISBURSED", "/payroll", {
         type,
         target: targetName || "ALL_STAFF",
-        commission_rate: commissionRate,
+        period: selectedPeriod,
         timestamp: new Date().toISOString()
       });
       setDisbursing(false);
@@ -252,13 +393,46 @@ export default function PayrollPage() {
     itemsProcessed?: number;
     status: string;
   }) => {
+    const periodLabel = 
+      selectedPeriod === "WEEKLY" ? "Weekly Settlement Period" :
+      selectedPeriod === "MONTHLY" ? "Monthly Settlement Period" :
+      selectedPeriod === "YEARLY" ? "Annual Settlement Period" : "Consolidated All-Time Period";
+
     setSelectedPayslip({
       ...recipient,
-      payPeriod: "Current Bi-Weekly Settlement Period",
+      payPeriod: periodLabel,
       payslipNo: `PAY-${Date.now().toString().slice(-6)}`,
       issuedDate: new Date().toLocaleDateString()
     });
   };
+
+  // Role Access Guard Screen for Cashier & Mechanic
+  if (!checkingAuth && userRole !== "admin" && userRole !== "manager") {
+    return (
+      <div className="min-h-screen bg-zinc-950 p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
+        <div className="max-w-md w-full bg-zinc-900/80 border border-red-500/20 rounded-3xl p-8 backdrop-blur-xl shadow-2xl text-center space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-white">Access Restricted</h2>
+            <p className="text-sm text-zinc-400 mt-2">
+              The Payroll & Commissions portal and individual mechanic earnings are confidential and accessible exclusively to <span className="text-cyan-400 font-semibold">Shop Administrators</span> and <span className="text-cyan-400 font-semibold">Managers</span>.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => router.push(userRole === "cashier" ? "/pos" : "/repairs/board")}
+              className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Return to Assigned Workspace</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto">
@@ -266,16 +440,21 @@ export default function PayrollPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 flex items-center gap-3">
-            <DollarSign className="w-8 h-8 text-emerald-400" />
-            Payroll & Commission Management
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 flex items-center gap-3">
+              <DollarSign className="w-8 h-8 text-emerald-400" />
+              Payroll & Commission Management
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              Admin / Manager Exclusive
+            </span>
+          </div>
           <p className="text-zinc-400 mt-1 text-sm">
-            Automated mechanic labor commission accounting, cashier shift wages, and official payslip disbursements.
+            Configure per-mechanic commission rates, manage cashier shift disbursements, and audit compensation periods.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setIsAuditOpen(true)}
             className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
@@ -295,6 +474,36 @@ export default function PayrollPage() {
         </div>
       </div>
 
+      {/* Period Filter Bar & Settlement Selector */}
+      <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-3 px-5 mb-8 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
+          <CalendarDays className="w-4 h-4 text-cyan-400" />
+          <span>Settlement Time Period:</span>
+        </div>
+
+        <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs">
+          {[
+            { key: "WEEKLY", label: "Weekly View (7d)" },
+            { key: "MONTHLY", label: "Monthly View (30d)" },
+            { key: "YEARLY", label: "Yearly View (365d)" },
+            { key: "ALL", label: "All Records" },
+          ].map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setSelectedPeriod(item.key as PeriodOption)}
+              className={clsx(
+                "px-3.5 py-1.5 rounded-lg font-semibold transition-all",
+                selectedPeriod === item.key
+                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
+                  : "text-zinc-400 hover:text-white"
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Summary KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2">
@@ -305,7 +514,7 @@ export default function PayrollPage() {
             </div>
           </div>
           <div className="text-3xl font-black text-white font-mono">₱{grandTotalPayroll.toFixed(2)}</div>
-          <p className="text-[11px] text-zinc-500">Combined labor commission & cashier wages</p>
+          <p className="text-[11px] text-zinc-500">Combined labor commission & cashier wages ({selectedPeriod.toLowerCase()})</p>
         </div>
 
         <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2">
@@ -316,7 +525,7 @@ export default function PayrollPage() {
             </div>
           </div>
           <div className="text-3xl font-black text-cyan-400 font-mono">₱{totalMechanicCommission.toFixed(2)}</div>
-          <p className="text-[11px] text-zinc-500">{commissionRate}% of total labor charge across {commissions.length} jobs</p>
+          <p className="text-[11px] text-zinc-500">Custom rates across {filteredCommissions.length} job orders</p>
         </div>
 
         <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2">
@@ -327,7 +536,7 @@ export default function PayrollPage() {
             </div>
           </div>
           <div className="text-3xl font-black text-purple-400 font-mono">₱{totalCashierPayroll.toFixed(2)}</div>
-          <p className="text-[11px] text-zinc-500">{cashierPayroll.length} active cashiers shift payouts</p>
+          <p className="text-[11px] text-zinc-500">{filteredCashiers.length} shift payouts in period</p>
         </div>
 
         <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2">
@@ -342,7 +551,7 @@ export default function PayrollPage() {
         </div>
       </div>
 
-      {/* Tabs & Commission Rate Adjuster Bar */}
+      {/* Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
           <button
@@ -368,163 +577,218 @@ export default function PayrollPage() {
             )}
           >
             <UserCheck className="w-4 h-4" />
-            <span>Cashier Payroll ({cashierPayroll.length})</span>
+            <span>Cashier Payroll ({filteredCashiers.length})</span>
           </button>
         </div>
 
-        {/* Dynamic Mechanic Commission Rate Adjuster */}
-        {activeTab === "MECHANICS" && (
-          <div className="flex items-center gap-3 bg-zinc-900/80 p-2 px-4 rounded-2xl border border-white/10 text-xs">
-            <span className="text-zinc-400 font-semibold flex items-center gap-1.5">
-              <Percent className="w-3.5 h-3.5 text-cyan-400" />
-              Commission Rate:
-            </span>
-            <div className="flex items-center gap-2">
-              {[30, 35, 40, 45, 50].map((rate) => (
-                <button
-                  key={rate}
-                  onClick={() => setCommissionRate(rate)}
-                  className={clsx(
-                    "px-2.5 py-1 rounded-lg font-mono font-bold transition-all",
-                    commissionRate === rate
-                      ? "bg-cyan-500 text-black shadow-sm"
-                      : "bg-zinc-800 text-zinc-400 hover:text-white"
-                  )}
-                >
-                  {rate}%
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="text-xs text-zinc-400 flex items-center gap-2 bg-zinc-900/50 px-4 py-2 rounded-xl border border-white/5">
+          <Percent className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Commission rates are customized individually per mechanic.</span>
+        </div>
       </div>
 
       {/* Main Content Area */}
       {activeTab === "MECHANICS" ? (
-        /* Mechanics Commission Breakdown View */
+        /* Mechanics Commission Breakdown View with Individual Rates */
         <div className="space-y-6">
-          {mechanicList.map((mechanic) => {
-            const isExpanded = expandedMechanic === mechanic.name;
+          {mechanicList.length === 0 ? (
+            <div className="p-12 text-center bg-zinc-900/40 rounded-3xl border border-white/10 text-zinc-500">
+              No mechanic job orders found for the selected period ({selectedPeriod.toLowerCase()}).
+            </div>
+          ) : (
+            mechanicList.map((mechanic) => {
+              const isExpanded = expandedMechanic === mechanic.name;
+              const currentRate = mechanicRates[mechanic.name] ?? mechanic.assignedRate;
 
-            return (
-              <div
-                key={mechanic.name}
-                className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-xl transition-all space-y-4"
-              >
-                {/* Mechanic Summary Header Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-lg">
-                      {mechanic.name.split(" ").map((n: string) => n[0]).join("")}
+              return (
+                <div
+                  key={mechanic.name}
+                  className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-xl transition-all space-y-5"
+                >
+                  {/* Mechanic Summary Header Bar */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-lg">
+                        {mechanic.name.split(" ").map((n: string) => n[0]).join("")}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                          {mechanic.name}
+                          <span className="text-xs font-normal text-zinc-400 font-mono bg-zinc-800 px-2 py-0.5 rounded-full">
+                            {mechanic.jobs_count} job order(s) in {selectedPeriod.toLowerCase()}
+                          </span>
+                        </h3>
+                        <p className="text-xs text-zinc-400">
+                          Total Labor Handled: <span className="font-mono text-zinc-200 font-semibold">₱{mechanic.total_labor.toFixed(2)}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        {mechanic.name}
-                        <span className="text-xs font-normal text-zinc-400 font-mono bg-zinc-800 px-2 py-0.5 rounded-full">
-                          {mechanic.jobs_count} job order(s)
-                        </span>
-                      </h3>
-                      <p className="text-xs text-zinc-400">
-                        Total Labor Handled: <span className="font-mono text-zinc-200 font-semibold">₱{mechanic.total_labor.toFixed(2)}</span>
-                      </p>
+
+                    {/* Per-Mechanic Commission Rate Setter */}
+                    <div className="flex flex-wrap items-center gap-3 bg-zinc-950/80 p-2.5 px-4 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <Percent className="w-3.5 h-3.5 text-cyan-400" />
+                        <span className="text-zinc-400 font-medium">Assigned Rate:</span>
+                        <span className="font-mono font-bold text-cyan-300 text-sm">{currentRate}%</span>
+                      </div>
+
+                      {/* Quick Rate Buttons */}
+                      <div className="flex items-center gap-1.5">
+                        {[30, 35, 40, 45, 50].map((rate) => (
+                          <button
+                            key={rate}
+                            onClick={() => handleUpdateMechanicRate(mechanic.name, rate)}
+                            className={clsx(
+                              "px-2 py-0.5 rounded text-[11px] font-mono font-bold transition-all",
+                              currentRate === rate
+                                ? "bg-cyan-500 text-black shadow-sm"
+                                : "bg-zinc-800 text-zinc-400 hover:text-white"
+                            )}
+                            title={`Set ${mechanic.name}'s rate to ${rate}%`}
+                          >
+                            {rate}%
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Custom Percentage Input */}
+                      <div className="flex items-center gap-1 pl-2 border-l border-white/10">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder="Custom"
+                          value={customRateInput[mechanic.name] ?? ""}
+                          onChange={(e) =>
+                            setCustomRateInput({ ...customRateInput, [mechanic.name]: e.target.value })
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              const val = parseFloat(customRateInput[mechanic.name]);
+                              if (!isNaN(val)) {
+                                handleUpdateMechanicRate(mechanic.name, val);
+                                setCustomRateInput({ ...customRateInput, [mechanic.name]: "" });
+                              }
+                            }
+                          }}
+                          className="w-16 px-2 py-0.5 rounded bg-zinc-900 border border-white/10 text-[11px] font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
+                        />
+                        <button
+                          onClick={() => {
+                            const val = parseFloat(customRateInput[mechanic.name]);
+                            if (!isNaN(val)) {
+                              handleUpdateMechanicRate(mechanic.name, val);
+                              setCustomRateInput({ ...customRateInput, [mechanic.name]: "" });
+                            }
+                          }}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-cyan-400 font-semibold"
+                        >
+                          Set
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="text-right">
-                      <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Commission Earned ({commissionRate}%)</span>
-                      <span className="font-mono text-xl font-black text-emerald-400">₱{mechanic.total_earned.toFixed(2)}</span>
-                    </div>
+                    {/* Actions & Payout */}
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="text-right">
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Commission Earned</span>
+                        <span className="font-mono text-xl font-black text-emerald-400">₱{mechanic.total_earned.toFixed(2)}</span>
+                      </div>
 
-                    <button
-                      onClick={() => openPayslip({
-                        name: mechanic.name,
-                        role: "Mechanic",
-                        laborTotal: mechanic.total_labor,
-                        commissionRate: commissionRate,
-                        commissionEarned: mechanic.total_earned,
-                        totalPayout: mechanic.total_earned,
-                        itemsProcessed: mechanic.jobs_count,
-                        status: mechanic.pending_amount > 0 ? "PENDING" : "DISBURSED"
-                      })}
-                      className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
-                    >
-                      <Receipt className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Official Payslip</span>
-                    </button>
-
-                    {mechanic.pending_amount > 0 && (
                       <button
-                        onClick={() => handleDisbursePayroll("MECHANIC", mechanic.name)}
-                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-md flex items-center gap-1.5"
+                        onClick={() => openPayslip({
+                          name: mechanic.name,
+                          role: "Mechanic",
+                          laborTotal: mechanic.total_labor,
+                          commissionRate: currentRate,
+                          commissionEarned: mechanic.total_earned,
+                          totalPayout: mechanic.total_earned,
+                          itemsProcessed: mechanic.jobs_count,
+                          status: mechanic.pending_amount > 0 ? "PENDING" : "DISBURSED"
+                        })}
+                        className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
                       >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>Disburse ₱{mechanic.pending_amount.toFixed(2)}</span>
+                        <Receipt className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Official Payslip</span>
                       </button>
-                    )}
 
-                    <button
-                      onClick={() => setExpandedMechanic(isExpanded ? null : mechanic.name)}
-                      className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
-                      title={isExpanded ? "Collapse Breakdown" : "Expand Job Orders"}
-                    >
-                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
+                      {mechanic.pending_amount > 0 && (
+                        <button
+                          onClick={() => handleDisbursePayroll("MECHANIC", mechanic.name)}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-md flex items-center gap-1.5"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>Disburse ₱{mechanic.pending_amount.toFixed(2)}</span>
+                        </button>
+                      )}
 
-                {/* Expanded Itemized Job Orders Table */}
-                {isExpanded && (
-                  <div className="pt-3 border-t border-white/5 animate-in fade-in">
-                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">
-                      Itemized Completed Repair Jobs for {mechanic.name}
-                    </span>
-
-                    <div className="bg-zinc-950 rounded-2xl border border-white/5 overflow-hidden">
-                      <table className="w-full text-left text-xs">
-                        <thead>
-                          <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 uppercase text-[10px]">
-                            <th className="p-3.5">JO Number</th>
-                            <th className="p-3.5">Customer & Vehicle</th>
-                            <th className="p-3.5 text-right">Labor Charge</th>
-                            <th className="p-3.5 text-center">Rate</th>
-                            <th className="p-3.5 text-right">Commission Earned</th>
-                            <th className="p-3.5 text-center">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-zinc-300 font-sans">
-                          {mechanic.records.map((rec: CommissionRecord) => (
-                            <tr key={rec.id} className="hover:bg-zinc-900/40 transition-colors">
-                              <td className="p-3.5 font-mono font-bold text-cyan-400">{rec.jo_number}</td>
-                              <td className="p-3.5">
-                                <span className="font-semibold text-white block">{rec.customer_name}</span>
-                                <span className="text-[10px] text-zinc-500 font-mono">{rec.motorcycle_name}</span>
-                              </td>
-                              <td className="p-3.5 text-right font-mono text-zinc-300">₱{rec.labor_base.toFixed(2)}</td>
-                              <td className="p-3.5 text-center font-mono font-semibold text-cyan-300">{commissionRate}%</td>
-                              <td className="p-3.5 text-right font-mono font-bold text-emerald-400">
-                                ₱{rec.amount_earned.toFixed(2)}
-                              </td>
-                              <td className="p-3.5 text-center">
-                                <span className={clsx(
-                                  "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                                  rec.status === "DISBURSED"
-                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                )}>
-                                  {rec.status || "PENDING"}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      <button
+                        onClick={() => setExpandedMechanic(isExpanded ? null : mechanic.name)}
+                        className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+                        title={isExpanded ? "Collapse Breakdown" : "Expand Job Orders"}
+                      >
+                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  {/* Expanded Itemized Job Orders Table */}
+                  {isExpanded && (
+                    <div className="pt-3 border-t border-white/5 animate-in fade-in">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">
+                        Itemized Repair Jobs for {mechanic.name} (Calculated @ {currentRate}%)
+                      </span>
+
+                      <div className="bg-zinc-950 rounded-2xl border border-white/5 overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 uppercase text-[10px]">
+                              <th className="p-3.5">JO Number</th>
+                              <th className="p-3.5">Customer & Vehicle</th>
+                              <th className="p-3.5">Date Completed</th>
+                              <th className="p-3.5 text-right">Labor Base</th>
+                              <th className="p-3.5 text-center">Assigned Rate</th>
+                              <th className="p-3.5 text-right">Commission</th>
+                              <th className="p-3.5 text-center">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5 text-zinc-300 font-sans">
+                            {mechanic.records.map((rec: CommissionRecord) => (
+                              <tr key={rec.id} className="hover:bg-zinc-900/40 transition-colors">
+                                <td className="p-3.5 font-mono font-bold text-cyan-400">{rec.jo_number}</td>
+                                <td className="p-3.5">
+                                  <span className="font-semibold text-white block">{rec.customer_name}</span>
+                                  <span className="text-[10px] text-zinc-500 font-mono">{rec.motorcycle_name}</span>
+                                </td>
+                                <td className="p-3.5 text-zinc-400 font-mono text-[11px]">
+                                  {new Date(rec.created_at).toLocaleDateString()}
+                                </td>
+                                <td className="p-3.5 text-right font-mono text-zinc-300">₱{rec.labor_base.toFixed(2)}</td>
+                                <td className="p-3.5 text-center font-mono font-semibold text-cyan-300">{currentRate}%</td>
+                                <td className="p-3.5 text-right font-mono font-bold text-emerald-400">
+                                  ₱{rec.amount_earned.toFixed(2)}
+                                </td>
+                                <td className="p-3.5 text-center">
+                                  <span className={clsx(
+                                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                                    rec.status === "DISBURSED"
+                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                  )}>
+                                    {rec.status || "PENDING"}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       ) : (
         /* Cashier Shift Payroll Table View */
@@ -544,55 +808,63 @@ export default function PayrollPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-zinc-300">
-                {cashierPayroll.map((c) => (
-                  <tr key={c.id} className="hover:bg-zinc-900/40 transition-colors">
-                    <td className="p-4">
-                      <span className="font-bold text-white block">{c.cashier_name}</span>
-                      <span className="text-[10px] text-zinc-500 font-mono">{c.cashier_email}</span>
-                    </td>
-                    <td className="p-4 text-center font-mono font-bold text-zinc-200">{c.shifts_count} shifts</td>
-                    <td className="p-4 text-right font-mono text-zinc-400">₱{c.base_daily_rate.toFixed(2)}</td>
-                    <td className="p-4 text-center font-mono text-cyan-400">{c.transactions_processed} orders</td>
-                    <td className="p-4 text-right font-mono text-zinc-300">₱{c.total_volume_handled.toFixed(2)}</td>
-                    <td className="p-4 text-right font-mono font-bold text-emerald-400 text-sm">
-                      ₱{c.total_pay.toFixed(2)}
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className={clsx(
-                        "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                        c.status === "DISBURSED"
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                      )}>
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center space-x-2">
-                      <button
-                        onClick={() => openPayslip({
-                          name: c.cashier_name,
-                          role: "Cashier",
-                          baseWage: c.total_pay,
-                          totalPayout: c.total_pay,
-                          itemsProcessed: c.transactions_processed,
-                          status: c.status
-                        })}
-                        className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors"
-                      >
-                        Payslip
-                      </button>
-
-                      {c.status === "PENDING" && (
-                        <button
-                          onClick={() => handleDisbursePayroll("CASHIER", c.cashier_name)}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm"
-                        >
-                          Disburse
-                        </button>
-                      )}
+                {filteredCashiers.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-zinc-500">
+                      No cashier payroll logs found for the selected period ({selectedPeriod.toLowerCase()}).
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredCashiers.map((c) => (
+                    <tr key={c.id} className="hover:bg-zinc-900/40 transition-colors">
+                      <td className="p-4">
+                        <span className="font-bold text-white block">{c.cashier_name}</span>
+                        <span className="text-[10px] text-zinc-500 font-mono">{c.cashier_email}</span>
+                      </td>
+                      <td className="p-4 text-center font-mono font-bold text-zinc-200">{c.shifts_count} shifts</td>
+                      <td className="p-4 text-right font-mono text-zinc-400">₱{c.base_daily_rate.toFixed(2)}</td>
+                      <td className="p-4 text-center font-mono text-cyan-400">{c.transactions_processed} orders</td>
+                      <td className="p-4 text-right font-mono text-zinc-300">₱{c.total_volume_handled.toFixed(2)}</td>
+                      <td className="p-4 text-right font-mono font-bold text-emerald-400 text-sm">
+                        ₱{c.total_pay.toFixed(2)}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className={clsx(
+                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                          c.status === "DISBURSED"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        )}>
+                          {c.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center space-x-2">
+                        <button
+                          onClick={() => openPayslip({
+                            name: c.cashier_name,
+                            role: "Cashier",
+                            baseWage: c.total_pay,
+                            totalPayout: c.total_pay,
+                            itemsProcessed: c.transactions_processed,
+                            status: c.status
+                          })}
+                          className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors"
+                        >
+                          Payslip
+                        </button>
+
+                        {c.status === "PENDING" && (
+                          <button
+                            onClick={() => handleDisbursePayroll("CASHIER", c.cashier_name)}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm"
+                          >
+                            Disburse
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -611,7 +883,7 @@ export default function PayrollPage() {
                   <DollarSign className="w-5 h-5 text-emerald-400" />
                   <h3 className="text-xl font-black text-white">Official Employee Payslip</h3>
                 </div>
-                <p className="text-xs text-zinc-400">MotoShop Enterprise Compensation Statement</p>
+                <p className="text-xs text-zinc-400">Versiklo Enterprise Compensation Statement</p>
               </div>
               <button
                 onClick={() => setSelectedPayslip(null)}
@@ -636,8 +908,8 @@ export default function PayrollPage() {
                 <span className="font-mono text-zinc-300 font-bold">{selectedPayslip.payslipNo}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-zinc-500">Pay Period:</span>
-                <span className="text-zinc-300">{selectedPayslip.payPeriod}</span>
+                <span className="text-zinc-500">Pay Settlement Period:</span>
+                <span className="text-zinc-300 font-medium">{selectedPayslip.payPeriod}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-500">Settlement Status:</span>
@@ -658,7 +930,7 @@ export default function PayrollPage() {
                       <span className="font-mono text-zinc-200">₱{selectedPayslip.laborTotal?.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-cyan-400">
-                      <span>Agreed Labor Commission Rate:</span>
+                      <span>Assigned Individual Rate:</span>
                       <span className="font-mono font-bold">{selectedPayslip.commissionRate}%</span>
                     </div>
                   </>

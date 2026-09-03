@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Receipt,
   History,
-  DollarSign
+  DollarSign,
+  FileSpreadsheet
 } from "lucide-react";
 
 interface NavItem {
@@ -32,6 +33,7 @@ interface NavItem {
 
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard & Reports", href: "/reports", icon: BarChart3 },
+  { label: "Financial & Sales Reports", href: "/reports/extract", icon: FileSpreadsheet },
   { label: "POS Checkout", href: "/pos", icon: ShoppingBag },
   { label: "Sales Management", href: "/sales", icon: Receipt },
   { label: "Inventory Management", href: "/inventory", icon: Package },
@@ -112,7 +114,7 @@ export function Sidebar() {
               </div>
               {!isCollapsed && (
                 <div className="truncate">
-                  <h1 className="font-bold text-sm text-zinc-100 tracking-wide">MotoShop</h1>
+                  <h1 className="font-bold text-sm text-zinc-100 tracking-wide">Versiklo</h1>
                   <p className="text-[10px] text-zinc-400">Enterprise System</p>
                 </div>
               )}

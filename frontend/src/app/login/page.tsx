@@ -85,7 +85,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
-            MotoShop Enterprise
+            Versiklo Enterprise
           </h1>
           <p className="text-sm text-zinc-400 mt-1">Role-Based POS & Management System</p>
         </div>

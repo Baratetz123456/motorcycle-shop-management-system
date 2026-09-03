@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Motorcycle Shop Management System",
-  description: "Enterprise POS, Inventory, and Repair Management",
+  title: "Versiklo | Motorcycle Shop Management System",
+  description: "Versiklo - Enterprise POS, Inventory, and Repair Management",
 };
 
 export default function RootLayout({

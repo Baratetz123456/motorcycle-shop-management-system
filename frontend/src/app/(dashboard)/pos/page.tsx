@@ -229,7 +229,7 @@ export default function POSPage() {
         <div className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-zinc-950/80 backdrop-blur-xl z-10 sticky top-0">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-              MotoShop POS
+              Versiklo POS
             </h1>
             
             {/* Catalog Filter Toggle */}
