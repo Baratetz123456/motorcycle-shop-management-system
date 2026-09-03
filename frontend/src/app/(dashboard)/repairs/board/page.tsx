@@ -192,7 +192,9 @@ export default function RepairBoardPage() {
 
           // Also include any local jobs created on board
           const apiIds = new Set(mergedJobs.map((j) => j.id));
-          const extraLocal = parsed.filter((p) => !apiIds.has(p.id));
+          const extraLocal = parsed.filter(
+            (p) => !apiIds.has(p.id) && !(fetchedList.length > 0 && p.id.startsWith("jo-"))
+          );
           mergedJobs = [...mergedJobs, ...extraLocal];
         }
       } catch (e) {
@@ -249,6 +251,30 @@ export default function RepairBoardPage() {
     syncJobsState(updated);
   };
 
+  // Drag and drop handler
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData("text/plain", id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: RepairStatus) => {
+    e.preventDefault();
+    const jobId = e.dataTransfer.getData("text/plain");
+    if (!jobId) return;
+
+    try {
+      await apiClient.patch(`/repairs/jobs/${jobId}/status`, { status: newStatus });
+    } catch (err) {
+      // ignore network error
+    }
+
+    const updated = jobs.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j));
+    syncJobsState(updated);
+  };
+
   // Open Edit Diagnosis & Reassignment modal
   const handleOpenEditModal = (job: RepairJob) => {
     setEditJobModal(job);
@@ -262,23 +288,28 @@ export default function RepairBoardPage() {
     e.preventDefault();
     if (!editJobModal) return;
 
+    let finalJobId = editJobModal.id;
     try {
-      await apiClient.put(`/repairs/jobs/${editJobModal.id}`, {
+      const res = await apiClient.put<any>(`/repairs/jobs/${editJobModal.id}`, {
         mechanic_notes: editNotes,
         mechanic_name: editMechanic,
         labor_charge: editLaborCharge,
       });
+      if (res.data?.id && res.data.id !== editJobModal.id) {
+        finalJobId = res.data.id;
+      }
     } catch (e) {
       // ignore network error
     }
 
     // Persist diagnosis note under job specific key
-    localStorage.setItem(`motoshop_job_notes_${editJobModal.id}`, editNotes);
+    localStorage.setItem(`motoshop_job_notes_${finalJobId}`, editNotes);
 
     const updated = jobs.map((j) =>
       j.id === editJobModal.id
         ? {
             ...j,
+            id: finalJobId,
             mechanic_notes: editNotes,
             mechanic: editMechanic,
             labor_charge: editLaborCharge,
@@ -662,7 +693,7 @@ export default function RepairBoardPage() {
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-cyan-500/20"
                 >
-                  Save Diagnosis & Mechanic Changes
+                  Save Changes
                 </button>
               </div>
             </form>

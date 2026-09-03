@@ -16,7 +16,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from shared.database import get_db
 from shared.audit import log_audit_event, AuditLog
 from shared.security import get_current_user, require_roles, get_client_ip
+from shared.logger import get_logger
+from shared.logging_middleware import RequestLoggingMiddleware
 from auth_service import models, schemas
+
+logger = get_logger("auth_service")
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-for-local-dev")
 ALGORITHM = "HS256"
@@ -29,6 +33,7 @@ def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 app = FastAPI(title="Auth Service")
+app.add_middleware(RequestLoggingMiddleware, service_name="auth_service")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()

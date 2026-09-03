@@ -47,7 +47,7 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
         async with AsyncSessionLocal() as session:
             # Inline text/query to check token_version & existence
             result = await session.execute(
-                select(text("role, token_version")).select_from(text("auth.users")).where(text("id = :user_id")),
+                text("SELECT role, token_version FROM auth.users WHERE id = :user_id"),
                 {"user_id": user_id}
             )
             row = result.first()

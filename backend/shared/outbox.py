@@ -53,13 +53,23 @@ async def process_outbox(session: AsyncSession, schema_name: str, connection: ai
 
 async def run_outbox_worker(schema_name: str, session_factory: Callable[[], AsyncSession]):
     """
-    Background worker that continuously polls the outbox.
+    Background worker that continuously polls the outbox with robust retry logic.
     """
-    connection = await aio_pika.connect_robust(RABBITMQ_URL)
-    try:
-        while True:
-            async with session_factory() as session:
-                await process_outbox(session, schema_name, connection)
-            await asyncio.sleep(1) # Poll every 1 second
-    finally:
-        await connection.close()
+    while True:
+        try:
+            connection = await aio_pika.connect_robust(RABBITMQ_URL)
+            try:
+                while True:
+                    async with session_factory() as session:
+                        await process_outbox(session, schema_name, connection)
+                    await asyncio.sleep(1) # Poll every 1 second
+            finally:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            print(f"[{schema_name}] Outbox worker connection retry in 5s: {e}")
+            await asyncio.sleep(5)

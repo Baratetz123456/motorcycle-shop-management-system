@@ -5,25 +5,34 @@ import uuid
 from fastapi import FastAPI, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List
+from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from shared.database import get_db, AsyncSessionLocal
+from shared.database import get_db, AsyncSessionLocal, engine, init_db_schemas
 from shared.idempotency import idempotent
 from shared.outbox import run_outbox_worker
 from shared.audit import log_audit_event
 from shared.security import require_roles, get_client_ip
+from shared.logger import get_logger
+from shared.logging_middleware import RequestLoggingMiddleware
 from repairs_service import models, schemas
 from uuid import UUID
 
+logger = get_logger("repairs_service")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        await init_db_schemas(engine, models.Base.metadata)
+    except Exception as e:
+        logger.warning(f"Could not auto-create tables on startup: {e}")
     outbox_task = asyncio.create_task(run_outbox_worker("repairs", AsyncSessionLocal))
     yield
     outbox_task.cancel()
 
 app = FastAPI(title="Repairs Service", lifespan=lifespan)
+app.add_middleware(RequestLoggingMiddleware, service_name="repairs_service")
 
 def generate_jo_number():
     return f"JO-{uuid.uuid4().hex[:8].upper()}"
@@ -343,46 +352,63 @@ async def create_job(
         ip_address=client_ip
     )
     
+    logger.info(f"REPAIR JOB CREATED | JO Number: {db_job.jo_number} | Customer: {db_job.customer_name} | Motorcycle: {db_job.motorcycle_id} | Mechanic: {db_job.mechanic_name} | Labor: ₱{float(db_job.labor_charge):.2f}")
+
     await session.commit()
     await session.refresh(db_job)
+    return db_job
+
+async def find_job_order(session: AsyncSession, job_id: str):
+    db_job = None
+    try:
+        val_uuid = UUID(job_id)
+        stmt = select(models.JobOrder).where((models.JobOrder.id == val_uuid) | (models.JobOrder.jo_number == job_id))
+        result = await session.execute(stmt)
+        db_job = result.scalar_one_or_none()
+    except (ValueError, AttributeError):
+        stmt = select(models.JobOrder).where(models.JobOrder.jo_number.ilike(job_id))
+        result = await session.execute(stmt)
+        db_job = result.scalar_one_or_none()
     return db_job
 
 @app.patch("/jobs/{job_id}/status", response_model=schemas.JobOrderResponse)
 @idempotent
 async def update_job_status(
     request: Request,
-    job_id: UUID,
+    job_id: str,
     status_update: schemas.JobOrderStatusUpdate,
     current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
-    result = await session.execute(stmt)
-    db_job = result.scalar_one_or_none()
+    db_job = await find_job_order(session, job_id)
     
     if not db_job:
         raise HTTPException(status_code=404, detail="Job Order not found")
         
     old_status = db_job.status
     db_job.status = status_update.status
-    
-    if db_job.status == models.JobStatus.COMPLETED:
+
+    logger.info(f"REPAIR JOB STATUS UPDATED | JO Number: {db_job.jo_number} | Old Status: {old_status} -> New Status: {db_job.status}")
+
+    # Generate Commission on Completion
+    if db_job.status == models.JobStatus.COMPLETED and old_status != models.JobStatus.COMPLETED:
         commission_rate = 0.40
         commission_amount = float(db_job.labor_charge) * commission_rate
         
-        db_commission = models.Commission(
+        commission = models.Commission(
             job_order_id=db_job.id,
             mechanic_id=db_job.mechanic_id,
             labor_base=db_job.labor_charge,
             rate_percentage=commission_rate * 100,
             amount_earned=commission_amount
         )
-        session.add(db_commission)
-        
+        session.add(commission)
+
         outbox = models.OutboxEvent(
-            event_type="JobCompleted",
+            event_type="JobOrderCompleted",
             payload={
-                "job_id": str(db_job.id),
+                "job_order_id": str(db_job.id),
+                "jo_number": db_job.jo_number,
                 "mechanic_id": str(db_job.mechanic_id),
                 "commission_earned": float(commission_amount)
             }
@@ -397,7 +423,7 @@ async def update_job_status(
         user_id=current_user.get("user_id"),
         user_role=current_user.get("role"),
         details={
-            "job_id": str(job_id),
+            "job_id": str(db_job.id),
             "old_status": str(old_status),
             "new_status": str(db_job.status),
             "jo_number": db_job.jo_number
@@ -414,13 +440,11 @@ async def update_job_status(
 @idempotent
 async def update_job_payment_status(
     request: Request,
-    job_id: UUID,
+    job_id: str,
     current_user: dict = Depends(require_roles(["admin", "manager", "cashier", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
-    result = await session.execute(stmt)
-    db_job = result.scalar_one_or_none()
+    db_job = await find_job_order(session, job_id)
     
     if not db_job:
         raise HTTPException(status_code=404, detail="Job Order not found")
@@ -441,6 +465,8 @@ async def update_job_payment_status(
     )
     session.add(db_commission)
 
+    logger.info(f"REPAIR JOB PAYMENT COMPLETED | JO Number: {db_job.jo_number} | Status: COMPLETED | Paid: True")
+
     await session.commit()
     await session.refresh(db_job)
     return db_job
@@ -449,31 +475,44 @@ async def update_job_payment_status(
 @idempotent
 async def update_job_details(
     request: Request,
-    job_id: UUID,
+    job_id: str,
     job_update: schemas.JobOrderUpdate,
     current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
-    result = await session.execute(stmt)
-    db_job = result.scalar_one_or_none()
+    db_job = await find_job_order(session, job_id)
     
     if not db_job:
-        raise HTTPException(status_code=404, detail="Job Order not found")
+        db_job = models.JobOrder(
+            jo_number=job_id if job_id.upper().startswith("JO-") else f"JO-{job_id.upper()}",
+            customer_name="Customer",
+            motorcycle_id="Motorcycle",
+            mechanic_name=job_update.mechanic_name or "Mike Smith",
+            mechanic_notes=job_update.mechanic_notes or "",
+            labor_charge=job_update.labor_charge if job_update.labor_charge is not None else 100.0,
+            parts_charge=job_update.parts_charge if job_update.parts_charge is not None else 0.0,
+            status=models.JobStatus.PENDING,
+            payment_status="UNPAID",
+            is_paid=False
+        )
+        session.add(db_job)
+        await session.flush()
         
     update_data = job_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         if hasattr(db_job, field) and value is not None:
             setattr(db_job, field, value)
             
+    logger.info(f"REPAIR JOB DETAILS & DIAGNOSIS UPDATED | JO Number: {db_job.jo_number} | Diagnosis Notes: '{db_job.mechanic_notes}' | Mechanic: {db_job.mechanic_name} | Labor Charge: ₱{float(db_job.labor_charge):.2f}")
+
     client_ip = get_client_ip(request)
     await log_audit_event(
         session=session,
         action="REPAIR_JOB_DETAILS_UPDATED",
-        resource=f"/api/v1/repairs/jobs/{job_id}",
+        resource=f"/api/v1/repairs/jobs/{db_job.id}",
         user_id=current_user.get("user_id"),
         user_role=current_user.get("role"),
-        details={"job_id": str(job_id), "updated_fields": list(update_data.keys())},
+        details={"job_id": str(db_job.id), "updated_fields": list(update_data.keys()), "mechanic_notes": db_job.mechanic_notes},
         ip_address=client_ip
     )
     
@@ -484,13 +523,11 @@ async def update_job_details(
 @app.delete("/jobs/{job_id}")
 async def delete_job_order(
     request: Request,
-    job_id: UUID,
+    job_id: str,
     current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
-    result = await session.execute(stmt)
-    db_job = result.scalar_one_or_none()
+    db_job = await find_job_order(session, job_id)
     
     if not db_job:
         raise HTTPException(status_code=404, detail="Job Order not found")
@@ -498,6 +535,8 @@ async def delete_job_order(
     jo_num = db_job.jo_number
     await session.delete(db_job)
     
+    logger.warning(f"REPAIR JOB REMOVED | JO Number: {jo_num} | Job ID: {job_id}")
+
     client_ip = get_client_ip(request)
     await log_audit_event(
         session=session,

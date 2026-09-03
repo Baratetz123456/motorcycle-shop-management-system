@@ -9,6 +9,12 @@ from shared.database import Base
 from datetime import datetime
 import enum
 
+class JobStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    ONGOING = "ONGOING"
+    COMPLETED = "COMPLETED"
+    RELEASED = "RELEASED"
+
 class MotorcycleModel(Base):
     __tablename__ = "motorcycle_models"
     __table_args__ = {'schema': 'repairs'}
