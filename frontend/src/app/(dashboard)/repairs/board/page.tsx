@@ -17,14 +17,14 @@ import {
   Play, 
   Trash2, 
   Edit3, 
-  UserCheck, 
-  ChevronRight,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Activity
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { useSearchParams } from "next/navigation";
+import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 
 export type RepairStatus = "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
 
@@ -119,12 +119,13 @@ export default function RepairBoardPage() {
   const [editJobModal, setEditJobModal] = useState<RepairJob | null>(null);
   const [deleteConfirmJob, setDeleteConfirmJob] = useState<RepairJob | null>(null);
   const [historyModalJob, setHistoryModalJob] = useState<RepairJob | null>(null);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states
   const [newCustomer, setNewCustomer] = useState("");
   const [newMotorcycleModel, setNewMotorcycleModel] = useState("Yamaha MT-07 (2023)");
   const [assignedMechanic, setAssignedMechanic] = useState("Mike Smith");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Diagnosis & Reassignment form states
   const [editNotes, setEditNotes] = useState("");
@@ -431,13 +432,23 @@ export default function RepairBoardPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>New Customer Job Order</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsAuditOpen(true)}
+            className="px-4 py-3 rounded-2xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
+          >
+            <Activity className="w-4 h-4 text-cyan-400" />
+            <span>Audit Trail</span>
+          </button>
+
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>New Customer Job Order</span>
+          </button>
+        </div>
       </div>
 
       {/* Kanban Board Columns Grid */}
@@ -770,6 +781,16 @@ export default function RepairBoardPage() {
           </div>
         </div>
       )}
+
+      {/* Contextual Audit Drawer */}
+      <ContextualAuditDrawer
+        isOpen={isAuditOpen}
+        onClose={() => setIsAuditOpen(false)}
+        title="Repair Board Audit Trail"
+        subtitle="Cryptographic audit stream for repair creation, status updates, diagnosis, and commission closures"
+        actionPrefix="REPAIR_"
+        resourceFilter="/repairs"
+      />
 
     </div>
   );

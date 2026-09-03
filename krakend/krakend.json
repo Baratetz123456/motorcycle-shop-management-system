@@ -510,6 +510,21 @@
           "host": ["http://repairs_service:8000"]
         }
       ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/commissions",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/commissions",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
     }
   ]
 }

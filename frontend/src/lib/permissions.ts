@@ -20,6 +20,7 @@ export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/pos/checkout": ["admin", "cashier", "manager"],
   "/sales": ["admin", "manager", "cashier"],
   "/inventory": ["admin", "manager"],
+  "/payroll": ["admin", "manager", "cashier", "mechanic"],
   "/motorcycles": ["admin", "manager", "mechanic"],
   "/repairs/board": ["admin", "manager", "mechanic"],
   "/repairs/history": ["admin", "manager", "mechanic"],

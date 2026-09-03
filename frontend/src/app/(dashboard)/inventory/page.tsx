@@ -13,10 +13,14 @@ import {
   Sparkles,
   Tag,
   DollarSign,
-  Boxes
+  Boxes,
+  Activity,
+  RefreshCw
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
+import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
+import { recordUserAuditLog } from "@/lib/audit";
 
 export interface CatalogItem {
   id: string;
@@ -41,20 +45,43 @@ const INITIAL_CATALOG: CatalogItem[] = [
   { id: "uuid-8", sku: "TR-FR-120", name: "Front Tire 120/70-17", item_type: "PRODUCT", category: "Tires", current_stock: 4, reorder_level: 5, cost_price: 80.00, selling_price: 120.00 },
 ];
 
-export default function ProductServiceRegistrationPage() {
+export default function InventoryManagementPage() {
   const [items, setItems] = useState<CatalogItem[]>(INITIAL_CATALOG);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "PRODUCT" | "SERVICE">("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Categories & Category Registration State
+  const [customCategories, setCustomCategories] = useState<string[]>([
+    "Fluids",
+    "Filters",
+    "Brakes",
+    "Engine",
+    "Tires",
+    "Maintenance",
+    "Brake Service",
+    "Electrical",
+    "Accessories"
+  ]);
+  const [isRegisteringCategory, setIsRegisteringCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  // Auto-generate SKU Code or Service Code
+  const generateAutoCode = (type: "PRODUCT" | "SERVICE") => {
+    const prefix = type === "PRODUCT" ? "SKU-PRD" : "SRV-MNT";
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${prefix}-${rand}`;
+  };
+
   // New item form state
   const [formData, setFormData] = useState({
-    sku: "",
+    sku: generateAutoCode("PRODUCT"),
     name: "",
     item_type: "PRODUCT" as "PRODUCT" | "SERVICE",
-    category: "General",
+    category: "Fluids",
     cost_price: 0,
     selling_price: 0,
     current_stock: 0,
@@ -93,12 +120,18 @@ export default function ProductServiceRegistrationPage() {
     setItems(list);
   };
 
+  const allCategories = Array.from(
+    new Set([...customCategories, ...items.map((i) => i.category)])
+  ).filter(Boolean);
+
   const handleOpenModal = (type: "PRODUCT" | "SERVICE" = "PRODUCT") => {
+    setIsRegisteringCategory(false);
+    setNewCategoryName("");
     setFormData({
-      sku: type === "PRODUCT" ? `PRD-${Date.now().toString().slice(-4)}` : `SRV-${Date.now().toString().slice(-4)}`,
+      sku: generateAutoCode(type),
       name: "",
       item_type: type,
-      category: type === "PRODUCT" ? "Parts & Supplies" : "Labor & Services",
+      category: type === "PRODUCT" ? "Fluids" : "Maintenance",
       cost_price: 0,
       selling_price: 0,
       current_stock: type === "PRODUCT" ? 10 : 0,
@@ -106,6 +139,17 @@ export default function ProductServiceRegistrationPage() {
     });
     setErrorMsg("");
     setIsModalOpen(true);
+  };
+
+  const handleSwitchItemType = (type: "PRODUCT" | "SERVICE") => {
+    setFormData((prev) => ({
+      ...prev,
+      item_type: type,
+      sku: generateAutoCode(type),
+      category: type === "PRODUCT" ? "Fluids" : "Maintenance",
+      current_stock: type === "PRODUCT" ? 10 : 0,
+      reorder_level: type === "PRODUCT" ? 5 : 0,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,6 +165,15 @@ export default function ProductServiceRegistrationPage() {
     try {
       const res = await apiClient.post<CatalogItem>("/inventory", formData);
       setItems((prev) => [res.data, ...prev]);
+      
+      recordUserAuditLog("INVENTORY_ITEM_CREATED", "/inventory", {
+        sku: formData.sku,
+        name: formData.name,
+        item_type: formData.item_type,
+        category: formData.category,
+        selling_price: formData.selling_price,
+        current_stock: formData.current_stock
+      });
       setIsModalOpen(false);
     } catch (err: any) {
       // Fallback update for responsive demo experience
@@ -133,6 +186,15 @@ export default function ProductServiceRegistrationPage() {
         reorder_level: Number(formData.reorder_level),
       };
       setItems((prev) => [demoItem, ...prev]);
+
+      recordUserAuditLog("INVENTORY_ITEM_CREATED", "/inventory", {
+        sku: formData.sku,
+        name: formData.name,
+        item_type: formData.item_type,
+        category: formData.category,
+        selling_price: formData.selling_price,
+        current_stock: formData.current_stock
+      });
       setIsModalOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -159,24 +221,32 @@ export default function ProductServiceRegistrationPage() {
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Boxes className="w-8 h-8 text-cyan-400" />
-            Product & Service Registration
+            Inventory Management
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Register and manage inventory parts, fluids, and labor service fees used by cashiers in POS checkout.
+            Real-time stock valuation, automated SKU generation, cost-to-margin analytics, and POS catalog control.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setIsAuditOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold"
+          >
+            <Activity className="w-4 h-4 text-cyan-400" />
+            <span>Audit Trail</span>
+          </button>
+
+          <button
             onClick={() => handleOpenModal("PRODUCT")}
-            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2"
+            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2 text-xs"
           >
             <Plus className="w-4 h-4" />
             + New Product
           </button>
           <button
             onClick={() => handleOpenModal("SERVICE")}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(168,85,247,0.4)] flex items-center gap-2"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(168,85,247,0.4)] flex items-center gap-2 text-xs"
           >
             <Wrench className="w-4 h-4" />
             + New Service
@@ -410,7 +480,7 @@ export default function ProductServiceRegistrationPage() {
                 <div className="grid grid-cols-2 gap-3 p-1 bg-zinc-950 rounded-xl border border-white/10">
                   <button
                     type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, item_type: "PRODUCT", sku: `PRD-${Date.now().toString().slice(-4)}` }))}
+                    onClick={() => handleSwitchItemType("PRODUCT")}
                     className={clsx(
                       "py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
                       formData.item_type === "PRODUCT"
@@ -424,7 +494,7 @@ export default function ProductServiceRegistrationPage() {
 
                   <button
                     type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, item_type: "SERVICE", sku: `SRV-${Date.now().toString().slice(-4)}` }))}
+                    onClick={() => handleSwitchItemType("SERVICE")}
                     className={clsx(
                       "py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
                       formData.item_type === "SERVICE"
@@ -438,22 +508,32 @@ export default function ProductServiceRegistrationPage() {
                 </div>
               </div>
 
-              {/* SKU & Name */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* SKU & Name with Auto-Generation */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">
-                    {formData.item_type === "PRODUCT" ? "SKU Code" : "Service Code"} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-zinc-400">
+                      {formData.item_type === "PRODUCT" ? "SKU Code" : "Service Code"} *
+                    </label>
+                    <span className="text-[10px] text-cyan-400 font-mono">Auto-Generated</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex-1 bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-cyan-300 font-mono font-bold bg-cyan-500/5 select-none truncate">
+                      {formData.sku}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, sku: generateAutoCode(formData.item_type) }))}
+                      className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl border border-white/10 transition-colors shrink-0"
+                      title="Generate New Code"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <span className="text-[10px] text-zinc-500 mt-1 block">Unique system-assigned code</span>
                 </div>
 
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-zinc-400 mb-1">
                     {formData.item_type === "PRODUCT" ? "Product Title" : "Service Description"} *
                   </label>
@@ -468,15 +548,79 @@ export default function ProductServiceRegistrationPage() {
                 </div>
               </div>
 
-              {/* Category */}
+              {/* Dynamic Category Dropdown with Register New Category */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Category</label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-zinc-400">Category *</label>
+                  {!isRegisteringCategory && (
+                    <button
+                      type="button"
+                      onClick={() => setIsRegisteringCategory(true)}
+                      className="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" /> Register New Category
+                    </button>
+                  )}
+                </div>
+
+                {isRegisteringCategory ? (
+                  <div className="flex items-center gap-2 animate-in fade-in">
+                    <input
+                      type="text"
+                      placeholder="Enter new category name..."
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="flex-1 bg-zinc-950 border border-cyan-500/50 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newCategoryName.trim()) {
+                          const cat = newCategoryName.trim();
+                          setCustomCategories((prev) => [...prev, cat]);
+                          setFormData((prev) => ({ ...prev, category: cat }));
+                          setNewCategoryName("");
+                          setIsRegisteringCategory(false);
+                        }
+                      }}
+                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition-all"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRegisteringCategory(false);
+                        setNewCategoryName("");
+                      }}
+                      className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-xl text-xs"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <select
+                    value={formData.category}
+                    onChange={(e) => {
+                      if (e.target.value === "__NEW__") {
+                        setIsRegisteringCategory(true);
+                      } else {
+                        setFormData({ ...formData, category: e.target.value });
+                      }
+                    }}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    {allCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                    <option value="__NEW__" className="text-cyan-400 font-bold">
+                      + Register New Category...
+                    </option>
+                  </select>
+                )}
               </div>
 
               {/* Pricing */}
@@ -556,6 +700,16 @@ export default function ProductServiceRegistrationPage() {
           </div>
         </div>
       )}
+
+      {/* Contextual Audit Drawer */}
+      <ContextualAuditDrawer
+        isOpen={isAuditOpen}
+        onClose={() => setIsAuditOpen(false)}
+        title="Inventory Activity & Stock Audit"
+        subtitle="Cryptographic audit stream for product creation, catalog edits, and stock deductions"
+        actionPrefix="INVENTORY_"
+        resourceFilter="/inventory"
+      />
     </div>
   );
 }

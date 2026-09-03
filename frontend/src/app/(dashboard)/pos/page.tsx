@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePosStore } from "@/lib/store/pos-store";
 import { CheckoutModal } from "@/components/pos/CheckoutModal";
-import { ShoppingCart, Package, Wrench, Search, Plus, Minus, Trash2, Tag, User, Bike, Check, AlertCircle, AlertTriangle, X, ArrowRight } from "lucide-react";
+import { ShoppingCart, Package, Wrench, Search, Plus, Minus, Trash2, Tag, User, Bike, Check, AlertCircle, AlertTriangle, X, ArrowRight, Activity } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
+import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 
 interface CatalogItem {
   id: string;
@@ -66,6 +67,7 @@ export default function POSPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<"ALL" | "PRODUCT" | "SERVICE">("ALL");
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
 
   const handleProceedToCheckout = () => {
     if (!selectedRepair) {
@@ -264,15 +266,25 @@ export default function POSPage() {
             </div>
           </div>
           
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input 
-              type="text" 
-              placeholder="Search product SKU, service..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900/80 border border-white/10 rounded-full py-2 pl-9 pr-4 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-sm"
-            />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsAuditOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shrink-0 shadow-sm"
+            >
+              <Activity className="w-4 h-4 text-cyan-400" />
+              <span>Audit Trail</span>
+            </button>
+
+            <div className="relative w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <input 
+                type="text" 
+                placeholder="Search product SKU, service..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-zinc-900/80 border border-white/10 rounded-full py-2 pl-9 pr-4 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -496,6 +508,16 @@ export default function POSPage() {
           </button>
         </div>
       </div>
+
+      {/* Contextual Audit Drawer */}
+      <ContextualAuditDrawer
+        isOpen={isAuditOpen}
+        onClose={() => setIsAuditOpen(false)}
+        title="POS & Checkout Audit Trail"
+        subtitle="Cryptographic audit stream for cashier checkout transactions and active cart events"
+        actionPrefix="POS_"
+        resourceFilter="/pos"
+      />
     </div>
   );
 }

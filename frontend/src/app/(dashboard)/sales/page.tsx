@@ -20,12 +20,14 @@ import {
   UserCheck,
   ExternalLink,
   History,
-  ShieldCheck
+  ShieldCheck,
+  Activity
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { UserRole } from "@/lib/permissions";
 import { useRouter } from "next/navigation";
+import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 
 export interface TransactionRecord {
   id: string;
@@ -113,7 +115,9 @@ export default function SalesManagementPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "COMPLETED" | "VOIDED">("ALL");
   const [role, setRole] = useState<UserRole | null>(null);
+  const [selectedTx, setSelectedTx] = useState<TransactionRecord | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
 
   useEffect(() => {
     const userRole = (localStorage.getItem("user_role") as UserRole) || "cashier";
@@ -195,8 +199,16 @@ export default function SalesManagementPage() {
           </p>
         </div>
 
-        {/* Role Badge indicator */}
+        {/* Role Badge indicator & Audit Trail */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsAuditOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <Activity className="w-4 h-4 text-cyan-400" />
+            <span>Audit Trail</span>
+          </button>
+
           {isCashierReadOnly ? (
             <span className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2">
               <ShieldAlert className="w-4 h-4" />
@@ -361,6 +373,16 @@ export default function SalesManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* Contextual Audit Drawer */}
+      <ContextualAuditDrawer
+        isOpen={isAuditOpen}
+        onClose={() => setIsAuditOpen(false)}
+        title="Sales & Invoices Audit Trail"
+        subtitle="Cryptographic audit stream for sales transactions, receipt issuance, and void events"
+        actionPrefix="SALES_"
+        resourceFilter="/sales"
+      />
     </div>
   );
 }

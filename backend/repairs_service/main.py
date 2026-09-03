@@ -560,3 +560,25 @@ async def delete_job_order(
     
     await session.commit()
     return {"message": "Job Order removed successfully", "job_id": str(job_id)}
+
+@app.get("/commissions")
+async def get_commissions(
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.Commission).order_by(models.Commission.created_at.desc())
+    result = await session.execute(stmt)
+    commissions = result.scalars().all()
+    return [
+        {
+            "id": str(c.id),
+            "job_order_id": str(c.job_order_id) if c.job_order_id else None,
+            "mechanic_id": str(c.mechanic_id) if c.mechanic_id else None,
+            "labor_base": float(c.labor_base),
+            "rate_percentage": float(c.rate_percentage),
+            "amount_earned": float(c.amount_earned),
+            "created_at": c.created_at.isoformat() if c.created_at else None
+        }
+        for c in commissions
+    ]
+

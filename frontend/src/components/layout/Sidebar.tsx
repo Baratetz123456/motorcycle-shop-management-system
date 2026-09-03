@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Receipt,
-  History
+  History,
+  DollarSign
 } from "lucide-react";
 
 interface NavItem {
@@ -33,7 +34,8 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard & Reports", href: "/reports", icon: BarChart3 },
   { label: "POS Checkout", href: "/pos", icon: ShoppingBag },
   { label: "Sales Management", href: "/sales", icon: Receipt },
-  { label: "Products & Services", href: "/inventory", icon: Package },
+  { label: "Inventory Management", href: "/inventory", icon: Package },
+  { label: "Payroll & Commissions", href: "/payroll", icon: DollarSign },
   { label: "Motorcycle Profiles", href: "/motorcycles", icon: Bike },
   { label: "Repair Board", href: "/repairs/board", icon: Wrench },
   { label: "Customer Repair History", href: "/repairs/history", icon: History },
