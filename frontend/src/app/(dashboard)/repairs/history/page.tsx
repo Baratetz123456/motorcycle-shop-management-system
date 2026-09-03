@@ -17,7 +17,9 @@ import {
   Phone,
   ChevronRight,
   ShieldCheck,
-  Tag
+  Tag,
+  FileText,
+  Lock
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -37,9 +39,10 @@ export interface CustomerHistoryRecord {
     date_repaired: string;
     status: "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
     mechanic_name: string;
+    mechanic_notes?: string;
     labor_charge: number;
     parts_charge: number;
-    notes?: string;
+    items_used?: { name: string; qty: number; price: number }[];
   }[];
 }
 
@@ -59,9 +62,13 @@ const MOCK_CUSTOMER_HISTORIES: CustomerHistoryRecord[] = [
         date_repaired: new Date(Date.now() - 2 * 86400000).toISOString(),
         status: "PENDING",
         mechanic_name: "Mike Smith",
+        mechanic_notes: "Engine oil change & front brake pad replacement. Clearance checked.",
         labor_charge: 150.0,
         parts_charge: 65.0,
-        notes: "Engine oil change & brake pad replacement",
+        items_used: [
+          { name: "Synthetic Motor Oil 10W-40", qty: 1, price: 15.99 },
+          { name: "Front Brake Pads", qty: 1, price: 34.00 },
+        ],
       },
       {
         job_id: "j-10",
@@ -69,9 +76,12 @@ const MOCK_CUSTOMER_HISTORIES: CustomerHistoryRecord[] = [
         date_repaired: new Date(Date.now() - 45 * 86400000).toISOString(),
         status: "RELEASED",
         mechanic_name: "Dave Johnson",
+        mechanic_notes: "Chain tension adjustment & lubrication.",
         labor_charge: 90.0,
         parts_charge: 30.0,
-        notes: "Chain tension adjustment & lube",
+        items_used: [
+          { name: "Chain Lube Spray", qty: 1, price: 12.00 },
+        ],
       },
     ],
   },
@@ -90,9 +100,12 @@ const MOCK_CUSTOMER_HISTORIES: CustomerHistoryRecord[] = [
         date_repaired: new Date(Date.now() - 15 * 86400000).toISOString(),
         status: "RELEASED",
         mechanic_name: "Mike Smith",
+        mechanic_notes: "CVT belt cleaning & air filter replacement.",
         labor_charge: 80.0,
         parts_charge: 25.0,
-        notes: "CVT belt cleaning & air filter clean",
+        items_used: [
+          { name: "Premium Oil Filter", qty: 1, price: 8.50 },
+        ],
       },
     ],
   },
@@ -111,9 +124,12 @@ const MOCK_CUSTOMER_HISTORIES: CustomerHistoryRecord[] = [
         date_repaired: new Date(Date.now() - 1 * 86400000).toISOString(),
         status: "ONGOING",
         mechanic_name: "Alex Rivera",
+        mechanic_notes: "Front fork oil replacement and seal inspection.",
         labor_charge: 120.0,
         parts_charge: 40.0,
-        notes: "Front fork oil replacement",
+        items_used: [
+          { name: "Synthetic Motor Oil 10W-40", qty: 1, price: 15.99 },
+        ],
       },
     ],
   },
@@ -132,9 +148,13 @@ const MOCK_CUSTOMER_HISTORIES: CustomerHistoryRecord[] = [
         date_repaired: new Date(Date.now() - 12 * 86400000).toISOString(),
         status: "COMPLETED",
         mechanic_name: "Mike Smith",
+        mechanic_notes: "Desmoservice 12,000km engine overhaul. Valves adjusted.",
         labor_charge: 500.0,
         parts_charge: 350.0,
-        notes: "Desmoservice 12,000km overhaul",
+        items_used: [
+          { name: "Iridium Spark Plug", qty: 4, price: 18.25 },
+          { name: "Synthetic Motor Oil 10W-40", qty: 4, price: 15.99 },
+        ],
       },
     ],
   },
@@ -163,6 +183,15 @@ export default function CustomerRepairHistoryPage() {
   };
 
   const handleResumeRepair = (customer: CustomerHistoryRecord) => {
+    if (customer.active_status === "ACTIVE_REPAIR") return;
+
+    // Update customer local state to ACTIVE_REPAIR to immediately lock button
+    setHistories((prev) =>
+      prev.map((h) =>
+        h.customer_id === customer.customer_id ? { ...h, active_status: "ACTIVE_REPAIR" } : h
+      )
+    );
+
     // Navigate to repairs board with pre-filled customer state
     router.push(`/repairs/board?resume_customer=${encodeURIComponent(customer.customer_name)}&model=${encodeURIComponent(customer.motorcycle_model)}`);
   };
@@ -189,7 +218,7 @@ export default function CustomerRepairHistoryPage() {
             Customer Repair History & Resume Queue
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Manage large volumes of customer repair records, review complete motorcycle service history, and resume repairs on returning customers.
+            Review previous mechanic notes, itemized parts used, and manage returning customer repair queues.
           </p>
         </div>
 
@@ -262,7 +291,7 @@ export default function CustomerRepairHistoryPage() {
                 <th className="px-6 py-4 font-semibold">Motorcycle Model</th>
                 <th className="px-6 py-4 font-semibold text-center">Past Sessions</th>
                 <th className="px-6 py-4 font-semibold">Last Service Date</th>
-                <th className="px-6 py-4 font-semibold text-center">Current Repair Status</th>
+                <th className="px-6 py-4 font-semibold text-center">Current Status</th>
                 <th className="px-6 py-4 font-semibold text-center">Actions</th>
               </tr>
             </thead>
@@ -310,7 +339,7 @@ export default function CustomerRepairHistoryPage() {
                         {isActive ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
                             <Wrench className="w-3.5 h-3.5" />
-                            Active Session
+                            Active Inline
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
@@ -330,14 +359,26 @@ export default function CustomerRepairHistoryPage() {
                             Full Logs
                           </button>
 
-                          <button
-                            onClick={() => handleResumeRepair(record)}
-                            className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white transition-all text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
-                            title="Put this returning customer inline for a new repair session"
-                          >
-                            <Play className="w-3.5 h-3.5" />
-                            Resume Repair / Put Inline
-                          </button>
+                          {/* Disabled Button if Customer is Already Active Inline */}
+                          {isActive ? (
+                            <button
+                              disabled
+                              className="px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-white/10 text-zinc-500 text-xs font-bold flex items-center gap-1.5 cursor-not-allowed opacity-60"
+                              title="This customer is currently active inline for repair"
+                            >
+                              <Lock className="w-3.5 h-3.5" />
+                              Already Inline for Repair
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleResumeRepair(record)}
+                              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white transition-all text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
+                              title="Put this returning customer inline for a new repair session"
+                            >
+                              <Play className="w-3.5 h-3.5" />
+                              Resume Repair / Put Inline
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -357,7 +398,7 @@ export default function CustomerRepairHistoryPage() {
         </div>
       </div>
 
-      {/* Complete Repair History Drawer */}
+      {/* Complete Repair History Drawer displaying Previous Mechanic Notes & Itemized Parts */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-end z-50">
           <div className="bg-zinc-900 border-l border-white/10 w-full max-w-xl h-full flex flex-col shadow-2xl">
@@ -388,16 +429,37 @@ export default function CustomerRepairHistoryPage() {
                     <span>Date: {new Date(job.date_repaired).toLocaleDateString()}</span>
                   </div>
 
-                  {job.notes && (
-                    <div className="text-xs text-zinc-300 italic bg-zinc-900 p-2.5 rounded-xl border border-white/5">
-                      "{job.notes}"
+                  {/* Previous Mechanic Notes */}
+                  {job.mechanic_notes && (
+                    <div className="p-3 bg-zinc-900/90 rounded-xl border border-white/5 space-y-1">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> Previous Mechanic Notes & Diagnosis
+                      </span>
+                      <p className="text-xs text-zinc-300 italic">"{job.mechanic_notes}"</p>
+                    </div>
+                  )}
+
+                  {/* Itemized Services & Products Used */}
+                  {job.items_used && job.items_used.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block flex items-center gap-1">
+                        <Tag className="w-3 h-3 text-zinc-500" /> Products & Services Applied
+                      </span>
+                      <div className="bg-zinc-900/50 p-2.5 rounded-xl border border-white/5 space-y-1 text-xs">
+                        {job.items_used.map((item, i) => (
+                          <div key={i} className="flex justify-between items-center">
+                            <span className="text-zinc-300">{item.name} (x{item.qty})</span>
+                            <span className="font-mono text-zinc-400">₱{(item.qty * item.price).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   <div className="flex justify-between items-center text-xs pt-2 border-t border-white/5">
-                    <span>Mechanic: <strong className="text-zinc-200">{job.mechanic_name}</strong></span>
+                    <span>Mechanic: <strong className="text-purple-300">{job.mechanic_name}</strong></span>
                     <span className="font-mono text-emerald-400 font-bold">
-                      Total: ${(job.labor_charge + job.parts_charge).toFixed(2)}
+                      Total: ₱{(job.labor_charge + job.parts_charge).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -405,16 +467,25 @@ export default function CustomerRepairHistoryPage() {
             </div>
 
             <div className="p-4 border-t border-white/10 bg-zinc-950 flex justify-between items-center">
-              <button
-                onClick={() => {
-                  const rec = selectedRecord;
-                  setSelectedRecord(null);
-                  handleResumeRepair(rec);
-                }}
-                className="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
-              >
-                <Play className="w-3.5 h-3.5" /> Resume Repair / Put Inline
-              </button>
+              {selectedRecord.active_status === "ACTIVE_REPAIR" ? (
+                <button
+                  disabled
+                  className="bg-zinc-900 border border-white/10 text-zinc-500 px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-not-allowed opacity-60"
+                >
+                  <Lock className="w-3.5 h-3.5" /> Already Inline for Repair
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    const rec = selectedRecord;
+                    setSelectedRecord(null);
+                    handleResumeRepair(rec);
+                  }}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg"
+                >
+                  <Play className="w-3.5 h-3.5" /> Resume Repair / Put Inline
+                </button>
+              )}
 
               <button
                 onClick={() => setSelectedRecord(null)}

@@ -106,6 +106,26 @@ async def add_cart_item_to_job(
     await session.refresh(db_item)
     return db_item
 
+@app.patch("/jobs/{job_id}/payment-status")
+@idempotent
+async def update_job_payment_status(
+    request: Request,
+    job_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
+    result = await session.execute(stmt)
+    db_job = result.scalar_one_or_none()
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job Order not found")
+
+    db_job.is_paid = "PAID"
+    db_job.payment_status = "PAID"
+    await session.commit()
+    await session.refresh(db_job)
+    return {"message": "Payment status updated to PAID", "job_id": str(job_id)}
+
 @app.get("/motorcycles", response_model=List[schemas.MotorcycleResponse])
 async def get_motorcycles(
     search: Optional[str] = None,

@@ -17,6 +17,7 @@ export const ROLE_LANDING_PAGES: Record<UserRole, string> = {
 
 export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/pos": ["admin", "cashier", "manager"],
+  "/pos/checkout": ["admin", "cashier", "manager"],
   "/sales": ["admin", "manager", "cashier"],
   "/inventory": ["admin", "manager"],
   "/motorcycles": ["admin", "manager", "mechanic"],

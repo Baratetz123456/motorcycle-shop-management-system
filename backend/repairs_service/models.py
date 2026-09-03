@@ -49,6 +49,8 @@ class JobOrder(Base):
     mechanic_id = Column(UUID(as_uuid=True))
     labor_charge = Column(Numeric(10, 2), default=0, nullable=False)
     parts_charge = Column(Numeric(10, 2), default=0, nullable=False)
+    is_paid = Column(String(50), default="UNPAID", nullable=False)
+    payment_status = Column(String(50), default="UNPAID", nullable=False)
     status = Column(Enum(JobStatus), default=JobStatus.PENDING, nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 

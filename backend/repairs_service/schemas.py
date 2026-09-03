@@ -43,6 +43,7 @@ class ActiveCustomerRepairCartResponse(BaseModel):
     customer_name: str
     motorcycle_name: str
     status: JobStatus
+    is_paid: bool = False
     labor_charge: float
     parts_charge: float
     total_amount: float

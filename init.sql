@@ -63,8 +63,12 @@ CREATE TABLE sales.transactions (
     mechanic_name VARCHAR(255),
     job_order_id UUID,
     subtotal NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    discount_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0,
+    discount_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
     total NUMERIC(10, 2) NOT NULL DEFAULT 0,
     amount_paid NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    cash_received NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    cash_change NUMERIC(10, 2) NOT NULL DEFAULT 0,
     status sales.transaction_status NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -72,7 +76,7 @@ CREATE TABLE sales.transactions (
 CREATE TABLE sales.transaction_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     transaction_id UUID REFERENCES sales.transactions(id),
-    item_id UUID NOT NULL,
+    item_id VARCHAR(100) NOT NULL,
     qty INTEGER NOT NULL,
     price NUMERIC(10, 2) NOT NULL
 );

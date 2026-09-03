@@ -309,7 +309,7 @@ export default function SalesManagementPage() {
                       </td>
 
                       <td className="px-6 py-4 text-right font-mono font-bold text-white text-base">
-                        ${tx.total.toFixed(2)}
+                        ₱{tx.total.toFixed(2)}
                       </td>
 
                       <td className="px-6 py-4 text-center">
@@ -484,7 +484,7 @@ export default function SalesManagementPage() {
                         <span className="text-zinc-200 font-medium">{item.name}</span>
                         <span className="text-zinc-500 text-[10px] block">Qty: {item.qty}</span>
                       </div>
-                      <span className="font-mono font-bold text-white">${(item.qty * item.price).toFixed(2)}</span>
+                      <span className="font-mono font-bold text-white">₱{(item.qty * item.price).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -494,15 +494,15 @@ export default function SalesManagementPage() {
               <div className="p-4 bg-zinc-950 rounded-xl border border-white/10 space-y-2 text-sm">
                 <div className="flex justify-between text-zinc-400">
                   <span>Subtotal</span>
-                  <span>${selectedTransaction.subtotal.toFixed(2)}</span>
+                  <span>₱{selectedTransaction.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
                   <span>Amount Paid</span>
-                  <span>${selectedTransaction.amount_paid.toFixed(2)}</span>
+                  <span>₱{selectedTransaction.amount_paid.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-white text-base pt-2 border-t border-white/10">
                   <span>Total Amount Charged</span>
-                  <span className="text-cyan-400">${selectedTransaction.total.toFixed(2)}</span>
+                  <span className="text-cyan-400">₱{selectedTransaction.total.toFixed(2)}</span>
                 </div>
               </div>
 

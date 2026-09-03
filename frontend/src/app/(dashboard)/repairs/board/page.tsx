@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Wrench, CircleDashed, CheckCircle, CarFront, Clock, User2, History, Plus, X, Bike, Calendar } from "lucide-react";
+import { Wrench, CircleDashed, CheckCircle, CarFront, Clock, User2, History, Plus, X, Bike, Calendar, DollarSign, Tag, FileText } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 
@@ -15,6 +15,7 @@ interface JobOrder {
   customer: string;
   mechanic: string;
   status: JobStatus;
+  is_paid?: boolean;
   labor_charge: number;
 }
 
@@ -31,20 +32,22 @@ interface RepairLogEntry {
   status: JobStatus;
   customer_name: string;
   mechanic_name?: string;
+  mechanic_notes?: string;
   labor_charge: number;
   parts_charge: number;
+  items_used?: { name: string; qty: number; price: number }[];
 }
 
 const INITIAL_DATA: Record<JobStatus, JobOrder[]> = {
   PENDING: [
-    { id: "jo-1", jo_number: "JO-A1B2", motorcycle: "Yamaha MT-07 (2023)", customer: "John Doe", mechanic: "Mike Smith", status: "PENDING", labor_charge: 150 },
-    { id: "jo-2", jo_number: "JO-C3D4", motorcycle: "Honda Click 125i (2022)", customer: "Jane Roe", mechanic: "Dave Johnson", status: "PENDING", labor_charge: 80 },
+    { id: "jo-1", jo_number: "JO-A1B2", motorcycle: "Yamaha MT-07 (2023)", customer: "John Doe", mechanic: "Mike Smith", status: "PENDING", is_paid: false, labor_charge: 150 },
+    { id: "jo-2", jo_number: "JO-C3D4", motorcycle: "Honda Click 125i (2022)", customer: "Jane Roe", mechanic: "Dave Johnson", status: "PENDING", is_paid: false, labor_charge: 80 },
   ],
   ONGOING: [
-    { id: "jo-3", jo_number: "JO-E5F6", motorcycle: "Kawasaki Ninja 400 (2023)", customer: "Bob Lee", mechanic: "Alex Rivera", status: "ONGOING", labor_charge: 120 },
+    { id: "jo-3", jo_number: "JO-E5F6", motorcycle: "Kawasaki Ninja 400 (2023)", customer: "Bob Lee", mechanic: "Alex Rivera", status: "ONGOING", is_paid: true, labor_charge: 120 },
   ],
   COMPLETED: [
-    { id: "jo-4", jo_number: "JO-G7H8", motorcycle: "Ducati Panigale V4 (2023)", customer: "Alice Kim", mechanic: "Mike Smith", status: "COMPLETED", labor_charge: 500 },
+    { id: "jo-4", jo_number: "JO-G7H8", motorcycle: "Ducati Panigale V4 (2023)", customer: "Alice Kim", mechanic: "Mike Smith", status: "COMPLETED", is_paid: true, labor_charge: 500 },
   ],
   RELEASED: []
 };
@@ -78,13 +81,12 @@ export default function RepairsKanban() {
   const [historyModalJob, setHistoryModalJob] = useState<JobOrder | null>(null);
   const [customerLogs, setCustomerLogs] = useState<RepairLogEntry[]>([]);
 
-  // New Job Order form state (NO labor charge field)
+  // Form state
   const [customerName, setCustomerName] = useState("");
   const [selectedModel, setSelectedModel] = useState(REGISTERED_MODELS[0].label);
   const [assignedMechanic, setAssignedMechanic] = useState("Mike Smith");
 
   useEffect(() => {
-    // Automatically set default mechanic to currently logged-in user if available
     const userEmail = localStorage.getItem("user_email") || "";
     const matched = AVAILABLE_MECHANICS.find((m) => m.email.toLowerCase() === userEmail.toLowerCase());
     if (matched) {
@@ -135,7 +137,8 @@ export default function RepairsKanban() {
       customer: customerName,
       mechanic: assignedMechanic,
       status: "PENDING",
-      labor_charge: 0, // Managed via POS catalog active repair cart
+      is_paid: false,
+      labor_charge: 0,
     };
 
     setData((prev) => ({
@@ -164,8 +167,14 @@ export default function RepairsKanban() {
           status: job.status,
           customer_name: job.customer,
           mechanic_name: job.mechanic,
+          mechanic_notes: "Regular maintenance, oil filter replacement and chain lubrication.",
           labor_charge: 120.0,
           parts_charge: 45.0,
+          items_used: [
+            { name: "Synthetic Motor Oil 10W-40", qty: 1, price: 15.99 },
+            { name: "Premium Oil Filter", qty: 1, price: 8.50 },
+            { name: "Chain Lube Spray", qty: 1, price: 12.00 },
+          ],
         },
         {
           job_id: `jo-prev-${job.id}`,
@@ -175,8 +184,12 @@ export default function RepairsKanban() {
           status: "RELEASED",
           customer_name: job.customer,
           mechanic_name: "Dave Johnson",
+          mechanic_notes: "Brake belt adjustment and rear brake pad check. All clearance OK.",
           labor_charge: 85.0,
           parts_charge: 25.0,
+          items_used: [
+            { name: "Front Brake Pads", qty: 1, price: 34.00 },
+          ],
         },
       ]);
     }
@@ -193,7 +206,7 @@ export default function RepairsKanban() {
             Repairs Board
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Drag and drop to update job order status. Select pre-registered motorcycle models and assign mechanics.
+            Drag and drop to update job status. Displays payment completion status tags for ongoing repairs.
           </p>
         </div>
         <button
@@ -234,51 +247,67 @@ export default function RepairsKanban() {
                         snapshot.isDraggingOver ? "bg-white/5 border-white/10 border-dashed" : "bg-transparent"
                       )}
                     >
-                      {data[col.id].map((job, index) => (
-                        <Draggable key={job.id} draggableId={job.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={clsx(
-                                "mb-4 bg-zinc-900/80 border border-white/10 rounded-xl p-5 hover:border-cyan-500/50 transition-colors shadow-lg backdrop-blur-md group",
-                                snapshot.isDragging && "shadow-[0_10px_30px_-10px_rgba(6,182,212,0.3)] border-cyan-500 rotate-2 scale-105 z-50 bg-zinc-800"
-                              )}
-                            >
-                              <div className="flex justify-between items-start mb-3">
-                                <span className="font-mono text-xs text-cyan-400 bg-cyan-950/50 px-2 py-1 rounded-md border border-cyan-500/20">
-                                  {job.jo_number}
-                                </span>
-                              </div>
-                              
-                              <h3 className="font-bold text-zinc-100 text-base mb-1">{job.motorcycle}</h3>
-                              <p className="text-zinc-400 text-xs mb-4">Customer: <strong className="text-zinc-200">{job.customer}</strong></p>
-                              
-                              <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                                <div className="flex items-center gap-2">
-                                  <div className="bg-zinc-800 p-1.5 rounded-full">
-                                    <User2 className="w-3 h-3 text-zinc-300" />
-                                  </div>
-                                  <span className="text-xs text-zinc-300 font-medium">{job.mechanic}</span>
-                                </div>
+                      {data[col.id].map((job, index) => {
+                        const isJobPaid = job.is_paid || localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true";
 
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openCustomerHistory(job);
-                                  }}
-                                  className="text-xs text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1"
-                                  title="Check repair history for this customer"
-                                >
-                                  <History className="w-3 h-3" />
-                                  <span>History</span>
-                                </button>
+                        return (
+                          <Draggable key={job.id} draggableId={job.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={clsx(
+                                  "mb-4 bg-zinc-900/80 border border-white/10 rounded-xl p-5 hover:border-cyan-500/50 transition-colors shadow-lg backdrop-blur-md group",
+                                  snapshot.isDragging && "shadow-[0_10px_30px_-10px_rgba(6,182,212,0.3)] border-cyan-500 rotate-2 scale-105 z-50 bg-zinc-800"
+                                )}
+                              >
+                                <div className="flex justify-between items-start mb-3">
+                                  <span className="font-mono text-xs text-cyan-400 bg-cyan-950/50 px-2 py-1 rounded-md border border-cyan-500/20">
+                                    {job.jo_number}
+                                  </span>
+
+                                  {/* Prominent PAID Status Badge Tag */}
+                                  {isJobPaid ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md shadow-sm animate-pulse">
+                                      <DollarSign className="w-3 h-3" />
+                                      PAID / Payment Completed
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-mono text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-white/5">
+                                      UNPAID
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                <h3 className="font-bold text-zinc-100 text-base mb-1">{job.motorcycle}</h3>
+                                <p className="text-zinc-400 text-xs mb-4">Customer: <strong className="text-zinc-200">{job.customer}</strong></p>
+                                
+                                <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                                  <div className="flex items-center gap-2">
+                                    <div className="bg-zinc-800 p-1.5 rounded-full">
+                                      <User2 className="w-3 h-3 text-zinc-300" />
+                                    </div>
+                                    <span className="text-xs text-zinc-300 font-medium">{job.mechanic}</span>
+                                  </div>
+
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openCustomerHistory(job);
+                                    }}
+                                    className="text-xs text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1"
+                                    title="Check repair history for this customer"
+                                  >
+                                    <History className="w-3 h-3" />
+                                    <span>History & Notes</span>
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
+                            )}
+                          </Draggable>
+                        );
+                      })}
                       {provided.placeholder}
                     </div>
                   )}
@@ -303,8 +332,6 @@ export default function RepairsKanban() {
             </div>
 
             <form onSubmit={handleCreateJob} className="p-6 space-y-4">
-              
-              {/* Customer Name */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1">
                   Customer Full Name *
@@ -319,7 +346,6 @@ export default function RepairsKanban() {
                 />
               </div>
 
-              {/* Pre-registered Motorcycle Model Dropdown */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1">
                   Pre-registered Motorcycle Model Category *
@@ -337,7 +363,6 @@ export default function RepairsKanban() {
                 </select>
               </div>
 
-              {/* Mechanic Assignment Dropdown (Defaulted to currently logged in mechanic) */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1">
                   Assigned Mechanic *
@@ -353,7 +378,6 @@ export default function RepairsKanban() {
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] text-zinc-500 mt-1">Defaulted to your active logged-in mechanic session</p>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
@@ -376,7 +400,7 @@ export default function RepairsKanban() {
         </div>
       )}
 
-      {/* Customer Repair History Drawer Modal */}
+      {/* Customer Repair History Drawer Modal with Previous Mechanic Notes & Itemized Breakdown */}
       {historyModalJob && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl">
@@ -387,7 +411,7 @@ export default function RepairsKanban() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">
-                    Repair History: {historyModalJob.customer}
+                    Repair History & Diagnoses: {historyModalJob.customer}
                   </h3>
                   <p className="text-xs text-zinc-400">{historyModalJob.motorcycle}</p>
                 </div>
@@ -397,20 +421,51 @@ export default function RepairsKanban() {
               </button>
             </div>
 
-            <div className="p-6 max-h-[450px] overflow-y-auto space-y-3">
+            <div className="p-6 max-h-[480px] overflow-y-auto space-y-4">
               {customerLogs.map((log) => (
-                <div key={log.job_id} className="bg-zinc-950/80 border border-white/10 rounded-xl p-4 space-y-2">
+                <div key={log.job_id} className="bg-zinc-950/80 border border-white/10 rounded-2xl p-5 space-y-3 shadow-lg">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-mono text-cyan-400 font-bold">{log.jo_number}</span>
+                    <span className="font-mono text-cyan-400 font-bold bg-cyan-950 px-2.5 py-1 rounded-md border border-cyan-500/20">
+                      {log.jo_number}
+                    </span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase">
                       {log.status}
                     </span>
                   </div>
+
                   <div className="text-sm font-semibold text-white">{log.motorcycle_model}</div>
+
+                  {/* Previous Mechanic Notes */}
+                  {log.mechanic_notes && (
+                    <div className="p-3 bg-zinc-900/90 rounded-xl border border-white/5 space-y-1">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> Previous Mechanic Notes & Diagnosis
+                      </span>
+                      <p className="text-xs text-zinc-300 italic">"{log.mechanic_notes}"</p>
+                    </div>
+                  )}
+
+                  {/* Itemized Services & Products Used */}
+                  {log.items_used && log.items_used.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block flex items-center gap-1">
+                        <Tag className="w-3 h-3 text-zinc-500" /> Products & Services Applied
+                      </span>
+                      <div className="bg-zinc-900/50 p-2.5 rounded-xl border border-white/5 space-y-1 text-xs">
+                        {log.items_used.map((item, i) => (
+                          <div key={i} className="flex justify-between items-center">
+                            <span className="text-zinc-300">{item.name} (x{item.qty})</span>
+                            <span className="font-mono text-zinc-400">₱{(item.qty * item.price).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center text-xs text-zinc-400 border-t border-white/5 pt-2">
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-zinc-500"/> {new Date(log.date_repaired).toLocaleDateString()}</span>
-                    <span>Mechanic: <strong className="text-zinc-200">{log.mechanic_name}</strong></span>
-                    <span className="font-mono text-emerald-400 font-bold">${(log.labor_charge + log.parts_charge).toFixed(2)}</span>
+                    <span>Mechanic: <strong className="text-purple-300">{log.mechanic_name}</strong></span>
+                    <span className="font-mono text-emerald-400 font-bold">₱{(log.labor_charge + log.parts_charge).toFixed(2)}</span>
                   </div>
                 </div>
               ))}

@@ -295,6 +295,21 @@
       ]
     },
     {
+      "endpoint": "/api/v1/repairs/jobs/{id}/payment-status",
+      "method": "PATCH",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/{id}/payment-status",
+          "encoding": "json",
+          "sd": "static",
+          "method": "PATCH",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/sales/checkout",
       "method": "POST",
       "output_encoding": "json",
