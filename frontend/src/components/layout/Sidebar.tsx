@@ -73,7 +73,10 @@ export function Sidebar() {
     } catch (e) {
       // Ignore logout API errors
     } finally {
-      localStorage.clear();
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_email");
       router.push("/login");
     }
   };

@@ -103,12 +103,15 @@ class RepairLogEntry(BaseModel):
 class JobOrderCreate(BaseModel):
     customer_id: Optional[UUID] = None
     customer_name: Optional[str] = None
-    motorcycle_id: str
-    mechanic_id: UUID
+    motorcycle_id: Optional[str] = "General Motorcycle"
+    mechanic_id: Optional[UUID] = None
     mechanic_name: Optional[str] = None
     mechanic_notes: Optional[str] = None
-    labor_charge: float
-    parts_charge: float
+    labor_charge: Optional[float] = 100.0
+    parts_charge: Optional[float] = 0.0
+    is_paid: Optional[bool] = False
+    payment_status: Optional[str] = "UNPAID"
+    status: Optional[JobStatus] = JobStatus.PENDING
 
 class JobOrderStatusUpdate(BaseModel):
     status: JobStatus
@@ -120,6 +123,9 @@ class JobOrderUpdate(BaseModel):
     mechanic_notes: Optional[str] = None
     customer_name: Optional[str] = None
     labor_charge: Optional[float] = None
+    parts_charge: Optional[float] = None
+    is_paid: Optional[bool] = None
+    payment_status: Optional[str] = None
 
 class JobOrderResponse(BaseModel):
     id: UUID
@@ -127,12 +133,14 @@ class JobOrderResponse(BaseModel):
     customer_id: Optional[UUID] = None
     customer_name: Optional[str] = None
     motorcycle_id: str
-    mechanic_id: UUID
+    mechanic_id: Optional[UUID] = None
     mechanic_name: Optional[str] = None
     mechanic_notes: Optional[str] = None
     labor_charge: float
     parts_charge: float
     status: JobStatus
+    is_paid: bool = False
+    payment_status: Optional[str] = "UNPAID"
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)

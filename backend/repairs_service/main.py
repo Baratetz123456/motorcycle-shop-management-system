@@ -4,7 +4,7 @@ import asyncio
 import uuid
 from fastapi import FastAPI, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
@@ -81,9 +81,10 @@ async def get_active_repair_carts(
         active_carts.append(schemas.ActiveCustomerRepairCartResponse(
             job_id=job.id,
             jo_number=job.jo_number,
-            customer_name="Customer",
+            customer_name=job.customer_name or "Customer",
             motorcycle_name=str(job.motorcycle_id or "Motorcycle"),
             status=job.status,
+            is_paid=bool(job.is_paid),
             labor_charge=float(job.labor_charge),
             parts_charge=parts_sum + services_sum,
             total_amount=total_amt,
@@ -114,26 +115,6 @@ async def add_cart_item_to_job(
     await session.commit()
     await session.refresh(db_item)
     return db_item
-
-@app.patch("/jobs/{job_id}/payment-status")
-@idempotent
-async def update_job_payment_status(
-    request: Request,
-    job_id: UUID,
-    current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
-    session: AsyncSession = Depends(get_db)
-):
-    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
-    result = await session.execute(stmt)
-    db_job = result.scalar_one_or_none()
-    if not db_job:
-        raise HTTPException(status_code=404, detail="Job Order not found")
-
-    db_job.is_paid = "PAID"
-    db_job.payment_status = "PAID"
-    await session.commit()
-    await session.refresh(db_job)
-    return {"message": "Payment status updated to PAID", "job_id": str(job_id)}
 
 @app.get("/motorcycles", response_model=List[schemas.MotorcycleResponse])
 async def get_motorcycles(
@@ -321,7 +302,7 @@ async def get_customer_repair_history(
 
 @app.get("/jobs", response_model=List[schemas.JobOrderResponse])
 async def get_jobs(
-    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
     session: AsyncSession = Depends(get_db)
 ):
     result = await session.execute(select(models.JobOrder).order_by(models.JobOrder.created_at.desc()))
@@ -332,12 +313,41 @@ async def get_jobs(
 async def create_job(
     request: Request,
     job: schemas.JobOrderCreate,
-    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
     session: AsyncSession = Depends(get_db)
 ):
+    job_dict = job.model_dump()
+    
+    # Ensure boolean is_paid and valid default payment status
+    if "is_paid" not in job_dict or job_dict["is_paid"] is None:
+        job_dict["is_paid"] = False
+    if not job_dict.get("payment_status"):
+        job_dict["payment_status"] = "UNPAID"
+    if not job_dict.get("status"):
+        job_dict["status"] = models.JobStatus.PENDING
+
+    # Safely validate mechanic_id foreign key
+    mech_id = job_dict.get("mechanic_id")
+    if mech_id:
+        try:
+            check_user = await session.execute(text("SELECT id FROM auth.users WHERE id = :uid"), {"uid": mech_id})
+            if not check_user.scalar_one_or_none():
+                job_dict["mechanic_id"] = None
+        except Exception:
+            job_dict["mechanic_id"] = None
+            
+    if not job_dict.get("mechanic_id") and current_user.get("user_id"):
+        try:
+            curr_uid = UUID(str(current_user.get("user_id")))
+            check_user = await session.execute(text("SELECT id FROM auth.users WHERE id = :uid"), {"uid": curr_uid})
+            if check_user.scalar_one_or_none():
+                job_dict["mechanic_id"] = curr_uid
+        except Exception:
+            pass
+
     db_job = models.JobOrder(
         jo_number=generate_jo_number(),
-        **job.model_dump()
+        **job_dict
     )
     session.add(db_job)
     

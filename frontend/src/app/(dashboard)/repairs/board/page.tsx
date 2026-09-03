@@ -124,6 +124,7 @@ export default function RepairBoardPage() {
   const [newCustomer, setNewCustomer] = useState("");
   const [newMotorcycleModel, setNewMotorcycleModel] = useState("Yamaha MT-07 (2023)");
   const [assignedMechanic, setAssignedMechanic] = useState("Mike Smith");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Diagnosis & Reassignment form states
   const [editNotes, setEditNotes] = useState("");
@@ -146,56 +147,61 @@ export default function RepairBoardPage() {
 
   const fetchJobs = async () => {
     let fetchedList: RepairJob[] = [];
+    let fetchSuccess = false;
     try {
       const res = await apiClient.get<any[]>("/repairs/jobs");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        fetchedList = res.data.map((j) => ({
-          id: j.id,
-          jo_number: j.jo_number,
-          customer: j.customer_name || "Customer",
-          motorcycle: j.motorcycle_id || "Motorcycle",
-          mechanic: j.mechanic_name || "Mike Smith",
-          mechanic_id: j.mechanic_id,
-          mechanic_notes: j.mechanic_notes || "",
-          labor_charge: Number(j.labor_charge || 100),
-          parts_charge: Number(j.parts_charge || 0),
-          status: (j.status || "PENDING") as RepairStatus,
-          is_paid: Boolean(j.is_paid),
-          created_at: j.created_at || new Date().toISOString(),
-        }));
+      if (Array.isArray(res.data)) {
+        fetchSuccess = true;
+        if (res.data.length > 0) {
+          fetchedList = res.data.map((j) => ({
+            id: j.id,
+            jo_number: j.jo_number,
+            customer: j.customer_name || "Customer",
+            motorcycle: j.motorcycle_id || "Motorcycle",
+            mechanic: j.mechanic_name || "Mike Smith",
+            mechanic_id: j.mechanic_id,
+            mechanic_notes: j.mechanic_notes || "",
+            labor_charge: Number(j.labor_charge || 100),
+            parts_charge: Number(j.parts_charge || 0),
+            status: (j.status || "PENDING") as RepairStatus,
+            is_paid: Boolean(j.is_paid),
+            created_at: j.created_at || new Date().toISOString(),
+          }));
+        }
       }
     } catch (e) {
-      // Use fallback sync state
+      console.error("Failed to fetch jobs from server", e);
+    }
+
+    if (fetchSuccess && fetchedList.length > 0) {
+      // Merge with any unpersisted offline jobs if present
+      const storedJobs = localStorage.getItem("motoshop_jobs");
+      let localOnly: RepairJob[] = [];
+      if (storedJobs) {
+        try {
+          const parsed: RepairJob[] = JSON.parse(storedJobs);
+          if (Array.isArray(parsed)) {
+            const fetchedIds = new Set(fetchedList.map((j) => j.id));
+            localOnly = parsed.filter((p) => String(p.id).startsWith("jo-") && !fetchedIds.has(p.id));
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const combined = [...localOnly, ...fetchedList];
+      setJobs(combined);
+      syncJobsState(combined);
+      return;
     }
 
     const storedJobs = localStorage.getItem("motoshop_jobs");
-    let mergedJobs = fetchedList.length > 0 ? fetchedList : INITIAL_JOBS;
+    let mergedJobs = INITIAL_JOBS;
 
     if (storedJobs) {
       try {
         const parsed: RepairJob[] = JSON.parse(storedJobs);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const localMap = new Map(parsed.map((p) => [p.id, p]));
-
-          mergedJobs = mergedJobs.map((j) => {
-            const local = localMap.get(j.id);
-            const savedNote = localStorage.getItem(`motoshop_job_notes_${j.id}`);
-            const effectiveNote = (savedNote !== null && savedNote !== undefined && savedNote !== "")
-              ? savedNote
-              : (local?.mechanic_notes || j.mechanic_notes || "");
-            return {
-              ...j,
-              mechanic_notes: effectiveNote,
-              mechanic: local?.mechanic || j.mechanic || "Mike Smith",
-            };
-          });
-
-          // Also include any local jobs created on board
-          const apiIds = new Set(mergedJobs.map((j) => j.id));
-          const extraLocal = parsed.filter(
-            (p) => !apiIds.has(p.id) && !(fetchedList.length > 0 && p.id.startsWith("jo-"))
-          );
-          mergedJobs = [...mergedJobs, ...extraLocal];
+          mergedJobs = parsed;
         }
       } catch (e) {
         // ignore
@@ -344,35 +350,61 @@ export default function RepairBoardPage() {
   // Create Job Order
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCustomer) return;
+    if (!newCustomer || isSubmitting) return;
+    setIsSubmitting(true);
 
-    const joNum = `JO-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const newJobObj: RepairJob = {
-      id: `jo-${Date.now()}`,
-      jo_number: joNum,
-      customer: newCustomer,
-      motorcycle: newMotorcycleModel,
-      mechanic: assignedMechanic,
-      mechanic_notes: "Initial repair session created.",
-      labor_charge: 100.0,
-      parts_charge: 0,
-      status: "PENDING",
-      is_paid: false,
-      created_at: new Date().toISOString(),
-    };
+    let createdJob: RepairJob | null = null;
 
     try {
-      await apiClient.post("/repairs/jobs", {
+      const res = await apiClient.post<any>("/repairs/jobs", {
+        customer_name: newCustomer,
         motorcycle_id: newMotorcycleModel,
-        mechanic_id: "11111111-1111-1111-1111-111111111111",
+        mechanic_name: assignedMechanic,
+        mechanic_notes: "Initial repair session created.",
         labor_charge: 100.0,
         parts_charge: 0.0,
       });
+
+      if (res.data && res.data.id) {
+        createdJob = {
+          id: res.data.id,
+          jo_number: res.data.jo_number,
+          customer: res.data.customer_name || newCustomer,
+          motorcycle: res.data.motorcycle_id || newMotorcycleModel,
+          mechanic: res.data.mechanic_name || assignedMechanic,
+          mechanic_id: res.data.mechanic_id,
+          mechanic_notes: res.data.mechanic_notes || "Initial repair session created.",
+          labor_charge: Number(res.data.labor_charge || 100),
+          parts_charge: Number(res.data.parts_charge || 0),
+          status: (res.data.status || "PENDING") as RepairStatus,
+          is_paid: Boolean(res.data.is_paid),
+          created_at: res.data.created_at || new Date().toISOString(),
+        };
+      }
     } catch (e) {
-      // ignore network fallback
+      console.error("Failed to create repair job on server", e);
+    } finally {
+      setIsSubmitting(false);
     }
 
-    syncJobsState([newJobObj, ...jobs]);
+    if (!createdJob) {
+      const joNum = `JO-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      createdJob = {
+        id: `jo-${Date.now()}`,
+        jo_number: joNum,
+        customer: newCustomer,
+        motorcycle: newMotorcycleModel,
+        mechanic: assignedMechanic,
+        mechanic_notes: "Initial repair session created.",
+        labor_charge: 100.0,
+        parts_charge: 0,
+        status: "PENDING",
+        is_paid: false,
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    syncJobsState([createdJob, ...jobs]);
     setNewCustomer("");
     setIsCreateModalOpen(false);
   };
@@ -612,9 +644,10 @@ export default function RepairBoardPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold shadow-lg shadow-cyan-500/20"
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2"
                 >
-                  Place Inline for Repair
+                  {isSubmitting ? <span>Placing...</span> : <span>Place Inline for Repair</span>}
                 </button>
               </div>
             </form>

@@ -349,12 +349,12 @@
     {
       "endpoint": "/api/v1/repairs/jobs",
       "method": "POST",
-      "output_encoding": "json",
+      "output_encoding": "no-op",
       "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
       "backend": [
         {
           "url_pattern": "/jobs",
-          "encoding": "json",
+          "encoding": "no-op",
           "sd": "static",
           "method": "POST",
           "host": ["http://repairs_service:8000"]

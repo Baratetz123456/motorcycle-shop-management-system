@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sqlalchemy import Column, String, Integer, Numeric, DateTime, ForeignKey, Enum, text
+from sqlalchemy import Column, String, Integer, Numeric, DateTime, ForeignKey, Enum, Boolean, text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from shared.database import Base
@@ -58,9 +58,9 @@ class JobOrder(Base):
     mechanic_notes = Column(String)
     labor_charge = Column(Numeric(10, 2), default=0, nullable=False)
     parts_charge = Column(Numeric(10, 2), default=0, nullable=False)
-    is_paid = Column(String(50), default="UNPAID", nullable=False)
+    is_paid = Column(Boolean, default=False, nullable=False)
     payment_status = Column(String(50), default="UNPAID", nullable=False)
-    status = Column(Enum(JobStatus), default=JobStatus.PENDING, nullable=False)
+    status = Column(Enum(JobStatus, name="job_status", schema="repairs", inherit_schema=True), default=JobStatus.PENDING, nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 class RepairCartItem(Base):

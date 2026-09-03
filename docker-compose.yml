@@ -62,6 +62,9 @@ services:
     build: 
       context: ./backend
       dockerfile: auth_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "auth_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8001:8000"
     environment:
@@ -78,6 +81,9 @@ services:
     build: 
       context: ./backend
       dockerfile: inventory_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "inventory_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8002:8000"
     environment:
@@ -96,6 +102,9 @@ services:
     build: 
       context: ./backend
       dockerfile: sales_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "sales_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8003:8000"
     environment:
@@ -114,6 +123,9 @@ services:
     build: 
       context: ./backend
       dockerfile: repairs_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "repairs_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8004:8000"
     environment:
