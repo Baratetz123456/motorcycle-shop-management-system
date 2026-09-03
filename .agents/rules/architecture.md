@@ -17,6 +17,13 @@ When generating code, analyzing bugs, or extending this project, you MUST adhere
 - All state-mutating endpoints (`POST`, `PUT`, `PATCH`) MUST use the `@idempotent` decorator provided in `shared.idempotency`.
 - Clients (frontend) must send an `Idempotency-Key` UUID header.
 
-## 4. API Gateway
+## 4. API Gateway (KrakenD) Completeness
 - All frontend traffic must route through KrakenD (Port 8080) at `/api/v1/*`.
 - Do not expose microservice internal ports directly to the frontend.
+- **Single Entity & Collection Coverage**: All frontend routes must have corresponding endpoints in `krakend/krakend.json`, including single entity endpoints (e.g. `GET /api/v1/sales/transactions/{id}`).
+
+## 5. Database Schema & ORM Datatype Parity
+- SQLAlchemy model column types must strictly mirror PostgreSQL schema types in `init.sql`:
+  - PostgreSQL `BOOLEAN` must use SQLAlchemy `Boolean(default=False)`. Never map to `String`.
+  - Custom schema-scoped Enums (e.g. `repairs.job_status`) must be defined as `Enum(JobStatus, name="job_status", schema="repairs", inherit_schema=True)`.
+  - When writing raw SQL queries or foreign key validation queries, always import `text` from `sqlalchemy` (`from sqlalchemy import text`).
