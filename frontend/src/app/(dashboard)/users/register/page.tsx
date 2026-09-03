@@ -2,14 +2,30 @@
 
 import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
-import { UserPlus, Mail, User, ShieldCheck, Lock, CheckCircle2, ShieldAlert, Sparkles } from "lucide-react";
+import { 
+  UserPlus, 
+  User, 
+  Mail, 
+  Lock, 
+  ShieldCheck, 
+  ArrowLeft, 
+  CheckCircle2, 
+  ShieldAlert, 
+  Sparkles,
+  Percent,
+  DollarSign
+} from "lucide-react";
+import Link from "next/link";
+import { saveStaffCompensationToDB } from "@/lib/compensation";
 
 export default function RegisterUserPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<string>("cashier");
-  const [password] = useState("Welcome123!");
+  const [role, setRole] = useState("cashier");
+  const [password, setPassword] = useState("Welcome123!");
+  const [commissionRate, setCommissionRate] = useState<number>(40);
+  const [baseWage, setBaseWage] = useState<number>(650);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +37,9 @@ export default function RegisterUserPage() {
     setError(null);
     setSuccess(null);
 
+    const commRateToSave = role === "mechanic" ? commissionRate : undefined;
+    const baseWageToSave = role === "cashier" ? baseWage : undefined;
+
     try {
       const response = await apiClient.post("/auth/users/register", {
         first_name: firstName,
@@ -28,13 +47,32 @@ export default function RegisterUserPage() {
         email,
         role,
         password,
+        commission_rate: commRateToSave,
+        base_wage: baseWageToSave,
       });
 
-      setSuccess(`User '${firstName} ${lastName}' (${email}) registered successfully as ${role.toUpperCase()}!`);
+      // Update compensation store cache
+      if (response.data && response.data.id) {
+        await saveStaffCompensationToDB(
+          {
+            id: response.data.id,
+            first_name: firstName,
+            last_name: lastName,
+            email,
+            role,
+          },
+          commRateToSave,
+          baseWageToSave
+        );
+      }
+
+      setSuccess(`User '${firstName} ${lastName}' (${email}) registered successfully and saved to database as ${role.toUpperCase()}!`);
       setFirstName("");
       setLastName("");
       setEmail("");
       setRole("cashier");
+      setCommissionRate(40);
+      setBaseWage(650);
     } catch (err: any) {
       console.error("Register user error:", err);
       const detail = err.response?.data?.detail;
@@ -59,32 +97,43 @@ export default function RegisterUserPage() {
             <UserPlus className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-            Register New User
+            Provision New User Account
           </h1>
         </div>
         <p className="text-sm text-zinc-400 mt-1">
-          Create new employee accounts with assigned system roles (Admin Only).
+          Create a new user account with role-based access control and configure their database-persisted compensation parameters.
         </p>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
-            <div>{error}</div>
-          </div>
-        )}
+      <div className="flex items-center">
+        <Link
+          href="/users"
+          className="flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-zinc-100 transition-colors bg-zinc-900 border border-white/10 px-3.5 py-2 rounded-xl"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Users List</span>
+        </Link>
+      </div>
 
-        {success && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-            <div>{success}</div>
-          </div>
-        )}
+      {error && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5 animate-in fade-in">
+          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
+          <div>{error}</div>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* First & Last Name */}
+      {success && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-2.5 animate-in fade-in">
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <div>{success}</div>
+        </div>
+      )}
+
+      {/* Form Container */}
+      <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-2xl">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {/* Name Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">
@@ -133,7 +182,7 @@ export default function RegisterUserPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="john.doe@motoshop.com"
+                placeholder="john.doe@versiklo.com"
                 className="w-full bg-zinc-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
               />
             </div>
@@ -151,19 +200,67 @@ export default function RegisterUserPage() {
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full bg-zinc-950/80 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
               >
-                <option value="cashier">Cashier (POS Checkout & Sales)</option>
-                <option value="mechanic">Mechanic (Job Orders & Repair Board)</option>
-                <option value="manager">Manager (Dashboard & Reports)</option>
-                <option value="admin">Admin (Full System & User Access)</option>
+                <option value="cashier">Cashier (POS Checkout & Shift Pay)</option>
+                <option value="mechanic">Mechanic (Repair Board & Labor Commission)</option>
+                <option value="manager">Manager (Dashboard, Reports & Financials)</option>
+                <option value="admin">Admin (Full System, Financials & User Access)</option>
               </select>
             </div>
           </div>
+
+          {/* Contextual Compensation Fields (Saved in DB) */}
+          {role === "mechanic" && (
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-amber-500/20 space-y-1.5 animate-in fade-in">
+              <label className="block text-xs font-semibold text-amber-400">
+                Assigned Mechanic Commission Rate (%) *
+              </label>
+              <div className="relative">
+                <Percent className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  required
+                  value={commissionRate}
+                  onChange={(e) => setCommissionRate(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 font-mono focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500">
+                Saved in PostgreSQL (`auth.users`). This commission percentage is deducted from total labor charges per invoice in sales and payroll reports.
+              </p>
+            </div>
+          )}
+
+          {role === "cashier" && (
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-emerald-500/20 space-y-1.5 animate-in fade-in">
+              <label className="block text-xs font-semibold text-emerald-400">
+                Daily Base Shift Wage (₱) *
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  type="number"
+                  min="0"
+                  step="10"
+                  required
+                  value={baseWage}
+                  onChange={(e) => setBaseWage(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 font-mono focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500">
+                Saved in PostgreSQL (`auth.users`). Standard daily shift base compensation.
+              </p>
+            </div>
+          )}
 
           {/* Password (Pre-filled Read-Only) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                Default Password
+                Default Temporary Password
               </label>
               <span className="text-[10px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> Secure Default
@@ -196,11 +293,12 @@ export default function RegisterUserPage() {
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>Create Account</span>
+                  <span>Create Account & Save to DB</span>
                 </>
               )}
             </button>
           </div>
+
         </form>
       </div>
     </div>

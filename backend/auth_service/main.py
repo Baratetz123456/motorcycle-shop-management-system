@@ -207,7 +207,9 @@ async def register_user(
         last_name=user_data.last_name,
         email=user_data.email,
         password_hash=hashed_pw,
-        role=user_data.role
+        role=user_data.role,
+        commission_rate=user_data.commission_rate if user_data.commission_rate is not None else 40.0,
+        base_wage=user_data.base_wage if user_data.base_wage is not None else 650.0
     )
     session.add(new_user)
     await session.flush()
@@ -238,7 +240,7 @@ async def get_users(
     search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=100),
-    current_user: dict = Depends(require_roles(["admin"])),
+    current_user: dict = Depends(require_roles(["admin", "manager", "cashier"])),
     session: AsyncSession = Depends(get_db)
 ):
     query = select(models.User)
@@ -271,6 +273,8 @@ async def get_users(
             "last_name": u.last_name,
             "email": u.email,
             "role": u.role,
+            "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
+            "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
             "created_at": u.created_at.isoformat() if u.created_at else None
         }
         for u in users
@@ -318,6 +322,10 @@ async def update_user(
     db_user.last_name = update_data.last_name
     db_user.email = update_data.email
     db_user.role = update_data.role
+    if update_data.commission_rate is not None:
+        db_user.commission_rate = update_data.commission_rate
+    if update_data.base_wage is not None:
+        db_user.base_wage = update_data.base_wage
 
     if role_changed:
         db_user.token_version += 1 # Invalidate active user tokens immediately!
@@ -332,7 +340,9 @@ async def update_user(
         details={
             "target_user_id": str(user_id),
             "updated_email": update_data.email,
-            "role": update_data.role
+            "role": update_data.role,
+            "commission_rate": float(db_user.commission_rate) if db_user.commission_rate is not None else None,
+            "base_wage": float(db_user.base_wage) if db_user.base_wage is not None else None
         },
         ip_address=client_ip
     )

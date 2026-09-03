@@ -5,23 +5,10 @@ import {
   Receipt, 
   Search, 
   Filter, 
-  Calendar, 
   CheckCircle, 
-  XCircle, 
   Eye, 
   Ban, 
-  ShieldAlert, 
-  User, 
-  DollarSign, 
-  CreditCard, 
-  X,
-  FileText,
-  Wrench,
-  UserCheck,
-  ExternalLink,
-  History,
-  ShieldCheck,
-  Activity
+  History
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -39,6 +26,10 @@ export interface TransactionRecord {
   subtotal: number;
   total: number;
   amount_paid: number;
+  discount_percentage?: number;
+  discount_amount?: number;
+  cash_received?: number;
+  cash_change?: number;
   status: "COMPLETED" | "PENDING" | "VOIDED";
   payment_method: string;
   created_at: string;
@@ -47,6 +38,7 @@ export interface TransactionRecord {
     name: string;
     qty: number;
     price: number;
+    type?: string;
   }[];
 }
 
@@ -66,7 +58,7 @@ const MOCK_TRANSACTIONS: TransactionRecord[] = [
     created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
     item_count: 2,
     items: [
-      { name: "Repair Labor Fee (JO-A1B2)", qty: 1, price: 150.00 },
+      { name: "Repair Labor Fee (JO-A1B2)", qty: 1, price: 150.00, type: "LABOR" },
       { name: "Synthetic Motor Oil 10W-40", qty: 1, price: 15.99 },
     ],
   },
@@ -75,7 +67,7 @@ const MOCK_TRANSACTIONS: TransactionRecord[] = [
     invoice_no: "INV-B442",
     customer_name: "Jane Roe",
     cashier_name: "Cashier Sarah Connor",
-    mechanic_name: "Dave Johnson",
+    mechanic_name: "Mike Smith",
     motorcycle_name: "Honda Click 125i (2022)",
     subtotal: 38.50,
     total: 38.50,
@@ -85,7 +77,7 @@ const MOCK_TRANSACTIONS: TransactionRecord[] = [
     created_at: new Date(Date.now() - 5 * 3600000).toISOString(),
     item_count: 2,
     items: [
-      { name: "Oil & Filter Change Service", qty: 1, price: 30.00 },
+      { name: "Oil & Filter Change Service", qty: 1, price: 30.00, type: "LABOR" },
       { name: "Premium Oil Filter", qty: 1, price: 8.50 },
     ],
   },
@@ -99,23 +91,22 @@ const MOCK_TRANSACTIONS: TransactionRecord[] = [
     subtotal: 120.00,
     total: 120.00,
     amount_paid: 120.00,
-    status: "VOIDED",
-    payment_method: "CASH",
-    created_at: new Date(Date.now() - 24 * 3600000).toISOString(),
+    status: "COMPLETED",
+    payment_method: "GCASH",
+    created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
     item_count: 1,
     items: [
-      { name: "Front Tire 120/70-17", qty: 1, price: 120.00 },
+      { name: "Front Fork Overhaul & Labor", qty: 1, price: 120.00, type: "LABOR" },
     ],
   },
 ];
 
 export default function SalesManagementPage() {
   const router = useRouter();
+  const [role, setRole] = useState<UserRole>("cashier");
   const [transactions, setTransactions] = useState<TransactionRecord[]>(MOCK_TRANSACTIONS);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "COMPLETED" | "VOIDED">("ALL");
-  const [role, setRole] = useState<UserRole | null>(null);
-  const [selectedTx, setSelectedTx] = useState<TransactionRecord | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
 
@@ -153,24 +144,6 @@ export default function SalesManagementPage() {
     setTransactions(list);
   };
 
-  const handleVoidTransaction = async (txId: string) => {
-    if (role === "cashier") return; // View only for cashier
-
-    setIsSubmitting(true);
-    try {
-      await apiClient.post(`/sales/transactions/${txId}/void`);
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === txId ? { ...t, status: "VOIDED" } : t))
-      );
-    } catch (e) {
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === txId ? { ...t, status: "VOIDED" } : t))
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch =
       t.invoice_no.toLowerCase().includes(search.toLowerCase()) ||
@@ -178,94 +151,61 @@ export default function SalesManagementPage() {
       (t.cashier_name && t.cashier_name.toLowerCase().includes(search.toLowerCase())) ||
       (t.mechanic_name && t.mechanic_name.toLowerCase().includes(search.toLowerCase())) ||
       t.payment_method.toLowerCase().includes(search.toLowerCase());
+
     const matchesStatus = statusFilter === "ALL" || t.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
-  const isCashierReadOnly = role === "cashier";
-
   return (
-    <div className="h-screen bg-zinc-950 p-8 flex flex-col overflow-hidden font-sans">
-      
-      {/* Top Header */}
+    <div className="flex-1 p-8 flex flex-col h-full overflow-hidden font-sans text-zinc-100">
+      {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
-            <Receipt className="w-8 h-8 text-cyan-400" />
-            Sales Management & Invoice Receipts
-          </h1>
-          <p className="text-zinc-400 mt-1 text-sm">
-            Inspect receipts featuring Cashier Name, Mechanic Name, and linked full history logs.
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+              <Receipt className="w-6 h-6" />
+            </div>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+              Sales & Invoice Management
+            </h1>
+          </div>
+          <p className="text-sm text-zinc-400 mt-1">
+            Track historical sales transactions, inspect receipts with labor commission deductions, and monitor revenue settlements.
           </p>
         </div>
 
-        {/* Role Badge indicator & Audit Trail */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsAuditOpen(true)}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 shadow-sm"
+            className="px-4 py-2 bg-zinc-900 border border-white/10 hover:border-cyan-500/30 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
           >
-            <Activity className="w-4 h-4 text-cyan-400" />
+            <History className="w-4 h-4 text-cyan-400" />
             <span>Audit Trail</span>
           </button>
-
-          {isCashierReadOnly ? (
-            <span className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4" />
-              Cashier View-Only Mode
-            </span>
-          ) : (
-            <span className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Full Manager/Admin Control
-            </span>
-          )}
         </div>
       </div>
 
-      {/* Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
-          <button
-            onClick={() => setStatusFilter("ALL")}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-              statusFilter === "ALL"
-                ? "bg-zinc-800 text-white shadow-md border border-white/10"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <span>All Invoices</span>
-            <span className="bg-zinc-950 px-2 py-0.5 rounded-full text-[10px] text-zinc-400">
-              {transactions.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setStatusFilter("COMPLETED")}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-              statusFilter === "COMPLETED"
-                ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span>Completed</span>
-          </button>
-
-          <button
-            onClick={() => setStatusFilter("VOIDED")}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-              statusFilter === "VOIDED"
-                ? "bg-red-500/20 text-red-300 shadow-md border border-red-500/30"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <Ban className="w-3.5 h-3.5" />
-            <span>Voided</span>
-          </button>
+      {/* Filter & Search Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-4 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter className="w-4 h-4 text-zinc-400" />
+          <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs">
+            {["ALL", "COMPLETED", "VOIDED"].map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={clsx(
+                  "px-3 py-1.5 rounded-lg font-medium transition-all",
+                  statusFilter === st
+                    ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20 font-bold"
+                    : "text-zinc-400 hover:text-white"
+                )}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="relative w-full sm:w-80">
@@ -351,7 +291,8 @@ export default function SalesManagementPage() {
                       <td className="px-6 py-4 text-center">
                         <button
                           onClick={() => router.push(`/sales/receipt?id=${encodeURIComponent(tx.id)}`)}
-                          className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-600 text-zinc-200 hover:text-white transition-colors text-xs font-semibold flex items-center gap-1.5 mx-auto"
+                          className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-600 text-zinc-200 hover:text-white transition-colors text-xs font-semibold flex items-center gap-1.5 mx-auto shadow-sm"
+                          title="Open Full-Page Invoice Receipt"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           View Receipt
@@ -369,7 +310,7 @@ export default function SalesManagementPage() {
         <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400">
           <div>Displaying {filteredTransactions.length} transaction record(s)</div>
           <div className="flex gap-4 items-center text-zinc-500">
-            <span>• Accessible by Admin, Manager, and Cashier (View-only)</span>
+            <span>• Commission rates are determined by each assigned mechanic</span>
           </div>
         </div>
       </div>

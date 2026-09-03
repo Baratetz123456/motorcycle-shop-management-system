@@ -25,6 +25,7 @@ export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/motorcycles": ["admin", "manager", "mechanic"],
   "/repairs/board": ["admin", "manager", "mechanic"],
   "/repairs/history": ["admin", "manager", "mechanic"],
+  "/repairs/history/logs": ["admin", "manager", "mechanic"],
   "/repair-board": ["admin", "manager", "mechanic"],
   "/reports": ["admin", "cashier", "manager"],
   "/dashboard": ["admin", "cashier", "manager"],

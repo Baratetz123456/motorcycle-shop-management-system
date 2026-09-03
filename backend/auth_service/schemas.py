@@ -21,12 +21,16 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
     password: str = Field(default="Welcome123!")
+    commission_rate: Optional[float] = None
+    base_wage: Optional[float] = None
 
 class UserUpdateRequest(BaseModel):
     first_name: str = Field(..., min_length=1)
     last_name: str = Field(..., min_length=1)
     email: EmailStr
     role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
+    commission_rate: Optional[float] = None
+    base_wage: Optional[float] = None
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
@@ -39,6 +43,8 @@ class UserResponse(BaseModel):
     last_name: str
     email: EmailStr
     role: str
+    commission_rate: Optional[float] = None
+    base_wage: Optional[float] = None
     created_at: Optional[datetime] = None
 
     class Config:

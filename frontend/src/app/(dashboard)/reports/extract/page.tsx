@@ -33,6 +33,7 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
+import { fetchStaffCompensationFromDB, extractInvoiceLaborAndCommission } from "@/lib/compensation";
 
 interface SalesTransaction {
   id: string;
@@ -243,6 +244,7 @@ export default function FinancialAndSalesExtractPage() {
   // Data
   const [transactions, setTransactions] = useState<SalesTransaction[]>(INITIAL_MOCK_TRANSACTIONS);
   const [expenses, setExpenses] = useState<ShopExpense[]>(INITIAL_EXPENSES);
+  const [mechanicRates, setMechanicRates] = useState<Record<string, number>>({});
 
   // Expense modal state
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -257,6 +259,11 @@ export default function FinancialAndSalesExtractPage() {
     const role = localStorage.getItem("user_role");
     setUserRole(role);
     setCheckingAuth(false);
+
+    // Fetch live compensation from database
+    fetchStaffCompensationFromDB().then((data) => {
+      setMechanicRates(data.mechanicRates);
+    });
 
     // Load persisted expenses
     const storedExp = localStorage.getItem("versiklo_shop_expenses");
@@ -330,19 +337,33 @@ export default function FinancialAndSalesExtractPage() {
     return filteredTransactions.reduce((acc, t) => acc + (Number(t.total) || 0), 0);
   }, [filteredTransactions]);
 
-  const partsRevenue = useMemo(() => {
-    return filteredTransactions.reduce((sum, t) => {
-      if (!t.items) return sum + (Number(t.total) * 0.6); // estimation if items missing
-      const itemsParts = t.items
-        .filter((i) => !i.type || i.type === "PARTS")
-        .reduce((s, i) => s + (Number(i.price) * Number(i.qty)), 0);
-      return sum + (itemsParts || 0);
-    }, 0);
-  }, [filteredTransactions]);
+  // Detailed labor & mechanic commission calculation per invoice
+  const laborAndCommissionSummary = useMemo(() => {
+    let grossLaborTotal = 0;
+    let commissionDeductionTotal = 0;
+    let partsCalculated = 0;
 
-  const laborRevenue = useMemo(() => {
-    return Math.max(0, grossRevenue - partsRevenue);
-  }, [grossRevenue, partsRevenue]);
+    filteredTransactions.forEach((t) => {
+      const analysis = extractInvoiceLaborAndCommission(t.items, t.customer_name || t.motorcycle_name, mechanicRates);
+      grossLaborTotal += analysis.grossLabor;
+      commissionDeductionTotal += analysis.commissionDeduction;
+      partsCalculated += analysis.partsTotal;
+    });
+
+    const netLaborRetained = Math.max(0, Number((grossLaborTotal - commissionDeductionTotal).toFixed(2)));
+    return {
+      grossLaborTotal: Number(grossLaborTotal.toFixed(2)),
+      commissionDeductionTotal: Number(commissionDeductionTotal.toFixed(2)),
+      netLaborRetained,
+      partsTotal: Number(partsCalculated.toFixed(2))
+    };
+  }, [filteredTransactions, mechanicRates]);
+
+  const grossLaborRevenue = laborAndCommissionSummary.grossLaborTotal;
+  const mechanicCommissionsDeducted = laborAndCommissionSummary.commissionDeductionTotal;
+  const netLaborRevenue = laborAndCommissionSummary.netLaborRetained;
+  const partsRevenue = laborAndCommissionSummary.partsTotal;
+  const netShopRevenue = partsRevenue + netLaborRevenue;
 
   const totalExpenses = useMemo(() => {
     return filteredExpenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
@@ -356,7 +377,7 @@ export default function FinancialAndSalesExtractPage() {
     }, {} as Record<string, number>);
   }, [filteredExpenses]);
 
-  const netIncome = grossRevenue - totalExpenses;
+  const netIncome = Number((netShopRevenue - totalExpenses).toFixed(2));
   const profitMargin = grossRevenue > 0 ? ((netIncome / grossRevenue) * 100).toFixed(1) : "0.0";
 
   // Payment Method Breakdown
@@ -414,8 +435,11 @@ export default function FinancialAndSalesExtractPage() {
     // Financial Summary
     csv += "FINANCIAL EXECUTIVE SUMMARY\n";
     csv += `Gross Sales Revenue,PHP ${grossRevenue.toFixed(2)}\n`;
-    csv += `Parts & Consumables Revenue,PHP ${partsRevenue.toFixed(2)}\n`;
-    csv += `Labor & Services Revenue,PHP ${laborRevenue.toFixed(2)}\n`;
+    csv += `Parts & Accessories Retail,PHP ${partsRevenue.toFixed(2)}\n`;
+    csv += `Gross Labor Billed,PHP ${grossLaborRevenue.toFixed(2)}\n`;
+    csv += `Mechanic Commissions Deducted,PHP -${mechanicCommissionsDeducted.toFixed(2)}\n`;
+    csv += `Net Shop Labor Retained,PHP ${netLaborRevenue.toFixed(2)}\n`;
+    csv += `Net Retained Shop Sales,PHP ${netShopRevenue.toFixed(2)}\n`;
     csv += `Total Operating Expenses,PHP ${totalExpenses.toFixed(2)}\n`;
     csv += `Net Operating Profit,PHP ${netIncome.toFixed(2)}\n`;
     csv += `Operating Profit Margin,${profitMargin}%\n\n`;
@@ -742,16 +766,40 @@ export default function FinancialAndSalesExtractPage() {
                 <div className="flex items-center gap-2">
                   <Wrench className="w-4 h-4 text-cyan-400" />
                   <div>
-                    <span className="font-semibold text-white block">Mechanic Repair & Maintenance Labor</span>
-                    <span className="text-[11px] text-zinc-400">Service bay labor charges</span>
+                    <span className="font-semibold text-white block">Gross Labor Charged (Customer Invoices)</span>
+                    <span className="text-[11px] text-zinc-400">Total repair and service billings</span>
                   </div>
                 </div>
-                <span className="font-mono text-base font-bold text-cyan-400">₱{laborRevenue.toFixed(2)}</span>
+                <span className="font-mono text-base font-bold text-cyan-400">₱{grossLaborRevenue.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/90 border border-cyan-500/20">
-                <span className="font-bold text-zinc-300">Total Extracted Sales</span>
-                <span className="font-mono text-lg font-black text-emerald-400">₱{grossRevenue.toFixed(2)}</span>
+              {mechanicCommissionsDeducted > 0 && (
+                <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <div className="flex items-center gap-2">
+                    <Percent className="w-4 h-4 text-amber-400" />
+                    <div>
+                      <span className="font-semibold text-amber-300 block">Mechanic Commissions (Deducted per Invoice)</span>
+                      <span className="text-[11px] text-zinc-400">Assigned per-mechanic rates saved in database</span>
+                    </div>
+                  </div>
+                  <span className="font-mono text-base font-bold text-amber-400">-₱{mechanicCommissionsDeducted.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/80 border border-white/10">
+                <div>
+                  <span className="font-semibold text-zinc-200 block">Net Shop Labor Retained</span>
+                  <span className="text-[11px] text-zinc-500">Gross labor minus mechanic commission deductions</span>
+                </div>
+                <span className="font-mono text-base font-bold text-white">₱{netLaborRevenue.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/90 border border-cyan-500/30">
+                <div>
+                  <span className="font-bold text-zinc-100 block">Net Retained Shop Sales</span>
+                  <span className="text-[10px] text-zinc-400 font-mono">Gross revenue minus mechanic labor commissions</span>
+                </div>
+                <span className="font-mono text-lg font-black text-emerald-400">₱{netShopRevenue.toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Receipt, 
@@ -17,10 +17,12 @@ import {
   Banknote, 
   AlertCircle,
   Copy,
-  Check
+  Check,
+  Percent
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { UserRole } from "@/lib/permissions";
+import { extractInvoiceLaborAndCommission, fetchStaffCompensationFromDB } from "@/lib/compensation";
 
 interface TransactionRecord {
   id: string;
@@ -122,10 +124,19 @@ function SalesReceiptContent() {
   const [userRole, setUserRole] = useState<UserRole>("cashier");
   const [isVoiding, setIsVoiding] = useState(false);
   const [copiedInvoice, setCopiedInvoice] = useState(false);
+  const [mechanicRates, setMechanicRates] = useState<Record<string, number>>({});
+
+  const laborAnalysis = useMemo(() => {
+    if (!transaction) return null;
+    return extractInvoiceLaborAndCommission(transaction.items, transaction.mechanic_name, mechanicRates);
+  }, [transaction, mechanicRates]);
 
   useEffect(() => {
     const role = (localStorage.getItem("user_role") as UserRole) || "cashier";
     setUserRole(role);
+    fetchStaffCompensationFromDB().then((data) => {
+      setMechanicRates(data.mechanicRates);
+    });
     loadTransaction();
   }, [txId]);
 
@@ -505,6 +516,33 @@ function SalesReceiptContent() {
             </>
           )}
         </div>
+
+        {/* Labor Commission Deduction & Net Shop Labor Card */}
+        {laborAnalysis && laborAnalysis.grossLabor > 0 && (
+          <div className="p-5 bg-zinc-950 rounded-2xl border border-amber-500/20 space-y-2 text-xs">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                Labor Commission Settlement (Invoice Deduction)
+              </span>
+              <span className="font-mono text-zinc-400 text-[11px]">
+                Assigned: <span className="text-white font-semibold">{laborAnalysis.mechanicName}</span> (@{laborAnalysis.commissionRate}% Commission - Determined by Mechanic Profile)
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-zinc-300">
+              <span>Gross Labor Charged to Customer:</span>
+              <span className="font-mono text-zinc-100 font-semibold">₱{laborAnalysis.grossLabor.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center text-amber-400">
+              <span>Mechanic Labor Commission Deducted ({laborAnalysis.commissionRate}%):</span>
+              <span className="font-mono font-bold">-₱{laborAnalysis.commissionDeduction.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center text-emerald-400 font-bold pt-1.5 border-t border-white/5 text-sm">
+              <span>Net Shop Labor Retained:</span>
+              <span className="font-mono font-black text-base">₱{laborAnalysis.netShopLabor.toFixed(2)}</span>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Actions Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-white/10">

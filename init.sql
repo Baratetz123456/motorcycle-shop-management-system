@@ -14,6 +14,8 @@ CREATE TABLE auth.users (
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'cashier',
     token_version INTEGER NOT NULL DEFAULT 1,
+    commission_rate NUMERIC(5, 2) DEFAULT 40.0,
+    base_wage NUMERIC(10, 2) DEFAULT 650.0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

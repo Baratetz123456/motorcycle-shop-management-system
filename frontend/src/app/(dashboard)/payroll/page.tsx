@@ -29,6 +29,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
+import { fetchStaffCompensationFromDB } from "@/lib/compensation";
 
 interface CommissionRecord {
   id: string;
@@ -221,9 +222,8 @@ export default function PayrollPage() {
   const [commissions, setCommissions] = useState<CommissionRecord[]>(INITIAL_MECHANICS_COMMISSIONS);
   const [cashierPayroll, setCashierPayroll] = useState<CashierPayrollRecord[]>(INITIAL_CASHIERS_PAYROLL);
   
-  // Per-mechanic commission rates map
+  // Per-mechanic commission rates map (determined by assigned mechanic profiles in database)
   const [mechanicRates, setMechanicRates] = useState<Record<string, number>>(DEFAULT_MECHANIC_RATES);
-  const [customRateInput, setCustomRateInput] = useState<{ [name: string]: string }>({});
 
   const [selectedPayslip, setSelectedPayslip] = useState<any | null>(null);
   const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false);
@@ -236,16 +236,10 @@ export default function PayrollPage() {
     setUserRole(role);
     setCheckingAuth(false);
 
-    // 2. Load stored per-mechanic rates
-    const savedRates = localStorage.getItem("versiklo_mechanic_rates");
-    if (savedRates) {
-      try {
-        const parsed = JSON.parse(savedRates);
-        setMechanicRates((prev) => ({ ...prev, ...parsed }));
-      } catch (e) {
-        // use defaults
-      }
-    }
+    // 2. Load live DB staff compensation rates
+    fetchStaffCompensationFromDB().then((data) => {
+      setMechanicRates((prev) => ({ ...prev, ...data.mechanicRates }));
+    });
 
     fetchCommissions();
   }, []);
@@ -268,20 +262,6 @@ export default function PayrollPage() {
     } catch (e) {
       // Fallback state
     }
-  };
-
-  // Update specific mechanic commission rate
-  const handleUpdateMechanicRate = (mechanicName: string, newRate: number) => {
-    const validRate = Math.max(0, Math.min(100, Math.round(newRate)));
-    const updated = { ...mechanicRates, [mechanicName]: validRate };
-    setMechanicRates(updated);
-    localStorage.setItem("versiklo_mechanic_rates", JSON.stringify(updated));
-
-    recordUserAuditLog("UPDATE_MECHANIC_RATE", "/payroll", {
-      mechanic: mechanicName,
-      new_rate: validRate,
-      timestamp: new Date().toISOString()
-    });
   };
 
   // Filter items by selected period
@@ -583,7 +563,7 @@ export default function PayrollPage() {
 
         <div className="text-xs text-zinc-400 flex items-center gap-2 bg-zinc-900/50 px-4 py-2 rounded-xl border border-white/5">
           <Percent className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Commission rates are customized individually per mechanic.</span>
+          <span>Commission rates are determined by each assigned mechanic (configured in User Management).</span>
         </div>
       </div>
 
@@ -624,67 +604,16 @@ export default function PayrollPage() {
                       </div>
                     </div>
 
-                    {/* Per-Mechanic Commission Rate Setter */}
-                    <div className="flex flex-wrap items-center gap-3 bg-zinc-950/80 p-2.5 px-4 rounded-2xl border border-white/5">
-                      <div className="flex items-center gap-1.5 text-xs">
-                        <Percent className="w-3.5 h-3.5 text-cyan-400" />
-                        <span className="text-zinc-400 font-medium">Assigned Rate:</span>
-                        <span className="font-mono font-bold text-cyan-300 text-sm">{currentRate}%</span>
-                      </div>
-
-                      {/* Quick Rate Buttons */}
-                      <div className="flex items-center gap-1.5">
-                        {[30, 35, 40, 45, 50].map((rate) => (
-                          <button
-                            key={rate}
-                            onClick={() => handleUpdateMechanicRate(mechanic.name, rate)}
-                            className={clsx(
-                              "px-2 py-0.5 rounded text-[11px] font-mono font-bold transition-all",
-                              currentRate === rate
-                                ? "bg-cyan-500 text-black shadow-sm"
-                                : "bg-zinc-800 text-zinc-400 hover:text-white"
-                            )}
-                            title={`Set ${mechanic.name}'s rate to ${rate}%`}
-                          >
-                            {rate}%
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Custom Percentage Input */}
-                      <div className="flex items-center gap-1 pl-2 border-l border-white/10">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="Custom"
-                          value={customRateInput[mechanic.name] ?? ""}
-                          onChange={(e) =>
-                            setCustomRateInput({ ...customRateInput, [mechanic.name]: e.target.value })
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              const val = parseFloat(customRateInput[mechanic.name]);
-                              if (!isNaN(val)) {
-                                handleUpdateMechanicRate(mechanic.name, val);
-                                setCustomRateInput({ ...customRateInput, [mechanic.name]: "" });
-                              }
-                            }
-                          }}
-                          className="w-16 px-2 py-0.5 rounded bg-zinc-900 border border-white/10 text-[11px] font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-                        />
-                        <button
-                          onClick={() => {
-                            const val = parseFloat(customRateInput[mechanic.name]);
-                            if (!isNaN(val)) {
-                              handleUpdateMechanicRate(mechanic.name, val);
-                              setCustomRateInput({ ...customRateInput, [mechanic.name]: "" });
-                            }
-                          }}
-                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-cyan-400 font-semibold"
-                        >
-                          Set
-                        </button>
+                    {/* Assigned Mechanic Commission Rate (Read-Only, determined by assigned mechanic) */}
+                    <div className="flex items-center gap-2 bg-zinc-950/80 p-2.5 px-4 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono text-xs font-bold flex items-center gap-1.5">
+                          <Percent className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Commission Rate: {currentRate}%</span>
+                        </span>
+                        <span className="text-[11px] text-zinc-500 hidden sm:inline">
+                          (Determined by Mechanic Profile)
+                        </span>
                       </div>
                     </div>
 
