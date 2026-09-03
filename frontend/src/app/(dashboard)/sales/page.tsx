@@ -123,14 +123,31 @@ export default function SalesManagementPage() {
   }, []);
 
   const fetchTransactions = async () => {
+    let list: TransactionRecord[] = MOCK_TRANSACTIONS;
     try {
       const res = await apiClient.get<TransactionRecord[]>("/sales/transactions");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        setTransactions(res.data);
+        list = res.data;
       }
     } catch (e) {
       // Use fallback
     }
+
+    const storedLogs = localStorage.getItem("motoshop_sales_logs");
+    if (storedLogs) {
+      try {
+        const localList = JSON.parse(storedLogs);
+        if (Array.isArray(localList) && localList.length > 0) {
+          const existingIds = new Set(list.map((t) => t.id));
+          const combined = [...localList.filter((t: any) => !existingIds.has(t.id)), ...list];
+          setTransactions(combined);
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    setTransactions(list);
   };
 
   const handleVoidTransaction = async (txId: string) => {

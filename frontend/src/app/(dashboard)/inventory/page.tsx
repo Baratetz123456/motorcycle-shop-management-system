@@ -66,14 +66,31 @@ export default function ProductServiceRegistrationPage() {
   }, []);
 
   const fetchItems = async () => {
+    let list: CatalogItem[] = INITIAL_CATALOG;
     try {
       const res = await apiClient.get<CatalogItem[]>("/inventory");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        setItems(res.data);
+        list = res.data;
       }
     } catch (err) {
-      // Use local state fallback if backend API endpoint is loading
+      // Use local state fallback
     }
+
+    const storedInv = localStorage.getItem("motoshop_inventory_stock");
+    if (storedInv) {
+      try {
+        const invMap = JSON.parse(storedInv);
+        list = list.map((item) => {
+          if (invMap[item.id] !== undefined) {
+            return { ...item, current_stock: invMap[item.id] };
+          }
+          return item;
+        });
+      } catch (e) {
+        // ignore
+      }
+    }
+    setItems(list);
   };
 
   const handleOpenModal = (type: "PRODUCT" | "SERVICE" = "PRODUCT") => {

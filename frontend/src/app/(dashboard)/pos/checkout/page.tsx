@@ -109,7 +109,43 @@ function POSCheckoutContent() {
       const generatedInvoice = result?.invoice_no || `INV-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       setInvoiceNo(generatedInvoice);
 
-      // Mark payment completed on backend & local storage
+      // 1. Record completed transaction in sales logs for /sales, /dashboard & /reports
+      const newTxLog = {
+        id: result?.id || `tx-${Date.now()}`,
+        invoice_no: generatedInvoice,
+        created_at: new Date().toISOString(),
+        customer_name: customerName,
+        motorcycle_name: motorcycleName,
+        cashier_name: cashierEmail,
+        mechanic_name: mechanicName,
+        subtotal: subtotal,
+        discount_percentage: discountPercent,
+        discount_amount: discountAmount,
+        total: netTotalDue,
+        amount_paid: netTotalDue,
+        cash_received: cashReceivedVal,
+        cash_change: cashChange,
+        payment_method: paymentMethod,
+        status: "COMPLETED",
+        items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price }))
+      };
+      const storedSales = localStorage.getItem("motoshop_sales_logs");
+      const salesList = storedSales ? JSON.parse(storedSales) : [];
+      salesList.unshift(newTxLog);
+      localStorage.setItem("motoshop_sales_logs", JSON.stringify(salesList));
+
+      // 2. Automatically deduct product stock in inventory
+      const storedInv = localStorage.getItem("motoshop_inventory_stock");
+      const invMap = storedInv ? JSON.parse(storedInv) : {};
+      cart.forEach(item => {
+        if (item.id && !item.id.startsWith("labor-")) {
+          const curr = invMap[item.id] !== undefined ? invMap[item.id] : 30;
+          invMap[item.id] = Math.max(0, curr - item.qty);
+        }
+      });
+      localStorage.setItem("motoshop_inventory_stock", JSON.stringify(invMap));
+
+      // 3. Mark job completed & paid on Repairs Board & remove from active POS carts
       if (jobId) {
         try {
           await apiClient.patch(`/repairs/jobs/${jobId}/payment-status`);
@@ -117,6 +153,7 @@ function POSCheckoutContent() {
           // ignore network error
         }
         localStorage.setItem(`motoshop_job_paid_${jobId}`, "true");
+        localStorage.setItem(`motoshop_job_status_${jobId}`, "COMPLETED");
         localStorage.removeItem(`motoshop_cart_${jobId}`);
       }
 

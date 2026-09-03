@@ -110,12 +110,19 @@ class JobOrderCreate(BaseModel):
 class JobOrderStatusUpdate(BaseModel):
     status: JobStatus
 
+class JobOrderUpdate(BaseModel):
+    status: Optional[JobStatus] = None
+    mechanic_id: Optional[UUID] = None
+    mechanic_notes: Optional[str] = None
+    labor_charge: Optional[float] = None
+
 class JobOrderResponse(BaseModel):
     id: UUID
     jo_number: str
     customer_id: Optional[UUID] = None
     motorcycle_id: str
     mechanic_id: UUID
+    mechanic_notes: Optional[str] = None
     labor_charge: float
     parts_charge: float
     status: JobStatus

@@ -409,3 +409,105 @@ async def update_job_status(
     await session.refresh(db_job)
     
     return db_job
+
+@app.patch("/jobs/{job_id}/payment-status", response_model=schemas.JobOrderResponse)
+@idempotent
+async def update_job_payment_status(
+    request: Request,
+    job_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "manager", "cashier", "mechanic"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
+    result = await session.execute(stmt)
+    db_job = result.scalar_one_or_none()
+    
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job Order not found")
+        
+    db_job.is_paid = True
+    db_job.payment_status = "PAID"
+    db_job.status = models.JobStatus.COMPLETED
+
+    commission_rate = 0.40
+    commission_amount = float(db_job.labor_charge) * commission_rate
+    
+    db_commission = models.Commission(
+        job_order_id=db_job.id,
+        mechanic_id=db_job.mechanic_id,
+        labor_base=db_job.labor_charge,
+        rate_percentage=commission_rate * 100,
+        amount_earned=commission_amount
+    )
+    session.add(db_commission)
+
+    await session.commit()
+    await session.refresh(db_job)
+    return db_job
+
+@app.put("/jobs/{job_id}", response_model=schemas.JobOrderResponse)
+@idempotent
+async def update_job_details(
+    request: Request,
+    job_id: UUID,
+    job_update: schemas.JobOrderUpdate,
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
+    result = await session.execute(stmt)
+    db_job = result.scalar_one_or_none()
+    
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job Order not found")
+        
+    update_data = job_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if hasattr(db_job, field) and value is not None:
+            setattr(db_job, field, value)
+            
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="REPAIR_JOB_DETAILS_UPDATED",
+        resource=f"/api/v1/repairs/jobs/{job_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"job_id": str(job_id), "updated_fields": list(update_data.keys())},
+        ip_address=client_ip
+    )
+    
+    await session.commit()
+    await session.refresh(db_job)
+    return db_job
+
+@app.delete("/jobs/{job_id}")
+async def delete_job_order(
+    request: Request,
+    job_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.JobOrder).where(models.JobOrder.id == job_id)
+    result = await session.execute(stmt)
+    db_job = result.scalar_one_or_none()
+    
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job Order not found")
+        
+    jo_num = db_job.jo_number
+    await session.delete(db_job)
+    
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="REPAIR_JOB_REMOVED",
+        resource=f"/api/v1/repairs/jobs/{job_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"job_id": str(job_id), "jo_number": jo_num},
+        ip_address=client_ip
+    )
+    
+    await session.commit()
+    return {"message": "Job Order removed successfully", "job_id": str(job_id)}
