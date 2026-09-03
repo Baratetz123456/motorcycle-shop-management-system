@@ -102,8 +102,11 @@ class RepairLogEntry(BaseModel):
 
 class JobOrderCreate(BaseModel):
     customer_id: Optional[UUID] = None
+    customer_name: Optional[str] = None
     motorcycle_id: str
     mechanic_id: UUID
+    mechanic_name: Optional[str] = None
+    mechanic_notes: Optional[str] = None
     labor_charge: float
     parts_charge: float
 
@@ -113,15 +116,19 @@ class JobOrderStatusUpdate(BaseModel):
 class JobOrderUpdate(BaseModel):
     status: Optional[JobStatus] = None
     mechanic_id: Optional[UUID] = None
+    mechanic_name: Optional[str] = None
     mechanic_notes: Optional[str] = None
+    customer_name: Optional[str] = None
     labor_charge: Optional[float] = None
 
 class JobOrderResponse(BaseModel):
     id: UUID
     jo_number: str
     customer_id: Optional[UUID] = None
+    customer_name: Optional[str] = None
     motorcycle_id: str
     mechanic_id: UUID
+    mechanic_name: Optional[str] = None
     mechanic_notes: Optional[str] = None
     labor_charge: float
     parts_charge: float

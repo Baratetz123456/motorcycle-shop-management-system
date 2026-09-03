@@ -44,24 +44,61 @@ export default function AuditLogsPage() {
 
   const fetchAuditLogs = async (currentPage = page) => {
     setIsLoading(true);
+    let fetchedList: AuditLogItem[] = [];
     try {
-      const params: any = {
-        page: currentPage,
-        page_size: 15,
-      };
+      const params: any = { page: currentPage, page_size: 15 };
       if (search) params.search = search;
       if (roleFilter) params.user_role = roleFilter;
       if (actionFilter) params.action = actionFilter;
 
       const response = await apiClient.get("/audit-logs", { params });
-      setLogs(response.data.items || []);
-      setTotal(response.data.total || 0);
-      setTotalPages(response.data.total_pages || 1);
+      if (Array.isArray(response.data.items)) {
+        fetchedList = response.data.items;
+      }
     } catch (err) {
-      console.error("Failed to fetch audit logs:", err);
-    } finally {
-      setIsLoading(false);
+      // Use fallback
     }
+
+    const storedLogs = localStorage.getItem("motoshop_audit_logs");
+    if (storedLogs) {
+      try {
+        const localList: AuditLogItem[] = JSON.parse(storedLogs);
+        if (Array.isArray(localList) && localList.length > 0) {
+          const existingIds = new Set(fetchedList.map((l) => l.id));
+          const combined = [...localList.filter((l) => !existingIds.has(l.id)), ...fetchedList];
+
+          let filtered = combined;
+          if (search) {
+            const q = search.toLowerCase();
+            filtered = filtered.filter(
+              (l) =>
+                l.action.toLowerCase().includes(q) ||
+                l.resource.toLowerCase().includes(q) ||
+                (l.user_id && l.user_id.toLowerCase().includes(q))
+            );
+          }
+          if (roleFilter) {
+            filtered = filtered.filter((l) => l.user_role === roleFilter);
+          }
+          if (actionFilter) {
+            filtered = filtered.filter((l) => l.action === actionFilter);
+          }
+
+          setLogs(filtered);
+          setTotal(filtered.length);
+          setTotalPages(Math.max(1, Math.ceil(filtered.length / 15)));
+          setIsLoading(false);
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    setLogs(fetchedList);
+    setTotal(fetchedList.length);
+    setTotalPages(Math.max(1, Math.ceil(fetchedList.length / 15)));
+    setIsLoading(false);
   };
 
   useEffect(() => {

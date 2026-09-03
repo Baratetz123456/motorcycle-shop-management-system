@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { recordUserAuditLog } from "@/lib/audit";
 import { ROLE_LANDING_PAGES, UserRole } from "@/lib/permissions";
 import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2, UserCheck } from "lucide-react";
 
@@ -42,6 +43,8 @@ export default function LoginPage() {
       localStorage.setItem("user_role", userRole);
       localStorage.setItem("user_id", user_id);
       localStorage.setItem("user_email", email);
+
+      recordUserAuditLog("USER_LOGIN", "/login", { email: email, role: userRole });
 
       const landingPage = ROLE_LANDING_PAGES[userRole] || "/reports";
       setSuccess(`Authenticated as ${userRole.toUpperCase()}! Redirecting to ${landingPage}...`);

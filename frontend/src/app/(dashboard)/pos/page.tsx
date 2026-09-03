@@ -86,6 +86,27 @@ export default function POSPage() {
     fetchActiveRepairs();
   }, []);
 
+  // Auto-restore selected customer repair session on load/login
+  useEffect(() => {
+    const savedJobId = localStorage.getItem("motoshop_selected_job_id");
+    if (savedJobId && activeRepairs.length > 0 && !selectedRepair) {
+      const match = activeRepairs.find((r) => r.job_id === savedJobId);
+      if (match) {
+        selectActiveCustomerRepair(match);
+      }
+    }
+  }, [activeRepairs]);
+
+  // Keep localStorage cart items synced whenever cart changes
+  useEffect(() => {
+    if (selectedRepair && cart.length > 0) {
+      const existingKey = `motoshop_cart_${selectedRepair.job_id}`;
+      // Filter out base labor item before saving added products/services
+      const extraItems = cart.filter(i => !i.id.startsWith("labor-"));
+      localStorage.setItem(existingKey, JSON.stringify(extraItems));
+    }
+  }, [cart, selectedRepair]);
+
   const fetchCatalog = async () => {
     try {
       const res = await apiClient.get<CatalogItem[]>("/inventory");
@@ -112,6 +133,7 @@ export default function POSPage() {
   const selectActiveCustomerRepair = (repair: ActiveRepairCart) => {
     setSelectedRepair(repair);
     setWarningMessage(null);
+    localStorage.setItem("motoshop_selected_job_id", repair.job_id);
     clearCart();
 
     // 1. Add base labor charge to cart

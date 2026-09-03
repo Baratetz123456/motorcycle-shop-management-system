@@ -145,11 +145,11 @@ export default function RepairBoardPage() {
   }, [searchParams]);
 
   const fetchJobs = async () => {
+    let fetchedList: RepairJob[] = [];
     try {
       const res = await apiClient.get<any[]>("/repairs/jobs");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        // Map backend model to frontend RepairJob
-        const mapped = res.data.map((j) => ({
+        fetchedList = res.data.map((j) => ({
           id: j.id,
           jo_number: j.jo_number,
           customer: j.customer_name || "Customer",
@@ -163,23 +163,44 @@ export default function RepairBoardPage() {
           is_paid: Boolean(j.is_paid),
           created_at: j.created_at || new Date().toISOString(),
         }));
-        setJobs(mapped);
       }
     } catch (e) {
       // Use fallback sync state
     }
 
     const storedJobs = localStorage.getItem("motoshop_jobs");
+    let mergedJobs = fetchedList.length > 0 ? fetchedList : INITIAL_JOBS;
+
     if (storedJobs) {
       try {
-        const parsed = JSON.parse(storedJobs);
+        const parsed: RepairJob[] = JSON.parse(storedJobs);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setJobs(parsed);
+          const localMap = new Map(parsed.map((p) => [p.id, p]));
+
+          mergedJobs = mergedJobs.map((j) => {
+            const local = localMap.get(j.id);
+            const savedNote = localStorage.getItem(`motoshop_job_notes_${j.id}`);
+            const effectiveNote = (savedNote !== null && savedNote !== undefined && savedNote !== "")
+              ? savedNote
+              : (local?.mechanic_notes || j.mechanic_notes || "");
+            return {
+              ...j,
+              mechanic_notes: effectiveNote,
+              mechanic: local?.mechanic || j.mechanic || "Mike Smith",
+            };
+          });
+
+          // Also include any local jobs created on board
+          const apiIds = new Set(mergedJobs.map((j) => j.id));
+          const extraLocal = parsed.filter((p) => !apiIds.has(p.id));
+          mergedJobs = [...mergedJobs, ...extraLocal];
         }
       } catch (e) {
         // ignore
       }
     }
+
+    setJobs(mergedJobs);
   };
 
   const fetchMotorcycleModels = async () => {
@@ -250,6 +271,9 @@ export default function RepairBoardPage() {
     } catch (e) {
       // ignore network error
     }
+
+    // Persist diagnosis note under job specific key
+    localStorage.setItem(`motoshop_job_notes_${editJobModal.id}`, editNotes);
 
     const updated = jobs.map((j) =>
       j.id === editJobModal.id

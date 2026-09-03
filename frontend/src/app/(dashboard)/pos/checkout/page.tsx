@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCheckoutSaga } from "@/hooks/useCheckoutSaga";
 import { usePosStore } from "@/lib/store/pos-store";
 import { apiClient } from "@/lib/api-client";
+import { recordUserAuditLog } from "@/lib/audit";
 import { 
   CreditCard, 
   Banknote, 
@@ -36,7 +37,7 @@ function POSCheckoutContent() {
   const motorcycleName = searchParams.get("model") || "Standard Motorcycle";
   const mechanicName = searchParams.get("mechanic") || "Mike Smith";
 
-  const { cart, getTotals, clearCart } = usePosStore();
+  const { cart, getTotals, clearCart, addToCart } = usePosStore();
   const { subtotal } = getTotals();
 
   // State management
@@ -51,7 +52,26 @@ function POSCheckoutContent() {
 
   useEffect(() => {
     resetSaga();
-  }, []);
+    if (cart.length === 0 && jobId) {
+      // 1. Add base labor fee
+      addToCart({
+        id: `labor-${jobId}`,
+        name: `Repair Labor Fee`,
+        price: 150.0,
+      });
+
+      // 2. Restore persistent cart items for this customer job (persisted across cashier logins)
+      const storedStr = localStorage.getItem(`motoshop_cart_${jobId}`);
+      if (storedStr) {
+        try {
+          const items = JSON.parse(storedStr);
+          items.forEach((item: any) => addToCart(item));
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  }, [jobId]);
 
   // Calculation formulas
   const discountAmount = Number((subtotal * (discountPercent / 100)).toFixed(2));
@@ -156,6 +176,17 @@ function POSCheckoutContent() {
         localStorage.setItem(`motoshop_job_status_${jobId}`, "COMPLETED");
         localStorage.removeItem(`motoshop_cart_${jobId}`);
       }
+
+      // 4. Record POS_CHECKOUT Audit Event in PostgreSQL DB / local audit logs
+      recordUserAuditLog("POS_CHECKOUT", "/pos/checkout", {
+        invoice_no: generatedInvoice,
+        amount_paid: netTotalDue,
+        discount_percentage: discountPercent,
+        cashier: cashierEmail,
+        mechanic: mechanicName,
+        customer: customerName,
+        payment_method: paymentMethod,
+      });
 
       setIsSuccess(true);
       clearCart();

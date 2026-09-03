@@ -132,7 +132,9 @@ async def checkout(
     session: AsyncSession = Depends(get_db)
 ):
     subtotal = sum(item.qty * item.price for item in checkout_data.items)
-    total = subtotal
+    disc_pct = checkout_data.discount_percentage or 0.0
+    disc_amt = checkout_data.discount_amount if checkout_data.discount_amount is not None else (subtotal * (disc_pct / 100.0))
+    total = max(0.0, subtotal - disc_amt)
     
     cashier_user_name = checkout_data.cashier_name or current_user.get("email") or "Cashier"
 
@@ -143,9 +145,13 @@ async def checkout(
         mechanic_name=checkout_data.mechanic_name,
         job_order_id=checkout_data.job_order_id,
         subtotal=subtotal,
+        discount_percentage=disc_pct,
+        discount_amount=disc_amt,
         total=total,
-        amount_paid=checkout_data.amount_paid,
-        status=models.TransactionStatus.PENDING
+        amount_paid=checkout_data.amount_paid or total,
+        cash_received=checkout_data.cash_received or checkout_data.amount_paid or total,
+        cash_change=checkout_data.cash_change or 0.0,
+        status=models.TransactionStatus.COMPLETED
     )
     session.add(db_tx)
     await session.flush()
@@ -161,7 +167,7 @@ async def checkout(
         
     db_payment = models.Payment(
         transaction_id=db_tx.id,
-        amount=checkout_data.amount_paid,
+        amount=checkout_data.amount_paid or total,
         method=checkout_data.payment_method
     )
     session.add(db_payment)
