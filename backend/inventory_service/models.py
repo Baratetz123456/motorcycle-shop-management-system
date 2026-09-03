@@ -9,6 +9,10 @@ from shared.database import Base
 from datetime import datetime
 import enum
 
+class ItemType(enum.Enum):
+    PRODUCT = "PRODUCT"
+    SERVICE = "SERVICE"
+
 class MovementType(enum.Enum):
     IN = "IN"
     OUT = "OUT"
@@ -22,6 +26,7 @@ class Item(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     sku = Column(String(100), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
+    item_type = Column(Enum(ItemType), default=ItemType.PRODUCT, nullable=False)
     category = Column(String(100))
     current_stock = Column(Integer, default=0, nullable=False)
     reorder_level = Column(Integer, default=5, nullable=False)

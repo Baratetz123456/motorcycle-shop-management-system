@@ -18,10 +18,13 @@ CREATE TABLE auth.users (
 );
 
 -- Inventory Schema
+CREATE TYPE inventory.item_type AS ENUM ('PRODUCT', 'SERVICE');
+
 CREATE TABLE inventory.items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sku VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
+    item_type inventory.item_type NOT NULL DEFAULT 'PRODUCT',
     category VARCHAR(100),
     current_stock INTEGER NOT NULL DEFAULT 0,
     reorder_level INTEGER NOT NULL DEFAULT 5,
@@ -56,6 +59,9 @@ CREATE TABLE sales.transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     invoice_no VARCHAR(100) UNIQUE NOT NULL,
     customer_id UUID,
+    cashier_name VARCHAR(255),
+    mechanic_name VARCHAR(255),
+    job_order_id UUID,
     subtotal NUMERIC(10, 2) NOT NULL DEFAULT 0,
     total NUMERIC(10, 2) NOT NULL DEFAULT 0,
     amount_paid NUMERIC(10, 2) NOT NULL DEFAULT 0,
@@ -90,6 +96,33 @@ CREATE TABLE sales.outbox_events (
 -- Repairs Schema
 CREATE TYPE repairs.job_status AS ENUM ('PENDING', 'ONGOING', 'COMPLETED', 'RELEASED');
 
+CREATE TABLE repairs.motorcycle_models (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    brand VARCHAR(100) NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    year INTEGER NOT NULL,
+    category VARCHAR(50) DEFAULT 'General',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE repairs.motorcycles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    plate_number VARCHAR(50) UNIQUE NOT NULL,
+    brand VARCHAR(100) NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    year INTEGER,
+    color VARCHAR(50),
+    engine_number VARCHAR(100),
+    chassis_number VARCHAR(100),
+    customer_name VARCHAR(255) NOT NULL,
+    customer_contact VARCHAR(50),
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_motorcycles_customer_name ON repairs.motorcycles(customer_name);
+
 CREATE TABLE repairs.job_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     jo_number VARCHAR(100) UNIQUE NOT NULL,
@@ -98,7 +131,21 @@ CREATE TABLE repairs.job_orders (
     mechanic_id UUID REFERENCES auth.users(id),
     labor_charge NUMERIC(10, 2) NOT NULL DEFAULT 0,
     parts_charge NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+    payment_status VARCHAR(50) NOT NULL DEFAULT 'UNPAID',
     status repairs.job_status NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE repairs.repair_cart_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_order_id UUID REFERENCES repairs.job_orders(id) ON DELETE CASCADE,
+    item_id UUID,
+    item_name VARCHAR(255) NOT NULL,
+    item_type VARCHAR(50) NOT NULL DEFAULT 'PRODUCT',
+    qty INTEGER NOT NULL DEFAULT 1,
+    unit_price NUMERIC(10, 2) NOT NULL,
+    total_price NUMERIC(10, 2) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

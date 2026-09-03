@@ -70,6 +70,15 @@ app = FastAPI(title="Sales Service", lifespan=lifespan)
 def generate_invoice_no():
     return f"INV-{uuid.uuid4().hex[:8].upper()}"
 
+@app.get("/transactions", response_model=List[schemas.TransactionResponse])
+async def get_transactions(
+    current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.Transaction).order_by(models.Transaction.created_at.desc())
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
 @app.get("/transactions/{transaction_id}", response_model=schemas.TransactionResponse)
 async def get_transaction(
     transaction_id: UUID,
@@ -83,6 +92,37 @@ async def get_transaction(
         raise HTTPException(status_code=404, detail="Transaction not found")
     return db_tx
 
+@app.post("/transactions/{transaction_id}/void", response_model=schemas.TransactionResponse)
+@idempotent
+async def void_transaction(
+    request: Request,
+    transaction_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "manager"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.Transaction).where(models.Transaction.id == transaction_id)
+    result = await session.execute(stmt)
+    db_tx = result.scalar_one_or_none()
+    if not db_tx:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    db_tx.status = models.TransactionStatus.VOIDED
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="TRANSACTION_VOIDED",
+        resource=f"/api/v1/sales/transactions/{transaction_id}/void",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"invoice_no": db_tx.invoice_no, "transaction_id": str(transaction_id)},
+        ip_address=client_ip
+    )
+
+    await session.commit()
+    await session.refresh(db_tx)
+    return db_tx
+
 @app.post("/checkout", response_model=schemas.TransactionResponse, status_code=202)
 @idempotent
 async def checkout(
@@ -94,9 +134,14 @@ async def checkout(
     subtotal = sum(item.qty * item.price for item in checkout_data.items)
     total = subtotal
     
+    cashier_user_name = checkout_data.cashier_name or current_user.get("email") or "Cashier"
+
     db_tx = models.Transaction(
         invoice_no=generate_invoice_no(),
         customer_id=checkout_data.customer_id,
+        cashier_name=cashier_user_name,
+        mechanic_name=checkout_data.mechanic_name,
+        job_order_id=checkout_data.job_order_id,
         subtotal=subtotal,
         total=total,
         amount_paid=checkout_data.amount_paid,

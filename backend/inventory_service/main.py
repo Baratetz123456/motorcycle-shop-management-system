@@ -94,10 +94,14 @@ app = FastAPI(title="Inventory Service", lifespan=lifespan)
 
 @app.get("/items", response_model=List[schemas.ItemResponse])
 async def get_items(
+    item_type: Optional[str] = None,
     current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
-    result = await session.execute(select(models.Item))
+    query = select(models.Item)
+    if item_type:
+        query = query.where(models.Item.item_type == item_type)
+    result = await session.execute(query)
     return result.scalars().all()
 
 @app.post("/items", response_model=schemas.ItemResponse)
@@ -105,7 +109,7 @@ async def get_items(
 async def create_item(
     request: Request,
     item: schemas.ItemCreate,
-    current_user: dict = Depends(require_roles(["admin"])),
+    current_user: dict = Depends(require_roles(["admin", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
     db_item = models.Item(**item.model_dump())
@@ -118,7 +122,42 @@ async def create_item(
         resource="/api/v1/inventory/items",
         user_id=current_user.get("user_id"),
         user_role=current_user.get("role"),
-        details={"name": item.name, "sku": item.sku, "initial_stock": item.current_stock},
+        details={"name": item.name, "sku": item.sku, "item_type": str(item.item_type), "initial_stock": item.current_stock},
+        ip_address=client_ip
+    )
+    
+    await session.commit()
+    await session.refresh(db_item)
+    return db_item
+
+@app.put("/items/{item_id}", response_model=schemas.ItemResponse)
+@idempotent
+async def update_item(
+    request: Request,
+    item_id: UUID,
+    item_update: schemas.ItemUpdate,
+    current_user: dict = Depends(require_roles(["admin", "manager"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.Item).where(models.Item.id == item_id)
+    result = await session.execute(stmt)
+    db_item = result.scalar_one_or_none()
+    
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+        
+    update_data = item_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_item, field, value)
+        
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="ITEM_UPDATED",
+        resource=f"/api/v1/inventory/items/{item_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"item_id": str(item_id), "updated_fields": list(update_data.keys())},
         ip_address=client_ip
     )
     

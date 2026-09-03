@@ -11,6 +11,9 @@ class TransactionItemCreate(BaseModel):
 
 class CheckoutRequest(BaseModel):
     customer_id: Optional[UUID] = None
+    cashier_name: Optional[str] = None
+    mechanic_name: Optional[str] = None
+    job_order_id: Optional[UUID] = None
     items: List[TransactionItemCreate]
     amount_paid: float
     payment_method: str
@@ -18,7 +21,14 @@ class CheckoutRequest(BaseModel):
 class TransactionResponse(BaseModel):
     id: UUID
     invoice_no: str
+    customer_id: Optional[UUID] = None
+    cashier_name: Optional[str] = None
+    mechanic_name: Optional[str] = None
+    job_order_id: Optional[UUID] = None
     status: TransactionStatus
+    subtotal: Optional[float] = 0.0
     total: float
+    amount_paid: Optional[float] = 0.0
+    created_at: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)

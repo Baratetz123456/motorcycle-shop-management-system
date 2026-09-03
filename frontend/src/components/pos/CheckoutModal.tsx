@@ -6,7 +6,17 @@ import { usePosStore } from "@/lib/store/pos-store";
 import { CreditCard, Banknote, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import clsx from "clsx";
 
-export function CheckoutModal({ disabled }: { disabled: boolean }) {
+export function CheckoutModal({ 
+  disabled,
+  cashierName,
+  mechanicName,
+  customerName
+}: { 
+  disabled: boolean;
+  cashierName?: string;
+  mechanicName?: string;
+  customerName?: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   
@@ -42,6 +52,8 @@ export function CheckoutModal({ disabled }: { disabled: boolean }) {
   const handleCheckout = async () => {
     try {
       await initiateCheckout({
+        cashier_name: cashierName || localStorage.getItem("user_email") || "Cashier Sarah Connor",
+        mechanic_name: mechanicName || "Mike Smith",
         items: cart.map(item => ({
           item_id: item.id, // In real app, this should be valid UUID
           qty: item.qty,
@@ -106,9 +118,20 @@ export function CheckoutModal({ disabled }: { disabled: boolean }) {
                         <CheckCircle2 className="w-8 h-8 text-green-500" />
                       </div>
                       <h4 className="text-lg font-semibold text-white mb-2">Payment Successful!</h4>
-                      <p className="text-zinc-400 text-sm text-center mb-6">
-                        Invoice: <span className="font-mono text-zinc-300">{transactionData?.invoice_no}</span>
-                      </p>
+                      <div className="bg-zinc-950/80 p-3 rounded-xl border border-white/10 text-xs w-full mb-4 space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Invoice No:</span>
+                          <span className="font-mono text-cyan-400 font-bold">{transactionData?.invoice_no}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Cashier:</span>
+                          <span className="text-emerald-400 font-semibold">{cashierName || "Cashier Sarah Connor"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Mechanic:</span>
+                          <span className="text-purple-400 font-semibold">{mechanicName || "Mike Smith"}</span>
+                        </div>
+                      </div>
                       <button 
                         onClick={() => setIsOpen(false)}
                         className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-medium transition-colors"

@@ -16,10 +16,13 @@ export const ROLE_LANDING_PAGES: Record<UserRole, string> = {
 };
 
 export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
-  "/pos": ["admin", "cashier"],
-  "/inventory": ["admin"],
-  "/repairs/board": ["admin", "mechanic"],
-  "/repair-board": ["admin", "mechanic"],
+  "/pos": ["admin", "cashier", "manager"],
+  "/sales": ["admin", "manager", "cashier"],
+  "/inventory": ["admin", "manager"],
+  "/motorcycles": ["admin", "manager", "mechanic"],
+  "/repairs/board": ["admin", "manager", "mechanic"],
+  "/repairs/history": ["admin", "manager", "mechanic"],
+  "/repair-board": ["admin", "manager", "mechanic"],
   "/reports": ["admin", "cashier", "manager"],
   "/dashboard": ["admin", "cashier", "manager"],
   "/audit-logs": ["admin"],
@@ -27,7 +30,7 @@ export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/users/register": ["admin"],
 };
 
-export function isRouteAllowed(path: string, role: UserRole): bool {
+export function isRouteAllowed(path: string, role: UserRole): boolean {
   const matchedKey = Object.keys(ROUTE_PERMISSIONS).find(
     (key) => path === key || path.startsWith(`${key}/`)
   );

@@ -69,7 +69,7 @@ export default function AuditLogsPage() {
     setPage(1);
   }, [search, roleFilter, actionFilter]);
 
-  const handlePageChange = (newPage: int) => {
+  const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
       fetchAuditLogs(newPage);

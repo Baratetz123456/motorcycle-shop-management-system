@@ -18,7 +18,9 @@ import {
   Users,
   KeyRound,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Receipt,
+  History
 } from "lucide-react";
 
 interface NavItem {
@@ -30,8 +32,11 @@ interface NavItem {
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard & Reports", href: "/reports", icon: BarChart3 },
   { label: "POS Checkout", href: "/pos", icon: ShoppingBag },
-  { label: "Inventory", href: "/inventory", icon: Package },
+  { label: "Sales Management", href: "/sales", icon: Receipt },
+  { label: "Products & Services", href: "/inventory", icon: Package },
+  { label: "Motorcycle Profiles", href: "/motorcycles", icon: Bike },
   { label: "Repair Board", href: "/repairs/board", icon: Wrench },
+  { label: "Customer Repair History", href: "/repairs/history", icon: History },
   { label: "User Management", href: "/users", icon: Users },
   { label: "Audit Logs", href: "/audit-logs", icon: ShieldCheck },
 ];

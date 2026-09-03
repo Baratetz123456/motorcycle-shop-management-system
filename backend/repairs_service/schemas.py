@@ -4,6 +4,101 @@ from typing import Optional, List
 from .models import JobStatus
 from datetime import datetime
 
+class MotorcycleModelBase(BaseModel):
+    brand: str
+    model: str
+    year: int
+    category: Optional[str] = "General"
+
+class MotorcycleModelCreate(MotorcycleModelBase):
+    pass
+
+class MotorcycleModelResponse(MotorcycleModelBase):
+    id: UUID
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class RepairCartItemBase(BaseModel):
+    item_id: Optional[UUID] = None
+    item_name: str
+    item_type: str = "PRODUCT"
+    qty: int = 1
+    unit_price: float
+    total_price: float
+
+class RepairCartItemCreate(RepairCartItemBase):
+    pass
+
+class RepairCartItemResponse(RepairCartItemBase):
+    id: UUID
+    job_order_id: UUID
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ActiveCustomerRepairCartResponse(BaseModel):
+    job_id: UUID
+    jo_number: str
+    customer_name: str
+    motorcycle_name: str
+    status: JobStatus
+    labor_charge: float
+    parts_charge: float
+    total_amount: float
+    cart_items: List[RepairCartItemResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+class MotorcycleBase(BaseModel):
+    plate_number: str
+    brand: str
+    model: str
+    year: Optional[int] = None
+    color: Optional[str] = None
+    engine_number: Optional[str] = None
+    chassis_number: Optional[str] = None
+    customer_name: str
+    customer_contact: Optional[str] = None
+    notes: Optional[str] = None
+
+class MotorcycleCreate(MotorcycleBase):
+    pass
+
+class MotorcycleUpdate(BaseModel):
+    plate_number: Optional[str] = None
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    color: Optional[str] = None
+    engine_number: Optional[str] = None
+    chassis_number: Optional[str] = None
+    customer_name: Optional[str] = None
+    customer_contact: Optional[str] = None
+    notes: Optional[str] = None
+
+class MotorcycleResponse(MotorcycleBase):
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class RepairLogEntry(BaseModel):
+    job_id: UUID
+    jo_number: str
+    motorcycle_id: Optional[str] = None
+    motorcycle_model: str
+    date_repaired: datetime
+    status: JobStatus
+    customer_name: str
+    mechanic_id: Optional[UUID] = None
+    mechanic_name: Optional[str] = None
+    labor_charge: float
+    parts_charge: float
+
+    model_config = ConfigDict(from_attributes=True)
+
 class JobOrderCreate(BaseModel):
     customer_id: Optional[UUID] = None
     motorcycle_id: str
