@@ -116,10 +116,13 @@ app.add_middleware(RequestLoggingMiddleware, service_name="inventory_service")
 @app.get("/items", response_model=List[schemas.ItemResponse])
 async def get_items(
     item_type: Optional[str] = None,
+    include_inactive: bool = False,
     current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
     query = select(models.Item)
+    if not include_inactive:
+        query = query.where(models.Item.is_active == True)
     if item_type:
         query = query.where(models.Item.item_type == item_type)
     result = await session.execute(query)
@@ -133,7 +136,9 @@ async def create_item(
     current_user: dict = Depends(require_roles(["admin", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
-    db_item = models.Item(**item.model_dump())
+    item_data = item.model_dump()
+    db_item = models.Item(**item_data)
+    db_item.is_active = True
     session.add(db_item)
     
     client_ip = get_client_ip(request)
@@ -143,7 +148,7 @@ async def create_item(
         resource="/api/v1/inventory/items",
         user_id=current_user.get("user_id"),
         user_role=current_user.get("role"),
-        details={"name": item.name, "sku": item.sku, "item_type": str(item.item_type), "initial_stock": item.current_stock},
+        details={"name": item.name, "sku": item.sku, "brand": item.brand, "item_type": str(item.item_type), "initial_stock": item.current_stock},
         ip_address=client_ip
     )
     
@@ -185,6 +190,37 @@ async def update_item(
     await session.commit()
     await session.refresh(db_item)
     return db_item
+
+@app.delete("/items/{item_id}")
+@idempotent
+async def delete_item(
+    request: Request,
+    item_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "manager"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.Item).where(models.Item.id == item_id)
+    result = await session.execute(stmt)
+    db_item = result.scalar_one_or_none()
+    
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+        
+    db_item.is_active = False
+    
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="ITEM_DELETED",
+        resource=f"/api/v1/inventory/items/{item_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"item_id": str(item_id), "sku": db_item.sku, "name": db_item.name},
+        ip_address=client_ip
+    )
+    
+    await session.commit()
+    return {"message": "Item deleted successfully", "id": str(item_id), "is_active": False}
 
 @app.post("/items/{item_id}/stock", response_model=schemas.ItemResponse)
 @idempotent

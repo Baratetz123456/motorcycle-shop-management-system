@@ -36,10 +36,12 @@ interface CatalogItem {
   id: string;
   sku: string;
   name: string;
+  brand?: string;
   item_type: "PRODUCT" | "SERVICE";
   category?: string;
   selling_price: number;
   current_stock: number;
+  is_active?: boolean;
 }
 
 interface ActiveRepairCart {
@@ -203,6 +205,14 @@ export default function POSPage() {
         });
       }
     } catch (e) {}
+
+    // 3. Filter out soft-deleted items to ensure sold items / completed repair logs remain safe
+    let deletedIdsSet = new Set<string>();
+    try {
+      const delArr = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
+      deletedIdsSet = new Set(delArr);
+    } catch (e) {}
+    list = list.filter((item) => item.is_active !== false && !deletedIdsSet.has(item.id) && !deletedIdsSet.has(item.sku));
 
     setCatalog(list);
   };
@@ -722,8 +732,15 @@ export default function POSPage() {
                           </div>
                         </div>
 
-                        {/* Title & Category */}
-                        <h3 className="font-bold text-zinc-100 text-sm mb-1 line-clamp-2">{product.name}</h3>
+                        {/* Title, Brand & Category */}
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h3 className="font-bold text-zinc-100 text-sm line-clamp-2">{product.name}</h3>
+                          {product.brand && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                              {product.brand}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[11px] text-zinc-500 mb-4">{product.category || (isService ? "Service Labor" : "Component")}</p>
                       </div>
 

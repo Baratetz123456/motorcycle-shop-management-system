@@ -26,12 +26,14 @@ CREATE TABLE inventory.items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sku VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
+    brand VARCHAR(100),
     item_type inventory.item_type NOT NULL DEFAULT 'PRODUCT',
     category VARCHAR(100),
     current_stock INTEGER NOT NULL DEFAULT 0,
     reorder_level INTEGER NOT NULL DEFAULT 5,
     cost_price NUMERIC(10, 2) NOT NULL,
-    selling_price NUMERIC(10, 2) NOT NULL
+    selling_price NUMERIC(10, 2) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TYPE inventory.movement_type AS ENUM ('IN', 'OUT', 'SALE', 'REPAIR');

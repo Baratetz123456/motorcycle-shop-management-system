@@ -205,6 +205,21 @@
       ]
     },
     {
+      "endpoint": "/api/v1/inventory/{id}",
+      "method": "DELETE",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/items/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["http://inventory_service:8000"]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/sales/transactions",
       "method": "GET",
       "output_encoding": "no-op",

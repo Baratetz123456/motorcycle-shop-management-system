@@ -15,7 +15,9 @@ import {
   DollarSign,
   Boxes,
   Activity,
-  RefreshCw
+  RefreshCw,
+  Edit,
+  Trash2
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -26,13 +28,29 @@ export interface CatalogItem {
   id: string;
   sku: string;
   name: string;
+  brand?: string;
   item_type: "PRODUCT" | "SERVICE";
   category: string;
   current_stock: number;
   reorder_level: number;
   cost_price: number;
   selling_price: number;
+  is_active?: boolean;
 }
+
+const COMMON_BRANDS = [
+  "Motul",
+  "Honda",
+  "Yamaha",
+  "Castrol",
+  "Brembo",
+  "Michelin",
+  "K&N",
+  "NGK",
+  "Bosch",
+  "Shell",
+  "Akrapovič"
+];
 
 export default function InventoryManagementPage() {
   const [items, setItems] = useState<CatalogItem[]>([]);
@@ -42,6 +60,39 @@ export default function InventoryManagementPage() {
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Role-based access control
+  const [userRole, setUserRole] = useState<string>("admin");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const role = localStorage.getItem("user_role") || "admin";
+      setUserRole(role.toLowerCase());
+    }
+  }, []);
+  const canManage = userRole === "admin" || userRole === "manager";
+
+  // Edit Modal State
+  const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
+  const [editFormData, setEditFormData] = useState<{
+    name: string;
+    brand: string;
+    category: string;
+    cost_price: number;
+    selling_price: number;
+    current_stock: number;
+    reorder_level: number;
+  }>({
+    name: "",
+    brand: "",
+    category: "",
+    cost_price: 0,
+    selling_price: 0,
+    current_stock: 0,
+    reorder_level: 5,
+  });
+
+  // Delete Confirmation Modal State
+  const [deletingItem, setDeletingItem] = useState<CatalogItem | null>(null);
 
   // Categories & Category Registration State
   const [customCategories, setCustomCategories] = useState<string[]>([
@@ -58,9 +109,9 @@ export default function InventoryManagementPage() {
   const [isRegisteringCategory, setIsRegisteringCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  // Auto-generate SKU Code or Service Code
+  // Auto-generate SKU Code or Service Code (Clean SRV- prefix for services)
   const generateAutoCode = (type: "PRODUCT" | "SERVICE") => {
-    const prefix = type === "PRODUCT" ? "SKU-PRD" : "SRV-MNT";
+    const prefix = type === "PRODUCT" ? "SKU-PRD" : "SRV";
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `${prefix}-${rand}`;
   };
@@ -69,6 +120,7 @@ export default function InventoryManagementPage() {
   const [formData, setFormData] = useState({
     sku: generateAutoCode("PRODUCT"),
     name: "",
+    brand: "",
     item_type: "PRODUCT" as "PRODUCT" | "SERVICE",
     category: "Fluids",
     cost_price: 0,
@@ -118,6 +170,15 @@ export default function InventoryManagementPage() {
         // ignore
       }
     }
+    // 3. Filter out soft-deleted items to ensure sold products/completed services aren't affected
+    let deletedIdsSet = new Set<string>();
+    try {
+      const delArr = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
+      deletedIdsSet = new Set(delArr);
+    } catch (e) {}
+
+    list = list.filter((item) => item.is_active !== false && !deletedIdsSet.has(item.id) && !deletedIdsSet.has(item.sku));
+
     setItems(list);
   };
 
@@ -131,6 +192,7 @@ export default function InventoryManagementPage() {
     setFormData({
       sku: generateAutoCode(type),
       name: "",
+      brand: "",
       item_type: type,
       category: type === "PRODUCT" ? "Fluids" : "Maintenance",
       cost_price: 0,
@@ -150,6 +212,7 @@ export default function InventoryManagementPage() {
       category: type === "PRODUCT" ? "Fluids" : "Maintenance",
       current_stock: type === "PRODUCT" ? 10 : 0,
       reorder_level: type === "PRODUCT" ? 5 : 0,
+      brand: type === "PRODUCT" ? prev.brand : "",
     }));
   };
 
@@ -163,8 +226,13 @@ export default function InventoryManagementPage() {
     setIsSubmitting(true);
     setErrorMsg("");
 
+    const payload = {
+      ...formData,
+      brand: formData.item_type === "PRODUCT" ? formData.brand : undefined,
+    };
+
     try {
-      const res = await apiClient.post<CatalogItem>("/inventory", formData);
+      const res = await apiClient.post<CatalogItem>("/inventory", payload);
       const createdItem = res.data;
       setItems((prev) => [createdItem, ...prev]);
 
@@ -185,6 +253,7 @@ export default function InventoryManagementPage() {
       recordUserAuditLog("INVENTORY_ITEM_CREATED", "/inventory", {
         sku: formData.sku,
         name: formData.name,
+        brand: formData.brand,
         item_type: formData.item_type,
         category: formData.category,
         selling_price: formData.selling_price,
@@ -192,14 +261,15 @@ export default function InventoryManagementPage() {
       });
       setIsModalOpen(false);
     } catch (err: any) {
-      // Fallback update for responsive demo experience
+      // Fallback update for responsive offline/demo experience
       const demoItem: CatalogItem = {
         id: `uuid-${Date.now()}`,
-        ...formData,
+        ...payload,
         cost_price: Number(formData.cost_price),
         selling_price: Number(formData.selling_price),
         current_stock: Number(formData.current_stock),
         reorder_level: Number(formData.reorder_level),
+        is_active: true,
       };
       setItems((prev) => [demoItem, ...prev]);
 
@@ -220,6 +290,7 @@ export default function InventoryManagementPage() {
       recordUserAuditLog("INVENTORY_ITEM_CREATED", "/inventory", {
         sku: formData.sku,
         name: formData.name,
+        brand: formData.brand,
         item_type: formData.item_type,
         category: formData.category,
         selling_price: formData.selling_price,
@@ -229,6 +300,128 @@ export default function InventoryManagementPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleOpenEditModal = (item: CatalogItem) => {
+    setEditingItem(item);
+    setEditFormData({
+      name: item.name,
+      brand: item.brand || "",
+      category: item.category,
+      cost_price: Number(item.cost_price),
+      selling_price: Number(item.selling_price),
+      current_stock: Number(item.current_stock),
+      reorder_level: Number(item.reorder_level),
+    });
+    setErrorMsg("");
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    setIsSubmitting(true);
+    setErrorMsg("");
+
+    const updatePayload = {
+      name: editFormData.name,
+      brand: editingItem.item_type === "PRODUCT" ? editFormData.brand : undefined,
+      category: editFormData.category,
+      cost_price: Number(editFormData.cost_price),
+      selling_price: Number(editFormData.selling_price),
+      current_stock: Number(editFormData.current_stock),
+      reorder_level: Number(editFormData.reorder_level),
+    };
+
+    try {
+      await apiClient.put(`/inventory/${editingItem.id}`, updatePayload);
+    } catch (err: any) {
+      console.warn("Backend update note, persisting locally", err);
+    }
+
+    // Update state
+    const updatedItems = items.map((it) =>
+      it.id === editingItem.id
+        ? {
+            ...it,
+            ...updatePayload,
+            brand: editingItem.item_type === "PRODUCT" ? editFormData.brand : undefined,
+          }
+        : it
+    );
+    setItems(updatedItems);
+
+    // Sync localStorage motoshop_custom_inventory
+    try {
+      const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+      if (storedCustom) {
+        const customList: CatalogItem[] = JSON.parse(storedCustom);
+        const updatedCustom = customList.map((ci) =>
+          ci.id === editingItem.id ? { ...ci, ...updatePayload } : ci
+        );
+        localStorage.setItem("motoshop_custom_inventory", JSON.stringify(updatedCustom));
+      }
+      // Sync motoshop_inventory_stock
+      if (editingItem.item_type === "PRODUCT") {
+        const storedInv = localStorage.getItem("motoshop_inventory_stock");
+        const invMap = storedInv ? JSON.parse(storedInv) : {};
+        invMap[editingItem.id] = Number(editFormData.current_stock);
+        localStorage.setItem("motoshop_inventory_stock", JSON.stringify(invMap));
+      }
+    } catch (e) {}
+
+    recordUserAuditLog("INVENTORY_ITEM_UPDATED", `/inventory/${editingItem.id}`, {
+      id: editingItem.id,
+      sku: editingItem.sku,
+      name: editFormData.name,
+      brand: editFormData.brand,
+      selling_price: editFormData.selling_price,
+      current_stock: editFormData.current_stock,
+    });
+
+    setEditingItem(null);
+    setIsSubmitting(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItem) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await apiClient.delete(`/inventory/${deletingItem.id}`);
+    } catch (err: any) {
+      console.warn("Backend delete note, continuing soft-delete locally", err);
+    }
+
+    // Remove from active state
+    setItems((prev) => prev.filter((it) => it.id !== deletingItem.id));
+
+    // Track soft-deleted IDs in localStorage
+    try {
+      const delArr: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
+      if (!delArr.includes(deletingItem.id)) delArr.push(deletingItem.id);
+      if (deletingItem.sku && !delArr.includes(deletingItem.sku)) delArr.push(deletingItem.sku);
+      localStorage.setItem("motoshop_deleted_inventory_ids", JSON.stringify(delArr));
+
+      // Clean from motoshop_custom_inventory
+      const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+      if (storedCustom) {
+        const customList: CatalogItem[] = JSON.parse(storedCustom);
+        const updated = customList.filter((ci) => ci.id !== deletingItem.id && ci.sku !== deletingItem.sku);
+        localStorage.setItem("motoshop_custom_inventory", JSON.stringify(updated));
+      }
+    } catch (e) {}
+
+    recordUserAuditLog("INVENTORY_ITEM_DELETED", `/inventory/${deletingItem.id}`, {
+      id: deletingItem.id,
+      sku: deletingItem.sku,
+      name: deletingItem.name,
+      item_type: deletingItem.item_type,
+    });
+
+    setDeletingItem(null);
+    setIsSubmitting(false);
   };
 
   const filteredItems = items.filter((item) => {
@@ -351,18 +544,20 @@ export default function InventoryManagementPage() {
               <tr>
                 <th className="px-6 py-4 font-semibold">SKU / Item Name</th>
                 <th className="px-6 py-4 font-semibold text-center">Type</th>
+                <th className="px-6 py-4 font-semibold">Brand</th>
                 <th className="px-6 py-4 font-semibold">Category</th>
                 <th className="px-6 py-4 font-semibold text-right">Cost Price</th>
                 <th className="px-6 py-4 font-semibold text-right">Selling Price</th>
                 <th className="px-6 py-4 font-semibold text-right">Est. Margin</th>
                 <th className="px-6 py-4 font-semibold text-center">Stock Level</th>
                 <th className="px-6 py-4 font-semibold text-center">POS Status</th>
+                <th className="px-6 py-4 font-semibold text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-zinc-500">
+                  <td colSpan={10} className="text-center py-12 text-zinc-500">
                     No matching products or services found.
                   </td>
                 </tr>
@@ -404,15 +599,26 @@ export default function InventoryManagementPage() {
                         </span>
                       </td>
 
+                      {/* Brand Column */}
+                      <td className="px-6 py-4">
+                        {item.brand ? (
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                            {item.brand}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-600 text-xs italic">—</span>
+                        )}
+                      </td>
+
                       <td className="px-6 py-4">
                         <span className="bg-zinc-800/80 px-2.5 py-1 rounded-md text-xs font-medium border border-white/5 text-zinc-300">
                           {item.category}
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 text-right font-mono text-zinc-400">${item.cost_price.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-right font-mono text-zinc-400">₱{Number(item.cost_price).toFixed(2)}</td>
 
-                      <td className="px-6 py-4 text-right font-mono font-bold text-white">${item.selling_price.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-right font-mono font-bold text-white">₱{Number(item.selling_price).toFixed(2)}</td>
 
                       <td className="px-6 py-4 text-right font-mono">
                         <span className="text-emerald-400 font-medium">
@@ -444,6 +650,30 @@ export default function InventoryManagementPage() {
                             <Check className="w-3.5 h-3.5" />
                             Available in POS
                           </span>
+                        )}
+                      </td>
+
+                      {/* Actions Column */}
+                      <td className="px-6 py-4 text-center">
+                        {canManage ? (
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleOpenEditModal(item)}
+                              className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-white/5 transition-all shadow-sm"
+                              title="Edit item details"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeletingItem(item)}
+                              className="p-2 rounded-xl bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-white/5 transition-all shadow-sm"
+                              title="Delete item"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-zinc-600 text-xs italic">View Only</span>
                         )}
                       </td>
                     </tr>
@@ -519,7 +749,7 @@ export default function InventoryManagementPage() {
                     )}
                   >
                     <Package className="w-4 h-4" />
-                    Product Part / Fluid
+                    Product
                   </button>
 
                   <button
@@ -533,12 +763,12 @@ export default function InventoryManagementPage() {
                     )}
                   >
                     <Wrench className="w-4 h-4" />
-                    Labor Service
+                    Service
                   </button>
                 </div>
               </div>
 
-              {/* SKU & Name with Auto-Generation */}
+              {/* SKU / Service Code & Name */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -560,7 +790,9 @@ export default function InventoryManagementPage() {
                       <RefreshCw className="w-4 h-4" />
                     </button>
                   </div>
-                  <span className="text-[10px] text-zinc-500 mt-1 block">Unique system-assigned code</span>
+                  <span className="text-[10px] text-zinc-500 mt-1 block">
+                    {formData.item_type === "PRODUCT" ? "Unique product inventory SKU" : "Unique auto-generated service code"}
+                  </span>
                 </div>
 
                 <div className="md:col-span-2">
@@ -577,6 +809,41 @@ export default function InventoryManagementPage() {
                   />
                 </div>
               </div>
+
+              {/* Product Brand Name Field (Only for Products) */}
+              {formData.item_type === "PRODUCT" && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-zinc-400">Brand Name</label>
+                    <span className="text-[10px] text-zinc-500">e.g. Motul, Honda, Yamaha</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter brand name..."
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500 mb-2"
+                  />
+                  {/* Quick select brand pills */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {COMMON_BRANDS.map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, brand: b })}
+                        className={clsx(
+                          "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors",
+                          formData.brand === b
+                            ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm"
+                            : "bg-zinc-950/60 text-zinc-400 border-white/5 hover:text-white hover:border-white/20"
+                        )}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Dynamic Category Dropdown with Register New Category */}
               <div>
@@ -656,7 +923,7 @@ export default function InventoryManagementPage() {
               {/* Pricing */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Cost Price ($)</label>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Cost Price (₱)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -668,7 +935,7 @@ export default function InventoryManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Selling / Charge Price ($) *</label>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Selling / Charge Price (₱) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -727,6 +994,242 @@ export default function InventoryManagementPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-zinc-950/50">
+              <div className="flex items-center gap-3">
+                <div className={clsx(
+                  "p-2.5 rounded-xl border",
+                  editingItem.item_type === "PRODUCT" 
+                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
+                    : "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                )}>
+                  {editingItem.item_type === "PRODUCT" ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    Edit {editingItem.item_type === "PRODUCT" ? "Product" : "Service"}
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-mono">{editingItem.sku}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
+              {errorMsg && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl">
+                  {errorMsg}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">
+                  {editingItem.item_type === "PRODUCT" ? "Product Title" : "Service Description"} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              {editingItem.item_type === "PRODUCT" && (
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Brand Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Motul, Honda..."
+                    value={editFormData.brand}
+                    onChange={(e) => setEditFormData({ ...editFormData, brand: e.target.value })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500 mb-2"
+                  />
+                  <div className="flex flex-wrap gap-1.5">
+                    {COMMON_BRANDS.map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setEditFormData({ ...editFormData, brand: b })}
+                        className={clsx(
+                          "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-colors",
+                          editFormData.brand === b
+                            ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm"
+                            : "bg-zinc-950/60 text-zinc-400 border-white/5 hover:text-white hover:border-white/20"
+                        )}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
+                <select
+                  value={editFormData.category}
+                  onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
+                >
+                  {allCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Cost Price (₱) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={editFormData.cost_price}
+                    onChange={(e) => setEditFormData({ ...editFormData, cost_price: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Selling Price (₱) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={editFormData.selling_price}
+                    onChange={(e) => setEditFormData({ ...editFormData, selling_price: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              {editingItem.item_type === "PRODUCT" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Current Stock Level</label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      value={editFormData.current_stock}
+                      onChange={(e) => setEditFormData({ ...editFormData, current_stock: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Reorder Alert Level</label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      value={editFormData.reorder_level}
+                      onChange={(e) => setEditFormData({ ...editFormData, reorder_level: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-600/30 disabled:opacity-50"
+                >
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Item Confirmation Modal */}
+      {deletingItem && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-400">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete {deletingItem.item_type === "PRODUCT" ? "Product" : "Service"}?</h3>
+                <p className="text-xs text-zinc-400">This item will be removed from active inventory and POS catalog.</p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-950 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-400">
+                <span>Code:</span>
+                <span className="font-mono font-bold text-cyan-300">{deletingItem.sku}</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Name:</span>
+                <span className="font-bold text-white">{deletingItem.name}</span>
+              </div>
+              {deletingItem.brand && (
+                <div className="flex justify-between text-zinc-400">
+                  <span>Brand:</span>
+                  <span className="font-bold text-cyan-400">{deletingItem.brand}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-zinc-400">
+                <span>Selling Price:</span>
+                <span className="font-mono font-bold text-emerald-400">₱{Number(deletingItem.selling_price).toFixed(2)}</span>
+              </div>
+              {deletingItem.item_type === "PRODUCT" && (
+                <div className="flex justify-between text-zinc-400">
+                  <span>Current Stock:</span>
+                  <span className="font-bold text-white">{deletingItem.current_stock} units</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-[11px] text-zinc-500">
+              Note: Historical sales transactions, invoices, and completed customer repair records retain their snapshots and remain completely unaffected.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingItem(null)}
+                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isSubmitting}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shadow-lg shadow-red-600/30 flex items-center gap-2 disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{isSubmitting ? "Deleting..." : "Confirm Delete"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

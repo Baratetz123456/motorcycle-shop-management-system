@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sqlalchemy import Column, String, Integer, Numeric, DateTime, ForeignKey, Enum, text
+from sqlalchemy import Column, String, Integer, Numeric, DateTime, ForeignKey, Enum, text, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from shared.database import Base
@@ -26,12 +26,14 @@ class Item(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     sku = Column(String(100), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
+    brand = Column(String(100), nullable=True)
     item_type = Column(Enum(ItemType), default=ItemType.PRODUCT, nullable=False)
     category = Column(String(100))
     current_stock = Column(Integer, default=0, nullable=False)
     reorder_level = Column(Integer, default=5, nullable=False)
     cost_price = Column(Numeric(10, 2), nullable=False)
     selling_price = Column(Numeric(10, 2), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
 
 class StockMovement(Base):
     __tablename__ = "stock_movements"
