@@ -189,6 +189,30 @@ function POSCheckoutContent() {
         localStorage.setItem(`motoshop_job_paid_${jobId}`, "true");
         localStorage.setItem(`motoshop_job_status_${jobId}`, "COMPLETED");
         localStorage.removeItem(`motoshop_cart_${jobId}`);
+
+        // Synchronize motoshop_jobs and motoshop_active_repairs in localStorage
+        try {
+          const storedJobsStr = localStorage.getItem("motoshop_jobs");
+          if (storedJobsStr) {
+            const parsed = JSON.parse(storedJobsStr);
+            if (Array.isArray(parsed)) {
+              const updatedJobs = parsed.map((j: any) =>
+                j.id === jobId || j.jo_number === jobId ? { ...j, is_paid: true } : j
+              );
+              localStorage.setItem("motoshop_jobs", JSON.stringify(updatedJobs));
+            }
+          }
+          const storedActiveStr = localStorage.getItem("motoshop_active_repairs");
+          if (storedActiveStr) {
+            const parsedActive = JSON.parse(storedActiveStr);
+            if (Array.isArray(parsedActive)) {
+              const updatedActive = parsedActive.filter(
+                (r: any) => r.job_id !== jobId && r.jo_number !== jobId
+              );
+              localStorage.setItem("motoshop_active_repairs", JSON.stringify(updatedActive));
+            }
+          }
+        } catch (e) {}
       }
 
       // 4. Record POS_CHECKOUT Audit Event in PostgreSQL DB / local audit logs

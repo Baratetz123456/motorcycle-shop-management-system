@@ -38,3 +38,22 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
 
 6. **Style**:
    - Write clean, self-documenting code. Never leave placeholder comments like `"TODO: implement this"`. Provide complete, functional implementations.
+
+7. **Repair Board & POS Checkout Lifecycle Parity**:
+   - **Payment vs Completion Separation**: Transitioning a repair job to `COMPLETED` signifies mechanic labor completion, **never payment**. Never set `is_paid = true` upon status drops or transitions to `COMPLETED`. Payment is exclusively mutated by checkout execution.
+   - **Active POS Queue Filtering**: Active repair jobs ready for POS checkout must include `COMPLETED` unreleased jobs (`status !== "RELEASED" && !is_paid`). Never exclude `COMPLETED` jobs from POS active cart queries, as completed jobs are the primary trigger for checkout settlement.
+   - **Release & Deletion Guards**: A job order cannot be set to `RELEASED` unless `is_paid === true`. Once paid, a job order cannot be deleted by any user because it is permanently linked to sales logs, invoices, and inventory deductions.
+   - **Cross-Tab & Window Live Synchronization**: Interdependent pages (such as Repair Board, POS Checkout, and Inventory) must attach window `focus` and `storage` event listeners to re-fetch and synchronize live state across browser tabs.
+
+8. **POS Customer Selection Guard & Cart Access Protection**:
+   - Cashiers must **never be allowed to view or mutate an order cart without an active customer/job order linked**.
+   - If `!selectedCustomer` / `!selectedRepair`:
+     - Cart view triggers must be disabled, styled with a lock indicator, and explain the requirement via alert/tooltip.
+     - Enforce reactive guards that redirect unauthorized cart view states back to the catalog or customer selection screen.
+     - Floating or sticky mobile cart action bars must remain hidden.
+
+9. **Destructive Cart Clearing Safeguard**:
+   - Clearing a cart wipes item selections and pricing calculations. **Never execute cart clearing immediately on button click**.
+   - Always prompt the user with an explicit confirmation modal displaying the target customer, item count, and order total before wiping.
+   - When confirmed, synchronize removal across both reactive in-memory stores (`usePosStore`) and persisted storage caches (`motoshop_cart_${job_id}`).
+

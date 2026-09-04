@@ -113,6 +113,16 @@ export default function RepairBoardPage() {
       if (resumeModel) setNewMotorcycleModel(resumeModel);
       setIsCreateModalOpen(true);
     }
+
+    const handleSync = () => {
+      fetchJobs();
+    };
+    window.addEventListener("focus", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("focus", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
   }, [searchParams]);
 
   const fetchJobs = async () => {
@@ -130,20 +140,29 @@ export default function RepairBoardPage() {
         fetchSuccess = true;
         fetchedList = res.data
           .filter((j) => !deletedSet.has(j.id) && !deletedSet.has(j.jo_number))
-          .map((j) => ({
-            id: j.id,
-            jo_number: j.jo_number,
-            customer: j.customer_name || "Walk-in Customer",
-            motorcycle: j.motorcycle_id || "Motorcycle",
-            mechanic: j.mechanic_name || "Shop Mechanic",
-            mechanic_id: j.mechanic_id || "mech-1",
-            mechanic_notes: j.mechanic_notes || "",
-            labor_charge: Number(j.labor_charge || 0),
-            parts_charge: Number(j.parts_charge || 0),
-            status: (j.status || "PENDING") as RepairStatus,
-            is_paid: Boolean(j.is_paid),
-            created_at: j.created_at || new Date().toISOString(),
-          }));
+          .map((j) => {
+            const isPaid = Boolean(
+              j.is_paid ||
+              (typeof window !== "undefined" && (
+                localStorage.getItem(`motoshop_job_paid_${j.id}`) === "true" ||
+                localStorage.getItem(`motoshop_job_paid_${j.jo_number}`) === "true"
+              ))
+            );
+            return {
+              id: j.id,
+              jo_number: j.jo_number,
+              customer: j.customer_name || "Walk-in Customer",
+              motorcycle: j.motorcycle_id || "Motorcycle",
+              mechanic: j.mechanic_name || "Shop Mechanic",
+              mechanic_id: j.mechanic_id || "mech-1",
+              mechanic_notes: j.mechanic_notes || "",
+              labor_charge: Number(j.labor_charge || 0),
+              parts_charge: Number(j.parts_charge || 0),
+              status: (j.status || "PENDING") as RepairStatus,
+              is_paid: isPaid,
+              created_at: j.created_at || new Date().toISOString(),
+            };
+          });
       }
     } catch (e) {
       console.error("Failed to fetch jobs from server", e);
@@ -225,9 +244,9 @@ export default function RepairBoardPage() {
     setJobs(updatedList);
     localStorage.setItem("motoshop_jobs", JSON.stringify(updatedList));
 
-    // Update active POS repair carts list
+    // Update active POS repair carts list (include COMPLETED unreleased jobs ready for cashier checkout)
     const activeCarts = updatedList
-      .filter((j) => (j.status === "PENDING" || j.status === "ONGOING") && !j.is_paid)
+      .filter((j) => j.status !== "RELEASED" && !j.is_paid)
       .map((j) => ({
         job_id: j.id,
         jo_number: j.jo_number,
@@ -371,7 +390,13 @@ export default function RepairBoardPage() {
         ? {
             ...j,
             status: newStatus,
-            is_paid: newStatus === "COMPLETED" ? true : j.is_paid
+            is_paid: Boolean(
+              j.is_paid ||
+              (typeof window !== "undefined" && (
+                localStorage.getItem(`motoshop_job_paid_${j.id}`) === "true" ||
+                localStorage.getItem(`motoshop_job_paid_${j.jo_number}`) === "true"
+              ))
+            )
           }
         : j
     );
@@ -437,7 +462,11 @@ export default function RepairBoardPage() {
     if (!deleteConfirmJob) return;
     const targetId = deleteConfirmJob.id;
     const isPaid = Boolean(
-      deleteConfirmJob.is_paid || localStorage.getItem(`motoshop_job_paid_${targetId}`) === "true"
+      deleteConfirmJob.is_paid ||
+      (typeof window !== "undefined" && (
+        localStorage.getItem(`motoshop_job_paid_${targetId}`) === "true" ||
+        localStorage.getItem(`motoshop_job_paid_${deleteConfirmJob.jo_number}`) === "true"
+      ))
     );
     const isReleased = deleteConfirmJob.status === "RELEASED";
 
@@ -714,7 +743,11 @@ export default function RepairBoardPage() {
                 ) : (
                   colJobs.map((job) => {
                     const isPaid = Boolean(
-                      job.is_paid || localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true"
+                      job.is_paid ||
+                      (typeof window !== "undefined" && (
+                        localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true" ||
+                        localStorage.getItem(`motoshop_job_paid_${job.jo_number}`) === "true"
+                      ))
                     );
                     const isBeingDragged = draggedJobId === job.id;
                     const canDelete = !isPaid;

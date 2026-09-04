@@ -25,7 +25,8 @@ import {
   RotateCcw,
   CreditCard,
   Banknote,
-  CheckCircle2
+  CheckCircle2,
+  Lock
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -82,7 +83,16 @@ export default function POSPage() {
   const [search, setSearch] = useState("");
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [frequencyMap, setFrequencyMap] = useState<Record<string, number>>({});
+
+  // Guard: User is strictly prohibited from viewing or remaining on cart view without an active customer repair selected
+  useEffect(() => {
+    if (!selectedRepair && activeView === "cart") {
+      setActiveView("catalog");
+      setWarningMessage("Order cart view is locked: Please select an active customer repair first.");
+    }
+  }, [selectedRepair, activeView]);
 
   // Calculate item availment frequencies from live sales transactions
   useEffect(() => {
@@ -133,8 +143,11 @@ export default function POSPage() {
     fetchCatalog();
     fetchActiveRepairs();
 
-    // Synchronize catalog and stock levels whenever tab regains focus or storage changes
-    const handleSync = () => fetchCatalog();
+    // Synchronize catalog, stock levels, and active repair jobs whenever tab regains focus or storage changes
+    const handleSync = () => {
+      fetchCatalog();
+      fetchActiveRepairs();
+    };
     window.addEventListener("focus", handleSync);
     window.addEventListener("storage", handleSync);
     return () => {
@@ -195,14 +208,82 @@ export default function POSPage() {
   };
 
   const fetchActiveRepairs = async () => {
+    let deletedSet = new Set<string>();
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
+      deletedSet = new Set(deletedIds);
+    } catch (e) {}
+
+    let apiRepairs: ActiveRepairCart[] = [];
     try {
       const res = await apiClient.get<ActiveRepairCart[]>("/repairs/jobs/active-carts");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        setActiveRepairs(res.data.filter((r) => (r.status === "PENDING" || r.status === "ONGOING") && !r.is_paid));
+        apiRepairs = res.data;
       }
     } catch (e) {
-      // Use fallback active repairs
+      // ignore network error
     }
+
+    // Merge with repairs from local storage (motoshop_active_repairs / motoshop_jobs)
+    let localRepairs: ActiveRepairCart[] = [];
+    try {
+      const storedActive = localStorage.getItem("motoshop_active_repairs");
+      if (storedActive) {
+        const parsed = JSON.parse(storedActive);
+        if (Array.isArray(parsed)) {
+          localRepairs = parsed;
+        }
+      }
+      const storedJobs = localStorage.getItem("motoshop_jobs");
+      if (storedJobs) {
+        const parsedJobs: any[] = JSON.parse(storedJobs);
+        if (Array.isArray(parsedJobs)) {
+          const fromJobs = parsedJobs.map((j) => ({
+            job_id: j.id,
+            jo_number: j.jo_number,
+            customer_name: j.customer || j.customer_name,
+            motorcycle_name: j.motorcycle || j.motorcycle_name || j.motorcycle_id,
+            status: j.status,
+            is_paid: Boolean(j.is_paid),
+            labor_charge: Number(j.labor_charge || 0),
+            parts_charge: Number(j.parts_charge || 0),
+            total_amount: Number(j.labor_charge || 0) + Number(j.parts_charge || 0),
+          }));
+          const existingJobIds = new Set(localRepairs.map((r) => r.job_id));
+          fromJobs.forEach((fj) => {
+            if (!existingJobIds.has(fj.job_id)) {
+              localRepairs.push(fj);
+            }
+          });
+        }
+      }
+    } catch (e) {}
+
+    // Combine local & server repairs (API takes precedence, local fallback)
+    const combinedMap = new Map<string, ActiveRepairCart>();
+    localRepairs.forEach((r) => combinedMap.set(r.job_id, r));
+    apiRepairs.forEach((r) => combinedMap.set(r.job_id, r));
+
+    const finalRepairs = Array.from(combinedMap.values()).filter((r) => {
+      if (deletedSet.has(r.job_id) || deletedSet.has(r.jo_number)) return false;
+      const isPaidLocal = typeof window !== "undefined" && (
+        localStorage.getItem(`motoshop_job_paid_${r.job_id}`) === "true" ||
+        localStorage.getItem(`motoshop_job_paid_${r.jo_number}`) === "true"
+      );
+      if (r.is_paid || isPaidLocal) return false;
+      // Exclude RELEASED repairs as they are already finalized
+      if (r.status === "RELEASED") return false;
+      return true;
+    });
+
+    setActiveRepairs(finalRepairs);
+
+    // If currently selected repair is no longer active (e.g. was paid or released or deleted), reset selection
+    setSelectedRepair((current) => {
+      if (!current) return null;
+      const stillActive = finalRepairs.find((r) => r.job_id === current.job_id);
+      return stillActive || null;
+    });
   };
 
   const selectActiveCustomerRepair = (repair: ActiveRepairCart, shouldResetCart = true) => {
@@ -336,17 +417,31 @@ export default function POSPage() {
             </button>
 
             <button
-              onClick={() => setActiveView("cart")}
+              onClick={() => {
+                if (!selectedRepair) {
+                  setWarningMessage("Cannot view order cart: Please select an active customer repair first!");
+                  return;
+                }
+                setActiveView("cart");
+              }}
+              disabled={!selectedRepair}
               className={clsx(
                 "flex-1 sm:flex-none px-4 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2 relative",
-                activeView === "cart"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
-                  : "text-zinc-400 hover:text-white"
+                !selectedRepair
+                  ? "opacity-50 cursor-not-allowed text-zinc-500 hover:text-zinc-500"
+                  : activeView === "cart"
+                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
+                    : "text-zinc-400 hover:text-white"
               )}
+              title={!selectedRepair ? "Please select an active customer repair to view or manage the order cart" : undefined}
             >
-              <ShoppingCart className="w-4 h-4" />
+              {!selectedRepair ? (
+                <Lock className="w-4 h-4 text-zinc-500" />
+              ) : (
+                <ShoppingCart className="w-4 h-4" />
+              )}
               <span>Current Order Cart</span>
-              {itemCount > 0 && (
+              {selectedRepair && itemCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-zinc-950 font-mono text-[10px] font-black shadow-sm">
                   {itemCount}
                 </span>
@@ -731,8 +826,8 @@ export default function POSPage() {
             </div>
           </section>
 
-          {/* Sticky Bottom Action Bar for Mobile Screens */}
-          {cart.length > 0 && (
+          {/* Sticky Bottom Action Bar for Mobile Screens (Only visible when customer is selected) */}
+          {selectedRepair && cart.length > 0 && (
             <div className="fixed bottom-0 inset-x-0 p-3 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/10 z-30 lg:hidden shadow-2xl">
               <button
                 onClick={() => setActiveView("cart")}
@@ -768,7 +863,7 @@ export default function POSPage() {
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => clearCart()}
+                onClick={() => setIsClearConfirmOpen(true)}
                 disabled={cart.length === 0}
                 className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-red-500/20 hover:text-red-400 text-zinc-400 text-xs font-bold transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -981,6 +1076,60 @@ export default function POSPage() {
           )}
 
         </main>
+      )}
+
+      {/* Confirmation Modal for Clearing Cart */}
+      {isClearConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-400">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Clear Current Order Cart?</h3>
+                <p className="text-xs text-zinc-400">This action will remove all items from the current cart.</p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-950 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-400">
+                <span>Active Customer:</span>
+                <span className="font-bold text-white">{selectedRepair?.customer_name || "N/A"}</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Items to Remove:</span>
+                <span className="font-bold text-white">{itemCount} items</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Cart Order Total:</span>
+                <span className="font-bold font-mono text-emerald-400">₱{total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsClearConfirmOpen(false)}
+                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  clearCart();
+                  if (selectedRepair) {
+                    localStorage.removeItem(`motoshop_cart_${selectedRepair.job_id}`);
+                  }
+                  setIsClearConfirmOpen(false);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shadow-lg shadow-red-600/30 flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Yes, Clear Cart</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Contextual Audit Drawer */}
