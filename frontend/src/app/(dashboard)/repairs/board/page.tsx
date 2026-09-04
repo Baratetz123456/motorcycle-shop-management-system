@@ -76,7 +76,7 @@ const INITIAL_JOBS: RepairJob[] = [
     mechanic: "Mike Smith",
     mechanic_id: "mech-1",
     mechanic_notes: "Engine oil change & front brake pad replacement.",
-    labor_charge: 150.0,
+    labor_charge: 0,
     parts_charge: 65.0,
     status: "ONGOING",
     is_paid: false,
@@ -90,7 +90,7 @@ const INITIAL_JOBS: RepairJob[] = [
     mechanic: "Mike Smith",
     mechanic_id: "mech-1",
     mechanic_notes: "CVT belt inspection and cleaning.",
-    labor_charge: 80.0,
+    labor_charge: 0,
     parts_charge: 0,
     status: "PENDING",
     is_paid: false,
@@ -104,7 +104,7 @@ const INITIAL_JOBS: RepairJob[] = [
     mechanic: "Alex Rivera",
     mechanic_id: "mech-2",
     mechanic_notes: "Front fork oil replacement and seal inspection.",
-    labor_charge: 120.0,
+    labor_charge: 0,
     parts_charge: 35.0,
     status: "COMPLETED",
     is_paid: true,
@@ -133,7 +133,6 @@ export default function RepairBoardPage() {
   // Edit Diagnosis & Reassignment form states
   const [editNotes, setEditNotes] = useState("");
   const [editMechanic, setEditMechanic] = useState("");
-  const [editLaborCharge, setEditLaborCharge] = useState<number>(0);
 
   // RBAC Role & Drag-and-Drop States
   const [userRole, setUserRole] = useState<string>("mechanic");
@@ -163,7 +162,7 @@ export default function RepairBoardPage() {
     fetchJobs();
     fetchMotorcycleModels();
 
-    // Check query params if coming from "Resume Repair / Put Inline"
+    // Check query params if coming from "Resume Repair"
     const resumeCustomer = searchParams.get("resume_customer");
     const resumeModel = searchParams.get("model");
     if (resumeCustomer) {
@@ -174,6 +173,12 @@ export default function RepairBoardPage() {
   }, [searchParams]);
 
   const fetchJobs = async () => {
+    let deletedSet = new Set<string>();
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
+      deletedSet = new Set(deletedIds);
+    } catch (e) {}
+
     let fetchedList: RepairJob[] = [];
     let fetchSuccess = false;
     try {
@@ -181,20 +186,22 @@ export default function RepairBoardPage() {
       if (Array.isArray(res.data)) {
         fetchSuccess = true;
         if (res.data.length > 0) {
-          fetchedList = res.data.map((j) => ({
-            id: j.id,
-            jo_number: j.jo_number,
-            customer: j.customer_name || "Customer",
-            motorcycle: j.motorcycle_id || "Motorcycle",
-            mechanic: j.mechanic_name || "Mike Smith",
-            mechanic_id: j.mechanic_id,
-            mechanic_notes: j.mechanic_notes || "",
-            labor_charge: Number(j.labor_charge || 100),
-            parts_charge: Number(j.parts_charge || 0),
-            status: (j.status || "PENDING") as RepairStatus,
-            is_paid: Boolean(j.is_paid),
-            created_at: j.created_at || new Date().toISOString(),
-          }));
+          fetchedList = res.data
+            .filter((j) => !deletedSet.has(j.id) && !deletedSet.has(j.jo_number))
+            .map((j) => ({
+              id: j.id,
+              jo_number: j.jo_number,
+              customer: j.customer_name || "Customer",
+              motorcycle: j.motorcycle_id || "Motorcycle",
+              mechanic: j.mechanic_name || "Mike Smith",
+              mechanic_id: j.mechanic_id,
+              mechanic_notes: j.mechanic_notes || "",
+              labor_charge: 0,
+              parts_charge: Number(j.parts_charge || 0),
+              status: (j.status || "PENDING") as RepairStatus,
+              is_paid: Boolean(j.is_paid),
+              created_at: j.created_at || new Date().toISOString(),
+            }));
         }
       }
     } catch (e) {
@@ -210,7 +217,9 @@ export default function RepairBoardPage() {
           const parsed: RepairJob[] = JSON.parse(storedJobs);
           if (Array.isArray(parsed)) {
             const fetchedIds = new Set(fetchedList.map((j) => j.id));
-            localOnly = parsed.filter((p) => String(p.id).startsWith("jo-") && !fetchedIds.has(p.id));
+            localOnly = parsed.filter(
+              (p) => String(p.id).startsWith("jo-") && !fetchedIds.has(p.id) && !deletedSet.has(p.id) && !deletedSet.has(p.jo_number)
+            );
           }
         } catch (e) {
           // ignore
@@ -223,17 +232,19 @@ export default function RepairBoardPage() {
     }
 
     const storedJobs = localStorage.getItem("motoshop_jobs");
-    let mergedJobs = INITIAL_JOBS;
+    let mergedJobs: RepairJob[] = [];
 
-    if (storedJobs) {
+    if (storedJobs !== null) {
       try {
         const parsed: RepairJob[] = JSON.parse(storedJobs);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          mergedJobs = parsed;
+        if (Array.isArray(parsed)) {
+          mergedJobs = parsed.filter((p) => !deletedSet.has(p.id) && !deletedSet.has(p.jo_number));
         }
       } catch (e) {
         // ignore
       }
+    } else {
+      mergedJobs = INITIAL_JOBS.filter((j) => !deletedSet.has(j.id));
     }
 
     setJobs(mergedJobs);
@@ -422,7 +433,6 @@ export default function RepairBoardPage() {
     setEditJobModal(job);
     setEditNotes(job.mechanic_notes || "");
     setEditMechanic(job.mechanic || "Mike Smith");
-    setEditLaborCharge(job.labor_charge);
   };
 
   // Save Diagnosis Notes & Mechanic Reassignment
@@ -435,7 +445,7 @@ export default function RepairBoardPage() {
       const res = await apiClient.put<any>(`/repairs/jobs/${editJobModal.id}`, {
         mechanic_notes: editNotes,
         mechanic_name: editMechanic,
-        labor_charge: editLaborCharge,
+        labor_charge: 0,
       });
       if (res.data?.id && res.data.id !== editJobModal.id) {
         finalJobId = res.data.id;
@@ -454,7 +464,7 @@ export default function RepairBoardPage() {
             id: finalJobId,
             mechanic_notes: editNotes,
             mechanic: editMechanic,
-            labor_charge: editLaborCharge,
+            labor_charge: 0,
           }
         : j
     );
@@ -466,14 +476,17 @@ export default function RepairBoardPage() {
   const handleConfirmRemoveJob = async () => {
     if (!deleteConfirmJob) return;
     const targetId = deleteConfirmJob.id;
+    const isPaid = Boolean(
+      deleteConfirmJob.is_paid || localStorage.getItem(`motoshop_job_paid_${targetId}`) === "true"
+    );
     const isReleased = deleteConfirmJob.status === "RELEASED";
 
-    // Business Rule: Released job orders can only be deleted by Admin
-    if (isReleased && userRole !== "admin") {
+    // Business Rule: Paid job orders cannot be deleted by anyone (synced with sales, invoice, and inventory)
+    if (isPaid) {
       setAlertNotification({
         type: "error",
         title: "Deletion Prohibited",
-        message: `Only users with the Admin role can delete released job orders (${deleteConfirmJob.jo_number}).`
+        message: `Cannot delete paid Job Order (${deleteConfirmJob.jo_number}) because it is already synchronized with sales management, invoice, and inventory.`
       });
       setDeleteConfirmJob(null);
       return;
@@ -482,24 +495,68 @@ export default function RepairBoardPage() {
     try {
       await apiClient.delete(`/repairs/jobs/${targetId}`);
     } catch (e: any) {
+      const status = e?.response?.status;
       const detailMsg = e?.response?.data?.detail;
-      if (detailMsg) {
+
+      // If forbidden or rejected (e.g. backend blocked paid deletion), notify user and abort
+      if (status === 403 || status === 400) {
         setAlertNotification({
           type: "error",
-          title: "Delete Failed",
-          message: detailMsg
+          title: "Deletion Prohibited",
+          message: detailMsg || "Cannot delete this job order."
         });
         setDeleteConfirmJob(null);
         return;
       }
+
+      // If 404 or other server error, proceed with local deletion so it doesn't get stuck
+      console.warn("Backend job deletion note:", status, detailMsg);
     }
 
     const updated = jobs.filter((j) => j.id !== targetId);
     syncJobsState(updated);
 
+    // Track deleted IDs so fetchJobs never resurrects them
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
+      if (!deletedIds.includes(targetId)) {
+        deletedIds.push(targetId);
+      }
+      if (deleteConfirmJob.jo_number && !deletedIds.includes(deleteConfirmJob.jo_number)) {
+        deletedIds.push(deleteConfirmJob.jo_number);
+      }
+      localStorage.setItem("motoshop_deleted_job_ids", JSON.stringify(deletedIds));
+    } catch (e) {}
+
     // Clear paid status & active repair lock for history queue
     localStorage.removeItem(`motoshop_job_paid_${targetId}`);
     localStorage.removeItem(`motoshop_cart_${targetId}`);
+    localStorage.removeItem(`motoshop_job_notes_${targetId}`);
+
+    // If it's a released job deleted by admin, also remove it from customer histories
+    if (isReleased) {
+      try {
+        const rawHistories = localStorage.getItem("motoshop_customer_histories");
+        if (rawHistories) {
+          const parsed = JSON.parse(rawHistories);
+          if (Array.isArray(parsed)) {
+            const updatedHistories = parsed.map((h: any) => {
+              const pastJobs = Array.isArray(h.past_jobs)
+                ? h.past_jobs.filter(
+                    (pj: any) => pj.job_id !== targetId && pj.jo_number !== deleteConfirmJob.jo_number
+                  )
+                : [];
+              return {
+                ...h,
+                total_repair_sessions: pastJobs.length,
+                past_jobs: pastJobs
+              };
+            });
+            localStorage.setItem("motoshop_customer_histories", JSON.stringify(updatedHistories));
+          }
+        }
+      } catch (e) {}
+    }
 
     setDeleteConfirmJob(null);
     setAlertNotification({
@@ -523,7 +580,7 @@ export default function RepairBoardPage() {
         motorcycle_id: newMotorcycleModel,
         mechanic_name: assignedMechanic,
         mechanic_notes: "Initial repair session created.",
-        labor_charge: 100.0,
+        labor_charge: 0.0,
         parts_charge: 0.0,
       });
 
@@ -536,7 +593,7 @@ export default function RepairBoardPage() {
           mechanic: res.data.mechanic_name || assignedMechanic,
           mechanic_id: res.data.mechanic_id,
           mechanic_notes: res.data.mechanic_notes || "Initial repair session created.",
-          labor_charge: Number(res.data.labor_charge || 100),
+          labor_charge: 0,
           parts_charge: Number(res.data.parts_charge || 0),
           status: (res.data.status || "PENDING") as RepairStatus,
           is_paid: Boolean(res.data.is_paid),
@@ -558,7 +615,7 @@ export default function RepairBoardPage() {
         motorcycle: newMotorcycleModel,
         mechanic: assignedMechanic,
         mechanic_notes: "Initial repair session created.",
-        labor_charge: 100.0,
+        labor_charge: 0,
         parts_charge: 0,
         status: "PENDING",
         is_paid: false,
@@ -700,8 +757,7 @@ export default function RepairBoardPage() {
                       job.is_paid || localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true"
                     );
                     const isBeingDragged = draggedJobId === job.id;
-                    const isReleased = job.status === "RELEASED";
-                    const canDelete = !isReleased || userRole === "admin";
+                    const canDelete = !isPaid;
 
                     return (
                       <div
@@ -759,14 +815,11 @@ export default function RepairBoardPage() {
                           </div>
                         )}
 
-                        {/* Assigned Mechanic & Labor Charge */}
+                        {/* Assigned Mechanic */}
                         <div className="flex justify-between items-center text-xs pt-2 border-t border-white/5 text-zinc-400">
                           <span className="flex items-center gap-1.5 font-semibold text-purple-300">
                             <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
                             {job.mechanic}
-                          </span>
-                          <span className="font-mono font-bold text-white text-sm">
-                            ₱{(job.labor_charge + job.parts_charge).toFixed(2)}
                           </span>
                         </div>
 
@@ -794,21 +847,17 @@ export default function RepairBoardPage() {
                                   setDeleteConfirmJob(job);
                                 }}
                                 className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-500/20 text-red-400 border border-white/10 transition-colors"
-                                title={
-                                  isReleased
-                                    ? "Admin: Delete Released Job Order"
-                                    : "Remove Active Customer / Cancel Job Order"
-                                }
+                                title="Remove / Cancel Job Order"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             ) : (
                               <div
-                                className="p-1.5 rounded-lg bg-zinc-900/60 text-zinc-500 border border-white/5 flex items-center gap-1 cursor-not-allowed select-none"
-                                title="Released job orders can only be deleted by Admin"
+                                className="p-1.5 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 cursor-not-allowed select-none"
+                                title="Paid job orders cannot be deleted as they are synced with sales, invoices, and inventory"
                               >
-                                <Lock className="w-3.5 h-3.5 text-zinc-500" />
-                                <span className="text-[9px] font-semibold text-zinc-500">Locked</span>
+                                <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-[10px] font-semibold text-emerald-400">Synced</span>
                               </div>
                             )}
                           </div>
@@ -954,18 +1003,6 @@ export default function RepairBoardPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Base Labor Charge (₱)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={editLaborCharge}
-                  onChange={(e) => setEditLaborCharge(Number(e.target.value))}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white font-mono font-bold text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
               </div>
 
               <div className="pt-4 border-t border-white/10 flex justify-end gap-3">

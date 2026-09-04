@@ -153,6 +153,7 @@ function POSCheckoutContent() {
       const newTxLog = {
         id: result?.id || `tx-${Date.now()}`,
         invoice_no: generatedInvoice,
+        job_order_id: jobId || undefined,
         created_at: new Date().toISOString(),
         customer_name: customerName,
         motorcycle_name: motorcycleName,

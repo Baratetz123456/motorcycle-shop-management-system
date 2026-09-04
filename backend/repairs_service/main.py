@@ -550,14 +550,25 @@ async def delete_job_order(
     if not db_job:
         raise HTTPException(status_code=404, detail="Job Order not found")
         
-    # Enforce role restriction: Released job orders can only be deleted by Admin
-    if db_job.status == models.JobStatus.RELEASED and current_user.get("role") != "admin":
+    # Enforce rule: Paid job orders cannot be deleted by anyone as they are already synchronized with sales, invoices, and inventory
+    if db_job.is_paid:
         raise HTTPException(
-            status_code=403,
-            detail="Only administrators can delete released job orders."
+            status_code=400,
+            detail=f"Cannot delete paid Job Order '{db_job.jo_number}' because it is already synchronized with sales management, invoice, and inventory."
         )
 
     jo_num = db_job.jo_number
+
+    # Explicitly remove child commission and cart item records to prevent foreign key constraint errors
+    await session.execute(
+        text("DELETE FROM repairs.commissions WHERE job_order_id = :jid"),
+        {"jid": db_job.id}
+    )
+    await session.execute(
+        text("DELETE FROM repairs.repair_cart_items WHERE job_order_id = :jid"),
+        {"jid": db_job.id}
+    )
+
     await session.delete(db_job)
     
     logger.warning(f"REPAIR JOB REMOVED | JO Number: {jo_num} | Job ID: {job_id}")

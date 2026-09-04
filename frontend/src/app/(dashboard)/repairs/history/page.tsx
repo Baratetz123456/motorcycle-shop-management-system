@@ -42,6 +42,8 @@ export interface CustomerHistoryRecord {
     mechanic_notes?: string;
     labor_charge: number;
     parts_charge: number;
+    total_billed?: number;
+    invoice_no?: string;
     items_used?: { name: string; qty: number; price: number }[];
   }[];
 }
@@ -449,7 +451,7 @@ export default function CustomerRepairHistoryPage() {
                               title="This customer is currently active inline for repair"
                             >
                               <Lock className="w-3.5 h-3.5" />
-                              Already Inline for Repair
+                              Active in Repair
                             </button>
                           ) : (
                             <button
@@ -458,7 +460,7 @@ export default function CustomerRepairHistoryPage() {
                               title="Put this returning customer inline for a new repair session"
                             >
                               <Play className="w-3.5 h-3.5" />
-                              Resume Repair / Put Inline
+                              Resume Repair
                             </button>
                           )}
                         </div>

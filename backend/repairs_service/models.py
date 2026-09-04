@@ -82,7 +82,7 @@ class Commission(Base):
     __table_args__ = {'schema': 'repairs'}
 
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    job_order_id = Column(UUID(as_uuid=True), ForeignKey("repairs.job_orders.id"))
+    job_order_id = Column(UUID(as_uuid=True), ForeignKey("repairs.job_orders.id", ondelete="CASCADE"))
     mechanic_id = Column(UUID(as_uuid=True))
     labor_base = Column(Numeric(10, 2), nullable=False)
     rate_percentage = Column(Numeric(5, 2), nullable=False)
