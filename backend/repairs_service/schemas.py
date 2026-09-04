@@ -151,3 +151,30 @@ class CommissionResponse(BaseModel):
     amount_earned: float
     
     model_config = ConfigDict(from_attributes=True)
+
+class CustomerHistoryItemUsed(BaseModel):
+    name: str
+    qty: int
+    price: float
+
+class CustomerHistoryPastJob(BaseModel):
+    job_id: str
+    jo_number: str
+    date_repaired: str
+    status: str
+    mechanic_name: str
+    mechanic_notes: Optional[str] = ""
+    labor_charge: float
+    parts_charge: float
+    items_used: List[CustomerHistoryItemUsed] = []
+
+class CustomerHistoryRecordResponse(BaseModel):
+    customer_id: str
+    customer_name: str
+    contact_number: str
+    motorcycle_model: str
+    total_repair_sessions: int
+    last_service_date: str
+    active_status: str
+    past_jobs: List[CustomerHistoryPastJob] = []
+

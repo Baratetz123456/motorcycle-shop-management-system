@@ -396,6 +396,14 @@ async def update_job_status(
         raise HTTPException(status_code=404, detail="Job Order not found")
         
     old_status = db_job.status
+
+    # Validate payment requirement for RELEASED status
+    if status_update.status == models.JobStatus.RELEASED and not db_job.is_paid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot release Job Order '{db_job.jo_number}' because payment has not been completed in POS."
+        )
+
     db_job.status = status_update.status
 
     logger.info(f"REPAIR JOB STATUS UPDATED | JO Number: {db_job.jo_number} | Old Status: {old_status} -> New Status: {db_job.status}")
@@ -542,6 +550,13 @@ async def delete_job_order(
     if not db_job:
         raise HTTPException(status_code=404, detail="Job Order not found")
         
+    # Enforce role restriction: Released job orders can only be deleted by Admin
+    if db_job.status == models.JobStatus.RELEASED and current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Only administrators can delete released job orders."
+        )
+
     jo_num = db_job.jo_number
     await session.delete(db_job)
     
@@ -560,6 +575,87 @@ async def delete_job_order(
     
     await session.commit()
     return {"message": "Job Order removed successfully", "job_id": str(job_id)}
+
+@app.get("/customer-history", response_model=List[schemas.CustomerHistoryRecordResponse])
+async def get_all_customer_history(
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
+    session: AsyncSession = Depends(get_db)
+):
+    # Fetch all job orders
+    jobs_res = await session.execute(select(models.JobOrder).order_by(models.JobOrder.created_at.desc()))
+    jobs = jobs_res.scalars().all()
+
+    # Fetch all motorcycles
+    motos_res = await session.execute(select(models.Motorcycle))
+    motos = motos_res.scalars().all()
+    moto_contact_map = {m.customer_name.lower(): m.customer_contact for m in motos if m.customer_name and m.customer_contact}
+    moto_model_map = {m.customer_name.lower(): f"{m.brand} {m.model}" for m in motos if m.customer_name}
+
+    # Fetch cart items for all jobs
+    cart_res = await session.execute(select(models.RepairCartItem))
+    cart_items = cart_res.scalars().all()
+    job_items_map = {}
+    for ci in cart_items:
+        jid = str(ci.job_order_id)
+        if jid not in job_items_map:
+            job_items_map[jid] = []
+        job_items_map[jid].append(schemas.CustomerHistoryItemUsed(
+            name=ci.item_name,
+            qty=ci.qty,
+            price=float(ci.unit_price)
+        ))
+
+    # Group jobs by customer name
+    grouped = {}
+    for j in jobs:
+        c_name = j.customer_name or "Customer"
+        key = c_name.strip().lower()
+        if key not in grouped:
+            grouped[key] = {
+                "customer_name": c_name,
+                "jobs": []
+            }
+        grouped[key]["jobs"].append(j)
+
+    result = []
+    for key, data in grouped.items():
+        c_name = data["customer_name"]
+        c_jobs = data["jobs"]
+        
+        # Determine active status: if any job is PENDING, ONGOING, or COMPLETED
+        has_active = any(j.status in [models.JobStatus.PENDING, models.JobStatus.ONGOING, models.JobStatus.COMPLETED] for j in c_jobs)
+        active_status = "ACTIVE_REPAIR" if has_active else "INACTIVE"
+        
+        contact = moto_contact_map.get(key, "+1 (555) 234-5678")
+        latest_job = c_jobs[0]
+        model_name = str(latest_job.motorcycle_id) if latest_job.motorcycle_id else moto_model_map.get(key, "Motorcycle")
+        
+        past_jobs_list = []
+        for j in c_jobs:
+            past_jobs_list.append(schemas.CustomerHistoryPastJob(
+                job_id=str(j.id),
+                jo_number=j.jo_number,
+                date_repaired=j.created_at.isoformat() if j.created_at else datetime.utcnow().isoformat(),
+                status=j.status.value if hasattr(j.status, "value") else str(j.status),
+                mechanic_name=j.mechanic_name or "Mike Smith",
+                mechanic_notes=j.mechanic_notes or "",
+                labor_charge=float(j.labor_charge),
+                parts_charge=float(j.parts_charge),
+                items_used=job_items_map.get(str(j.id), [])
+            ))
+
+        result.append(schemas.CustomerHistoryRecordResponse(
+            customer_id=f"cust-{abs(hash(key)) % 1000000}",
+            customer_name=c_name,
+            contact_number=contact,
+            motorcycle_model=model_name,
+            total_repair_sessions=len(c_jobs),
+            last_service_date=latest_job.created_at.isoformat() if latest_job.created_at else datetime.utcnow().isoformat(),
+            active_status=active_status,
+            past_jobs=past_jobs_list
+        ))
+
+    return result
 
 @app.get("/commissions")
 async def get_commissions(

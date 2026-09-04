@@ -171,14 +171,96 @@ export default function CustomerRepairHistoryPage() {
   }, []);
 
   const fetchCustomerHistories = async () => {
+    let baseList: CustomerHistoryRecord[] = [];
     try {
       const res = await apiClient.get<CustomerHistoryRecord[]>("/repairs/customer-history");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        setHistories(res.data);
+        baseList = res.data;
       }
     } catch (e) {
-      // Use fallback customer histories
+      // Backend error or fallback
     }
+
+    if (baseList.length === 0) {
+      const stored = localStorage.getItem("motoshop_customer_histories");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            baseList = parsed;
+          }
+        } catch (e) {}
+      }
+      if (baseList.length === 0) {
+        baseList = MOCK_CUSTOMER_HISTORIES;
+      }
+    }
+
+    // Merge any jobs in motoshop_jobs (especially newly RELEASED ones)
+    try {
+      const rawJobs = localStorage.getItem("motoshop_jobs");
+      if (rawJobs) {
+        const boardJobs: any[] = JSON.parse(rawJobs);
+        if (Array.isArray(boardJobs)) {
+          const releasedBoardJobs = boardJobs.filter((j) => j.status === "RELEASED");
+          const activeBoardJobs = boardJobs.filter(
+            (j) => j.status === "PENDING" || j.status === "ONGOING" || j.status === "COMPLETED"
+          );
+
+          for (const rJob of releasedBoardJobs) {
+            const custIdx = baseList.findIndex(
+              (c) => c.customer_name?.toLowerCase() === rJob.customer?.toLowerCase()
+            );
+            const jobEntry = {
+              job_id: rJob.id,
+              jo_number: rJob.jo_number,
+              date_repaired: rJob.created_at || new Date().toISOString(),
+              status: "RELEASED" as const,
+              mechanic_name: rJob.mechanic || "Mike Smith",
+              mechanic_notes: rJob.mechanic_notes || "",
+              labor_charge: Number(rJob.labor_charge || 100),
+              parts_charge: Number(rJob.parts_charge || 0),
+              items_used: []
+            };
+
+            if (custIdx >= 0) {
+              const cust = baseList[custIdx];
+              const pastJobs = Array.isArray(cust.past_jobs) ? cust.past_jobs : [];
+              const exists = pastJobs.some((pj) => pj.job_id === rJob.id || pj.jo_number === rJob.jo_number);
+              if (!exists) {
+                cust.past_jobs = [jobEntry, ...pastJobs];
+                cust.total_repair_sessions = cust.past_jobs.length;
+                cust.last_service_date = jobEntry.date_repaired;
+              } else {
+                cust.past_jobs = pastJobs.map((pj) =>
+                  pj.job_id === rJob.id || pj.jo_number === rJob.jo_number ? { ...pj, status: "RELEASED" } : pj
+                );
+              }
+              const customerHasActive = activeBoardJobs.some(
+                (abj) => abj.customer?.toLowerCase() === cust.customer_name?.toLowerCase()
+              );
+              cust.active_status = customerHasActive ? "ACTIVE_REPAIR" : "INACTIVE";
+            } else {
+              baseList.unshift({
+                customer_id: `cust-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                customer_name: rJob.customer,
+                contact_number: "+1 (555) 234-5678",
+                motorcycle_model: rJob.motorcycle,
+                total_repair_sessions: 1,
+                last_service_date: jobEntry.date_repaired,
+                active_status: "INACTIVE",
+                past_jobs: [jobEntry]
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to merge board jobs into customer history", e);
+    }
+
+    setHistories([...baseList]);
+    localStorage.setItem("motoshop_customer_histories", JSON.stringify(baseList));
   };
 
   const handleResumeRepair = (customer: CustomerHistoryRecord) => {

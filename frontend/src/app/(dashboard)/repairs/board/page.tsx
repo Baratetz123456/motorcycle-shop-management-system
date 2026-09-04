@@ -19,7 +19,10 @@ import {
   Edit3, 
   ShieldCheck,
   AlertTriangle,
-  Activity
+  Activity,
+  Lock,
+  GripVertical,
+  AlertCircle
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -131,6 +134,30 @@ export default function RepairBoardPage() {
   const [editNotes, setEditNotes] = useState("");
   const [editMechanic, setEditMechanic] = useState("");
   const [editLaborCharge, setEditLaborCharge] = useState<number>(0);
+
+  // RBAC Role & Drag-and-Drop States
+  const [userRole, setUserRole] = useState<string>("mechanic");
+  const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<RepairStatus | null>(null);
+  const [alertNotification, setAlertNotification] = useState<{
+    type: "warning" | "error" | "success";
+    title: string;
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const r = localStorage.getItem("user_role") || "mechanic";
+      setUserRole(r);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (alertNotification) {
+      const t = setTimeout(() => setAlertNotification(null), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [alertNotification]);
 
   useEffect(() => {
     fetchJobs();
@@ -244,42 +271,150 @@ export default function RepairBoardPage() {
     localStorage.setItem("motoshop_active_repairs", JSON.stringify(activeCarts));
   };
 
-  // Status stage transition
-  const handleUpdateStatus = async (jobId: string, newStatus: RepairStatus) => {
+  // Synchronize newly released repair job into customer repair history storage
+  const syncCustomerRepairHistory = (job: RepairJob) => {
     try {
-      await apiClient.patch(`/repairs/jobs/${jobId}/status`, { status: newStatus });
+      const raw = localStorage.getItem("motoshop_customer_histories");
+      let histories: any[] = raw ? JSON.parse(raw) : [];
+
+      const custIndex = histories.findIndex(
+        (h) => h.customer_name?.toLowerCase() === job.customer?.toLowerCase()
+      );
+
+      const pastJobItem = {
+        job_id: job.id,
+        jo_number: job.jo_number,
+        date_repaired: new Date().toISOString(),
+        status: "RELEASED" as const,
+        mechanic_name: job.mechanic || "Mike Smith",
+        mechanic_notes: job.mechanic_notes || "",
+        labor_charge: job.labor_charge,
+        parts_charge: job.parts_charge,
+        items_used: []
+      };
+
+      if (custIndex >= 0) {
+        const existing = histories[custIndex];
+        const existingJobs = Array.isArray(existing.past_jobs) ? existing.past_jobs : [];
+        const jobIdx = existingJobs.findIndex((pj: any) => pj.job_id === job.id || pj.jo_number === job.jo_number);
+        let updatedPastJobs;
+        if (jobIdx >= 0) {
+          updatedPastJobs = existingJobs.map((pj: any, idx: number) =>
+            idx === jobIdx ? { ...pj, status: "RELEASED" } : pj
+          );
+        } else {
+          updatedPastJobs = [pastJobItem, ...existingJobs];
+        }
+
+        histories[custIndex] = {
+          ...existing,
+          active_status: "INACTIVE",
+          total_repair_sessions: updatedPastJobs.length,
+          last_service_date: new Date().toISOString(),
+          past_jobs: updatedPastJobs
+        };
+      } else {
+        histories.unshift({
+          customer_id: `cust-${Date.now()}`,
+          customer_name: job.customer,
+          contact_number: "+1 (555) 234-5678",
+          motorcycle_model: job.motorcycle,
+          total_repair_sessions: 1,
+          last_service_date: new Date().toISOString(),
+          active_status: "INACTIVE",
+          past_jobs: [pastJobItem]
+        });
+      }
+
+      localStorage.setItem("motoshop_customer_histories", JSON.stringify(histories));
     } catch (e) {
-      // ignore network error
+      console.error("Failed to sync customer repair history", e);
     }
-
-    const updated = jobs.map((j) =>
-      j.id === jobId ? { ...j, status: newStatus, is_paid: newStatus === "COMPLETED" ? true : j.is_paid } : j
-    );
-    syncJobsState(updated);
   };
 
-  // Drag and drop handler
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    e.dataTransfer.setData("text/plain", id);
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, job: RepairJob) => {
+    e.dataTransfer.setData("text/plain", job.id);
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedJobId(job.id);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragEnd = () => {
+    setDraggedJobId(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, colStatus: RepairStatus) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverColumn !== colStatus) {
+      setDragOverColumn(colStatus);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
   const handleDrop = async (e: React.DragEvent, newStatus: RepairStatus) => {
     e.preventDefault();
-    const jobId = e.dataTransfer.getData("text/plain");
+    setDragOverColumn(null);
+    const jobId = e.dataTransfer.getData("text/plain") || draggedJobId;
+    setDraggedJobId(null);
     if (!jobId) return;
+
+    const targetJob = jobs.find((j) => j.id === jobId);
+    if (!targetJob) return;
+
+    // If dropped in the same column, do nothing
+    if (targetJob.status === newStatus) return;
+
+    const isPaid = Boolean(
+      targetJob.is_paid || localStorage.getItem(`motoshop_job_paid_${targetJob.id}`) === "true"
+    );
+
+    // Business Rule: Can ONLY set to RELEASED when already paid!
+    if (newStatus === "RELEASED" && !isPaid) {
+      setAlertNotification({
+        type: "warning",
+        title: "Payment Required Before Release",
+        message: `Job Order ${targetJob.jo_number} (${targetJob.customer}) cannot be released because it is unpaid. Complete payment at the POS checkout before releasing.`
+      });
+      return;
+    }
 
     try {
       await apiClient.patch(`/repairs/jobs/${jobId}/status`, { status: newStatus });
-    } catch (err) {
-      // ignore network error
+    } catch (err: any) {
+      const detailMsg = err?.response?.data?.detail || "Failed to update job status on server";
+      setAlertNotification({
+        type: "error",
+        title: "Status Update Error",
+        message: detailMsg
+      });
+      return;
     }
 
-    const updated = jobs.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j));
+    const updated = jobs.map((j) =>
+      j.id === jobId
+        ? {
+            ...j,
+            status: newStatus,
+            is_paid: newStatus === "COMPLETED" ? true : j.is_paid
+          }
+        : j
+    );
     syncJobsState(updated);
+
+    // If successfully moved to RELEASED, sync customer history
+    if (newStatus === "RELEASED") {
+      syncCustomerRepairHistory(targetJob);
+      setAlertNotification({
+        type: "success",
+        title: "Job Order Released",
+        message: `Job Order ${targetJob.jo_number} for ${targetJob.customer} has been released and recorded in Customer Repair History.`
+      });
+    }
   };
 
   // Open Edit Diagnosis & Reassignment modal
@@ -331,11 +466,32 @@ export default function RepairBoardPage() {
   const handleConfirmRemoveJob = async () => {
     if (!deleteConfirmJob) return;
     const targetId = deleteConfirmJob.id;
+    const isReleased = deleteConfirmJob.status === "RELEASED";
+
+    // Business Rule: Released job orders can only be deleted by Admin
+    if (isReleased && userRole !== "admin") {
+      setAlertNotification({
+        type: "error",
+        title: "Deletion Prohibited",
+        message: `Only users with the Admin role can delete released job orders (${deleteConfirmJob.jo_number}).`
+      });
+      setDeleteConfirmJob(null);
+      return;
+    }
 
     try {
       await apiClient.delete(`/repairs/jobs/${targetId}`);
-    } catch (e) {
-      // ignore network error
+    } catch (e: any) {
+      const detailMsg = e?.response?.data?.detail;
+      if (detailMsg) {
+        setAlertNotification({
+          type: "error",
+          title: "Delete Failed",
+          message: detailMsg
+        });
+        setDeleteConfirmJob(null);
+        return;
+      }
     }
 
     const updated = jobs.filter((j) => j.id !== targetId);
@@ -346,6 +502,11 @@ export default function RepairBoardPage() {
     localStorage.removeItem(`motoshop_cart_${targetId}`);
 
     setDeleteConfirmJob(null);
+    setAlertNotification({
+      type: "success",
+      title: "Job Order Removed",
+      message: `Job Order ${deleteConfirmJob.jo_number} was successfully removed.`
+    });
   };
 
   // Create Job Order
@@ -428,7 +589,7 @@ export default function RepairBoardPage() {
             Active Customer Repair Kanban Board
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Manage real-time repair stages, insert diagnosis notes, reassign mechanics, and synchronize with POS.
+            Manage real-time repair stages with drag-and-drop, insert diagnosis notes, and synchronize with POS.
           </p>
         </div>
 
@@ -451,15 +612,62 @@ export default function RepairBoardPage() {
         </div>
       </div>
 
+      {/* Alert Notification Toast / Banner */}
+      {alertNotification && (
+        <div
+          className={clsx(
+            "mb-4 px-4 py-3 rounded-2xl border flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2 duration-200 shadow-xl shrink-0",
+            alertNotification.type === "warning" && "bg-amber-500/10 border-amber-500/30 text-amber-300",
+            alertNotification.type === "error" && "bg-red-500/10 border-red-500/30 text-red-300",
+            alertNotification.type === "success" && "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+          )}
+        >
+          <div className="flex items-center gap-2.5">
+            {alertNotification.type === "warning" && <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />}
+            {alertNotification.type === "error" && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
+            {alertNotification.type === "success" && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
+            <div>
+              <strong className="font-bold">{alertNotification.title}: </strong>
+              <span>{alertNotification.message}</span>
+            </div>
+          </div>
+          <button
+            onClick={() => setAlertNotification(null)}
+            className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Kanban Board Columns Grid */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-hidden">
         {columns.map((col) => {
           const colJobs = jobs.filter((j) => j.status === col.status);
+          const isOver = dragOverColumn === col.status;
+          const activeDraggedCard = draggedJobId ? jobs.find((j) => j.id === draggedJobId) : null;
+          const isUnpaidAndTargetReleased =
+            col.status === "RELEASED" &&
+            activeDraggedCard &&
+            !(
+              activeDraggedCard.is_paid ||
+              localStorage.getItem(`motoshop_job_paid_${activeDraggedCard.id}`) === "true"
+            );
 
           return (
             <div
               key={col.status}
-              className="bg-zinc-900/40 border border-white/10 rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl"
+              onDragOver={(e) => handleDragOver(e, col.status)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, col.status)}
+              className={clsx(
+                "border rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl transition-all duration-200",
+                isOver && isUnpaidAndTargetReleased
+                  ? "bg-red-950/20 border-red-500/60 ring-2 ring-red-500/40"
+                  : isOver
+                  ? "bg-cyan-950/20 border-cyan-500/60 ring-2 ring-cyan-500/30"
+                  : "bg-zinc-900/40 border-white/10"
+              )}
             >
               {/* Column Header */}
               <div className={clsx("p-3.5 rounded-2xl border mb-4 flex items-center justify-between", col.bg)}>
@@ -468,9 +676,16 @@ export default function RepairBoardPage() {
                     {col.title}
                   </span>
                 </div>
-                <span className="bg-zinc-950 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-zinc-300 border border-white/10">
-                  {colJobs.length}
-                </span>
+                <div className="flex items-center gap-2">
+                  {isOver && isUnpaidAndTargetReleased && (
+                    <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider animate-pulse">
+                      Unpaid
+                    </span>
+                  )}
+                  <span className="bg-zinc-950 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-zinc-300 border border-white/10">
+                    {colJobs.length}
+                  </span>
+                </div>
               </div>
 
               {/* Job Order Cards Column Body */}
@@ -481,14 +696,25 @@ export default function RepairBoardPage() {
                   </div>
                 ) : (
                   colJobs.map((job) => {
-                    const isPaid = Boolean(job.is_paid || localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true");
+                    const isPaid = Boolean(
+                      job.is_paid || localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true"
+                    );
+                    const isBeingDragged = draggedJobId === job.id;
+                    const isReleased = job.status === "RELEASED";
+                    const canDelete = !isReleased || userRole === "admin";
 
                     return (
                       <div
                         key={job.id}
+                        draggable={true}
+                        onDragStart={(e) => handleDragStart(e, job)}
+                        onDragEnd={handleDragEnd}
                         className={clsx(
-                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-all duration-300 hover:border-cyan-500/40",
-                          isPaid ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]" : "border-white/10"
+                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-all duration-300 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing",
+                          isPaid
+                            ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]"
+                            : "border-white/10",
+                          isBeingDragged && "opacity-40 border-cyan-400 border-dashed scale-[0.98]"
                         )}
                       >
                         {/* JO Badge & Payment Status Tag */}
@@ -546,10 +772,13 @@ export default function RepairBoardPage() {
 
                         {/* Stage Controls & Actions Bar */}
                         <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             {/* Edit Diagnosis & Reassign Button */}
                             <button
-                              onClick={() => handleOpenEditModal(job)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEditModal(job);
+                              }}
                               className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-cyan-400 border border-white/10 transition-colors text-xs flex items-center gap-1"
                               title="Edit Diagnosis Notes & Reassign Mechanic"
                             >
@@ -557,27 +786,41 @@ export default function RepairBoardPage() {
                               <span className="text-[10px] font-semibold">Diagnosis</span>
                             </button>
 
-                            {/* Remove / Cancel Button */}
-                            <button
-                              onClick={() => setDeleteConfirmJob(job)}
-                              className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-500/20 text-red-400 border border-white/10 transition-colors"
-                              title="Remove Active Customer / Cancel Job Order"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {/* Remove / Cancel Button or Locked Indicator */}
+                            {canDelete ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmJob(job);
+                                }}
+                                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-500/20 text-red-400 border border-white/10 transition-colors"
+                                title={
+                                  isReleased
+                                    ? "Admin: Delete Released Job Order"
+                                    : "Remove Active Customer / Cancel Job Order"
+                                }
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <div
+                                className="p-1.5 rounded-lg bg-zinc-900/60 text-zinc-500 border border-white/5 flex items-center gap-1 cursor-not-allowed select-none"
+                                title="Released job orders can only be deleted by Admin"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-zinc-500" />
+                                <span className="text-[9px] font-semibold text-zinc-500">Locked</span>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Stage Transition Selector */}
-                          <select
-                            value={job.status}
-                            onChange={(e) => handleUpdateStatus(job.id, e.target.value as RepairStatus)}
-                            className="bg-zinc-900 border border-white/10 rounded-lg px-2 py-1 text-[11px] font-bold text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
+                          {/* Draggable Indicator Badge (replaces dropdown) */}
+                          <div
+                            className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-900/80 px-2 py-1 rounded-lg border border-white/5 font-medium select-none cursor-grab"
+                            title="Drag this card into another column to change status"
                           >
-                            <option value="PENDING">Stage: Pending</option>
-                            <option value="ONGOING">Stage: Ongoing</option>
-                            <option value="COMPLETED">Stage: Completed</option>
-                            <option value="RELEASED">Stage: Released</option>
-                          </select>
+                            <GripVertical className="w-3 h-3 text-zinc-400" />
+                            <span>Drag card</span>
+                          </div>
                         </div>
                       </div>
                     );

@@ -166,6 +166,18 @@ function CustomerRepairHistoryLogsContent() {
     }
 
     if (!matched) {
+      try {
+        const stored = localStorage.getItem("motoshop_customer_histories");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            matched = parsed.find((c: any) => c.customer_id === customerId) || null;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (!matched) {
       matched = MOCK_CUSTOMER_HISTORIES.find((c) => c.customer_id === customerId) || null;
     }
 
