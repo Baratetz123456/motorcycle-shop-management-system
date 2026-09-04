@@ -73,14 +73,7 @@ function POSCheckoutContent() {
   useEffect(() => {
     resetSaga();
     if (cart.length === 0 && jobId) {
-      // 1. Add base labor fee
-      addToCart({
-        id: `labor-${jobId}`,
-        name: `Repair Labor Fee`,
-        price: baseLaborPrice,
-      });
-
-      // 2. Restore persistent cart items for this customer job (persisted across cashier logins)
+      // Restore persistent cart items for this customer job (persisted across cashier logins)
       const storedStr = localStorage.getItem(`motoshop_cart_${jobId}`);
       if (storedStr) {
         try {
@@ -234,7 +227,9 @@ function POSCheckoutContent() {
   };
 
   const handleReturnToPOS = () => {
-    clearCart();
+    if (isSuccess) {
+      clearCart();
+    }
     router.push("/pos");
   };
 

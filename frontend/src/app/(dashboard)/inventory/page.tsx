@@ -103,6 +103,18 @@ export default function InventoryManagementPage() {
       // Use local state fallback
     }
 
+    const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+    if (storedCustom) {
+      try {
+        const customList: CatalogItem[] = JSON.parse(storedCustom);
+        if (Array.isArray(customList) && customList.length > 0) {
+          const existingIds = new Set(list.map((i) => i.id));
+          const toAdd = customList.filter((ci) => !existingIds.has(ci.id));
+          list = [...toAdd, ...list];
+        }
+      } catch (e) {}
+    }
+
     const storedInv = localStorage.getItem("motoshop_inventory_stock");
     if (storedInv) {
       try {
@@ -164,7 +176,22 @@ export default function InventoryManagementPage() {
 
     try {
       const res = await apiClient.post<CatalogItem>("/inventory", formData);
-      setItems((prev) => [res.data, ...prev]);
+      const createdItem = res.data;
+      setItems((prev) => [createdItem, ...prev]);
+
+      try {
+        const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+        const customList = storedCustom ? JSON.parse(storedCustom) : [];
+        customList.unshift(createdItem);
+        localStorage.setItem("motoshop_custom_inventory", JSON.stringify(customList));
+
+        if (createdItem.item_type === "PRODUCT") {
+          const storedInv = localStorage.getItem("motoshop_inventory_stock");
+          const invMap = storedInv ? JSON.parse(storedInv) : {};
+          invMap[createdItem.id] = createdItem.current_stock;
+          localStorage.setItem("motoshop_inventory_stock", JSON.stringify(invMap));
+        }
+      } catch (e) {}
       
       recordUserAuditLog("INVENTORY_ITEM_CREATED", "/inventory", {
         sku: formData.sku,
@@ -186,6 +213,20 @@ export default function InventoryManagementPage() {
         reorder_level: Number(formData.reorder_level),
       };
       setItems((prev) => [demoItem, ...prev]);
+
+      try {
+        const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+        const customList = storedCustom ? JSON.parse(storedCustom) : [];
+        customList.unshift(demoItem);
+        localStorage.setItem("motoshop_custom_inventory", JSON.stringify(customList));
+
+        if (demoItem.item_type === "PRODUCT") {
+          const storedInv = localStorage.getItem("motoshop_inventory_stock");
+          const invMap = storedInv ? JSON.parse(storedInv) : {};
+          invMap[demoItem.id] = demoItem.current_stock;
+          localStorage.setItem("motoshop_inventory_stock", JSON.stringify(invMap));
+        }
+      } catch (e) {}
 
       recordUserAuditLog("INVENTORY_ITEM_CREATED", "/inventory", {
         sku: formData.sku,
