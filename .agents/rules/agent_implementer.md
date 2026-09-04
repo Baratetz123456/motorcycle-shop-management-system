@@ -57,3 +57,10 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
    - Always prompt the user with an explicit confirmation modal displaying the target customer, item count, and order total before wiping.
    - When confirmed, synchronize removal across both reactive in-memory stores (`usePosStore`) and persisted storage caches (`motoshop_cart_${job_id}`).
 
+10. **Inventory Catalog & Historical Integrity via Soft Deletion**:
+    - **Soft Deletion (`is_active = false`)**: Products and services in inventory must **never be hard-deleted** from PostgreSQL tables when deleted by users. Always perform a soft-delete (`is_active = False`) in the database.
+    - **Preserving Historical Records**: Completed sales transactions, invoices, customer repair history logs, and stock movements snapshot item data (name, sku, unit price, quantity) at the time of availment. Soft deletion guarantees that deleting or modifying an item in Inventory Management leaves historical receipts and audit logs 100% intact and prevents relational foreign key violations (`inventory.stock_movements`).
+    - **Active Catalog Filtering**: `GET /api/v1/inventory` and POS catalog queries must filter by `is_active == True` by default so deactivated items disappear immediately from active cashier selection.
+    - **Product vs Service Attribute Invariants**: Products require physical inventory attributes (`brand`, `current_stock`, `reorder_level`), whereas Services represent labor charges without physical stock or brands. Service identifiers must use clean auto-generated namespaces (`SRV-` prefix) distinct from product SKUs.
+
+
