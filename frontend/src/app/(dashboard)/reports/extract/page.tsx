@@ -67,169 +67,6 @@ export interface ShopExpense {
   created_by?: string;
 }
 
-const INITIAL_EXPENSES: ShopExpense[] = [
-  // Today's expenses
-  {
-    id: "exp-1",
-    category: "CONSUMABLE_PARTS",
-    description: "Brake cleaner cases (12 cans) & Shop Degreaser",
-    amount: 1450.00,
-    date: new Date().toISOString().slice(0, 10),
-    vendor: "MotoLubricants Wholesale",
-    reference_no: "INV-8821"
-  },
-  {
-    id: "exp-2",
-    category: "TOOLS_EQUIPMENT",
-    description: "Digital tire pressure gauge & 1/2-inch torque wrench",
-    amount: 3200.00,
-    date: new Date().toISOString().slice(0, 10),
-    vendor: "Aces Hardware Pro",
-    reference_no: "OR-99104"
-  },
-  // Recent expenses (within current month)
-  {
-    id: "exp-3",
-    category: "ELECTRICITY_UTILITIES",
-    description: "Monthly Service Bay Power & High-Pressure Compressor Utilities",
-    amount: 6850.00,
-    date: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10),
-    vendor: "Metro Electric Utilities",
-    reference_no: "UTIL-0926"
-  },
-  {
-    id: "exp-4",
-    category: "RENT",
-    description: "Shop Facility & Hydraulic Lift Bays Monthly Lease",
-    amount: 18000.00,
-    date: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
-    vendor: "Prime Commercial Real Estate",
-    reference_no: "LEASE-2026-09"
-  },
-  {
-    id: "exp-5",
-    category: "STAFF_WAGES",
-    description: "Bi-weekly Cashier Shift Wages & Overtime",
-    amount: 7800.00,
-    date: new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10),
-    vendor: "Versiklo Payroll Settlement",
-    reference_no: "PAY-WEEK2"
-  },
-  {
-    id: "exp-6",
-    category: "CONSUMABLE_PARTS",
-    description: "Synthetic 4T Oil drum (200L) & chain cleaner fluids",
-    amount: 12500.00,
-    date: new Date(Date.now() - 15 * 86400000).toISOString().slice(0, 10),
-    vendor: "PetroKing Distributors",
-    reference_no: "PO-4091"
-  },
-  {
-    id: "exp-7",
-    category: "TOOLS_EQUIPMENT",
-    description: "Motorcycle OBD Diagnostic Scanner Unit Update & Cable Harness",
-    amount: 8900.00,
-    date: new Date(Date.now() - 40 * 86400000).toISOString().slice(0, 10),
-    vendor: "DiagTech Diagnostics",
-    reference_no: "OR-7712"
-  }
-];
-
-const INITIAL_MOCK_TRANSACTIONS: SalesTransaction[] = [
-  {
-    id: "tx-1",
-    invoice_no: "INV-2026-001",
-    customer_name: "John Doe",
-    motorcycle_name: "Yamaha MT-07 (2023)",
-    created_at: new Date().toISOString(),
-    total: 3450.00,
-    subtotal: 3450.00,
-    status: "COMPLETED",
-    payment_method: "GCASH",
-    items: [
-      { name: "Full Synthetic Engine Oil 10W-40", qty: 3, price: 550.00, type: "PARTS" },
-      { name: "Oil Filter OEM", qty: 1, price: 300.00, type: "PARTS" },
-      { name: "Periodic Maintenance & Tune-Up Labor", qty: 1, price: 1500.00, type: "LABOR" }
-    ]
-  },
-  {
-    id: "tx-2",
-    invoice_no: "INV-2026-002",
-    customer_name: "Jane Roe",
-    motorcycle_name: "Honda Click 125i",
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    total: 1850.00,
-    subtotal: 1850.00,
-    status: "COMPLETED",
-    payment_method: "CASH",
-    items: [
-      { name: "Drive Belt Heavy Duty", qty: 1, price: 950.00, type: "PARTS" },
-      { name: "CVT Cleaning & Tuning Labor", qty: 1, price: 900.00, type: "LABOR" }
-    ]
-  },
-  {
-    id: "tx-3",
-    invoice_no: "INV-2026-003",
-    customer_name: "Bob Lee",
-    motorcycle_name: "Kawasaki Ninja 400",
-    created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    total: 5800.00,
-    subtotal: 5800.00,
-    status: "COMPLETED",
-    payment_method: "CARD",
-    items: [
-      { name: "Front Brake Pads Sintered", qty: 1, price: 1600.00, type: "PARTS" },
-      { name: "Rear Brake Pads Sintered", qty: 1, price: 1400.00, type: "PARTS" },
-      { name: "Brake Fluid Flush & Labor", qty: 1, price: 2800.00, type: "LABOR" }
-    ]
-  },
-  {
-    id: "tx-4",
-    invoice_no: "INV-2026-004",
-    customer_name: "Carlos Mendoza",
-    motorcycle_name: "Suzuki Raider R150",
-    created_at: new Date(Date.now() - 8 * 86400000).toISOString(),
-    total: 2100.00,
-    subtotal: 2100.00,
-    status: "COMPLETED",
-    payment_method: "CASH",
-    items: [
-      { name: "Spark Plug Iridium", qty: 1, price: 450.00, type: "PARTS" },
-      { name: "Valve Clearance Adjustment Labor", qty: 1, price: 1650.00, type: "LABOR" }
-    ]
-  },
-  {
-    id: "tx-5",
-    invoice_no: "INV-2026-005",
-    customer_name: "Eduardo Santos",
-    motorcycle_name: "KTM Duke 390",
-    created_at: new Date(Date.now() - 14 * 86400000).toISOString(),
-    total: 9400.00,
-    subtotal: 9400.00,
-    status: "COMPLETED",
-    payment_method: "BANK_TRANSFER",
-    items: [
-      { name: "Pirelli Diablo Rosso Sport Tires (Set)", qty: 1, price: 6500.00, type: "PARTS" },
-      { name: "Tire Mounting & Wheel Balancing Labor", qty: 1, price: 2900.00, type: "LABOR" }
-    ]
-  },
-  {
-    id: "tx-6",
-    invoice_no: "INV-2026-006",
-    customer_name: "Arthur Pendelton",
-    motorcycle_name: "Honda CB650R",
-    created_at: new Date(Date.now() - 45 * 86400000).toISOString(),
-    total: 14500.00,
-    subtotal: 14500.00,
-    status: "COMPLETED",
-    payment_method: "CARD",
-    items: [
-      { name: "DID Gold Chain & Sprocket Kit", qty: 1, price: 8500.00, type: "PARTS" },
-      { name: "Fork Oil Rebuild & Labor", qty: 1, price: 6000.00, type: "LABOR" }
-    ]
-  }
-];
-
 export default function FinancialAndSalesExtractPage() {
   const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -242,8 +79,8 @@ export default function FinancialAndSalesExtractPage() {
   const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
 
   // Data
-  const [transactions, setTransactions] = useState<SalesTransaction[]>(INITIAL_MOCK_TRANSACTIONS);
-  const [expenses, setExpenses] = useState<ShopExpense[]>(INITIAL_EXPENSES);
+  const [transactions, setTransactions] = useState<SalesTransaction[]>([]);
+  const [expenses, setExpenses] = useState<ShopExpense[]>([]);
   const [mechanicRates, setMechanicRates] = useState<Record<string, number>>({});
 
   // Expense modal state
@@ -270,9 +107,8 @@ export default function FinancialAndSalesExtractPage() {
     if (storedExp) {
       try {
         const parsed = JSON.parse(storedExp);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const ids = new Set(parsed.map((e: any) => e.id));
-          setExpenses([...parsed, ...INITIAL_EXPENSES.filter((e) => !ids.has(e.id))]);
+        if (Array.isArray(parsed)) {
+          setExpenses(parsed);
         }
       } catch (e) {}
     }
@@ -281,7 +117,7 @@ export default function FinancialAndSalesExtractPage() {
   }, []);
 
   const fetchSalesData = async () => {
-    let salesList: SalesTransaction[] = INITIAL_MOCK_TRANSACTIONS;
+    let salesList: SalesTransaction[] = [];
     try {
       const res = await apiClient.get<SalesTransaction[]>("/sales/transactions");
       if (Array.isArray(res.data) && res.data.length > 0) {

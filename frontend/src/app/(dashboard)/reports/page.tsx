@@ -43,33 +43,18 @@ interface InventoryItem {
   item_type: string;
 }
 
-const DEFAULT_REVENUE_CHART = [
-  { name: "Mon", revenue: 4200 },
-  { name: "Tue", revenue: 3800 },
-  { name: "Wed", revenue: 2900 },
-  { name: "Thu", revenue: 4600 },
-  { name: "Fri", revenue: 5100 },
-  { name: "Sat", revenue: 6400 },
-  { name: "Sun", revenue: 5800 },
-];
-
-const DEFAULT_REPAIRS_CHART = [
-  { name: "Week 1", completed: 14 },
-  { name: "Week 2", completed: 19 },
-  { name: "Week 3", completed: 12 },
-  { name: "Week 4", completed: 25 },
-];
-
 export default function DashboardReportsPage() {
   const router = useRouter();
 
   // Metrics state
-  const [totalRevenue, setTotalRevenue] = useState<number>(24850.50);
-  const [netProfit, setNetProfit] = useState<number>(9420.00);
-  const [completedRepairsCount, setCompletedRepairsCount] = useState<number>(57);
-  const [lowStockCount, setLowStockCount] = useState<number>(3);
-  const [inventoryValue, setInventoryValue] = useState<number>(14250.00);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [netProfit, setNetProfit] = useState<number>(0);
+  const [completedRepairsCount, setCompletedRepairsCount] = useState<number>(0);
+  const [lowStockCount, setLowStockCount] = useState<number>(0);
+  const [inventoryValue, setInventoryValue] = useState<number>(0);
   const [recentSales, setRecentSales] = useState<SalesLog[]>([]);
+  const [revenueChartData, setRevenueChartData] = useState<{ name: string; revenue: number }[]>([]);
+  const [repairsChartData, setRepairsChartData] = useState<{ name: string; completed: number }[]>([]);
 
   useEffect(() => {
     loadSalesAndInventoryMetrics();
@@ -83,7 +68,7 @@ export default function DashboardReportsPage() {
     // 1. Fetch Sales Transactions
     try {
       const res = await apiClient.get<SalesLog[]>("/sales/transactions");
-      if (Array.isArray(res.data) && res.data.length > 0) {
+      if (Array.isArray(res.data)) {
         salesList = res.data;
       }
     } catch (e) {
@@ -108,10 +93,23 @@ export default function DashboardReportsPage() {
       salesTotal = completed.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
       completedTxCount = completed.length;
       setRecentSales(completed.slice(0, 5));
-      if (salesTotal > 0) {
-        setTotalRevenue(salesTotal);
-        setNetProfit(Number((salesTotal * 0.38).toFixed(2)));
-      }
+      setTotalRevenue(salesTotal);
+      setNetProfit(Number((salesTotal * 0.38).toFixed(2)));
+
+      // Dynamic Daily Revenue Chart from Live Sales
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const dayMap: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+      completed.forEach((s) => {
+        const d = s.created_at ? new Date(s.created_at) : new Date();
+        const dayName = days[d.getDay()];
+        dayMap[dayName] = (dayMap[dayName] || 0) + (Number(s.total) || 0);
+      });
+      setRevenueChartData(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({
+        name: day,
+        revenue: Math.round(dayMap[day] || 0),
+      })));
+    } else {
+      setRevenueChartData(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({ name: day, revenue: 0 })));
     }
 
     // 2. Fetch Inventory Items & Stock
@@ -141,7 +139,7 @@ export default function DashboardReportsPage() {
           (acc, i) => acc + (Number(i.cost_price || 0) * Number(i.current_stock || 0)),
           0
         );
-        if (totalVal > 0) setInventoryValue(totalVal);
+        setInventoryValue(totalVal);
       }
     } catch (e) {
       // ignore
@@ -151,8 +149,15 @@ export default function DashboardReportsPage() {
     try {
       const repairRes = await apiClient.get<any[]>("/repairs/jobs");
       if (Array.isArray(repairRes.data)) {
-        const completedJobs = repairRes.data.filter((j) => j.status === "COMPLETED").length;
-        if (completedJobs > 0) setCompletedRepairsCount(completedJobs + 12);
+        const finished = repairRes.data.filter((j) => j.status === "COMPLETED" || j.status === "RELEASED");
+        setCompletedRepairsCount(finished.length);
+
+        const weeks: Record<string, number> = { "Week 1": 0, "Week 2": 0, "Week 3": 0, "Week 4": 0 };
+        finished.forEach((j, i) => {
+          const wName = `Week ${(i % 4) + 1}`;
+          weeks[wName] = (weeks[wName] || 0) + 1;
+        });
+        setRepairsChartData(Object.entries(weeks).map(([name, completed]) => ({ name, completed })));
       }
     } catch (e) {
       // ignore
@@ -332,7 +337,7 @@ export default function DashboardReportsPage() {
 
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={DEFAULT_REVENUE_CHART} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.35}/>
@@ -370,7 +375,7 @@ export default function DashboardReportsPage() {
 
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={DEFAULT_REPAIRS_CHART} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <BarChart data={repairsChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="name" stroke="#71717a" tick={{fill: '#a1a1aa', fontSize: 12}} axisLine={false} tickLine={false} />
                 <YAxis stroke="#71717a" tick={{fill: '#a1a1aa', fontSize: 12}} axisLine={false} tickLine={false} />

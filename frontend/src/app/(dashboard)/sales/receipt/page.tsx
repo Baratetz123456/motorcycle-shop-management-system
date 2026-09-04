@@ -44,76 +44,6 @@ interface TransactionRecord {
   items?: { name: string; qty: number; price: number }[];
 }
 
-const FALLBACK_TRANSACTIONS: TransactionRecord[] = [
-  {
-    id: "tx-1",
-    invoice_no: "INV-9021",
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    customer_name: "John Doe",
-    motorcycle_name: "Yamaha MT-07 (2023)",
-    cashier_name: "Cashier Sarah Connor",
-    mechanic_name: "Mike Smith",
-    subtotal: 215.00,
-    discount_percentage: 10,
-    discount_amount: 21.50,
-    total: 193.50,
-    amount_paid: 193.50,
-    cash_received: 200.00,
-    cash_change: 6.50,
-    payment_method: "CASH",
-    status: "COMPLETED",
-    items: [
-      { name: "Repair Labor Fee (JO-A1B2)", qty: 1, price: 150.00 },
-      { name: "Synthetic Motor Oil 10W-40", qty: 2, price: 15.99 },
-      { name: "Premium Oil Filter", qty: 1, price: 8.50 },
-      { name: "Front Brake Pads", qty: 1, price: 34.00 }
-    ]
-  },
-  {
-    id: "tx-2",
-    invoice_no: "INV-8814",
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-    customer_name: "Jane Roe",
-    motorcycle_name: "Honda Click 125i (2022)",
-    cashier_name: "Cashier Sarah Connor",
-    mechanic_name: "Mike Smith",
-    subtotal: 80.00,
-    discount_percentage: 0,
-    discount_amount: 0.00,
-    total: 80.00,
-    amount_paid: 80.00,
-    cash_received: 100.00,
-    cash_change: 20.00,
-    payment_method: "CASH",
-    status: "COMPLETED",
-    items: [
-      { name: "Repair Labor Fee (JO-C3D4)", qty: 1, price: 80.00 }
-    ]
-  },
-  {
-    id: "tx-3",
-    invoice_no: "INV-7730",
-    created_at: new Date(Date.now() - 14400000).toISOString(),
-    customer_name: "Bob Lee",
-    motorcycle_name: "Kawasaki Ninja 400 (2023)",
-    cashier_name: "Cashier Sarah Connor",
-    mechanic_name: "Alex Rivera",
-    subtotal: 155.00,
-    discount_percentage: 5,
-    discount_amount: 7.75,
-    total: 147.25,
-    amount_paid: 147.25,
-    cash_received: 147.25,
-    cash_change: 0.00,
-    payment_method: "CARD",
-    status: "COMPLETED",
-    items: [
-      { name: "Repair Labor Fee (JO-E5F6)", qty: 1, price: 120.00 },
-      { name: "Front Fork Oil (Seal Inspected)", qty: 1, price: 35.00 }
-    ]
-  }
-];
-
 function SalesReceiptContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -144,7 +74,7 @@ function SalesReceiptContent() {
     setLoading(true);
     let matchedTx: TransactionRecord | null = null;
 
-    // 1. Check direct API lookup if txId looks like UUID
+    // 1. Check direct API lookup if txId is present
     if (txId) {
       try {
         const res = await apiClient.get<TransactionRecord>(`/sales/transactions/${txId}`);
@@ -152,11 +82,28 @@ function SalesReceiptContent() {
           matchedTx = res.data;
         }
       } catch (e) {
-        // Continue to fallback checks
+        // Continue to general check
       }
     }
 
-    // 2. Check localStorage sales logs
+    // 2. Check general transactions API
+    if (!matchedTx) {
+      try {
+        const res = await apiClient.get<TransactionRecord[]>("/sales/transactions");
+        if (Array.isArray(res.data)) {
+          const found = res.data.find((t) => t.id === txId || t.invoice_no === txId);
+          if (found) {
+            matchedTx = found;
+          } else if (!txId && res.data.length > 0) {
+            matchedTx = res.data[0];
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // 3. Check localStorage sales logs if offline
     if (!matchedTx) {
       const stored = localStorage.getItem("motoshop_sales_logs");
       if (stored) {
@@ -167,29 +114,6 @@ function SalesReceiptContent() {
         } catch (e) {
           // ignore
         }
-      }
-    }
-
-    // 3. Check general transactions API
-    if (!matchedTx) {
-      try {
-        const res = await apiClient.get<TransactionRecord[]>("/sales/transactions");
-        if (Array.isArray(res.data)) {
-          const found = res.data.find((t) => t.id === txId || t.invoice_no === txId);
-          if (found) matchedTx = found;
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    // 4. Fallback to demo transactions
-    if (!matchedTx) {
-      const demo = FALLBACK_TRANSACTIONS.find((t) => t.id === txId || t.invoice_no === txId);
-      if (demo) {
-        matchedTx = demo;
-      } else if (FALLBACK_TRANSACTIONS.length > 0) {
-        matchedTx = FALLBACK_TRANSACTIONS[0];
       }
     }
 

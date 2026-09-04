@@ -9,20 +9,8 @@ export interface StaffCompensation {
   baseWage: number;       // For cashiers, e.g. 650.0 (PHP)
 }
 
-const DEFAULT_MECHANIC_RATES: Record<string, number> = {
-  "Mike Smith": 40,
-  "Alex Rivera": 45,
-  "Carlos Gomez": 35,
-  "Lead Mechanic": 40,
-  "mechanic@motoshop.com": 40,
-};
-
-const DEFAULT_CASHIER_WAGES: Record<string, number> = {
-  "Sarah Connor": 650,
-  "John Miller": 650,
-  "Main Cashier": 650,
-  "cashier@motoshop.com": 650,
-};
+const DEFAULT_MECHANIC_RATES: Record<string, number> = {};
+const DEFAULT_CASHIER_WAGES: Record<string, number> = {};
 
 /**
  * Fetch staff compensation records from PostgreSQL database via /auth/users API.

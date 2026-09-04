@@ -53,25 +53,10 @@ export interface RepairLogEntry {
   parts_charge: number;
 }
 
-const STATIC_MODELS: MotorcycleModelCategory[] = [
-  { id: "sm-1", brand: "Yamaha", model: "MT-07", year: 2023, category: "Naked Sport" },
-  { id: "sm-2", brand: "Honda", model: "Click 125i", year: 2022, category: "Scooter" },
-  { id: "sm-3", brand: "Kawasaki", model: "Ninja 400", year: 2023, category: "Sport" },
-  { id: "sm-4", brand: "Suzuki", model: "Raider R150", year: 2024, category: "Underbone" },
-  { id: "sm-5", brand: "Ducati", model: "Panigale V4", year: 2023, category: "Superbike" },
-  { id: "sm-6", brand: "Honda", model: "ADV 160", year: 2023, category: "Adventure Scooter" },
-];
-
-const INITIAL_CUSTOMERS: CustomerProfile[] = [
-  { id: "c-1", customer_name: "John Doe", contact_number: "+1 (555) 234-5678", selected_model: "Yamaha MT-07 (2023)", notes: "Regular oil change & tune-up", created_at: new Date(Date.now() - 30 * 86400000).toISOString() },
-  { id: "c-2", customer_name: "Jane Roe", contact_number: "+1 (555) 876-5432", selected_model: "Honda Click 125i (2022)", notes: "Brake belt adjustment", created_at: new Date(Date.now() - 15 * 86400000).toISOString() },
-  { id: "c-3", customer_name: "Bob Lee", contact_number: "+1 (555) 432-1098", selected_model: "Kawasaki Ninja 400 (2023)", notes: "Chain lubing & inspection", created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
-];
-
 export default function MotorcycleProfilePage() {
   const [activeTab, setActiveTab] = useState<"MODELS" | "CUSTOMERS">("MODELS");
-  const [models, setModels] = useState<MotorcycleModelCategory[]>(STATIC_MODELS);
-  const [customers, setCustomers] = useState<CustomerProfile[]>(INITIAL_CUSTOMERS);
+  const [models, setModels] = useState<MotorcycleModelCategory[]>([]);
+  const [customers, setCustomers] = useState<CustomerProfile[]>([]);
   const [search, setSearch] = useState("");
   
   // Modals state
@@ -92,12 +77,13 @@ export default function MotorcycleProfilePage() {
   const [customerForm, setCustomerForm] = useState({
     customer_name: "",
     contact_number: "",
-    selected_model: "Yamaha MT-07 (2023)",
+    selected_model: "",
     notes: "",
   });
 
   useEffect(() => {
     fetchModels();
+    fetchCustomers();
   }, []);
 
   const fetchModels = async () => {
@@ -105,10 +91,33 @@ export default function MotorcycleProfilePage() {
       const res = await apiClient.get<MotorcycleModelCategory[]>("/repairs/motorcycle-models");
       if (Array.isArray(res.data) && res.data.length > 0) {
         setModels(res.data);
+        if (!customerForm.selected_model && res.data[0]) {
+          setCustomerForm((prev) => ({
+            ...prev,
+            selected_model: `${res.data[0].brand} ${res.data[0].model} (${res.data[0].year})`
+          }));
+        }
       }
     } catch (e) {
-      // Fallback to static master list
+      // empty list
     }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const res = await apiClient.get<any[]>("/repairs/motorcycles");
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        const mapped: CustomerProfile[] = res.data.map((m: any) => ({
+          id: m.id,
+          customer_name: m.customer_name,
+          contact_number: m.customer_contact || "",
+          selected_model: `${m.brand} ${m.model} (${m.year || 2023})`,
+          notes: m.notes || "",
+          created_at: m.created_at || new Date().toISOString(),
+        }));
+        setCustomers(mapped);
+      }
+    } catch (e) {}
   };
 
   const handleAddModel = async (e: React.FormEvent) => {
@@ -119,12 +128,7 @@ export default function MotorcycleProfilePage() {
       const res = await apiClient.post<MotorcycleModelCategory>("/repairs/motorcycle-models", modelForm);
       setModels((prev) => [res.data, ...prev]);
     } catch (e) {
-      const demo: MotorcycleModelCategory = {
-        id: `sm-${Date.now()}`,
-        ...modelForm,
-        year: Number(modelForm.year),
-      };
-      setModels((prev) => [demo, ...prev]);
+      // handle error
     } finally {
       setIsAddModelModalOpen(false);
       setModelForm({ brand: "Yamaha", model: "", year: new Date().getFullYear(), category: "Scooter" });
@@ -135,15 +139,47 @@ export default function MotorcycleProfilePage() {
     e.preventDefault();
     if (!customerForm.customer_name) return;
 
-    const newCustomer: CustomerProfile = {
-      id: `c-${Date.now()}`,
-      ...customerForm,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      const brandParts = (customerForm.selected_model || "Yamaha Custom").split(" ");
+      const brand = brandParts[0] || "Yamaha";
+      const modelName = brandParts.slice(1).join(" ") || "Custom";
+      const payload = {
+        plate_number: `PLT-${Date.now().toString().slice(-4)}`,
+        brand,
+        model: modelName,
+        year: new Date().getFullYear(),
+        customer_name: customerForm.customer_name,
+        customer_contact: customerForm.contact_number,
+        notes: customerForm.notes
+      };
+      const res = await apiClient.post<any>("/repairs/motorcycles", payload);
+      if (res.data) {
+        const newCust: CustomerProfile = {
+          id: res.data.id || `c-${Date.now()}`,
+          customer_name: res.data.customer_name,
+          contact_number: res.data.customer_contact || "",
+          selected_model: `${res.data.brand} ${res.data.model} (${res.data.year || 2023})`,
+          notes: res.data.notes || "",
+          created_at: res.data.created_at || new Date().toISOString()
+        };
+        setCustomers((prev) => [newCust, ...prev]);
+      }
+    } catch (e) {
+      const fallbackCust: CustomerProfile = {
+        id: `c-${Date.now()}`,
+        ...customerForm,
+        created_at: new Date().toISOString(),
+      };
+      setCustomers((prev) => [fallbackCust, ...prev]);
+    }
 
-    setCustomers((prev) => [newCustomer, ...prev]);
     setIsAddCustomerModalOpen(false);
-    setCustomerForm({ customer_name: "", contact_number: "", selected_model: models[0] ? `${models[0].brand} ${models[0].model} (${models[0].year})` : "Yamaha MT-07 (2023)", notes: "" });
+    setCustomerForm({
+      customer_name: "",
+      contact_number: "",
+      selected_model: models[0] ? `${models[0].brand} ${models[0].model} (${models[0].year})` : "",
+      notes: ""
+    });
   };
 
   const openCustomerLogs = async (c: CustomerProfile) => {
@@ -152,21 +188,9 @@ export default function MotorcycleProfilePage() {
       const res = await apiClient.get<RepairLogEntry[]>(
         `/repairs/motorcycles/history/customer?customer_name=${encodeURIComponent(c.customer_name)}`
       );
-      setRepairHistory(res.data);
+      setRepairHistory(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
-      setRepairHistory([
-        {
-          job_id: `jo-${c.id}`,
-          jo_number: "JO-ACTIVE",
-          motorcycle_model: c.selected_model,
-          date_repaired: c.created_at,
-          status: "ONGOING",
-          customer_name: c.customer_name,
-          mechanic_name: "Mike Smith",
-          labor_charge: 120.0,
-          parts_charge: 45.0,
-        },
-      ]);
+      setRepairHistory([]);
     }
   };
 

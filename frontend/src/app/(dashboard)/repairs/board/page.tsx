@@ -53,69 +53,11 @@ interface MotorcycleModelOption {
   year: number;
 }
 
-const DEMO_MECHANICS = [
-  { id: "mech-1", name: "Mike Smith" },
-  { id: "mech-2", name: "Alex Rivera" },
-  { id: "mech-3", name: "Dave Johnson" },
-  { id: "mech-4", name: "Sarah Connor" },
-];
-
-const INITIAL_MODELS: MotorcycleModelOption[] = [
-  { id: "m-1", brand: "Yamaha", model: "Yamaha MT-07 (2023)", year: 2023 },
-  { id: "m-2", brand: "Honda", model: "Honda Click 125i (2022)", year: 2022 },
-  { id: "m-3", brand: "Kawasaki", model: "Kawasaki Ninja 400 (2023)", year: 2023 },
-  { id: "m-4", brand: "Ducati", model: "Ducati Panigale V4 (2023)", year: 2023 },
-];
-
-const INITIAL_JOBS: RepairJob[] = [
-  {
-    id: "jo-1",
-    jo_number: "JO-A1B2",
-    customer: "John Doe",
-    motorcycle: "Yamaha MT-07 (2023)",
-    mechanic: "Mike Smith",
-    mechanic_id: "mech-1",
-    mechanic_notes: "Engine oil change & front brake pad replacement.",
-    labor_charge: 0,
-    parts_charge: 65.0,
-    status: "ONGOING",
-    is_paid: false,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "jo-2",
-    jo_number: "JO-C3D4",
-    customer: "Jane Roe",
-    motorcycle: "Honda Click 125i (2022)",
-    mechanic: "Mike Smith",
-    mechanic_id: "mech-1",
-    mechanic_notes: "CVT belt inspection and cleaning.",
-    labor_charge: 0,
-    parts_charge: 0,
-    status: "PENDING",
-    is_paid: false,
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: "jo-3",
-    jo_number: "JO-E5F6",
-    customer: "Bob Lee",
-    motorcycle: "Kawasaki Ninja 400 (2023)",
-    mechanic: "Alex Rivera",
-    mechanic_id: "mech-2",
-    mechanic_notes: "Front fork oil replacement and seal inspection.",
-    labor_charge: 0,
-    parts_charge: 35.0,
-    status: "COMPLETED",
-    is_paid: true,
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-  },
-];
-
 export default function RepairBoardPage() {
   const searchParams = useSearchParams();
-  const [jobs, setJobs] = useState<RepairJob[]>(INITIAL_JOBS);
-  const [modelsCatalog, setModelsCatalog] = useState<MotorcycleModelOption[]>(INITIAL_MODELS);
+  const [jobs, setJobs] = useState<RepairJob[]>([]);
+  const [modelsCatalog, setModelsCatalog] = useState<MotorcycleModelOption[]>([]);
+  const [mechanicsList, setMechanicsList] = useState<{ id: string; name: string }[]>([]);
   
   // Modals & State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -127,8 +69,8 @@ export default function RepairBoardPage() {
 
   // Form states
   const [newCustomer, setNewCustomer] = useState("");
-  const [newMotorcycleModel, setNewMotorcycleModel] = useState("Yamaha MT-07 (2023)");
-  const [assignedMechanic, setAssignedMechanic] = useState("Mike Smith");
+  const [newMotorcycleModel, setNewMotorcycleModel] = useState("");
+  const [assignedMechanic, setAssignedMechanic] = useState("");
 
   // Edit Diagnosis & Reassignment form states
   const [editNotes, setEditNotes] = useState("");
@@ -161,6 +103,7 @@ export default function RepairBoardPage() {
   useEffect(() => {
     fetchJobs();
     fetchMotorcycleModels();
+    fetchMechanics();
 
     // Check query params if coming from "Resume Repair"
     const resumeCustomer = searchParams.get("resume_customer");
@@ -185,24 +128,22 @@ export default function RepairBoardPage() {
       const res = await apiClient.get<any[]>("/repairs/jobs");
       if (Array.isArray(res.data)) {
         fetchSuccess = true;
-        if (res.data.length > 0) {
-          fetchedList = res.data
-            .filter((j) => !deletedSet.has(j.id) && !deletedSet.has(j.jo_number))
-            .map((j) => ({
-              id: j.id,
-              jo_number: j.jo_number,
-              customer: j.customer_name || "Customer",
-              motorcycle: j.motorcycle_id || "Motorcycle",
-              mechanic: j.mechanic_name || "Mike Smith",
-              mechanic_id: j.mechanic_id,
-              mechanic_notes: j.mechanic_notes || "",
-              labor_charge: 0,
-              parts_charge: Number(j.parts_charge || 0),
-              status: (j.status || "PENDING") as RepairStatus,
-              is_paid: Boolean(j.is_paid),
-              created_at: j.created_at || new Date().toISOString(),
-            }));
-        }
+        fetchedList = res.data
+          .filter((j) => !deletedSet.has(j.id) && !deletedSet.has(j.jo_number))
+          .map((j) => ({
+            id: j.id,
+            jo_number: j.jo_number,
+            customer: j.customer_name || "Walk-in Customer",
+            motorcycle: j.motorcycle_id || "Motorcycle",
+            mechanic: j.mechanic_name || "Shop Mechanic",
+            mechanic_id: j.mechanic_id || "mech-1",
+            mechanic_notes: j.mechanic_notes || "",
+            labor_charge: Number(j.labor_charge || 0),
+            parts_charge: Number(j.parts_charge || 0),
+            status: (j.status || "PENDING") as RepairStatus,
+            is_paid: Boolean(j.is_paid),
+            created_at: j.created_at || new Date().toISOString(),
+          }));
       }
     } catch (e) {
       console.error("Failed to fetch jobs from server", e);
@@ -244,7 +185,7 @@ export default function RepairBoardPage() {
         // ignore
       }
     } else {
-      mergedJobs = INITIAL_JOBS.filter((j) => !deletedSet.has(j.id));
+      mergedJobs = [];
     }
 
     setJobs(mergedJobs);
@@ -255,10 +196,29 @@ export default function RepairBoardPage() {
       const res = await apiClient.get<MotorcycleModelOption[]>("/repairs/motorcycle-models");
       if (Array.isArray(res.data) && res.data.length > 0) {
         setModelsCatalog(res.data);
+        setNewMotorcycleModel((prev) => prev || `${res.data[0].brand} ${res.data[0].model} (${res.data[0].year})`);
       }
     } catch (e) {
-      // Use fallback
+      // empty
     }
+  };
+
+  const fetchMechanics = async () => {
+    try {
+      const res = await apiClient.get<any>("/auth/users?page_size=50");
+      if (res.data?.items && Array.isArray(res.data.items)) {
+        const mechs = res.data.items
+          .filter((u: any) => u.role === "mechanic" || u.role === "admin" || u.role === "manager")
+          .map((u: any) => ({
+            id: u.id,
+            name: `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email
+          }));
+        if (mechs.length > 0) {
+          setMechanicsList(mechs);
+          setAssignedMechanic((prev) => prev || mechs[0].name);
+        }
+      }
+    } catch (e) {}
   };
 
   const syncJobsState = (updatedList: RepairJob[]) => {
@@ -929,11 +889,15 @@ export default function RepairBoardPage() {
                   onChange={(e) => setAssignedMechanic(e.target.value)}
                   className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 >
-                  {DEMO_MECHANICS.map((m) => (
-                    <option key={m.id} value={m.name}>
-                      {m.name}
-                    </option>
-                  ))}
+                  {mechanicsList.length > 0 ? (
+                    mechanicsList.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="Shop Mechanic">Shop Mechanic</option>
+                  )}
                 </select>
               </div>
 
@@ -997,11 +961,15 @@ export default function RepairBoardPage() {
                   onChange={(e) => setEditMechanic(e.target.value)}
                   className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 >
-                  {DEMO_MECHANICS.map((m) => (
-                    <option key={m.id} value={m.name}>
-                      {m.name}
-                    </option>
-                  ))}
+                  {mechanicsList.length > 0 ? (
+                    mechanicsList.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="Shop Mechanic">Shop Mechanic</option>
+                  )}
                 </select>
               </div>
 

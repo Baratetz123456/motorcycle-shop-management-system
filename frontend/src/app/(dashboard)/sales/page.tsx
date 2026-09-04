@@ -42,69 +42,10 @@ export interface TransactionRecord {
   }[];
 }
 
-const MOCK_TRANSACTIONS: TransactionRecord[] = [
-  {
-    id: "tx-1",
-    invoice_no: "INV-A901",
-    customer_name: "John Doe",
-    cashier_name: "Cashier Sarah Connor",
-    mechanic_name: "Mike Smith",
-    motorcycle_name: "Yamaha MT-07 (2023)",
-    subtotal: 165.99,
-    total: 165.99,
-    amount_paid: 170.00,
-    status: "COMPLETED",
-    payment_method: "CASH",
-    created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
-    item_count: 2,
-    items: [
-      { name: "Repair Labor Fee (JO-A1B2)", qty: 1, price: 150.00, type: "LABOR" },
-      { name: "Synthetic Motor Oil 10W-40", qty: 1, price: 15.99 },
-    ],
-  },
-  {
-    id: "tx-2",
-    invoice_no: "INV-B442",
-    customer_name: "Jane Roe",
-    cashier_name: "Cashier Sarah Connor",
-    mechanic_name: "Mike Smith",
-    motorcycle_name: "Honda Click 125i (2022)",
-    subtotal: 38.50,
-    total: 38.50,
-    amount_paid: 40.00,
-    status: "COMPLETED",
-    payment_method: "CARD",
-    created_at: new Date(Date.now() - 5 * 3600000).toISOString(),
-    item_count: 2,
-    items: [
-      { name: "Oil & Filter Change Service", qty: 1, price: 30.00, type: "LABOR" },
-      { name: "Premium Oil Filter", qty: 1, price: 8.50 },
-    ],
-  },
-  {
-    id: "tx-3",
-    invoice_no: "INV-C771",
-    customer_name: "Bob Lee",
-    cashier_name: "Admin User",
-    mechanic_name: "Alex Rivera",
-    motorcycle_name: "Kawasaki Ninja 400 (2023)",
-    subtotal: 120.00,
-    total: 120.00,
-    amount_paid: 120.00,
-    status: "COMPLETED",
-    payment_method: "GCASH",
-    created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-    item_count: 1,
-    items: [
-      { name: "Front Fork Overhaul & Labor", qty: 1, price: 120.00, type: "LABOR" },
-    ],
-  },
-];
-
 export default function SalesManagementPage() {
   const router = useRouter();
   const [role, setRole] = useState<UserRole>("cashier");
-  const [transactions, setTransactions] = useState<TransactionRecord[]>(MOCK_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -117,14 +58,14 @@ export default function SalesManagementPage() {
   }, []);
 
   const fetchTransactions = async () => {
-    let list: TransactionRecord[] = MOCK_TRANSACTIONS;
+    let list: TransactionRecord[] = [];
     try {
       const res = await apiClient.get<TransactionRecord[]>("/sales/transactions");
       if (Array.isArray(res.data) && res.data.length > 0) {
         list = res.data;
       }
     } catch (e) {
-      // Use fallback
+      // empty list on error
     }
 
     const storedLogs = localStorage.getItem("motoshop_sales_logs");

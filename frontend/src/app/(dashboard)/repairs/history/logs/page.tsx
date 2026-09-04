@@ -26,120 +26,6 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { CustomerHistoryRecord } from "../page";
 
-const MOCK_CUSTOMER_HISTORIES: CustomerHistoryRecord[] = [
-  {
-    customer_id: "cust-101",
-    customer_name: "John Doe",
-    contact_number: "+1 (555) 234-5678",
-    motorcycle_model: "Yamaha MT-07 (2023)",
-    total_repair_sessions: 3,
-    last_service_date: new Date(Date.now() - 2 * 86400000).toISOString(),
-    active_status: "ACTIVE_REPAIR",
-    past_jobs: [
-      {
-        job_id: "j-1",
-        jo_number: "JO-A1B2",
-        date_repaired: new Date(Date.now() - 2 * 86400000).toISOString(),
-        status: "PENDING",
-        mechanic_name: "Mike Smith",
-        mechanic_notes: "Engine oil change & front brake pad replacement. Clearance checked.",
-        labor_charge: 150.0,
-        parts_charge: 65.0,
-        items_used: [
-          { name: "Synthetic Motor Oil 10W-40", qty: 1, price: 15.99 },
-          { name: "Front Brake Pads", qty: 1, price: 34.00 },
-        ],
-      },
-      {
-        job_id: "j-10",
-        jo_number: "JO-X901",
-        date_repaired: new Date(Date.now() - 45 * 86400000).toISOString(),
-        status: "RELEASED",
-        mechanic_name: "Dave Johnson",
-        mechanic_notes: "Chain tension adjustment & lubrication.",
-        labor_charge: 90.0,
-        parts_charge: 30.0,
-        items_used: [
-          { name: "Chain Lube Spray", qty: 1, price: 12.00 },
-        ],
-      },
-    ],
-  },
-  {
-    customer_id: "cust-102",
-    customer_name: "Jane Roe",
-    contact_number: "+1 (555) 876-5432",
-    motorcycle_model: "Honda Click 125i (2022)",
-    total_repair_sessions: 2,
-    last_service_date: new Date(Date.now() - 15 * 86400000).toISOString(),
-    active_status: "INACTIVE",
-    past_jobs: [
-      {
-        job_id: "j-2",
-        jo_number: "JO-C3D4",
-        date_repaired: new Date(Date.now() - 15 * 86400000).toISOString(),
-        status: "RELEASED",
-        mechanic_name: "Mike Smith",
-        mechanic_notes: "CVT belt cleaning & air filter replacement.",
-        labor_charge: 80.0,
-        parts_charge: 25.0,
-        items_used: [
-          { name: "Premium Oil Filter", qty: 1, price: 8.50 },
-        ],
-      },
-    ],
-  },
-  {
-    customer_id: "cust-103",
-    customer_name: "Bob Lee",
-    contact_number: "+1 (555) 432-1098",
-    motorcycle_model: "Kawasaki Ninja 400 (2023)",
-    total_repair_sessions: 4,
-    last_service_date: new Date(Date.now() - 1 * 86400000).toISOString(),
-    active_status: "ACTIVE_REPAIR",
-    past_jobs: [
-      {
-        job_id: "j-3",
-        jo_number: "JO-E5F6",
-        date_repaired: new Date(Date.now() - 1 * 86400000).toISOString(),
-        status: "COMPLETED",
-        mechanic_name: "Alex Rivera",
-        mechanic_notes: "Front fork oil replacement and seal inspection.",
-        labor_charge: 120.0,
-        parts_charge: 35.0,
-        items_used: [
-          { name: "Front Fork Oil (Seal Inspected)", qty: 1, price: 35.00 },
-        ],
-      },
-    ],
-  },
-  {
-    customer_id: "cust-104",
-    customer_name: "Carlos Mendoza",
-    contact_number: "+1 (555) 321-7654",
-    motorcycle_model: "Ducati Panigale V4 (2023)",
-    total_repair_sessions: 5,
-    last_service_date: new Date(Date.now() - 12 * 86400000).toISOString(),
-    active_status: "INACTIVE",
-    past_jobs: [
-      {
-        job_id: "j-4",
-        jo_number: "JO-G7H8",
-        date_repaired: new Date(Date.now() - 12 * 86400000).toISOString(),
-        status: "COMPLETED",
-        mechanic_name: "Mike Smith",
-        mechanic_notes: "Desmoservice 12,000km engine overhaul. Valves adjusted.",
-        labor_charge: 500.0,
-        parts_charge: 350.0,
-        items_used: [
-          { name: "Iridium Spark Plug", qty: 4, price: 18.25 },
-          { name: "Synthetic Motor Oil 10W-40", qty: 4, price: 15.99 },
-        ],
-      },
-    ],
-  },
-];
-
 function CustomerRepairHistoryLogsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -175,10 +61,6 @@ function CustomerRepairHistoryLogsContent() {
           }
         }
       } catch (e) {}
-    }
-
-    if (!matched) {
-      matched = MOCK_CUSTOMER_HISTORIES.find((c) => c.customer_id === customerId) || null;
     }
 
     if (matched) {

@@ -34,19 +34,8 @@ export interface CatalogItem {
   selling_price: number;
 }
 
-const INITIAL_CATALOG: CatalogItem[] = [
-  { id: "uuid-1", sku: "OIL-10W40", name: "Synthetic Motor Oil 10W-40", item_type: "PRODUCT", category: "Fluids", current_stock: 45, reorder_level: 20, cost_price: 10.00, selling_price: 15.99 },
-  { id: "uuid-2", sku: "FLT-001", name: "Premium Oil Filter", item_type: "PRODUCT", category: "Filters", current_stock: 12, reorder_level: 15, cost_price: 4.50, selling_price: 8.50 },
-  { id: "uuid-3", sku: "BRK-PAD-F", name: "Front Brake Pads", item_type: "PRODUCT", category: "Brakes", current_stock: 8, reorder_level: 10, cost_price: 20.00, selling_price: 34.00 },
-  { id: "uuid-4", sku: "SRV-TUN-01", name: "General Tune-Up & Inspection", item_type: "SERVICE", category: "Maintenance", current_stock: 0, reorder_level: 0, cost_price: 25.00, selling_price: 75.00 },
-  { id: "uuid-5", sku: "SRV-OIL-CHG", name: "Oil & Filter Change Service", item_type: "SERVICE", category: "Maintenance", current_stock: 0, reorder_level: 0, cost_price: 10.00, selling_price: 30.00 },
-  { id: "uuid-6", sku: "SRV-BRK-SRV", name: "Brake Cleaning & Overhaul", item_type: "SERVICE", category: "Brake Service", current_stock: 0, reorder_level: 0, cost_price: 15.00, selling_price: 50.00 },
-  { id: "uuid-7", sku: "SPK-PLG", name: "Iridium Spark Plug", item_type: "PRODUCT", category: "Engine", current_stock: 30, reorder_level: 20, cost_price: 8.00, selling_price: 18.25 },
-  { id: "uuid-8", sku: "TR-FR-120", name: "Front Tire 120/70-17", item_type: "PRODUCT", category: "Tires", current_stock: 4, reorder_level: 5, cost_price: 80.00, selling_price: 120.00 },
-];
-
 export default function InventoryManagementPage() {
-  const [items, setItems] = useState<CatalogItem[]>(INITIAL_CATALOG);
+  const [items, setItems] = useState<CatalogItem[]>([]);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "PRODUCT" | "SERVICE">("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,14 +82,14 @@ export default function InventoryManagementPage() {
   }, []);
 
   const fetchItems = async () => {
-    let list: CatalogItem[] = INITIAL_CATALOG;
+    let list: CatalogItem[] = [];
     try {
       const res = await apiClient.get<CatalogItem[]>("/inventory");
-      if (Array.isArray(res.data) && res.data.length > 0) {
+      if (Array.isArray(res.data)) {
         list = res.data;
       }
     } catch (err) {
-      // Use local state fallback
+      // empty list on error
     }
 
     const storedCustom = localStorage.getItem("motoshop_custom_inventory");

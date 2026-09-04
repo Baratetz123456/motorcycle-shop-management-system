@@ -62,29 +62,6 @@ interface ActiveRepairCart {
   }[];
 }
 
-const FALLBACK_CATALOG: CatalogItem[] = [
-  // Services
-  { id: "10000000-0000-0000-0000-000000000004", sku: "SRV-TUN-01", name: "General Tune-Up & Inspection", item_type: "SERVICE", category: "Maintenance", selling_price: 75.00, current_stock: 0 },
-  { id: "10000000-0000-0000-0000-000000000005", sku: "SRV-OIL-CHG", name: "Oil & Filter Change Service", item_type: "SERVICE", category: "Maintenance", selling_price: 30.00, current_stock: 0 },
-  { id: "10000000-0000-0000-0000-000000000009", sku: "SRV-BRK-SRV", name: "Brake Cleaning & Caliper Bleed", item_type: "SERVICE", category: "Brakes", selling_price: 45.00, current_stock: 0 },
-  { id: "10000000-0000-0000-0000-000000000010", sku: "SRV-CVT-CLN", name: "CVT System Cleaning & Tuning", item_type: "SERVICE", category: "Transmission", selling_price: 60.00, current_stock: 0 },
-  { id: "10000000-0000-0000-0000-000000000011", sku: "SRV-ENG-OVR", name: "Engine Diagnostic & Valve Clearance", item_type: "SERVICE", category: "Engine", selling_price: 110.00, current_stock: 0 },
-  // Products
-  { id: "10000000-0000-0000-0000-000000000001", sku: "OIL-10W40", name: "Synthetic Motor Oil 10W-40", item_type: "PRODUCT", category: "Fluids", selling_price: 15.99, current_stock: 45 },
-  { id: "10000000-0000-0000-0000-000000000002", sku: "FLT-001", name: "Premium Oil Filter", item_type: "PRODUCT", category: "Filters", selling_price: 8.50, current_stock: 12 },
-  { id: "10000000-0000-0000-0000-000000000003", sku: "BRK-PAD-F", name: "Front Brake Pads", item_type: "PRODUCT", category: "Brakes", selling_price: 34.00, current_stock: 8 },
-  { id: "10000000-0000-0000-0000-000000000006", sku: "CHN-LUB", name: "Chain Lube Spray", item_type: "PRODUCT", category: "Maintenance", selling_price: 12.00, current_stock: 20 },
-  { id: "10000000-0000-0000-0000-000000000007", sku: "SPK-PLG", name: "Iridium Spark Plug", item_type: "PRODUCT", category: "Engine", selling_price: 18.25, current_stock: 30 },
-  { id: "10000000-0000-0000-0000-000000000008", sku: "TR-FR-120", name: "Front Tire 120/70-17", item_type: "PRODUCT", category: "Tires", selling_price: 120.00, current_stock: 4 },
-];
-
-const DEMO_ACTIVE_REPAIRS: ActiveRepairCart[] = [
-  { job_id: "jo-1", jo_number: "JO-A1B2", customer_name: "John Doe", motorcycle_name: "Yamaha MT-07 (2023)", status: "ONGOING", is_paid: false, labor_charge: 0, parts_charge: 0, total_amount: 0, cart_items: [] },
-  { job_id: "jo-2", jo_number: "JO-C3D4", customer_name: "Jane Roe", motorcycle_name: "Honda Click 125i (2022)", status: "PENDING", is_paid: false, labor_charge: 0, parts_charge: 0, total_amount: 0, cart_items: [] },
-  { job_id: "jo-3", jo_number: "JO-E5F6", customer_name: "Bob Lee", motorcycle_name: "Kawasaki Ninja 400 (2023)", status: "ONGOING", is_paid: false, labor_charge: 0, parts_charge: 0, total_amount: 0, cart_items: [] },
-  { job_id: "jo-4", jo_number: "JO-G7H8", customer_name: "Carlos Mendoza", motorcycle_name: "Ducati Panigale V4 (2023)", status: "ONGOING", is_paid: false, labor_charge: 0, parts_charge: 0, total_amount: 0, cart_items: [] },
-];
-
 export default function POSPage() {
   const router = useRouter();
   const { cart, addToCart, removeFromCart, updateQty, getTotals, clearCart } = usePosStore();
@@ -96,8 +73,8 @@ export default function POSPage() {
   // Two filters only: "SERVICE" | "PRODUCT" (Services is default)
   const [activeFilter, setActiveFilter] = useState<"SERVICE" | "PRODUCT">("SERVICE");
 
-  const [catalog, setCatalog] = useState<CatalogItem[]>(FALLBACK_CATALOG);
-  const [activeRepairs, setActiveRepairs] = useState<ActiveRepairCart[]>(DEMO_ACTIVE_REPAIRS);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [activeRepairs, setActiveRepairs] = useState<ActiveRepairCart[]>([]);
   
   // Rule: Cashier newly logging in/visiting page has NO selected customer by default
   const [selectedRepair, setSelectedRepair] = useState<ActiveRepairCart | null>(null);
@@ -107,41 +84,49 @@ export default function POSPage() {
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [frequencyMap, setFrequencyMap] = useState<Record<string, number>>({});
 
-  // Calculate item availment frequencies from sales logs and baseline weights
+  // Calculate item availment frequencies from live sales transactions
   useEffect(() => {
-    const baseWeights: Record<string, number> = {
-      "Oil & Filter Change Service": 58,
-      "General Tune-Up & Inspection": 46,
-      "CVT System Cleaning & Tuning": 34,
-      "Brake Cleaning & Caliper Bleed": 30,
-      "Engine Diagnostic & Valve Clearance": 24,
-      "Synthetic Motor Oil 10W-40": 65,
-      "Premium Oil Filter": 44,
-      "Front Brake Pads": 38,
-      "Chain Lube Spray": 29,
-      "Iridium Spark Plug": 25,
-      "Front Tire 120/70-17": 16,
-    };
-
-    try {
-      const stored = localStorage.getItem("motoshop_sales_logs");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          parsed.forEach((tx: any) => {
+    const calcFrequencies = async () => {
+      const counts: Record<string, number> = {};
+      try {
+        const res = await apiClient.get<any[]>("/sales/transactions");
+        if (Array.isArray(res.data)) {
+          res.data.forEach((tx: any) => {
             if (Array.isArray(tx.items)) {
               tx.items.forEach((it: any) => {
-                if (it.name) {
-                  baseWeights[it.name] = (baseWeights[it.name] || 0) + (Number(it.qty) || 1);
+                const name = it.name || it.item_name;
+                if (name) {
+                  counts[name] = (counts[name] || 0) + (Number(it.qty) || 1);
                 }
               });
             }
           });
         }
-      }
-    } catch (e) {}
+      } catch (e) {}
 
-    setFrequencyMap(baseWeights);
+      try {
+        const stored = localStorage.getItem("motoshop_sales_logs");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((tx: any) => {
+              if (Array.isArray(tx.items)) {
+                tx.items.forEach((it: any) => {
+                  const name = it.name || it.item_name;
+                  if (name) {
+                    counts[name] = (counts[name] || 0) + (Number(it.qty) || 1);
+                  }
+                });
+              }
+            });
+          }
+        }
+      } catch (e) {}
+
+      setFrequencyMap(counts);
+    };
+
+    calcFrequencies();
   }, []);
 
   useEffect(() => {
@@ -169,14 +154,14 @@ export default function POSPage() {
 
   // Real-time catalog & stock synchronization with Inventory Management
   const fetchCatalog = async () => {
-    let list: CatalogItem[] = FALLBACK_CATALOG;
+    let list: CatalogItem[] = [];
     try {
       const res = await apiClient.get<CatalogItem[]>("/inventory");
       if (Array.isArray(res.data) && res.data.length > 0) {
         list = res.data;
       }
     } catch (e) {
-      // Use fallback
+      // empty list
     }
 
     // 1. Merge custom inventory items created in Inventory Management

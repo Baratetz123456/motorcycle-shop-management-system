@@ -59,155 +59,8 @@ interface CashierPayrollRecord {
   status: "PENDING" | "DISBURSED";
 }
 
-// Initial records distributed across days, weeks, and months
 const NOW = Date.now();
 const ONE_DAY = 24 * 3600 * 1000;
-
-const INITIAL_MECHANICS_COMMISSIONS: CommissionRecord[] = [
-  {
-    id: "comm-1",
-    job_order_id: "jo-1",
-    jo_number: "JO-A1B2",
-    customer_name: "John Doe",
-    motorcycle_name: "Yamaha MT-07 (2023)",
-    mechanic_id: "mech-1",
-    mechanic_name: "Mike Smith",
-    labor_base: 150.00,
-    rate_percentage: 40,
-    amount_earned: 60.00,
-    created_at: new Date(NOW - 2 * 3600 * 1000).toISOString(), // today
-    status: "PENDING"
-  },
-  {
-    id: "comm-2",
-    job_order_id: "jo-2",
-    jo_number: "JO-C3D4",
-    customer_name: "Jane Roe",
-    motorcycle_name: "Honda Click 125i (2022)",
-    mechanic_id: "mech-1",
-    mechanic_name: "Mike Smith",
-    labor_base: 80.00,
-    rate_percentage: 40,
-    amount_earned: 32.00,
-    created_at: new Date(NOW - 3 * ONE_DAY).toISOString(), // 3 days ago (this week)
-    status: "PENDING"
-  },
-  {
-    id: "comm-3",
-    job_order_id: "jo-3",
-    jo_number: "JO-E5F6",
-    customer_name: "Bob Lee",
-    motorcycle_name: "Kawasaki Ninja 400 (2023)",
-    mechanic_id: "mech-2",
-    mechanic_name: "Alex Rivera",
-    labor_base: 120.00,
-    rate_percentage: 45,
-    amount_earned: 54.00,
-    created_at: new Date(NOW - 4 * ONE_DAY).toISOString(), // 4 days ago (this week)
-    status: "PENDING"
-  },
-  {
-    id: "comm-4",
-    job_order_id: "jo-4",
-    jo_number: "JO-F7G8",
-    customer_name: "Carlos Mendoza",
-    motorcycle_name: "Suzuki Raider R150",
-    mechanic_id: "mech-2",
-    mechanic_name: "Alex Rivera",
-    labor_base: 180.00,
-    rate_percentage: 45,
-    amount_earned: 81.00,
-    created_at: new Date(NOW - 12 * ONE_DAY).toISOString(), // 12 days ago (this month)
-    status: "DISBURSED"
-  },
-  {
-    id: "comm-5",
-    job_order_id: "jo-5",
-    jo_number: "JO-H9J0",
-    customer_name: "Eduardo Santos",
-    motorcycle_name: "KTM Duke 390",
-    mechanic_id: "mech-3",
-    mechanic_name: "Carlos Gomez",
-    labor_base: 220.00,
-    rate_percentage: 35,
-    amount_earned: 77.00,
-    created_at: new Date(NOW - 18 * ONE_DAY).toISOString(), // 18 days ago (this month)
-    status: "PENDING"
-  },
-  {
-    id: "comm-6",
-    job_order_id: "jo-6",
-    jo_number: "JO-K1L2",
-    customer_name: "Rico Blanco",
-    motorcycle_name: "Yamaha NMAX 155",
-    mechanic_id: "mech-1",
-    mechanic_name: "Mike Smith",
-    labor_base: 95.00,
-    rate_percentage: 40,
-    amount_earned: 38.00,
-    created_at: new Date(NOW - 45 * ONE_DAY).toISOString(), // 45 days ago (this year)
-    status: "DISBURSED"
-  },
-  {
-    id: "comm-7",
-    job_order_id: "jo-7",
-    jo_number: "JO-M3N4",
-    customer_name: "Arthur Pendelton",
-    motorcycle_name: "Honda CB650R",
-    mechanic_id: "mech-2",
-    mechanic_name: "Alex Rivera",
-    labor_base: 310.00,
-    rate_percentage: 45,
-    amount_earned: 139.50,
-    created_at: new Date(NOW - 80 * ONE_DAY).toISOString(), // 80 days ago (this year)
-    status: "DISBURSED"
-  }
-];
-
-const INITIAL_CASHIERS_PAYROLL: CashierPayrollRecord[] = [
-  {
-    id: "cpay-1",
-    cashier_email: "cashier@motoshop.com",
-    cashier_name: "Sarah Connor",
-    shifts_count: 5,
-    base_daily_rate: 650.00,
-    transactions_processed: 24,
-    total_volume_handled: 8420.50,
-    total_pay: 3250.00,
-    created_at: new Date(NOW - 2 * ONE_DAY).toISOString(), // this week
-    status: "PENDING"
-  },
-  {
-    id: "cpay-2",
-    cashier_email: "john.cashier@motoshop.com",
-    cashier_name: "John Miller",
-    shifts_count: 4,
-    base_daily_rate: 650.00,
-    transactions_processed: 18,
-    total_volume_handled: 5120.00,
-    total_pay: 2600.00,
-    created_at: new Date(NOW - 15 * ONE_DAY).toISOString(), // this month
-    status: "DISBURSED"
-  },
-  {
-    id: "cpay-3",
-    cashier_email: "sarah.alt@motoshop.com",
-    cashier_name: "Sarah Connor",
-    shifts_count: 12,
-    base_daily_rate: 650.00,
-    transactions_processed: 58,
-    total_volume_handled: 19800.00,
-    total_pay: 7800.00,
-    created_at: new Date(NOW - 60 * ONE_DAY).toISOString(), // this year
-    status: "DISBURSED"
-  }
-];
-
-const DEFAULT_MECHANIC_RATES: Record<string, number> = {
-  "Mike Smith": 40,
-  "Alex Rivera": 45,
-  "Carlos Gomez": 35,
-};
 
 type PeriodOption = "WEEKLY" | "MONTHLY" | "YEARLY" | "ALL";
 
@@ -219,15 +72,15 @@ export default function PayrollPage() {
   const [activeTab, setActiveTab] = useState<"MECHANICS" | "CASHIERS">("MECHANICS");
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>("MONTHLY");
   
-  const [commissions, setCommissions] = useState<CommissionRecord[]>(INITIAL_MECHANICS_COMMISSIONS);
-  const [cashierPayroll, setCashierPayroll] = useState<CashierPayrollRecord[]>(INITIAL_CASHIERS_PAYROLL);
+  const [commissions, setCommissions] = useState<CommissionRecord[]>([]);
+  const [cashierPayroll, setCashierPayroll] = useState<CashierPayrollRecord[]>([]);
   
   // Per-mechanic commission rates map (determined by assigned mechanic profiles in database)
-  const [mechanicRates, setMechanicRates] = useState<Record<string, number>>(DEFAULT_MECHANIC_RATES);
+  const [mechanicRates, setMechanicRates] = useState<Record<string, number>>({});
 
   const [selectedPayslip, setSelectedPayslip] = useState<any | null>(null);
   const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false);
-  const [expandedMechanic, setExpandedMechanic] = useState<string | null>("Mike Smith");
+  const [expandedMechanic, setExpandedMechanic] = useState<string | null>(null);
   const [disbursing, setDisbursing] = useState<boolean>(false);
 
   useEffect(() => {
@@ -242,26 +95,63 @@ export default function PayrollPage() {
     });
 
     fetchCommissions();
+    fetchCashiers();
   }, []);
 
   const fetchCommissions = async () => {
     try {
       const res = await apiClient.get<CommissionRecord[]>("/repairs/commissions");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        const merged = res.data.map((item, idx) => ({
+      if (Array.isArray(res.data)) {
+        const merged = res.data.map((item) => ({
           ...item,
-          mechanic_name: item.mechanic_name || (idx % 2 === 0 ? "Mike Smith" : "Alex Rivera"),
+          mechanic_name: item.mechanic_name || "Mike Smith",
           jo_number: item.jo_number || `JO-${(item.job_order_id || "A1B2").slice(0, 4).toUpperCase()}`,
-          customer_name: item.customer_name || "Valued Customer",
-          motorcycle_name: item.motorcycle_name || "Standard Motorcycle",
+          customer_name: item.customer_name || "Customer",
+          motorcycle_name: item.motorcycle_name || "Motorcycle",
           status: item.status || "PENDING",
           created_at: item.created_at || new Date().toISOString()
         }));
         setCommissions(merged);
+        if (merged.length > 0) {
+          setExpandedMechanic(merged[0].mechanic_name);
+        }
       }
     } catch (e) {
-      // Fallback state
+      // ignore
     }
+  };
+
+  const fetchCashiers = async () => {
+    try {
+      const [usersRes, salesRes] = await Promise.all([
+        apiClient.get<any>("/auth/users?page=1&page_size=100"),
+        apiClient.get<any[]>("/sales/transactions"),
+      ]);
+
+      const cashiers = (usersRes.data?.items || []).filter((u: any) => u.role === "cashier");
+      const sales = Array.isArray(salesRes.data) ? salesRes.data : [];
+
+      const records: CashierPayrollRecord[] = cashiers.map((c: any) => {
+        const cName = `${c.first_name || ""} ${c.last_name || ""}`.trim() || c.email;
+        const mySales = sales.filter((s: any) => s.cashier_name === c.email || s.cashier_name === cName);
+        const volume = mySales.reduce((sum: number, s: any) => sum + (Number(s.total) || 0), 0);
+        const baseWage = Number(c.base_wage) || 650;
+        const shifts = Math.max(1, Math.ceil(mySales.length / 5));
+        return {
+          id: `cpay-${c.id}`,
+          cashier_email: c.email,
+          cashier_name: cName,
+          shifts_count: shifts,
+          base_daily_rate: baseWage,
+          transactions_processed: mySales.length,
+          total_volume_handled: volume,
+          total_pay: shifts * baseWage,
+          created_at: c.created_at || new Date().toISOString(),
+          status: "PENDING"
+        };
+      });
+      setCashierPayroll(records);
+    } catch (e) {}
   };
 
   // Filter items by selected period
@@ -290,7 +180,7 @@ export default function PayrollPage() {
   const mechanicSummaries = useMemo(() => {
     return filteredCommissions.reduce((acc, comm) => {
       const name = comm.mechanic_name || "Mike Smith";
-      const assignedRate = mechanicRates[name] ?? DEFAULT_MECHANIC_RATES[name] ?? 40;
+      const assignedRate = mechanicRates[name] ?? 40;
 
       if (!acc[name]) {
         acc[name] = {
