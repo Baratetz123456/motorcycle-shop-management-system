@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { 
@@ -50,8 +50,8 @@ import {
   resetCustomPermissions 
 } from "@/lib/permissions";
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
-import { THEME_OPTIONS, getAppTheme, saveAppTheme, AppTheme } from "@/lib/theme";
-import { AVATAR_PRESETS } from "@/lib/avatars";
+import { THEME_OPTIONS, getAppTheme, saveAppTheme, applyThemeToDocument, AppTheme } from "@/lib/theme";
+import { AVATAR_PRESETS, UserAvatar } from "@/lib/avatars";
 
 type SettingsTab = "general" | "roles" | "users" | "profile" | "logs";
 
@@ -139,27 +139,54 @@ function SettingsContent() {
 
   // Theme State (All users)
   const [activeTheme, setActiveTheme] = useState<AppTheme>("cyan");
+  const [savedTheme, setSavedTheme] = useState<AppTheme>("cyan");
+  const savedThemeRef = useRef<AppTheme>("cyan");
   const [themeSuccess, setThemeSuccess] = useState<string | null>(null);
 
   // Avatar State (All users)
   const [selectedAvatar, setSelectedAvatar] = useState<string>("avatar-1");
+  const [savedAvatar, setSavedAvatar] = useState<string>("avatar-1");
+  const savedAvatarRef = useRef<string>("avatar-1");
+
+  // Dirty Flags
+  const isThemeDirty = activeTheme !== savedTheme;
+  const isAvatarDirty = selectedAvatar !== savedAvatar;
+
+  useEffect(() => {
+    savedThemeRef.current = savedTheme;
+  }, [savedTheme]);
+
+  useEffect(() => {
+    savedAvatarRef.current = savedAvatar;
+  }, [savedAvatar]);
+
+  // Cleanup on unmount: if leaving the settings page with an unsaved theme preview, revert to savedTheme!
+  useEffect(() => {
+    return () => {
+      applyThemeToDocument(savedThemeRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const role = (localStorage.getItem("user_role") || "").toLowerCase();
     const userId = localStorage.getItem("user_id") || "";
     const userEmail = localStorage.getItem("user_email") || "";
-    const savedAvatar = localStorage.getItem("user_avatar") || "avatar-1";
+    const storedAvatar = localStorage.getItem("user_avatar") || "avatar-1";
 
     setCurrentUserRole(role);
     setCurrentUserId(userId);
-    setSelectedAvatar(savedAvatar);
+    setSelectedAvatar(storedAvatar);
+    setSavedAvatar(storedAvatar);
+    savedAvatarRef.current = storedAvatar;
 
     const adminCheck = role === "admin";
     setIsAdmin(adminCheck);
 
     // Initialize Theme
-    const savedTheme = getAppTheme();
-    setActiveTheme(savedTheme);
+    const storedTheme = getAppTheme();
+    setActiveTheme(storedTheme);
+    setSavedTheme(storedTheme);
+    savedThemeRef.current = storedTheme;
 
     // Check tab from query param
     const tabParam = searchParams.get("tab") as SettingsTab;
@@ -208,6 +235,8 @@ function SettingsContent() {
     const handleThemeSync = (e: any) => {
       if (e.detail?.theme) {
         setActiveTheme(e.detail.theme);
+        setSavedTheme(e.detail.theme);
+        savedThemeRef.current = e.detail.theme;
       }
     };
     window.addEventListener("theme_updated", handleThemeSync);
@@ -279,21 +308,36 @@ function SettingsContent() {
     }
   };
 
-  // --- Theme Selection Handler ---
-  const handleSelectTheme = (themeId: AppTheme) => {
-    setActiveTheme(themeId);
-    saveAppTheme(themeId);
-    const themeObj = THEME_OPTIONS.find((t) => t.id === themeId);
-    setThemeSuccess(`Color theme updated to "${themeObj?.name}".`);
-    setTimeout(() => setThemeSuccess(null), 3000);
+  // Switch settings tab and revert unsaved changes if discarding
+  const handleTabChange = (newTab: SettingsTab) => {
+    if (activeTab === newTab) return;
+
+    // Revert temporary unsaved theme preview back to saved state
+    if (activeTheme !== savedThemeRef.current) {
+      setActiveTheme(savedThemeRef.current);
+      applyThemeToDocument(savedThemeRef.current);
+    }
+
+    // Revert temporary unsaved avatar preview back to saved state
+    if (selectedAvatar !== savedAvatarRef.current) {
+      setSelectedAvatar(savedAvatarRef.current);
+    }
+
+    setActiveTab(newTab);
+    if (newTab === "users") {
+      fetchStaffUsers(1, staffRoleFilter, staffSearch);
+    }
   };
 
+  // --- Theme Selection Handler (Temporary in-page preview until Save is clicked) ---
+  const handleSelectTheme = (themeId: AppTheme) => {
+    setActiveTheme(themeId);
+    applyThemeToDocument(themeId); // Temporary DOM preview
+  };
+
+  // --- Avatar Selection Handler (In-page preview until Save is clicked) ---
   const handleSelectAvatar = (avatarId: string) => {
     setSelectedAvatar(avatarId);
-    localStorage.setItem("user_avatar", avatarId);
-    window.dispatchEvent(new CustomEvent("user_profile_updated", { detail: { avatarId } }));
-    setProfileSuccess("Profile face avatar updated!");
-    setTimeout(() => setProfileSuccess(null), 3000);
   };
 
   // --- Handlers: Tab 1 General Preferences ---
@@ -317,13 +361,26 @@ function SettingsContent() {
   const handleSaveGeneral = (e: React.FormEvent) => {
     e.preventDefault();
     saveSystemSettings(settings);
-    setGeneralSuccess("Application preferences updated and broadcasted successfully.");
+
+    // Commit theme if changed
+    if (activeTheme !== savedTheme) {
+      saveAppTheme(activeTheme);
+      setSavedTheme(activeTheme);
+      savedThemeRef.current = activeTheme;
+    }
+
+    setGeneralSuccess("Application preferences and theme updated successfully.");
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
 
   const handleResetGeneral = () => {
     setSettings(DEFAULT_SETTINGS);
     saveSystemSettings(DEFAULT_SETTINGS);
+    setActiveTheme("cyan");
+    applyThemeToDocument("cyan");
+    saveAppTheme("cyan");
+    setSavedTheme("cyan");
+    savedThemeRef.current = "cyan";
     setGeneralSuccess("Preferences restored to factory defaults.");
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
@@ -408,7 +465,22 @@ function SettingsContent() {
         }
       }
 
-      setProfileSuccess("Your profile information has been saved successfully.");
+      // Commit Avatar selection to localStorage and broadcast to sidebar
+      if (selectedAvatar !== savedAvatar) {
+        localStorage.setItem("user_avatar", selectedAvatar);
+        window.dispatchEvent(new CustomEvent("user_profile_updated", { detail: { avatarId: selectedAvatar } }));
+        setSavedAvatar(selectedAvatar);
+        savedAvatarRef.current = selectedAvatar;
+      }
+
+      // If non-admin and theme changed, commit theme
+      if (!isAdmin && activeTheme !== savedTheme) {
+        saveAppTheme(activeTheme);
+        setSavedTheme(activeTheme);
+        savedThemeRef.current = activeTheme;
+      }
+
+      setProfileSuccess("Your profile, avatar, and preferences have been saved successfully.");
       setTimeout(() => setProfileSuccess(null), 4000);
     } catch (err: any) {
       console.error("Failed to update profile", err);
@@ -442,17 +514,24 @@ function SettingsContent() {
             Choose your preferred color palette for accents, status highlights, and dashboard badges.
           </p>
         </div>
-        {themeSuccess && (
+        {isThemeDirty ? (
+          <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            Unsaved Theme Preview (Click Save to apply)
+          </span>
+        ) : themeSuccess ? (
           <span className="text-xs text-emerald-400 font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto">
             <CheckCircle2 className="w-3.5 h-3.5" />
             {themeSuccess}
           </span>
-        )}
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
         {THEME_OPTIONS.map((theme) => {
           const isSelected = activeTheme === theme.id;
+          const isCurrentSaved = savedTheme === theme.id;
+
           return (
             <button
               key={theme.id}
@@ -461,7 +540,9 @@ function SettingsContent() {
               className={clsx(
                 "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group flex flex-col justify-between h-32",
                 isSelected
-                  ? "bg-zinc-900 border-white/30 shadow-xl shadow-cyan-500/10 ring-2 ring-cyan-500/40"
+                  ? isThemeDirty
+                    ? "bg-zinc-900 border-amber-500/50 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/40"
+                    : "bg-zinc-900 border-white/30 shadow-xl shadow-cyan-500/10 ring-2 ring-cyan-500/40"
                   : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
               )}
             >
@@ -473,8 +554,15 @@ function SettingsContent() {
                   <div className="text-[11px] text-zinc-400 mt-0.5">{theme.tagline}</div>
                 </div>
                 {isSelected && (
-                  <div className="w-5 h-5 rounded-full bg-cyan-500 text-zinc-950 flex items-center justify-center shrink-0 shadow-md">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                  <div className={clsx(
+                    "w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-md",
+                    isThemeDirty ? "bg-amber-400 text-zinc-950" : "bg-cyan-500 text-zinc-950"
+                  )}>
+                    {isThemeDirty ? (
+                      <Sparkles className="w-3 h-3 stroke-[2.5]" />
+                    ) : (
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    )}
                   </div>
                 )}
               </div>
@@ -489,9 +577,16 @@ function SettingsContent() {
                     />
                   ))}
                 </div>
-                <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-bold ml-auto">
-                  {theme.id}
-                </span>
+                <div className="ml-auto flex items-center gap-1.5">
+                  {isCurrentSaved && (
+                    <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                      Saved
+                    </span>
+                  )}
+                  <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-bold">
+                    {theme.id}
+                  </span>
+                </div>
               </div>
             </button>
           );
@@ -535,7 +630,7 @@ function SettingsContent() {
         {isAdmin && (
           <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner flex-wrap gap-1.5">
             <button
-              onClick={() => setActiveTab("general")}
+              onClick={() => handleTabChange("general")}
               className={clsx(
                 "flex-1 min-w-[130px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
                 activeTab === "general"
@@ -548,7 +643,7 @@ function SettingsContent() {
             </button>
 
             <button
-              onClick={() => setActiveTab("roles")}
+              onClick={() => handleTabChange("roles")}
               className={clsx(
                 "flex-1 min-w-[130px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
                 activeTab === "roles"
@@ -561,10 +656,7 @@ function SettingsContent() {
             </button>
 
             <button
-              onClick={() => {
-                setActiveTab("users");
-                fetchStaffUsers(1, staffRoleFilter, staffSearch);
-              }}
+              onClick={() => handleTabChange("users")}
               className={clsx(
                 "flex-1 min-w-[130px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
                 activeTab === "users"
@@ -577,7 +669,7 @@ function SettingsContent() {
             </button>
 
             <button
-              onClick={() => setActiveTab("profile")}
+              onClick={() => handleTabChange("profile")}
               className={clsx(
                 "flex-1 min-w-[130px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
                 activeTab === "profile"
@@ -590,7 +682,7 @@ function SettingsContent() {
             </button>
 
             <button
-              onClick={() => setActiveTab("logs")}
+              onClick={() => handleTabChange("logs")}
               className={clsx(
                 "flex-1 min-w-[130px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
                 activeTab === "logs"
@@ -756,13 +848,26 @@ function SettingsContent() {
                   <span>Reset Defaults</span>
                 </button>
 
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Save</span>
-                </button>
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                  {isThemeDirty && (
+                    <span className="text-xs text-amber-400 flex items-center gap-1.5 font-medium animate-pulse">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Theme preview active
+                    </span>
+                  )}
+                  <button
+                    type="submit"
+                    className={clsx(
+                      "w-full sm:w-auto px-6 py-2.5 font-semibold rounded-xl shadow-lg transition-all text-xs flex items-center justify-center gap-2",
+                      isThemeDirty
+                        ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-white ring-2 ring-cyan-400/50 shadow-cyan-500/30 scale-105"
+                        : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-cyan-500/20"
+                    )}
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Store Preferences</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -1243,58 +1348,218 @@ function SettingsContent() {
               {/* Personal Theme Selector (Non-admins configure theme here; Admins configure it in General Store Preferences) */}
               {!isAdmin && renderThemeSelector()}
 
-              {/* Profile Face Avatar Presets */}
-              <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              {/* Profile Face Avatar Presets & Live Persona Identity Preview */}
+              <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-6 shadow-xl backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/5">
                   <div>
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <User className="w-4 h-4 text-cyan-400" />
-                      Select Profile Face Avatar
+                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                      Workshop Staff Avatar & Flat Identity
                     </h3>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Choose from 10 distinct illustrated staff face presets for your sidebar profile.
+                      Choose from 12 flat vector workshop personas. Selected avatars sync live across the sidebar, customer receipts, and store activity logs.
                     </p>
                   </div>
-                  <span className="text-xs font-mono text-cyan-400 font-bold px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 self-start sm:self-auto">
-                    Active: {AVATAR_PRESETS.find((p) => p.id === selectedAvatar)?.name || "Alex"}
-                  </span>
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="text-[11px] font-mono text-zinc-400 px-2.5 py-1 rounded-lg bg-zinc-900 border border-white/5">
+                      12 Personas Available
+                    </span>
+                    <span className={clsx(
+                      "text-xs font-mono font-bold px-2.5 py-1 rounded-lg border transition-all",
+                      isAvatarDirty
+                        ? "text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-sm"
+                        : "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
+                    )}>
+                      {isAvatarDirty ? "Previewing: " : "Active: "}
+                      {AVATAR_PRESETS.find((p) => p.id === selectedAvatar)?.name || "Alex"}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-3 pt-2">
-                  {AVATAR_PRESETS.map((preset) => {
-                    const isSelected = selectedAvatar === preset.id;
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Left Column: Live Profile & Sidebar Preview Card */}
+                  {(() => {
+                    const activePreset = AVATAR_PRESETS.find((p) => p.id === selectedAvatar) || AVATAR_PRESETS[0];
+                    const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Staff Member";
+
                     return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => handleSelectAvatar(preset.id)}
-                        className={clsx(
-                          "p-2.5 rounded-2xl border flex flex-col items-center gap-2 transition-all group relative text-center",
-                          isSelected
-                            ? "bg-zinc-900 border-cyan-500 shadow-lg shadow-cyan-500/20 ring-2 ring-cyan-500/50 scale-105"
-                            : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
-                        )}
-                        title={`${preset.name} - ${preset.roleHint}`}
-                      >
+                      <div className="lg:col-span-4 xl:col-span-4 space-y-4">
+                        {/* Live Persona Card */}
                         <div className={clsx(
-                          "w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr transition-transform group-hover:scale-105 shadow-sm",
-                          preset.bgGradient
+                          "p-5 rounded-2xl bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 border shadow-lg relative overflow-hidden group transition-all",
+                          isAvatarDirty ? "border-amber-500/40 ring-1 ring-amber-500/20" : "border-white/10"
                         )}>
-                          <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-0.5 overflow-hidden">
-                            {preset.renderFace()}
+                          {/* Ambient glow from persona gradient */}
+                          <div className={clsx(
+                            "absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-20 bg-gradient-to-tr pointer-events-none transition-all duration-500",
+                            activePreset.bgGradient
+                          )} />
+
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-zinc-400 flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-cyan-400" />
+                              Live Identity Card
+                            </span>
+                            {isAvatarDirty ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1 animate-pulse">
+                                <Sparkles className="w-3 h-3" />
+                                Unsaved Preview
+                              </span>
+                            ) : (
+                              <span className={clsx("text-[10px] font-bold px-2 py-0.5 rounded-full", activePreset.badgeColor)}>
+                                {activePreset.department}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col items-center text-center p-2">
+                            {/* Large 80px Avatar */}
+                            <div className="relative mb-3">
+                              <div className={clsx(
+                                "w-20 h-20 rounded-full p-1 bg-gradient-to-tr transition-all duration-300 shadow-xl",
+                                activePreset.bgGradient
+                              )}>
+                                <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-1 overflow-hidden">
+                                  {activePreset.renderFace()}
+                                </div>
+                              </div>
+                              {isAvatarDirty ? (
+                                <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-amber-400 border-2 border-zinc-950 flex items-center justify-center text-[8px] font-bold text-zinc-950 shadow-md animate-pulse" title="Previewing (Click Save below to commit)">
+                                  Preview
+                                </span>
+                              ) : (
+                                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center text-zinc-950 shadow-md" title="Active Saved Avatar">
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                </span>
+                              )}
+                            </div>
+
+                            <h4 className="text-base font-bold text-white tracking-tight">{fullName}</h4>
+                            <p className="text-xs text-zinc-400 truncate max-w-full font-mono mt-0.5">{profile.email || "staff@motoshop.com"}</p>
+
+                            <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
+                              <span className={clsx("px-2.5 py-0.5 text-[10px] font-bold border rounded-md uppercase tracking-wider", getRoleBadgeStyle(profile.role))}>
+                                {profile.role}
+                              </span>
+                              <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                Persona: {activePreset.name} ({activePreset.roleHint})
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="w-full min-w-0">
-                          <span className="block text-[11px] font-bold text-zinc-200 group-hover:text-white truncate">
-                            {preset.name}
-                          </span>
-                          <span className="block text-[9px] text-zinc-500 truncate">
-                            {preset.roleHint}
-                          </span>
+
+                        {/* Sidebar Bottom Dock Live Simulation */}
+                        <div className="p-4 rounded-xl bg-zinc-900/60 border border-white/5 space-y-2">
+                          <div className="flex items-center justify-between text-[11px] text-zinc-400 font-medium">
+                            <span className="flex items-center gap-1.5">
+                              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                              Sidebar Dock Mockup
+                            </span>
+                            {isAvatarDirty ? (
+                              <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1 font-semibold">
+                                <Sparkles className="w-3 h-3 animate-pulse" />
+                                Previewing (Unsaved)
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 font-semibold">
+                                <Check className="w-3 h-3" />
+                                Active Synced
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={clsx(
+                            "p-2.5 rounded-xl bg-zinc-950/80 border flex items-center gap-3 shadow-inner transition-colors",
+                            isAvatarDirty ? "border-amber-500/30" : "border-white/10"
+                          )}>
+                            <UserAvatar avatarId={selectedAvatar} className="w-8 h-8" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-zinc-100 truncate">{fullName}</p>
+                              <span className={clsx("inline-block px-1.5 py-0.5 text-[9px] font-semibold border rounded uppercase tracking-wider", getRoleBadgeStyle(profile.role))}>
+                                {profile.role}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </button>
+                      </div>
                     );
-                  })}
+                  })()}
+
+                  {/* Right Column: 12 Distinct Flat Persona Cards */}
+                  <div className="lg:col-span-8 xl:col-span-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {AVATAR_PRESETS.map((preset) => {
+                        const isSelected = selectedAvatar === preset.id;
+                        const isCurrentSaved = savedAvatar === preset.id;
+
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleSelectAvatar(preset.id)}
+                            className={clsx(
+                              "p-3 rounded-2xl border text-left transition-all relative group flex flex-col items-center justify-between gap-2.5 min-h-[148px]",
+                              isSelected
+                                ? isAvatarDirty
+                                  ? "bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10 ring-2 ring-amber-500/40 -translate-y-0.5"
+                                  : "bg-cyan-500/10 border-cyan-500 shadow-lg shadow-cyan-500/10 ring-2 ring-cyan-500/40 -translate-y-0.5"
+                                : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/80 hover:-translate-y-0.5"
+                            )}
+                            title={`${preset.name} - ${preset.roleHint} (${preset.department})`}
+                          >
+                            {/* Selection / Checkmark Indicator */}
+                            {isSelected && (
+                              <div className={clsx(
+                                "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-in zoom-in-50 duration-150",
+                                isAvatarDirty ? "bg-amber-400 text-zinc-950" : "bg-cyan-500 text-zinc-950"
+                              )}>
+                                {isAvatarDirty ? (
+                                  <Sparkles className="w-3 h-3 stroke-[2.5]" />
+                                ) : (
+                                  <Check className="w-3 h-3 stroke-[3]" />
+                                )}
+                              </div>
+                            )}
+
+                            {/* Flat Avatar Graphic (56px) */}
+                            <div className={clsx(
+                              "w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr transition-transform group-hover:scale-105 shadow-md shrink-0 mt-0.5",
+                              preset.bgGradient
+                            )}>
+                              <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-0.5 overflow-hidden">
+                                {preset.renderFace()}
+                              </div>
+                            </div>
+
+                            {/* Persona Metadata */}
+                            <div className="w-full text-center min-w-0">
+                              <span className={clsx(
+                                "block text-xs font-bold truncate transition-colors",
+                                isSelected 
+                                  ? isAvatarDirty ? "text-amber-300" : "text-cyan-300"
+                                  : "text-zinc-200 group-hover:text-white"
+                              )}>
+                                {preset.name}
+                              </span>
+                              <span className="block text-[10px] text-zinc-400 font-medium truncate mt-0.5">
+                                {preset.roleHint}
+                              </span>
+                              <div className="flex items-center justify-center gap-1 mt-1">
+                                {isCurrentSaved && (
+                                  <span className="text-[8px] uppercase tracking-wider text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20">
+                                    Saved
+                                  </span>
+                                )}
+                                <span className="inline-block text-[9px] text-zinc-500 font-mono truncate px-1.5 py-0.5 rounded bg-white/5">
+                                  {preset.department.split(" ")[0]}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1321,18 +1586,34 @@ function SettingsContent() {
               </div>
 
               {/* Save Profile */}
-              <div className="flex justify-end pt-4 border-t border-white/10">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+                {(isAvatarDirty || (!isAdmin && isThemeDirty)) ? (
+                  <span className="text-xs text-amber-400 flex items-center gap-1.5 font-medium animate-pulse">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    You have unsaved changes ({isAvatarDirty ? "Avatar" : ""}{isAvatarDirty && !isAdmin && isThemeDirty ? " & " : ""}{!isAdmin && isThemeDirty ? "Theme" : ""}). Click Save to persist.
+                  </span>
+                ) : (
+                  <span className="text-xs text-zinc-500">
+                    All profile preferences are currently saved.
+                  </span>
+                )}
+
                 <button
                   type="submit"
                   disabled={isUpdatingProfile}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                  className={clsx(
+                    "w-full sm:w-auto px-6 py-2.5 font-semibold rounded-xl shadow-lg transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50",
+                    (isAvatarDirty || (!isAdmin && isThemeDirty))
+                      ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-white ring-2 ring-cyan-400/50 shadow-cyan-500/30 scale-105"
+                      : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-cyan-500/20"
+                  )}
                 >
                   {isUpdatingProfile ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      <span>Save</span>
+                      <span>Save Profile Changes</span>
                     </>
                   )}
                 </button>
