@@ -1,0 +1,609 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "name": "Motorcycle Shop API Gateway",
+  "port": 8080,
+  "timeout": "3000ms",
+  "cache_ttl": "300s",
+  "output_encoding": "json",
+  "input_headers": ["Authorization", "Content-Type", "Idempotency-Key", "X-Forwarded-For", "Accept"],
+  "extra_config": {
+    "telemetry/logging": {
+      "level": "INFO",
+      "prefix": "[KRAKEND]",
+      "syslog": false,
+      "stdout": true
+    },
+    "security/cors": {
+      "allow_origins": ["*"],
+      "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      "allow_headers": ["Origin", "Authorization", "Content-Type", "Idempotency-Key"]
+    },
+    "router": {
+      "return_error_details": "always"
+    }
+  },
+  "endpoints": [
+    {
+      "endpoint": "/api/v1/auth/login",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/login",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/logout",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/logout",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/change-password",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/change-password",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/users/register",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/users/register",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/users",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "input_query_strings": ["*"],
+      "backend": [
+        {
+          "url_pattern": "/users",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/users/{id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/users/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/users/{id}",
+      "method": "PUT",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/users/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "PUT",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/users/{id}",
+      "method": "DELETE",
+      "output_encoding": "json",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/users/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/audit-logs",
+      "method": "GET",
+      "output_encoding": "json",
+      "input_headers": ["Authorization"],
+      "input_query_strings": ["*"],
+      "backend": [
+        {
+          "url_pattern": "/audit-logs",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/audit-logs/export",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "input_query_strings": ["*"],
+      "backend": [
+        {
+          "url_pattern": "/audit-logs/export",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/inventory",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/items",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://inventory_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/inventory",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/items",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://inventory_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/inventory/{id}",
+      "method": "PUT",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/items/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "PUT",
+          "host": ["http://inventory_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/inventory/{id}",
+      "method": "DELETE",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/items/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["http://inventory_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/sales/transactions",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/transactions",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://sales_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/sales/transactions/{id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/transactions/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://sales_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/sales/transactions/{id}/void",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/transactions/{id}/void",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://sales_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycle-models",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycle-models",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycle-models",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycle-models",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycle-models/{id}",
+      "method": "PUT",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycle-models/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "PUT",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycle-models/{id}",
+      "method": "DELETE",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycle-models/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs/active-carts",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/active-carts",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs/{id}/cart-items",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/{id}/cart-items",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs/{id}/payment-status",
+      "method": "PATCH",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/{id}/payment-status",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "PATCH",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/sales/checkout",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 20,
+          "client_capacity": 20,
+          "strategy": "ip"
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/checkout",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://sales_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/jobs",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/jobs",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs/{id}/status",
+      "method": "PATCH",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/{id}/status",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "PATCH",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycles",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycles",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycles",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycles",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycles/{id}",
+      "method": "GET",
+      "output_encoding": "json",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycles/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycles/{id}",
+      "method": "PUT",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycles/{id}",
+          "encoding": "json",
+          "sd": "static",
+          "method": "PUT",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycles/{id}/history",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycles/{id}/history",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/motorcycles/history/customer",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/motorcycles/history/customer",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs/{id}",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "PUT",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/jobs/{id}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/jobs/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/commissions",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/commissions",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/repairs/customer-history",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/customer-history",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://repairs_service:8000"]
+        }
+      ]
+    }
+  ]
+}
+

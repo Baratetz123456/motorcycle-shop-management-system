@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ==========================================================================
+   Versiklo Theme Engine: 4 Color Schemes
+   Overriding base color variables so all existing Tailwind utility classes
+   (text-cyan-*, bg-cyan-*, border-cyan-*, gradients, rings) reflect the theme.
+   ========================================================================== */
+
+/* 1. Cyan Drift (Default Electric Cyan & Velocity Blue) */
+:root,
+html[data-theme="cyan"],
+[data-theme="cyan"] {
+  --color-cyan-200: #a5f3fc !important;
+  --color-cyan-300: #67e8f9 !important;
+  --color-cyan-400: #22d3ee !important;
+  --color-cyan-500: #06b6d4 !important;
+  --color-cyan-600: #0891b2 !important;
+  --color-cyan-950: #083344 !important;
+
+  --color-blue-400: #60a5fa !important;
+  --color-blue-500: #3b82f6 !important;
+  --color-blue-600: #2563eb !important;
+  --color-blue-950: #172554 !important;
+
+  --color-indigo-400: #818cf8 !important;
+  --color-indigo-500: #6366f1 !important;
+  --color-indigo-600: #4f46e5 !important;
+}
+
+/* 2. Emerald Speed (Neon Emerald & Mint Teal) */
+html[data-theme="emerald"],
+[data-theme="emerald"] {
+  --color-cyan-200: #a7f3d0 !important;
+  --color-cyan-300: #6ee7b7 !important;
+  --color-cyan-400: #34d399 !important;
+  --color-cyan-500: #10b981 !important;
+  --color-cyan-600: #059669 !important;
+  --color-cyan-950: #022c22 !important;
+
+  --color-blue-400: #2dd4bf !important;
+  --color-blue-500: #14b8a6 !important;
+  --color-blue-600: #0d9488 !important;
+  --color-blue-950: #042f2e !important;
+
+  --color-indigo-400: #34d399 !important;
+  --color-indigo-500: #10b981 !important;
+  --color-indigo-600: #059669 !important;
+}
+
+/* 3. Violet Hyperdrive (Hyper Purple & Electric Indigo) */
+html[data-theme="violet"],
+[data-theme="violet"] {
+  --color-cyan-200: #e9d5ff !important;
+  --color-cyan-300: #d8b4fe !important;
+  --color-cyan-400: #c084fc !important;
+  --color-cyan-500: #a855f7 !important;
+  --color-cyan-600: #9333ea !important;
+  --color-cyan-950: #3b0764 !important;
+
+  --color-blue-400: #818cf8 !important;
+  --color-blue-500: #6366f1 !important;
+  --color-blue-600: #4f46e5 !important;
+  --color-blue-950: #1e1b4b !important;
+
+  --color-indigo-400: #c084fc !important;
+  --color-indigo-500: #a855f7 !important;
+  --color-indigo-600: #7c3aed !important;
+}
+
+/* 4. Amber Forge (Sunset Gold, Amber & Crimson Flame) */
+html[data-theme="amber"],
+[data-theme="amber"] {
+  --color-cyan-200: #fde68a !important;
+  --color-cyan-300: #fcd34d !important;
+  --color-cyan-400: #fbbf24 !important;
+  --color-cyan-500: #f59e0b !important;
+  --color-cyan-600: #d97706 !important;
+  --color-cyan-950: #451a03 !important;
+
+  --color-blue-400: #fb923c !important;
+  --color-blue-500: #f97316 !important;
+  --color-blue-600: #ea580c !important;
+  --color-blue-950: #431407 !important;
+
+  --color-indigo-400: #fb7185 !important;
+  --color-indigo-500: #f43f5e !important;
+  --color-indigo-600: #e11d48 !important;
+}
+
+/* ==========================================================================
+   Global Fluid Page Transition Animation
+   ========================================================================== */
+@keyframes pageTransitionEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageTransitionEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
