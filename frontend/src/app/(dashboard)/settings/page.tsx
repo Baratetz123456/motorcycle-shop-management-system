@@ -51,6 +51,7 @@ import {
 } from "@/lib/permissions";
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
 import { THEME_OPTIONS, getAppTheme, saveAppTheme, AppTheme } from "@/lib/theme";
+import { AVATAR_PRESETS } from "@/lib/avatars";
 
 type SettingsTab = "general" | "roles" | "users" | "profile" | "logs";
 
@@ -140,13 +141,18 @@ function SettingsContent() {
   const [activeTheme, setActiveTheme] = useState<AppTheme>("cyan");
   const [themeSuccess, setThemeSuccess] = useState<string | null>(null);
 
+  // Avatar State (All users)
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("avatar-1");
+
   useEffect(() => {
     const role = (localStorage.getItem("user_role") || "").toLowerCase();
     const userId = localStorage.getItem("user_id") || "";
     const userEmail = localStorage.getItem("user_email") || "";
+    const savedAvatar = localStorage.getItem("user_avatar") || "avatar-1";
 
     setCurrentUserRole(role);
     setCurrentUserId(userId);
+    setSelectedAvatar(savedAvatar);
 
     const adminCheck = role === "admin";
     setIsAdmin(adminCheck);
@@ -282,6 +288,14 @@ function SettingsContent() {
     setTimeout(() => setThemeSuccess(null), 3000);
   };
 
+  const handleSelectAvatar = (avatarId: string) => {
+    setSelectedAvatar(avatarId);
+    localStorage.setItem("user_avatar", avatarId);
+    window.dispatchEvent(new CustomEvent("user_profile_updated", { detail: { avatarId } }));
+    setProfileSuccess("Profile face avatar updated!");
+    setTimeout(() => setProfileSuccess(null), 3000);
+  };
+
   // --- Handlers: Tab 1 General Preferences ---
   const handleCountryChange = (countryName: string) => {
     const found = COUNTRY_OPTIONS.find((c) => c.country === countryName);
@@ -387,6 +401,11 @@ function SettingsContent() {
           role: res.data.role || profile.role,
         });
         localStorage.setItem("user_email", res.data.email || profile.email);
+        const updatedName = [res.data.first_name || profile.first_name, res.data.last_name || profile.last_name].filter(Boolean).join(" ");
+        if (updatedName) {
+          localStorage.setItem("user_name", updatedName);
+          window.dispatchEvent(new CustomEvent("user_profile_updated", { detail: { userName: updatedName } }));
+        }
       }
 
       setProfileSuccess("Your profile information has been saved successfully.");
@@ -623,12 +642,33 @@ function SettingsContent() {
                       required
                       value={settings.appName}
                       onChange={(e) => setSettings({ ...settings, appName: e.target.value })}
-                      placeholder="e.g. Versiklo Motor Service"
+                      placeholder="e.g. Versiklo"
                       className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                     />
                   </div>
                   <span className="text-[11px] text-zinc-500 mt-1.5 block">
                     Displays in browser title tags, navigation header, and invoice documents.
+                  </span>
+                </div>
+
+                {/* Shop Floor Description */}
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                    Shop Floor Description / Subtitle <span className="text-cyan-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                    <input
+                      type="text"
+                      required
+                      value={settings.shopDescription || "Shop Floor"}
+                      onChange={(e) => setSettings({ ...settings, shopDescription: e.target.value })}
+                      placeholder="e.g. Shop Floor or Speed Workshop"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                  </div>
+                  <span className="text-[11px] text-zinc-500 mt-1.5 block">
+                    Displays below the shop name in the navigation drawer and top header bar.
                   </span>
                 </div>
 
@@ -805,34 +845,82 @@ function SettingsContent() {
                           </div>
                         </td>
 
-                        {/* Manager Toggle */}
+                        {/* Manager Toggle Switch */}
                         <td className="py-4 px-4 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isManager}
-                            onChange={() => handleToggleModuleRole(mod.id, "manager")}
-                            className="w-5 h-5 rounded-lg border-white/20 bg-zinc-900 text-purple-600 focus:ring-purple-500/50 cursor-pointer transition-all"
-                          />
+                          <div className="flex justify-center items-center">
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={isManager}
+                              onClick={() => handleToggleModuleRole(mod.id, "manager")}
+                              className={clsx(
+                                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950",
+                                isManager ? "bg-purple-600 shadow-lg shadow-purple-600/30" : "bg-zinc-800 border-white/10"
+                              )}
+                              title={`Toggle ${mod.name} for Manager`}
+                            >
+                              <span className="sr-only">Toggle {mod.name} for Manager</span>
+                              <span
+                                aria-hidden="true"
+                                className={clsx(
+                                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                                  isManager ? "translate-x-5" : "translate-x-0"
+                                )}
+                              />
+                            </button>
+                          </div>
                         </td>
 
-                        {/* Cashier Toggle */}
+                        {/* Cashier Toggle Switch */}
                         <td className="py-4 px-4 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isCashier}
-                            onChange={() => handleToggleModuleRole(mod.id, "cashier")}
-                            className="w-5 h-5 rounded-lg border-white/20 bg-zinc-900 text-emerald-600 focus:ring-emerald-500/50 cursor-pointer transition-all"
-                          />
+                          <div className="flex justify-center items-center">
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={isCashier}
+                              onClick={() => handleToggleModuleRole(mod.id, "cashier")}
+                              className={clsx(
+                                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950",
+                                isCashier ? "bg-emerald-600 shadow-lg shadow-emerald-600/30" : "bg-zinc-800 border-white/10"
+                              )}
+                              title={`Toggle ${mod.name} for Cashier`}
+                            >
+                              <span className="sr-only">Toggle {mod.name} for Cashier</span>
+                              <span
+                                aria-hidden="true"
+                                className={clsx(
+                                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                                  isCashier ? "translate-x-5" : "translate-x-0"
+                                )}
+                              />
+                            </button>
+                          </div>
                         </td>
 
-                        {/* Mechanic Toggle */}
+                        {/* Mechanic Toggle Switch */}
                         <td className="py-4 px-4 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isMechanic}
-                            onChange={() => handleToggleModuleRole(mod.id, "mechanic")}
-                            className="w-5 h-5 rounded-lg border-white/20 bg-zinc-900 text-amber-600 focus:ring-amber-500/50 cursor-pointer transition-all"
-                          />
+                          <div className="flex justify-center items-center">
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={isMechanic}
+                              onClick={() => handleToggleModuleRole(mod.id, "mechanic")}
+                              className={clsx(
+                                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950",
+                                isMechanic ? "bg-amber-600 shadow-lg shadow-amber-600/30" : "bg-zinc-800 border-white/10"
+                              )}
+                              title={`Toggle ${mod.name} for Mechanic`}
+                            >
+                              <span className="sr-only">Toggle {mod.name} for Mechanic</span>
+                              <span
+                                aria-hidden="true"
+                                className={clsx(
+                                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                                  isMechanic ? "translate-x-5" : "translate-x-0"
+                                )}
+                              />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1154,6 +1242,61 @@ function SettingsContent() {
 
               {/* Personal Theme Selector (Non-admins configure theme here; Admins configure it in General Store Preferences) */}
               {!isAdmin && renderThemeSelector()}
+
+              {/* Profile Face Avatar Presets */}
+              <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-cyan-400" />
+                      Select Profile Face Avatar
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Choose from 10 distinct illustrated staff face presets for your sidebar profile.
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono text-cyan-400 font-bold px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 self-start sm:self-auto">
+                    Active: {AVATAR_PRESETS.find((p) => p.id === selectedAvatar)?.name || "Alex"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-3 pt-2">
+                  {AVATAR_PRESETS.map((preset) => {
+                    const isSelected = selectedAvatar === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => handleSelectAvatar(preset.id)}
+                        className={clsx(
+                          "p-2.5 rounded-2xl border flex flex-col items-center gap-2 transition-all group relative text-center",
+                          isSelected
+                            ? "bg-zinc-900 border-cyan-500 shadow-lg shadow-cyan-500/20 ring-2 ring-cyan-500/50 scale-105"
+                            : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
+                        )}
+                        title={`${preset.name} - ${preset.roleHint}`}
+                      >
+                        <div className={clsx(
+                          "w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr transition-transform group-hover:scale-105 shadow-sm",
+                          preset.bgGradient
+                        )}>
+                          <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-0.5 overflow-hidden">
+                            {preset.renderFace()}
+                          </div>
+                        </div>
+                        <div className="w-full min-w-0">
+                          <span className="block text-[11px] font-bold text-zinc-200 group-hover:text-white truncate">
+                            {preset.name}
+                          </span>
+                          <span className="block text-[9px] text-zinc-500 truncate">
+                            {preset.roleHint}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Password Change Card */}
               <div className="p-6 rounded-2xl bg-zinc-950/60 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

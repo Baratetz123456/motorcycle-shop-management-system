@@ -1,5 +1,6 @@
 export interface SystemSettings {
   appName: string;
+  shopDescription: string;
   timezone: string;
   country: string;
   currency: string;
@@ -30,6 +31,7 @@ export const COUNTRY_OPTIONS = [
 
 export const DEFAULT_SETTINGS: SystemSettings = {
   appName: "Versiklo",
+  shopDescription: "Shop Floor",
   timezone: "Asia/Manila",
   country: "Philippines",
   currency: "PHP",

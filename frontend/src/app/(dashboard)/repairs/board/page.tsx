@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 
 export type RepairStatus = "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
@@ -54,6 +54,7 @@ interface MotorcycleModelOption {
 }
 
 export default function RepairBoardPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<RepairJob[]>([]);
   const [modelsCatalog, setModelsCatalog] = useState<MotorcycleModelOption[]>([]);
@@ -758,8 +759,10 @@ export default function RepairBoardPage() {
                         draggable={true}
                         onDragStart={(e) => handleDragStart(e, job)}
                         onDragEnd={handleDragEnd}
+                        onDoubleClick={() => router.push(`/repairs/jobs/${job.id}`)}
+                        title="Double-click to open Job Card profile • Drag to move or drag to bottom to delete"
                         className={clsx(
-                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-all duration-300 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing",
+                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-all duration-300 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing select-none",
                           isPaid
                             ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]"
                             : "border-white/10",
@@ -816,49 +819,25 @@ export default function RepairBoardPage() {
                           </span>
                         </div>
 
-                        {/* Stage Controls & Actions Bar */}
+                        {/* Card Footer Bar: Profile Navigation & Drag Handle */}
                         <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5">
-                            {/* Edit Diagnosis & Reassign Button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEditModal(job);
-                              }}
-                              className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-cyan-400 border border-white/10 transition-colors text-xs flex items-center gap-1"
-                              title="Edit Diagnosis Notes & Reassign Mechanic"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                              <span className="text-[10px] font-semibold">Diagnosis</span>
-                            </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/repairs/jobs/${job.id}`);
+                            }}
+                            className="p-1.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 text-cyan-400 hover:text-cyan-300 border border-white/10 transition-colors text-[11px] font-semibold flex items-center gap-1.5 group-hover:border-cyan-500/30"
+                            title="Open Job Card Profile (or double-click anywhere on card)"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Job Profile &rarr;</span>
+                          </button>
 
-                            {/* Remove / Cancel Button or Locked Indicator */}
-                            {canDelete ? (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteConfirmJob(job);
-                                }}
-                                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-500/20 text-red-400 border border-white/10 transition-colors"
-                                title="Remove / Cancel Job Order"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            ) : (
-                              <div
-                                className="p-1.5 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 cursor-not-allowed select-none"
-                                title="Paid job orders cannot be deleted as they are synced with sales, invoices, and inventory"
-                              >
-                                <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="text-[10px] font-semibold text-emerald-400">Synced</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Draggable Indicator Badge (replaces dropdown) */}
+                          {/* Draggable Indicator Badge */}
                           <div
                             className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-900/80 px-2 py-1 rounded-lg border border-white/5 font-medium select-none cursor-grab"
-                            title="Drag this card into another column to change status"
+                            title="Drag this card into another column to change status, or drag to bottom trash can to delete"
                           >
                             <GripVertical className="w-3 h-3 text-zinc-400" />
                             <span>Drag card</span>
@@ -873,6 +852,59 @@ export default function RepairBoardPage() {
           );
         })}
       </div>
+
+      {/* Drag-to-Delete Trash Can Drop Zone */}
+      {draggedJobId && (
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const targetId = draggedJobId;
+            setDraggedJobId(null);
+            const targetJob = jobs.find((j) => j.id === targetId);
+            if (targetJob) {
+              const isPaid = Boolean(
+                targetJob.is_paid ||
+                (typeof window !== "undefined" && (
+                  localStorage.getItem(`motoshop_job_paid_${targetJob.id}`) === "true" ||
+                  localStorage.getItem(`motoshop_job_paid_${targetJob.jo_number}`) === "true"
+                ))
+              );
+              if (isPaid) {
+                setAlertNotification({
+                  type: "error",
+                  title: "Deletion Prohibited",
+                  message: `Cannot delete paid Job Order (${targetJob.jo_number}) because it is already synchronized with sales, invoice, and inventory.`
+                });
+                return;
+              }
+              if (userRole === "cashier") {
+                setAlertNotification({
+                  type: "error",
+                  title: "Access Denied",
+                  message: "Cashiers cannot delete job orders. Please contact a manager or mechanic."
+                });
+                return;
+              }
+              setDeleteConfirmJob(targetJob);
+            }
+          }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3.5 px-8 py-4 rounded-2xl bg-red-950/95 border-2 border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.5)] backdrop-blur-md animate-bounce cursor-pointer group"
+        >
+          <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 group-hover:scale-110 group-hover:bg-red-500/30 transition-all border border-red-500/30">
+            <Trash2 className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white tracking-wide">
+              Drop here to delete Job Card
+            </p>
+            <p className="text-xs text-red-300 font-medium">Release card into this zone to remove from workshop</p>
+          </div>
+        </div>
+      )}
 
       {/* Modal 1: Create New Job Order Modal */}
       {isCreateModalOpen && (

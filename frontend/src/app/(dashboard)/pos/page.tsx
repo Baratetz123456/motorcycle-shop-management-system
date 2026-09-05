@@ -65,6 +65,26 @@ interface ActiveRepairCart {
   }[];
 }
 
+const PARTS_SUB_FILTERS = [
+  { id: "ALL", label: "All Parts" },
+  { id: "Oils & Lubricants", label: "Oils & Lubricants", keywords: ["oil", "lube", "lubricant", "fluid", "motul", "castrol"] },
+  { id: "Brakes", label: "Brakes", keywords: ["brake", "pad", "rotor", "caliper", "shoe", "disc"] },
+  { id: "Tires", label: "Tires & Tubes", keywords: ["tire", "tube", "wheel", "rim"] },
+  { id: "Engine & Exhaust", label: "Engine & Exhaust", keywords: ["engine", "piston", "gasket", "spark", "plug", "exhaust", "pipe", "filter", "belt", "chain"] },
+  { id: "Electrical", label: "Electrical & Battery", keywords: ["battery", "light", "bulb", "fuse", "wire", "horn", "relay", "starter"] },
+  { id: "Accessories", label: "Accessories", keywords: ["grip", "mirror", "seat", "cover", "helmet", "lock"] },
+];
+
+const SERVICES_SUB_FILTERS = [
+  { id: "ALL", label: "All Services" },
+  { id: "Tune-up", label: "Tune-up", keywords: ["tune", "maintenance", "tune-up", "carburetor", "cleaning"] },
+  { id: "Oil Change", label: "Oil Change", keywords: ["oil", "fluid", "flush"] },
+  { id: "Brake Service", label: "Brake Service", keywords: ["brake", "bleeding", "pad", "shoe"] },
+  { id: "Inspection", label: "Inspection & Check", keywords: ["check", "inspection", "diagnostic", "scan"] },
+  { id: "Electrical", label: "Electrical & Wiring", keywords: ["wiring", "electrical", "battery", "light"] },
+  { id: "Overhaul", label: "Engine Overhaul", keywords: ["overhaul", "engine", "transmission", "rebuild"] },
+];
+
 export default function POSPage() {
   const router = useRouter();
   const { cart, addToCart, removeFromCart, updateQty, getTotals, clearCart } = usePosStore();
@@ -75,6 +95,9 @@ export default function POSPage() {
 
   // Two filters only: "SERVICE" | "PRODUCT" (Services is default)
   const [activeFilter, setActiveFilter] = useState<"SERVICE" | "PRODUCT">("SERVICE");
+
+  // Sub-filter pill state
+  const [activeSubFilter, setActiveSubFilter] = useState<string>("ALL");
 
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [activeRepairs, setActiveRepairs] = useState<ActiveRepairCart[]>([]);
@@ -370,14 +393,23 @@ export default function POSPage() {
     router.push(`/pos/checkout?${query}`);
   };
 
-  // Filter and sort catalog by frequency of availment
+  // Filter and sort catalog by frequency of availment and sub-filter pills
   const filteredCatalog = catalog
     .filter((item) => {
       const matchesSearch =
         item.name.toLowerCase().includes(search.toLowerCase()) ||
         item.sku.toLowerCase().includes(search.toLowerCase());
       const matchesFilter = item.item_type === activeFilter;
-      return matchesSearch && matchesFilter;
+
+      const subList = activeFilter === "SERVICE" ? SERVICES_SUB_FILTERS : PARTS_SUB_FILTERS;
+      const subObj = subList.find((s) => s.id === activeSubFilter);
+      const matchesSubFilter =
+        !subObj ||
+        activeSubFilter === "ALL" ||
+        (item.category && item.category.toLowerCase().includes(activeSubFilter.toLowerCase())) ||
+        (subObj.keywords && subObj.keywords.some((kw) => item.name.toLowerCase().includes(kw) || (item.category && item.category.toLowerCase().includes(kw))));
+
+      return matchesSearch && matchesFilter && matchesSubFilter;
     })
     .sort((a, b) => {
       const freqA = frequencyMap[a.name] || 0;
@@ -636,7 +668,10 @@ export default function POSPage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 hidden sm:inline-block">Filter:</span>
                 <div className="flex bg-zinc-900 p-1 rounded-2xl border border-white/10 text-xs w-full sm:w-auto shadow-inner">
                   <button
-                    onClick={() => setActiveFilter("SERVICE")}
+                    onClick={() => {
+                      setActiveFilter("SERVICE");
+                      setActiveSubFilter("ALL");
+                    }}
                     className={clsx(
                       "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2",
                       activeFilter === "SERVICE"
@@ -649,7 +684,10 @@ export default function POSPage() {
                   </button>
 
                   <button
-                    onClick={() => setActiveFilter("PRODUCT")}
+                    onClick={() => {
+                      setActiveFilter("PRODUCT");
+                      setActiveSubFilter("ALL");
+                    }}
                     className={clsx(
                       "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2",
                       activeFilter === "PRODUCT"
@@ -674,6 +712,29 @@ export default function POSPage() {
                   className="w-full bg-zinc-900/90 border border-white/10 rounded-2xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-xs sm:text-sm text-white placeholder-zinc-500"
                 />
               </div>
+            </div>
+
+            {/* Sub-Filter Category Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1">
+              {(activeFilter === "SERVICE" ? SERVICES_SUB_FILTERS : PARTS_SUB_FILTERS).map((pill) => {
+                const isSelected = activeSubFilter === pill.id;
+                return (
+                  <button
+                    key={pill.id}
+                    onClick={() => setActiveSubFilter(pill.id)}
+                    className={clsx(
+                      "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0",
+                      isSelected
+                        ? activeFilter === "SERVICE"
+                          ? "bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-1 ring-purple-400"
+                          : "bg-cyan-600 text-white shadow-md shadow-cyan-600/30 ring-1 ring-cyan-400"
+                        : "bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-white/5 hover:border-white/15"
+                    )}
+                  >
+                    <span>{pill.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* If no customer selected, show clear instructions banner */}
@@ -775,19 +836,30 @@ export default function POSPage() {
                         </div>
 
                         {/* Dynamic Add to Cart Button or Stepper */}
-                        {!cartItem ? (
+                        {!selectedRepair ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setWarningMessage("Please select an active customer repair from Step 1 above to begin adding items!");
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className="w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all bg-zinc-900/90 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 shadow-sm cursor-pointer"
+                            title="Please select an active customer repair before adding or modifying items"
+                          >
+                            <Lock className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Select Customer First</span>
+                          </button>
+                        ) : !cartItem ? (
                           <button
                             onClick={() => handleAddItemToCustomerCart(product)}
-                            disabled={!selectedRepair || isOutOfStock}
+                            disabled={isOutOfStock}
                             className={clsx(
                               "w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all",
-                              !selectedRepair
-                                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5"
-                                : isOutOfStock
-                                  ? "bg-red-500/10 text-red-400 border border-red-500/30 cursor-not-allowed"
-                                  : isService
-                                    ? "bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-500/20 active:scale-95"
-                                    : "bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-500/20 active:scale-95"
+                              isOutOfStock
+                                ? "bg-red-500/10 text-red-400 border border-red-500/30 cursor-not-allowed"
+                                : isService
+                                  ? "bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-500/20 active:scale-95"
+                                  : "bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-500/20 active:scale-95"
                             )}
                           >
                             {isOutOfStock ? (
@@ -800,7 +872,7 @@ export default function POSPage() {
                             )}
                           </button>
                         ) : (
-                          <div className="w-full flex items-center justify-between bg-zinc-950 p-1 rounded-xl border border-cyan-500/30 shadow-inner">
+                          <div className="w-full flex items-center justify-between p-1 rounded-xl shadow-inner bg-zinc-950 border border-cyan-500/30">
                             <button
                               onClick={() => {
                                 if (cartItem.qty <= 1) {
@@ -828,7 +900,13 @@ export default function POSPage() {
                                 }
                                 updateQty(cartItem.id, cartItem.qty + 1);
                               }}
-                              className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors"
+                              disabled={!isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock}
+                              className={clsx(
+                                "p-1.5 rounded-lg transition-colors",
+                                !isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock
+                                  ? "text-zinc-600 cursor-not-allowed"
+                                  : "hover:bg-zinc-800 text-zinc-300 hover:text-white"
+                              )}
                               title="Increase quantity"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -1006,23 +1084,51 @@ export default function POSPage() {
 
                           <td className="p-4 px-6">
                             <div className="flex items-center justify-center gap-2">
-                              <div className="flex items-center gap-2 bg-zinc-950 p-1 rounded-xl border border-white/10">
+                              <div className={clsx(
+                                "flex items-center gap-2 p-1 rounded-xl border transition-all",
+                                !selectedRepair 
+                                  ? "bg-zinc-950/80 border-white/10 opacity-60" 
+                                  : "bg-zinc-950 border-white/10"
+                              )}>
                                 <button
                                   onClick={() => {
+                                    if (!selectedRepair) {
+                                      setWarningMessage("Please select an active customer repair session before modifying cart items!");
+                                      return;
+                                    }
                                     if (item.qty <= 1) {
                                       removeFromCart(item.id);
                                     } else {
                                       updateQty(item.id, item.qty - 1);
                                     }
                                   }}
-                                  className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                                  disabled={!selectedRepair}
+                                  className={clsx(
+                                    "p-1 rounded-lg transition-colors",
+                                    !selectedRepair ? "text-zinc-600 cursor-not-allowed" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                                  )}
+                                  title={!selectedRepair ? "Customer required to modify quantity" : "Decrease quantity"}
                                 >
                                   <Minus className="w-3.5 h-3.5" />
                                 </button>
-                                <span className="w-6 text-center font-bold text-zinc-100 text-xs">{item.qty}</span>
+                                <span className="w-6 text-center font-bold text-zinc-100 text-xs flex items-center justify-center gap-0.5">
+                                  {!selectedRepair && <Lock className="w-2.5 h-2.5 text-amber-500/80" />}
+                                  {item.qty}
+                                </span>
                                 <button
-                                  onClick={() => updateQty(item.id, item.qty + 1)}
-                                  className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                                  onClick={() => {
+                                    if (!selectedRepair) {
+                                      setWarningMessage("Please select an active customer repair session before increasing quantity!");
+                                      return;
+                                    }
+                                    updateQty(item.id, item.qty + 1);
+                                  }}
+                                  disabled={!selectedRepair}
+                                  className={clsx(
+                                    "p-1 rounded-lg transition-colors",
+                                    !selectedRepair ? "text-zinc-600 cursor-not-allowed" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                                  )}
+                                  title={!selectedRepair ? "Customer required to increase quantity" : "Increase quantity"}
                                 >
                                   <Plus className="w-3.5 h-3.5" />
                                 </button>
@@ -1036,9 +1142,19 @@ export default function POSPage() {
 
                           <td className="p-4 px-4 text-center">
                             <button
-                              onClick={() => removeFromCart(item.id)}
-                              className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                              title="Remove item"
+                              onClick={() => {
+                                if (!selectedRepair) {
+                                  setWarningMessage("Please select an active customer repair session before removing items!");
+                                  return;
+                                }
+                                removeFromCart(item.id);
+                              }}
+                              disabled={!selectedRepair}
+                              className={clsx(
+                                "p-1.5 rounded-lg transition-colors",
+                                !selectedRepair ? "text-zinc-700 cursor-not-allowed" : "text-zinc-500 hover:text-red-400 hover:bg-red-400/10"
+                              )}
+                              title={!selectedRepair ? "Customer required" : "Remove item"}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>

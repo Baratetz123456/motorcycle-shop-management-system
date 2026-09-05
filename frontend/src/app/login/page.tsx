@@ -46,7 +46,7 @@ export default function LoginPage() {
         password,
       });
 
-      const { access_token, role, user_id } = response.data;
+      const { access_token, role, user_id, first_name, last_name } = response.data;
       const userRole = role as UserRole;
 
       // Determine effective fallback landing page
@@ -58,6 +58,7 @@ export default function LoginPage() {
         localStorage.removeItem("user_role");
         localStorage.removeItem("user_id");
         localStorage.removeItem("user_email");
+        localStorage.removeItem("user_name");
         try {
           await apiClient.post("/auth/logout", {}, { headers: { Authorization: `Bearer ${access_token}` } }).catch(() => {});
         } catch (e) {}
@@ -70,6 +71,8 @@ export default function LoginPage() {
       localStorage.setItem("user_role", userRole);
       localStorage.setItem("user_id", user_id);
       localStorage.setItem("user_email", email);
+      const fullName = [first_name, last_name].filter(Boolean).join(" ");
+      localStorage.setItem("user_name", fullName || email.split("@")[0]);
 
       recordUserAuditLog("USER_LOGIN", "/login", { email: email, role: userRole });
 
