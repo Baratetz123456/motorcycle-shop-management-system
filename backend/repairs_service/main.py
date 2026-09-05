@@ -39,11 +39,50 @@ def generate_jo_number():
 
 @app.get("/motorcycle-models", response_model=List[schemas.MotorcycleModelResponse])
 async def get_motorcycle_models(
-    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
+    current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
     session: AsyncSession = Depends(get_db)
 ):
-    result = await session.execute(select(models.MotorcycleModel).order_by(models.MotorcycleModel.brand, models.MotorcycleModel.model))
-    return result.scalars().all()
+    models_res = await session.execute(
+        select(models.MotorcycleModel)
+        .where(models.MotorcycleModel.is_active == True)
+        .order_by(models.MotorcycleModel.brand, models.MotorcycleModel.model)
+    )
+    db_models = models_res.scalars().all()
+
+    completed_jobs_res = await session.execute(
+        select(models.JobOrder)
+        .where(models.JobOrder.status.in_([models.JobStatus.COMPLETED, models.JobStatus.RELEASED]))
+    )
+    completed_jobs = completed_jobs_res.scalars().all()
+
+    motos_res = await session.execute(select(models.Motorcycle))
+    motos = motos_res.scalars().all()
+    moto_uuid_map = {str(m.id): f"{m.brand} {m.model}".lower() for m in motos}
+
+    response_items = []
+    for m in db_models:
+        model_lower = (m.model or "").strip().lower()
+        freq = 0
+        for job in completed_jobs:
+            raw_moto = (job.motorcycle_id or "").strip()
+            raw_moto_lower = raw_moto.lower()
+            mapped_str = moto_uuid_map.get(raw_moto, "")
+            if (model_lower and model_lower in raw_moto_lower) or (mapped_str and model_lower in mapped_str):
+                freq += 1
+
+        response_items.append(
+            schemas.MotorcycleModelResponse(
+                id=m.id,
+                brand=m.brand,
+                model=m.model,
+                year=m.year,
+                category=m.category,
+                is_active=m.is_active,
+                service_frequency=freq,
+                created_at=m.created_at
+            )
+        )
+    return response_items
 
 @app.post("/motorcycle-models", response_model=schemas.MotorcycleModelResponse)
 @idempotent
@@ -53,11 +92,122 @@ async def create_motorcycle_model(
     current_user: dict = Depends(require_roles(["admin", "manager", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
-    db_model = models.MotorcycleModel(**moto_model.model_dump())
+    db_model = models.MotorcycleModel(**moto_model.model_dump(), is_active=True)
     session.add(db_model)
     await session.commit()
     await session.refresh(db_model)
-    return db_model
+
+    await log_audit_event(
+        session=session,
+        action="MOTORCYCLE_MODEL_CREATED",
+        resource=f"/api/v1/repairs/motorcycle-models/{db_model.id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"brand": db_model.brand, "model": db_model.model, "year": db_model.year, "category": db_model.category},
+        ip_address=get_client_ip(request)
+    )
+
+    return schemas.MotorcycleModelResponse(
+        id=db_model.id,
+        brand=db_model.brand,
+        model=db_model.model,
+        year=db_model.year,
+        category=db_model.category,
+        is_active=db_model.is_active,
+        service_frequency=0,
+        created_at=db_model.created_at
+    )
+
+@app.put("/motorcycle-models/{model_id}", response_model=schemas.MotorcycleModelResponse)
+@idempotent
+async def update_motorcycle_model(
+    request: Request,
+    model_id: UUID,
+    update_data: schemas.MotorcycleModelUpdate,
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.MotorcycleModel).where(models.MotorcycleModel.id == model_id, models.MotorcycleModel.is_active == True)
+    result = await session.execute(stmt)
+    db_model = result.scalar_one_or_none()
+    if not db_model:
+        raise HTTPException(status_code=404, detail="Motorcycle model profile not found")
+
+    dumped = update_data.model_dump(exclude_unset=True)
+    for key, value in dumped.items():
+        if value is not None:
+            setattr(db_model, key, value)
+
+    await session.commit()
+    await session.refresh(db_model)
+
+    await log_audit_event(
+        session=session,
+        action="MOTORCYCLE_MODEL_UPDATED",
+        resource=f"/api/v1/repairs/motorcycle-models/{model_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details=dumped,
+        ip_address=get_client_ip(request)
+    )
+
+    completed_jobs_res = await session.execute(
+        select(models.JobOrder)
+        .where(models.JobOrder.status.in_([models.JobStatus.COMPLETED, models.JobStatus.RELEASED]))
+    )
+    completed_jobs = completed_jobs_res.scalars().all()
+    motos_res = await session.execute(select(models.Motorcycle))
+    motos = motos_res.scalars().all()
+    moto_uuid_map = {str(m.id): f"{m.brand} {m.model}".lower() for m in motos}
+
+    model_lower = (db_model.model or "").strip().lower()
+    freq = 0
+    for job in completed_jobs:
+        raw_moto = (job.motorcycle_id or "").strip()
+        raw_moto_lower = raw_moto.lower()
+        mapped_str = moto_uuid_map.get(raw_moto, "")
+        if (model_lower and model_lower in raw_moto_lower) or (mapped_str and model_lower in mapped_str):
+            freq += 1
+
+    return schemas.MotorcycleModelResponse(
+        id=db_model.id,
+        brand=db_model.brand,
+        model=db_model.model,
+        year=db_model.year,
+        category=db_model.category,
+        is_active=db_model.is_active,
+        service_frequency=freq,
+        created_at=db_model.created_at
+    )
+
+@app.delete("/motorcycle-models/{model_id}")
+@idempotent
+async def delete_motorcycle_model(
+    request: Request,
+    model_id: UUID,
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.MotorcycleModel).where(models.MotorcycleModel.id == model_id)
+    result = await session.execute(stmt)
+    db_model = result.scalar_one_or_none()
+    if not db_model:
+        raise HTTPException(status_code=404, detail="Motorcycle model profile not found")
+
+    db_model.is_active = False
+    await session.commit()
+
+    await log_audit_event(
+        session=session,
+        action="MOTORCYCLE_MODEL_DELETED",
+        resource=f"/api/v1/repairs/motorcycle-models/{model_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"brand": db_model.brand, "model": db_model.model, "soft_deleted": True},
+        ip_address=get_client_ip(request)
+    )
+
+    return {"message": "Motorcycle profile soft deleted successfully", "id": str(model_id)}
 
 @app.get("/jobs/active-carts", response_model=List[schemas.ActiveCustomerRepairCartResponse])
 async def get_active_repair_carts(

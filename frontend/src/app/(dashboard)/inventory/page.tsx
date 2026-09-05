@@ -582,8 +582,8 @@ export default function InventoryManagementPage() {
                             {isProduct ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
                           </div>
                           <div>
-                            <div className="font-semibold text-zinc-100">{item.name}</div>
-                            <div className="text-xs text-zinc-500 font-mono mt-0.5">{item.sku}</div>
+                            <div className="font-bold text-zinc-100">{item.name}</div>
+                            <div className="text-xs text-zinc-400 font-mono mt-0.5">{item.sku}</div>
                           </div>
                         </div>
                       </td>

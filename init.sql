@@ -110,6 +110,7 @@ CREATE TABLE repairs.motorcycle_models (
     model VARCHAR(100) NOT NULL,
     year INTEGER NOT NULL,
     category VARCHAR(50) DEFAULT 'General',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

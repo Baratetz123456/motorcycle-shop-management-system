@@ -43,6 +43,7 @@ async def init_db_schemas(target_engine, base_metadata=None):
                     model VARCHAR(100) NOT NULL,
                     year INTEGER NOT NULL,
                     category VARCHAR(50) DEFAULT 'General',
+                    is_active BOOLEAN NOT NULL DEFAULT TRUE,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
             """))
@@ -50,6 +51,7 @@ async def init_db_schemas(target_engine, base_metadata=None):
         pass
 
     column_migrations = [
+        "ALTER TABLE IF EXISTS repairs.motorcycle_models ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;",
         "ALTER TABLE IF EXISTS repairs.job_orders ADD COLUMN IF NOT EXISTS customer_name VARCHAR(255);",
         "ALTER TABLE IF EXISTS repairs.job_orders ADD COLUMN IF NOT EXISTS mechanic_name VARCHAR(255);",
         "ALTER TABLE IF EXISTS repairs.job_orders ADD COLUMN IF NOT EXISTS mechanic_notes TEXT;",

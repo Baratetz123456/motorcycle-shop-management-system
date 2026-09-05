@@ -559,9 +559,9 @@ export default function PayrollPage() {
                       </span>
 
                       <div className="bg-zinc-950 rounded-2xl border border-white/5 overflow-hidden">
-                        <table className="w-full text-left text-xs">
+                        <table className="w-full text-left text-sm">
                           <thead>
-                            <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 uppercase text-[10px]">
+                            <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 uppercase text-xs font-semibold">
                               <th className="p-3.5">JO Number</th>
                               <th className="p-3.5">Customer & Vehicle</th>
                               <th className="p-3.5">Date Completed</th>
@@ -576,8 +576,8 @@ export default function PayrollPage() {
                               <tr key={rec.id} className="hover:bg-zinc-900/40 transition-colors">
                                 <td className="p-3.5 font-mono font-bold text-cyan-400">{rec.jo_number}</td>
                                 <td className="p-3.5">
-                                  <span className="font-semibold text-white block">{rec.customer_name}</span>
-                                  <span className="text-[10px] text-zinc-500 font-mono">{rec.motorcycle_name}</span>
+                                  <span className="font-bold text-zinc-100 block">{rec.customer_name}</span>
+                                  <span className="text-xs text-zinc-400 font-mono">{rec.motorcycle_name}</span>
                                 </td>
                                 <td className="p-3.5 text-zinc-400 font-mono text-[11px]">
                                   {new Date(rec.created_at).toLocaleDateString()}
@@ -613,9 +613,9 @@ export default function PayrollPage() {
         /* Cashier Shift Payroll Table View */
         <div className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-zinc-900/90 text-zinc-400 uppercase text-[10px]">
+                <tr className="border-b border-white/10 bg-zinc-900/90 text-zinc-400 uppercase text-xs font-semibold">
                   <th className="p-4">Cashier Staff</th>
                   <th className="p-4 text-center">Shifts Logged</th>
                   <th className="p-4 text-right">Daily Shift Rate</th>

@@ -13,9 +13,17 @@ class MotorcycleModelBase(BaseModel):
 class MotorcycleModelCreate(MotorcycleModelBase):
     pass
 
+class MotorcycleModelUpdate(BaseModel):
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    category: Optional[str] = None
+
 class MotorcycleModelResponse(MotorcycleModelBase):
     id: UUID
-    created_at: datetime
+    is_active: bool = True
+    service_frequency: int = 0
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

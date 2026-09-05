@@ -238,6 +238,7 @@ async def register_user(
 async def get_users(
     request: Request,
     search: Optional[str] = Query(None),
+    role: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=100),
     current_user: dict = Depends(require_roles(["admin", "manager", "cashier"])),
@@ -255,6 +256,9 @@ async def get_users(
                 models.User.role.ilike(pattern)
             )
         )
+
+    if role and role.strip() and role.upper() != "ALL":
+        query = query.where(models.User.role == role.strip().lower())
 
     count_query = select(func.count()).select_from(query.subquery())
     total_res = await session.execute(count_query)
@@ -286,6 +290,30 @@ async def get_users(
         "page": page,
         "page_size": page_size,
         "total_pages": (total_count + page_size - 1) // page_size
+    }
+
+@app.get("/users/{user_id}")
+async def get_user_by_id(
+    request: Request,
+    user_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "manager", "cashier"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.User).where(models.User.id == user_id)
+    result = await session.execute(stmt)
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "id": str(u.id),
+        "first_name": u.first_name,
+        "last_name": u.last_name,
+        "email": u.email,
+        "role": u.role,
+        "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
+        "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
+        "created_at": u.created_at.isoformat() if u.created_at else None
     }
 
 @app.put("/users/{user_id}", response_model=schemas.UserResponse)

@@ -103,15 +103,11 @@ export default function SalesManagementPage() {
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-              <Receipt className="w-6 h-6" />
-            </div>
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-              Sales & Invoice Management
-            </h1>
-          </div>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
+            <Receipt className="w-8 h-8 text-cyan-400" />
+            Sales & Invoice Management
+          </h1>
+          <p className="text-zinc-400 mt-1 text-sm">
             Track historical sales transactions, inspect receipts with labor commission deductions, and monitor revenue settlements.
           </p>
         </div>
@@ -119,7 +115,7 @@ export default function SalesManagementPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsAuditOpen(true)}
-            className="px-4 py-2 bg-zinc-900 border border-white/10 hover:border-cyan-500/30 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
+            className="px-4 py-2.5 bg-zinc-900 border border-white/10 hover:border-cyan-500/30 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
           >
             <History className="w-4 h-4 text-cyan-400" />
             <span>Audit Trail</span>
@@ -197,17 +193,17 @@ export default function SalesManagementPage() {
                       </td>
 
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-zinc-100">{tx.customer_name || "Walk-in Customer"}</div>
+                        <div className="font-bold text-zinc-100">{tx.customer_name || "Walk-in Customer"}</div>
                         {tx.motorcycle_name && (
-                          <div className="text-xs text-zinc-500 font-mono mt-0.5">{tx.motorcycle_name}</div>
+                          <div className="text-xs text-zinc-400 font-mono mt-0.5">{tx.motorcycle_name}</div>
                         )}
                       </td>
 
-                      <td className="px-6 py-4 text-xs font-medium text-emerald-400">
+                      <td className="px-6 py-4 text-xs font-mono text-emerald-400">
                         {tx.cashier_name || "Cashier User"}
                       </td>
 
-                      <td className="px-6 py-4 text-xs font-medium text-purple-400">
+                      <td className="px-6 py-4 text-xs font-mono text-purple-400">
                         {tx.mechanic_name || "N/A"}
                       </td>
 
@@ -217,12 +213,12 @@ export default function SalesManagementPage() {
 
                       <td className="px-6 py-4 text-center">
                         {isCompleted ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <CheckCircle className="w-3.5 h-3.5" />
                             Completed
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">
                             <Ban className="w-3.5 h-3.5" />
                             Voided
                           </span>

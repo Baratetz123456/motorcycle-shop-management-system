@@ -336,17 +336,17 @@ function CustomerRepairHistoryLogsContent() {
                       Itemized Products & Services Availed ({job.items_used.length})
                     </span>
                     <div className="rounded-2xl border border-white/5 overflow-hidden">
-                      <table className="w-full text-xs text-left">
-                        <thead className="bg-zinc-950 text-zinc-400 text-[10px] uppercase tracking-wider">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-zinc-950 text-zinc-400 text-xs font-semibold uppercase tracking-wider">
                           <tr>
-                            <th className="p-3 px-4">Item / Service Description</th>
-                            <th className="p-3 px-4 text-center">Type</th>
-                            <th className="p-3 px-4 text-center">Qty</th>
-                            <th className="p-3 px-4 text-right">Unit Price</th>
-                            <th className="p-3 px-4 text-right">Subtotal</th>
+                            <th className="p-3.5 px-4">Item / Service Description</th>
+                            <th className="p-3.5 px-4 text-center">Type</th>
+                            <th className="p-3.5 px-4 text-center">Qty</th>
+                            <th className="p-3.5 px-4 text-right">Unit Price</th>
+                            <th className="p-3.5 px-4 text-right">Subtotal</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5 bg-zinc-900/40 font-mono">
+                        <tbody className="divide-y divide-white/5 bg-zinc-900/40">
                           {job.items_used.map((it, i) => {
                             const nameLower = (it.name || "").toLowerCase();
                             const isService =
@@ -358,26 +358,23 @@ function CustomerRepairHistoryLogsContent() {
                               nameLower.includes("inspection") ||
                               nameLower.includes("cleaning") ||
                               nameLower.includes("checkup") ||
-                              nameLower.includes("adjustment") ||
-                              nameLower.includes("change");
+                              nameLower.includes("wiring");
 
                             return (
-                              <tr key={i} className="hover:bg-white/[0.02]">
-                                <td className="p-3 px-4 font-sans text-zinc-200 font-medium">{it.name}</td>
-                                <td className="p-3 px-4 text-center font-sans">
+                              <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                                <td className="p-3.5 px-4 font-bold text-zinc-100">{it.name}</td>
+                                <td className="p-3.5 px-4 text-center">
                                   <span className={clsx(
-                                    "px-2 py-0.5 rounded text-[10px] font-semibold border",
-                                    isService
-                                      ? "bg-purple-500/10 text-purple-300 border-purple-500/20"
-                                      : "bg-cyan-500/10 text-cyan-300 border-cyan-500/20"
+                                    "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                    isService ? "bg-purple-500/10 text-purple-300 border border-purple-500/20" : "bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
                                   )}>
-                                    {isService ? "Service" : "Product"}
+                                    {isService ? "Labor Service" : "Part Product"}
                                   </span>
                                 </td>
-                                <td className="p-3 px-4 text-center text-zinc-400">{it.qty}</td>
-                                <td className="p-3 px-4 text-right text-zinc-400">₱{it.price.toFixed(2)}</td>
-                                <td className="p-3 px-4 text-right font-bold text-zinc-100">
-                                  ₱{(it.price * it.qty).toFixed(2)}
+                                <td className="p-3.5 px-4 text-center text-xs font-mono text-zinc-400">{it.qty}</td>
+                                <td className="p-3.5 px-4 text-right text-xs font-mono text-zinc-400">₱{it.price.toFixed(2)}</td>
+                                <td className="p-3.5 px-4 text-right font-mono font-bold text-white text-sm">
+                                  ₱{(it.qty * it.price).toFixed(2)}
                                 </td>
                               </tr>
                             );

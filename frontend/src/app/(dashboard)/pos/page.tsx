@@ -967,8 +967,8 @@ export default function POSPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-[10px] tracking-wider border-b border-white/5">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-white/5">
                     <tr>
                       <th className="p-4 px-6 font-semibold">Item / Service Description</th>
                       <th className="p-4 px-4 font-semibold text-center">Type</th>

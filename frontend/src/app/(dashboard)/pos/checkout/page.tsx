@@ -272,11 +272,11 @@ function POSCheckoutContent() {
           </button>
 
           <div>
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
-              <CreditCard className="w-7 h-7 text-cyan-400" />
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
+              <CreditCard className="w-8 h-8 text-cyan-400" />
               POS Checkout Payment
             </h1>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-sm text-zinc-400 mt-1">
               Full-Page Order Settlement Workspace & Change Calculator
             </p>
           </div>

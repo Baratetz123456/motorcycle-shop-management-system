@@ -362,16 +362,16 @@ function SalesReceiptContent() {
         {/* Itemized Purchased / Repair Breakdown Table */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-cyan-400" />
               Itemized Purchased Products & Repair Services ({transaction.items?.length || 1})
             </h3>
           </div>
 
           <div className="bg-zinc-950 rounded-2xl border border-white/10 overflow-hidden">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 font-semibold uppercase text-[10px]">
+                <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 font-semibold uppercase text-xs">
                   <th className="p-4">Item Description / Service</th>
                   <th className="p-4 text-center">Quantity</th>
                   <th className="p-4 text-right">Unit Price</th>
@@ -384,10 +384,10 @@ function SalesReceiptContent() {
                 ]).map((item, idx) => (
                   <tr key={idx} className="hover:bg-zinc-900/30 transition-colors">
                     <td className="p-4">
-                      <span className="font-semibold text-white block">{item.name}</span>
+                      <span className="font-bold text-zinc-100 block">{item.name}</span>
                     </td>
-                    <td className="p-4 text-center font-mono text-zinc-400">{item.qty}</td>
-                    <td className="p-4 text-right font-mono text-zinc-400">₱{item.price.toFixed(2)}</td>
+                    <td className="p-4 text-center font-mono text-xs text-zinc-400">{item.qty}</td>
+                    <td className="p-4 text-right font-mono text-xs text-zinc-400">₱{item.price.toFixed(2)}</td>
                     <td className="p-4 text-right font-mono font-bold text-white">
                       ₱{(item.qty * item.price).toFixed(2)}
                     </td>

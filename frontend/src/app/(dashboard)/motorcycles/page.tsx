@@ -1,387 +1,543 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { 
   Bike, 
   Search, 
   Plus, 
-  User, 
-  Clock, 
   Wrench, 
-  CheckCircle, 
-  CarFront, 
-  Calendar, 
   X, 
-  FileText, 
-  History, 
-  Phone, 
-  ChevronRight,
-  Layers,
+  Pencil, 
+  Trash2, 
+  Filter, 
+  ArrowUpDown,
+  AlertTriangle,
   Sparkles,
-  Tag
+  CheckCircle2,
+  Calendar,
+  Layers,
+  ShieldAlert
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 
-export interface MotorcycleModelCategory {
+export interface MotorcycleProfile {
   id: string;
   brand: string;
   model: string;
   year: number;
   category: string;
+  is_active?: boolean;
+  service_frequency: number;
   created_at?: string;
 }
 
-export interface CustomerProfile {
-  id: string;
-  customer_name: string;
-  contact_number?: string;
-  selected_model: string;
-  notes?: string;
-  created_at: string;
-}
+const CATEGORY_PRESETS = [
+  "Scooter",
+  "Underbone",
+  "Sport",
+  "Cruiser",
+  "Touring",
+  "Naked",
+  "Dual-Sport",
+  "General"
+];
 
-export interface RepairLogEntry {
-  job_id: string;
-  jo_number: string;
-  motorcycle_model: string;
-  date_repaired: string;
-  status: "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
-  customer_name: string;
-  mechanic_name?: string;
-  labor_charge: number;
-  parts_charge: number;
-}
+const BRAND_PRESETS = [
+  "Yamaha",
+  "Honda",
+  "Kawasaki",
+  "Suzuki",
+  "Ducati",
+  "KTM",
+  "BMW",
+  "Harley-Davidson",
+  "Triumph",
+  "Other"
+];
 
-export default function MotorcycleProfilePage() {
-  const [activeTab, setActiveTab] = useState<"MODELS" | "CUSTOMERS">("MODELS");
-  const [models, setModels] = useState<MotorcycleModelCategory[]>([]);
-  const [customers, setCustomers] = useState<CustomerProfile[]>([]);
+export default function MotorcycleProfilesPage() {
+  const [profiles, setProfiles] = useState<MotorcycleProfile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  
-  // Modals state
-  const [isAddModelModalOpen, setIsAddModelModalOpen] = useState(false);
-  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerProfile | null>(null);
-  const [repairHistory, setRepairHistory] = useState<RepairLogEntry[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [selectedBrand, setSelectedBrand] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<"FREQ_DESC" | "FREQ_ASC" | "YEAR_DESC" | "BRAND_ASC">("FREQ_DESC");
+  const [userRole, setUserRole] = useState<string>("");
 
-  // Static Model form state
-  const [modelForm, setModelForm] = useState({
-    brand: "Yamaha",
-    model: "",
-    year: new Date().getFullYear(),
-    category: "Scooter",
-  });
+  // Modals
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<MotorcycleProfile | null>(null);
 
-  // Customer form state
-  const [customerForm, setCustomerForm] = useState({
-    customer_name: "",
-    contact_number: "",
-    selected_model: "",
-    notes: "",
-  });
+  // Form states
+  const [formBrand, setFormBrand] = useState("Yamaha");
+  const [formModel, setFormModel] = useState("");
+  const [formYear, setFormYear] = useState(new Date().getFullYear());
+  const [formCategory, setFormCategory] = useState("Scooter");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    fetchModels();
-    fetchCustomers();
+    const role = localStorage.getItem("user_role") || "";
+    setUserRole(role.toLowerCase());
+    fetchProfiles();
   }, []);
 
-  const fetchModels = async () => {
+  const fetchProfiles = async () => {
+    setLoading(true);
     try {
-      const res = await apiClient.get<MotorcycleModelCategory[]>("/repairs/motorcycle-models");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        setModels(res.data);
-        if (!customerForm.selected_model && res.data[0]) {
-          setCustomerForm((prev) => ({
-            ...prev,
-            selected_model: `${res.data[0].brand} ${res.data[0].model} (${res.data[0].year})`
-          }));
-        }
+      const res = await apiClient.get<MotorcycleProfile[]>("/repairs/motorcycle-models");
+      if (Array.isArray(res.data)) {
+        setProfiles(res.data);
       }
-    } catch (e) {
-      // empty list
-    }
-  };
-
-  const fetchCustomers = async () => {
-    try {
-      const res = await apiClient.get<any[]>("/repairs/motorcycles");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        const mapped: CustomerProfile[] = res.data.map((m: any) => ({
-          id: m.id,
-          customer_name: m.customer_name,
-          contact_number: m.customer_contact || "",
-          selected_model: `${m.brand} ${m.model} (${m.year || 2023})`,
-          notes: m.notes || "",
-          created_at: m.created_at || new Date().toISOString(),
-        }));
-        setCustomers(mapped);
-      }
-    } catch (e) {}
-  };
-
-  const handleAddModel = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!modelForm.model) return;
-
-    try {
-      const res = await apiClient.post<MotorcycleModelCategory>("/repairs/motorcycle-models", modelForm);
-      setModels((prev) => [res.data, ...prev]);
-    } catch (e) {
-      // handle error
+    } catch (e: any) {
+      console.error("Failed to load motorcycle profiles:", e);
+      setStatusMessage({
+        type: "error",
+        text: e.response?.data?.detail || "Could not fetch motorcycle profiles. Please try again."
+      });
     } finally {
-      setIsAddModelModalOpen(false);
-      setModelForm({ brand: "Yamaha", model: "", year: new Date().getFullYear(), category: "Scooter" });
+      setLoading(false);
     }
   };
 
-  const handleAddCustomer = async (e: React.FormEvent) => {
+  // Derive unique brands and categories for dropdowns
+  const availableBrands = useMemo(() => {
+    const fromProfiles = profiles.map(p => p.brand).filter(Boolean);
+    const combined = Array.from(new Set([...BRAND_PRESETS.slice(0, 5), ...fromProfiles]));
+    return combined.sort();
+  }, [profiles]);
+
+  const availableCategories = useMemo(() => {
+    const fromProfiles = profiles.map(p => p.category).filter(Boolean);
+    const combined = Array.from(new Set([...CATEGORY_PRESETS, ...fromProfiles]));
+    return combined.sort();
+  }, [profiles]);
+
+  // Filter & sort profiles
+  const filteredAndSortedProfiles = useMemo(() => {
+    return profiles
+      .filter((p) => {
+        const matchesSearch = 
+          search.trim() === "" ||
+          `${p.brand} ${p.model}`.toLowerCase().includes(search.toLowerCase());
+        const matchesCategory = 
+          selectedCategory === "ALL" || 
+          (p.category || "General").toLowerCase() === selectedCategory.toLowerCase();
+        const matchesBrand = 
+          selectedBrand === "ALL" || 
+          p.brand.toLowerCase() === selectedBrand.toLowerCase();
+        return matchesSearch && matchesCategory && matchesBrand;
+      })
+      .sort((a, b) => {
+        if (sortBy === "FREQ_DESC") {
+          return (b.service_frequency || 0) - (a.service_frequency || 0);
+        }
+        if (sortBy === "FREQ_ASC") {
+          return (a.service_frequency || 0) - (b.service_frequency || 0);
+        }
+        if (sortBy === "YEAR_DESC") {
+          return b.year - a.year;
+        }
+        if (sortBy === "BRAND_ASC") {
+          const brandComp = a.brand.localeCompare(b.brand);
+          if (brandComp !== 0) return brandComp;
+          return a.model.localeCompare(b.model);
+        }
+        return 0;
+      });
+  }, [profiles, search, selectedCategory, selectedBrand, sortBy]);
+
+  // Open Edit Modal
+  const openEditModal = (profile: MotorcycleProfile) => {
+    setSelectedProfile(profile);
+    setFormBrand(profile.brand);
+    setFormModel(profile.model);
+    setFormYear(profile.year);
+    setFormCategory(profile.category || "General");
+    setIsEditModalOpen(true);
+  };
+
+  // Open Delete Modal
+  const openDeleteModal = (profile: MotorcycleProfile) => {
+    setSelectedProfile(profile);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Handle Register
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerForm.customer_name) return;
+    if (!formModel.trim()) return;
 
+    setIsSubmitting(true);
+    setStatusMessage(null);
     try {
-      const brandParts = (customerForm.selected_model || "Yamaha Custom").split(" ");
-      const brand = brandParts[0] || "Yamaha";
-      const modelName = brandParts.slice(1).join(" ") || "Custom";
-      const payload = {
-        plate_number: `PLT-${Date.now().toString().slice(-4)}`,
-        brand,
-        model: modelName,
-        year: new Date().getFullYear(),
-        customer_name: customerForm.customer_name,
-        customer_contact: customerForm.contact_number,
-        notes: customerForm.notes
-      };
-      const res = await apiClient.post<any>("/repairs/motorcycles", payload);
+      const res = await apiClient.post<MotorcycleProfile>("/repairs/motorcycle-models", {
+        brand: formBrand.trim(),
+        model: formModel.trim(),
+        year: Number(formYear),
+        category: formCategory.trim()
+      });
       if (res.data) {
-        const newCust: CustomerProfile = {
-          id: res.data.id || `c-${Date.now()}`,
-          customer_name: res.data.customer_name,
-          contact_number: res.data.customer_contact || "",
-          selected_model: `${res.data.brand} ${res.data.model} (${res.data.year || 2023})`,
-          notes: res.data.notes || "",
-          created_at: res.data.created_at || new Date().toISOString()
-        };
-        setCustomers((prev) => [newCust, ...prev]);
+        setProfiles((prev) => [res.data, ...prev]);
+        setStatusMessage({
+          type: "success",
+          text: `Motorcycle profile "${res.data.brand} ${res.data.model}" successfully registered.`
+        });
       }
-    } catch (e) {
-      const fallbackCust: CustomerProfile = {
-        id: `c-${Date.now()}`,
-        ...customerForm,
-        created_at: new Date().toISOString(),
-      };
-      setCustomers((prev) => [fallbackCust, ...prev]);
+      setIsRegisterModalOpen(false);
+      setFormModel("");
+    } catch (e: any) {
+      console.error("Failed to register motorcycle profile:", e);
+      setStatusMessage({
+        type: "error",
+        text: e.response?.data?.detail || "Failed to register motorcycle profile. Please verify your inputs."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsAddCustomerModalOpen(false);
-    setCustomerForm({
-      customer_name: "",
-      contact_number: "",
-      selected_model: models[0] ? `${models[0].brand} ${models[0].model} (${models[0].year})` : "",
-      notes: ""
-    });
   };
 
-  const openCustomerLogs = async (c: CustomerProfile) => {
-    setSelectedCustomer(c);
+  // Handle Edit
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProfile || !formModel.trim()) return;
+
+    setIsSubmitting(true);
+    setStatusMessage(null);
     try {
-      const res = await apiClient.get<RepairLogEntry[]>(
-        `/repairs/motorcycles/history/customer?customer_name=${encodeURIComponent(c.customer_name)}`
-      );
-      setRepairHistory(Array.isArray(res.data) ? res.data : []);
-    } catch (e) {
-      setRepairHistory([]);
+      const res = await apiClient.put<MotorcycleProfile>(`/repairs/motorcycle-models/${selectedProfile.id}`, {
+        brand: formBrand.trim(),
+        model: formModel.trim(),
+        year: Number(formYear),
+        category: formCategory.trim()
+      });
+      if (res.data) {
+        setProfiles((prev) =>
+          prev.map((p) => (p.id === selectedProfile.id ? res.data : p))
+        );
+        setStatusMessage({
+          type: "success",
+          text: `Motorcycle profile "${res.data.brand} ${res.data.model}" updated successfully.`
+        });
+      }
+      setIsEditModalOpen(false);
+      setSelectedProfile(null);
+    } catch (e: any) {
+      console.error("Failed to update motorcycle profile:", e);
+      setStatusMessage({
+        type: "error",
+        text: e.response?.data?.detail || "Failed to update profile. Only Admins can modify motorcycle profiles."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const filteredModels = models.filter((m) =>
-    `${m.brand} ${m.model} ${m.category}`.toLowerCase().includes(search.toLowerCase())
-  );
+  // Handle Soft Delete
+  const handleDelete = async () => {
+    if (!selectedProfile) return;
 
-  const filteredCustomers = customers.filter((c) =>
-    `${c.customer_name} ${c.selected_model}`.toLowerCase().includes(search.toLowerCase())
-  );
+    setIsSubmitting(true);
+    setStatusMessage(null);
+    try {
+      await apiClient.delete(`/repairs/motorcycle-models/${selectedProfile.id}`);
+      setProfiles((prev) => prev.filter((p) => p.id !== selectedProfile.id));
+      setStatusMessage({
+        type: "success",
+        text: `Motorcycle profile "${selectedProfile.brand} ${selectedProfile.model}" has been archived.`
+      });
+      setIsDeleteModalOpen(false);
+      setSelectedProfile(null);
+    } catch (e: any) {
+      console.error("Failed to delete motorcycle profile:", e);
+      setStatusMessage({
+        type: "error",
+        text: e.response?.data?.detail || "Failed to delete profile. Admin privileges are required."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isAdmin = userRole === "admin";
 
   return (
     <div className="h-screen bg-zinc-950 p-8 flex flex-col overflow-hidden font-sans">
       
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 flex-shrink-0">
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Bike className="w-8 h-8 text-cyan-400" />
-            Motorcycle Profiles & Customer Sessions
+            Motorcycle Profiles
           </h1>
-          <p className="text-zinc-400 mt-1 text-sm">
-            Manage static motorcycle model categories and active customer repair profiles accessible by Admin, Manager, and Mechanic.
+          <p className="text-zinc-400 mt-1 text-sm max-w-2xl">
+            Browse motorcycle specifications, filter by brand and category, and monitor service frequency across all customer models.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {activeTab === "MODELS" ? (
-            <button
-              onClick={() => setIsAddModelModalOpen(true)}
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              + New Static Model Category
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsAddCustomerModalOpen(true)}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(168,85,247,0.4)] flex items-center gap-2"
-            >
-              <User className="w-4 h-4" />
-              + Register Customer Repair Profile
-            </button>
+          <button
+            onClick={() => {
+              setFormBrand("Yamaha");
+              setFormModel("");
+              setFormYear(new Date().getFullYear());
+              setFormCategory("Scooter");
+              setIsRegisterModalOpen(true);
+            }}
+            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2 text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            + Register Motorcycle Profile
+          </button>
+        </div>
+      </div>
+
+      {/* Alert Banner */}
+      {statusMessage && (
+        <div
+          className={clsx(
+            "mb-5 p-4 rounded-2xl flex items-center justify-between text-sm flex-shrink-0 transition-all",
+            statusMessage.type === "success"
+              ? "bg-emerald-950/40 border border-emerald-500/30 text-emerald-300"
+              : "bg-rose-950/40 border border-rose-500/30 text-rose-300"
           )}
-        </div>
-      </div>
-
-      {/* Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
-          <button
-            onClick={() => setActiveTab("MODELS")}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-              activeTab === "MODELS"
-                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30"
-                : "text-zinc-400 hover:text-white"
+        >
+          <div className="flex items-center gap-2.5">
+            {statusMessage.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
             )}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Static Motorcycle Models ({models.length})</span>
-          </button>
-
+            <span>{statusMessage.text}</span>
+          </div>
           <button
-            onClick={() => setActiveTab("CUSTOMERS")}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-              activeTab === "CUSTOMERS"
-                ? "bg-purple-500/20 text-purple-300 shadow-md border border-purple-500/30"
-                : "text-zinc-400 hover:text-white"
-            )}
+            onClick={() => setStatusMessage(null)}
+            className="text-zinc-400 hover:text-white transition-colors ml-4"
           >
-            <User className="w-3.5 h-3.5" />
-            <span>Active Customer Profiles ({customers.length})</span>
+            <X className="w-4 h-4" />
           </button>
-        </div>
-
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input
-            type="text"
-            placeholder={activeTab === "MODELS" ? "Search Brand, Model..." : "Search Customer Name..."}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-          />
-        </div>
-      </div>
-
-      {/* Main Content View */}
-      {activeTab === "MODELS" ? (
-        <div className="flex-1 overflow-y-auto pr-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredModels.map((m) => (
-              <div
-                key={m.id}
-                className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-md relative overflow-hidden group shadow-lg"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-xs font-semibold text-zinc-400 bg-zinc-800/80 px-2.5 py-1 rounded-md border border-white/5 uppercase">
-                    {m.brand}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-md border border-cyan-500/30">
-                    {m.year}
-                  </span>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-                  {m.model}
-                </h3>
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                  <Tag className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>Category: {m.category}</span>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-white/5 text-[11px] text-zinc-500">
-                  Static Motorcycle Model Template (No engine or plate number required)
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto pr-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCustomers.map((c) => (
-              <div
-                key={c.id}
-                className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 hover:border-purple-500/50 transition-all duration-300 backdrop-blur-md relative overflow-hidden group shadow-lg flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="text-xs font-bold text-purple-400 bg-purple-950/80 border border-purple-500/30 px-3 py-1 rounded-lg">
-                      {c.selected_model}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white mb-1 group-hover:text-purple-300 transition-colors">
-                    {c.customer_name}
-                  </h3>
-                  {c.contact_number && (
-                    <p className="text-xs text-zinc-400 flex items-center gap-1.5 mb-3">
-                      <Phone className="w-3.5 h-3.5 text-zinc-500" />
-                      {c.contact_number}
-                    </p>
-                  )}
-
-                  {c.notes && (
-                    <p className="text-xs text-zinc-400 italic bg-zinc-950/50 p-2.5 rounded-xl border border-white/5 mb-4">
-                      "{c.notes}"
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => openCustomerLogs(c)}
-                  className="w-full bg-zinc-800/80 hover:bg-purple-600 text-zinc-200 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-white/5 hover:border-purple-500"
-                >
-                  <History className="w-3.5 h-3.5" />
-                  View Repair History Log
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 
-      {/* Add Model Modal */}
-      {isAddModelModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      {/* Search & Filter Controls Bar */}
+      <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-4 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 flex-shrink-0 backdrop-blur-md">
+        {/* Search */}
+        <div className="relative w-full lg:w-80">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search Brand or Model..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-zinc-950/80 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+          />
+        </div>
+
+        {/* Filters and Sorting */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Brand Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-400 font-medium">Brand:</span>
+            <select
+              value={selectedBrand}
+              onChange={(e) => setSelectedBrand(e.target.value)}
+              className="bg-zinc-950/80 border border-white/10 text-zinc-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer"
+            >
+              <option value="ALL">All Brands</option>
+              {availableBrands.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-400 font-medium">Category:</span>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-zinc-950/80 border border-white/10 text-zinc-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer"
+            >
+              <option value="ALL">All Categories</option>
+              {availableCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort By Frequency & Spec */}
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-zinc-950/80 border border-cyan-500/30 text-cyan-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer font-medium"
+            >
+              <option value="FREQ_DESC">Service Frequency: Highest First</option>
+              <option value="FREQ_ASC">Service Frequency: Lowest First</option>
+              <option value="YEAR_DESC">Year: Newest First</option>
+              <option value="BRAND_ASC">Brand (A-Z)</option>
+            </select>
+          </div>
+
+          {/* Result Counter */}
+          <span className="text-xs text-zinc-500 font-mono pl-2 border-l border-white/10 hidden sm:inline">
+            {filteredAndSortedProfiles.length} {filteredAndSortedProfiles.length === 1 ? "profile" : "profiles"}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Grid: Motorcycle Profile Cards */}
+      <div className="flex-1 overflow-y-auto pr-1">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((idx) => (
+              <div
+                key={idx}
+                className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6 h-48 animate-pulse flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="h-5 bg-zinc-800 rounded w-1/3" />
+                  <div className="h-8 bg-zinc-800 rounded w-3/4" />
+                </div>
+                <div className="h-10 bg-zinc-800 rounded w-full" />
+              </div>
+            ))}
+          </div>
+        ) : filteredAndSortedProfiles.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-zinc-900/30 border border-white/5 rounded-3xl">
+            <Bike className="w-16 h-16 text-zinc-600 mb-4 stroke-1" />
+            <h3 className="text-lg font-bold text-white mb-1">No Motorcycle Profiles Found</h3>
+            <p className="text-sm text-zinc-400 max-w-md mb-6">
+              {search || selectedBrand !== "ALL" || selectedCategory !== "ALL"
+                ? "No profiles match your current search and filter combination. Try resetting your filters."
+                : "No motorcycle profiles have been registered yet. Get started by registering your shop's first profile."}
+            </p>
+            {(search || selectedBrand !== "ALL" || selectedCategory !== "ALL") ? (
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setSelectedBrand("ALL");
+                  setSelectedCategory("ALL");
+                }}
+                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl transition-all"
+              >
+                Reset All Filters
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsRegisterModalOpen(true)}
+                className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Register First Profile
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAndSortedProfiles.map((p) => (
+              <div
+                key={p.id}
+                className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-md relative overflow-hidden group shadow-lg flex flex-col justify-between"
+              >
+                {/* Top: Brand & Year Badges + Admin Action Controls */}
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-zinc-300 bg-zinc-800/90 px-3 py-1 rounded-md border border-white/10 uppercase tracking-wider">
+                        {p.brand}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-md border border-cyan-500/30">
+                        {p.year}
+                      </span>
+                    </div>
+
+                    {/* Admin Action Controls */}
+                    {isAdmin && (
+                      <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => openEditModal(p)}
+                          title="Edit Profile"
+                          className="p-1.5 text-zinc-400 hover:text-cyan-300 hover:bg-cyan-950/50 rounded-lg transition-all"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(p)}
+                          title="Archive Profile (Soft Delete)"
+                          className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Model Headline */}
+                  <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-cyan-300 transition-colors truncate">
+                    {p.model}
+                  </h3>
+                </div>
+
+                {/* Service Frequency Metric Display */}
+                <div className="mt-5 pt-3 border-t border-white/5">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20">
+                    <span className="text-xs font-medium text-zinc-400 flex items-center gap-2">
+                      <Wrench className="w-4 h-4 text-cyan-400" />
+                      Service Frequency:
+                    </span>
+                    <span className="text-sm font-mono font-bold text-cyan-300">
+                      {p.service_frequency} {p.service_frequency === 1 ? "Visit" : "Visits"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal: Register Motorcycle Profile */}
+      {isRegisterModalOpen && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/50">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/60">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Bike className="w-5 h-5 text-cyan-400" /> Add Static Motorcycle Model
+                <Bike className="w-5 h-5 text-cyan-400" /> Register Motorcycle Profile
               </h3>
-              <button onClick={() => setIsAddModelModalOpen(false)} className="text-zinc-400 hover:text-white">
+              <button
+                onClick={() => setIsRegisterModalOpen(false)}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddModel} className="p-6 space-y-4">
+            <form onSubmit={handleRegister} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1">Make / Brand *</label>
                 <input
                   type="text"
                   required
+                  list="brand-suggestions"
                   placeholder="e.g. Yamaha, Honda, Kawasaki"
-                  value={modelForm.brand}
-                  onChange={(e) => setModelForm({ ...modelForm, brand: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
+                  value={formBrand}
+                  onChange={(e) => setFormBrand(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 />
+                <datalist id="brand-suggestions">
+                  {availableBrands.map((b) => (
+                    <option key={b} value={b} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
@@ -389,50 +545,57 @@ export default function MotorcycleProfilePage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. MT-07, Click 125i"
-                  value={modelForm.model}
-                  onChange={(e) => setModelForm({ ...modelForm, model: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
+                  placeholder="e.g. MT-07, Click 125i, Ninja 400"
+                  value={formModel}
+                  onChange={(e) => setFormModel(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Year *</label>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Year *</label>
                   <input
                     type="number"
                     required
-                    value={modelForm.year}
-                    onChange={(e) => setModelForm({ ...modelForm, year: parseInt(e.target.value) || 2024 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white font-mono focus:outline-none focus:border-cyan-500"
+                    min={1970}
+                    max={new Date().getFullYear() + 2}
+                    value={formYear}
+                    onChange={(e) => setFormYear(Number(e.target.value))}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Category</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Scooter, Naked"
-                    value={modelForm.category}
-                    onChange={(e) => setModelForm({ ...modelForm, category: e.target.value })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-cyan-500"
-                  />
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  >
+                    {CATEGORY_PRESETS.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
                 <button
                   type="button"
-                  onClick={() => setIsAddModelModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white"
+                  onClick={() => setIsRegisterModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                 >
-                  Save Model Category
+                  {isSubmitting ? "Registering..." : "Save Motorcycle Profile"}
                 </button>
               </div>
             </form>
@@ -440,82 +603,101 @@ export default function MotorcycleProfilePage() {
         </div>
       )}
 
-      {/* Add Customer Profile Modal */}
-      {isAddCustomerModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      {/* Modal: Edit Motorcycle Profile (Admin Only) */}
+      {isEditModalOpen && selectedProfile && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/50">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/60">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <User className="w-5 h-5 text-purple-400" /> Register Customer Repair Profile
+                <Pencil className="w-5 h-5 text-cyan-400" /> Edit Motorcycle Profile
               </h3>
-              <button onClick={() => setIsAddCustomerModalOpen(false)} className="text-zinc-400 hover:text-white">
+              <button
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setSelectedProfile(null);
+                }}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddCustomer} className="p-6 space-y-4">
+            <form onSubmit={handleEdit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Customer Full Name *</label>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">Make / Brand *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. John Doe"
-                  value={customerForm.customer_name}
-                  onChange={(e) => setCustomerForm({ ...customerForm, customer_name: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                  list="brand-suggestions-edit"
+                  value={formBrand}
+                  onChange={(e) => setFormBrand(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 />
+                <datalist id="brand-suggestions-edit">
+                  {availableBrands.map((b) => (
+                    <option key={b} value={b} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Contact Number</label>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Name *</label>
                 <input
                   type="text"
-                  placeholder="e.g. +1 555-0192"
-                  value={customerForm.contact_number}
-                  onChange={(e) => setCustomerForm({ ...customerForm, contact_number: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                  required
+                  value={formModel}
+                  onChange={(e) => setFormModel(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Select Static Motorcycle Model Category *</label>
-                <select
-                  value={customerForm.selected_model}
-                  onChange={(e) => setCustomerForm({ ...customerForm, selected_model: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                >
-                  {models.map((m) => (
-                    <option key={m.id} value={`${m.brand} ${m.model} (${m.year})`}>
-                      {m.brand} {m.model} ({m.year}) - {m.category}
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Year *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1970}
+                    max={new Date().getFullYear() + 2}
+                    value={formYear}
+                    onChange={(e) => setFormYear(Number(e.target.value))}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  >
+                    {CATEGORY_PRESETS.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Initial Service / Mechanic Notes</label>
-                <textarea
-                  rows={2}
-                  placeholder="Service description or notes..."
-                  value={customerForm.notes}
-                  onChange={(e) => setCustomerForm({ ...customerForm, notes: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
                 <button
                   type="button"
-                  onClick={() => setIsAddCustomerModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-white"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedProfile(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                 >
-                  Register Profile
+                  {isSubmitting ? "Updating..." : "Update Profile"}
                 </button>
               </div>
             </form>
@@ -523,40 +705,66 @@ export default function MotorcycleProfilePage() {
         </div>
       )}
 
-      {/* Customer Log Drawer */}
-      {selectedCustomer && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-end z-50">
-          <div className="bg-zinc-900 border-l border-white/10 w-full max-w-lg h-full flex flex-col shadow-2xl">
-            <div className="p-6 border-b border-white/10 bg-zinc-950/80 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white">{selectedCustomer.customer_name}</h3>
-                <p className="text-xs text-purple-400 font-semibold mt-0.5">{selectedCustomer.selected_model}</p>
-              </div>
-              <button onClick={() => setSelectedCustomer(null)} className="text-zinc-400 hover:text-white">
+      {/* Modal: Destructive Soft Delete Confirmation (Admin Only) */}
+      {isDeleteModalOpen && selectedProfile && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-zinc-900 border border-rose-500/30 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="p-5 border-b border-rose-500/20 flex items-center justify-between bg-rose-950/30">
+              <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-rose-400" /> Soft-Delete Motorcycle Profile
+              </h3>
+              <button
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setSelectedProfile(null);
+                }}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {repairHistory.map((log) => (
-                <div key={log.job_id} className="bg-zinc-950/80 border border-white/10 rounded-2xl p-4 space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-mono text-cyan-400 font-bold">{log.jo_number}</span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                      {log.status}
-                    </span>
-                  </div>
-                  <div className="text-sm font-semibold text-white">{log.motorcycle_model}</div>
-                  <div className="flex justify-between items-center text-xs text-zinc-400 pt-2 border-t border-white/5">
-                    <span>Date: {new Date(log.date_repaired).toLocaleDateString()}</span>
-                    <span className="font-mono text-emerald-400 font-bold">${(log.labor_charge + log.parts_charge).toFixed(2)}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-zinc-300">
+                Are you sure you want to soft-delete the profile for{" "}
+                <span className="font-bold text-white">
+                  {selectedProfile.brand} {selectedProfile.model} ({selectedProfile.year})
+                </span>
+                ?
+              </p>
+
+              <div className="p-3.5 bg-rose-950/20 border border-rose-500/20 rounded-xl text-xs text-rose-300">
+                <p className="font-semibold mb-1">Preservation Notice:</p>
+                <p className="text-zinc-400">
+                  This profile will be archived and hidden from the active catalog. Historical repair job orders, invoices, and customer service records will remain fully intact.
+                </p>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedProfile(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
+                >
+                  Keep Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-[0_0_15px_-3px_rgba(244,63,94,0.4)] disabled:opacity-50"
+                >
+                  {isSubmitting ? "Archiving..." : "Yes, Soft-Delete Profile"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

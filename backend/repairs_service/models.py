@@ -24,6 +24,7 @@ class MotorcycleModel(Base):
     model = Column(String(100), nullable=False)
     year = Column(Integer, nullable=False)
     category = Column(String(50), default="General")
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 class Motorcycle(Base):

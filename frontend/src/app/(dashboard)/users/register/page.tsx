@@ -89,21 +89,18 @@ export default function RegisterUserPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6 font-sans text-zinc-100">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-            <UserPlus className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+    <div className="min-h-screen bg-zinc-950 p-8 font-sans text-zinc-100 w-full overflow-y-auto">
+      <div className="max-w-4xl space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
+            <UserPlus className="w-8 h-8 text-cyan-400" />
             Provision New User Account
           </h1>
+          <p className="text-zinc-400 mt-1 text-sm">
+            Register a new staff member, assign store roles, and set duty compensation.
+          </p>
         </div>
-        <p className="text-sm text-zinc-400 mt-1">
-          Create a new user account with role-based access control and configure their database-persisted compensation parameters.
-        </p>
-      </div>
 
       <div className="flex items-center">
         <Link
@@ -208,7 +205,7 @@ export default function RegisterUserPage() {
             </div>
           </div>
 
-          {/* Contextual Compensation Fields (Saved in DB) */}
+          {/* Contextual Compensation Fields */}
           {role === "mechanic" && (
             <div className="p-4 rounded-xl bg-zinc-950/80 border border-amber-500/20 space-y-1.5 animate-in fade-in">
               <label className="block text-xs font-semibold text-amber-400">
@@ -228,7 +225,7 @@ export default function RegisterUserPage() {
                 />
               </div>
               <p className="text-[11px] text-zinc-500">
-                Saved in PostgreSQL (`auth.users`). This commission percentage is deducted from total labor charges per invoice in sales and payroll reports.
+                Percentage of service labor charge earned by the mechanic on completed jobs.
               </p>
             </div>
           )}
@@ -236,10 +233,12 @@ export default function RegisterUserPage() {
           {role === "cashier" && (
             <div className="p-4 rounded-xl bg-zinc-950/80 border border-emerald-500/20 space-y-1.5 animate-in fade-in">
               <label className="block text-xs font-semibold text-emerald-400">
-                Daily Base Shift Wage (₱) *
+                Daily Shift Wage (₱) *
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400 select-none">
+                  ₱
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -251,7 +250,7 @@ export default function RegisterUserPage() {
                 />
               </div>
               <p className="text-[11px] text-zinc-500">
-                Saved in PostgreSQL (`auth.users`). Standard daily shift base compensation.
+                Standard daily pay received per completed cashier shift.
               </p>
             </div>
           )}
@@ -293,7 +292,7 @@ export default function RegisterUserPage() {
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>Create Account & Save to DB</span>
+                  <span>Create Account</span>
                 </>
               )}
             </button>
@@ -302,5 +301,6 @@ export default function RegisterUserPage() {
         </form>
       </div>
     </div>
+  </div>
   );
 }
