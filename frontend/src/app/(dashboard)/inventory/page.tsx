@@ -444,10 +444,10 @@ export default function InventoryManagementPage() {
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Boxes className="w-8 h-8 text-cyan-400" />
-            Inventory Management
+            Parts & Stock
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Real-time stock valuation, automated SKU generation, cost-to-margin analytics, and POS catalog control.
+            Monitor parts on hand, reorder levels, and counter pricing.
           </p>
         </div>
 
@@ -457,7 +457,7 @@ export default function InventoryManagementPage() {
             className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold"
           >
             <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Trail</span>
+            <span>Audit Log</span>
           </button>
 
           <button
@@ -465,7 +465,7 @@ export default function InventoryManagementPage() {
             className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2 text-xs"
           >
             <Plus className="w-4 h-4" />
-            + New Product
+            + New Part
           </button>
           <button
             onClick={() => handleOpenModal("SERVICE")}
@@ -490,7 +490,7 @@ export default function InventoryManagementPage() {
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <span>All Catalog</span>
+            <span>All Items</span>
             <span className="bg-zinc-950 px-2 py-0.5 rounded-full text-[10px] text-zinc-400">
               {items.length}
             </span>
@@ -506,7 +506,7 @@ export default function InventoryManagementPage() {
             )}
           >
             <Package className="w-3.5 h-3.5" />
-            <span>Products ({productCount})</span>
+            <span>Parts ({productCount})</span>
           </button>
 
           <button
@@ -711,9 +711,9 @@ export default function InventoryManagementPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">
-                    Register New {formData.item_type === "PRODUCT" ? "Product Item" : "Labor Service"}
+                    Register New {formData.item_type === "PRODUCT" ? "Part" : "Service"}
                   </h3>
-                  <p className="text-xs text-zinc-400">Will be available immediately for Cashier POS selection</p>
+                  <p className="text-xs text-zinc-400">Will be available immediately at the showroom counter</p>
                 </div>
               </div>
               <button
@@ -749,7 +749,7 @@ export default function InventoryManagementPage() {
                     )}
                   >
                     <Package className="w-4 h-4" />
-                    Product
+                    Part
                   </button>
 
                   <button

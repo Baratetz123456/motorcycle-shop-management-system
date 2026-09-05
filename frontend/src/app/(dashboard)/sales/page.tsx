@@ -105,10 +105,10 @@ export default function SalesManagementPage() {
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Receipt className="w-8 h-8 text-cyan-400" />
-            Sales & Invoice Management
+            Invoices & Receipts
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Track historical sales transactions, inspect receipts with labor commission deductions, and monitor revenue settlements.
+            Completed sales receipts, open customer invoices, and audit logs.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function SalesManagementPage() {
             className="px-4 py-2.5 bg-zinc-900 border border-white/10 hover:border-cyan-500/30 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
           >
             <History className="w-4 h-4 text-cyan-400" />
-            <span>Audit Trail</span>
+            <span>Audit Log</span>
           </button>
         </div>
       </div>
@@ -256,8 +256,8 @@ export default function SalesManagementPage() {
       <ContextualAuditDrawer
         isOpen={isAuditOpen}
         onClose={() => setIsAuditOpen(false)}
-        title="Sales & Invoices Audit Trail"
-        subtitle="Cryptographic audit stream for sales transactions, receipt issuance, and void events"
+        title="Invoices & Receipts Audit Log"
+        subtitle="Audit log of completed sales, receipts, and voided transactions"
         actionPrefix="SALES_"
         resourceFilter="/sales"
       />

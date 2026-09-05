@@ -618,10 +618,10 @@ export default function RepairBoardPage() {
   };
 
   const columns: { title: string; status: RepairStatus; color: string; bg: string }[] = [
-    { title: "Pending Queue", status: "PENDING", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-    { title: "Ongoing Repair", status: "ONGOING", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
-    { title: "Completed (Ready)", status: "COMPLETED", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-    { title: "Released / Done", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+    { title: "New", status: "PENDING", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+    { title: "In Progress", status: "ONGOING", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
+    { title: "Completed", status: "COMPLETED", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    { title: "Invoiced", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
   ];
 
   return (
@@ -632,10 +632,10 @@ export default function RepairBoardPage() {
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Wrench className="w-8 h-8 text-cyan-400" />
-            Active Customer Repair Kanban Board
+            Workshop Job Cards
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Manage real-time repair stages with drag-and-drop, insert diagnosis notes, and synchronize with POS.
+            Track every bike on the bench from drop-off to final invoice.
           </p>
         </div>
 
@@ -645,7 +645,7 @@ export default function RepairBoardPage() {
             className="px-4 py-3 rounded-2xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
           >
             <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Trail</span>
+            <span>Audit Log</span>
           </button>
 
           <button
@@ -653,7 +653,7 @@ export default function RepairBoardPage() {
             className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            <span>New Customer Job Order</span>
+            <span>New Job Card</span>
           </button>
         </div>
       </div>
@@ -738,7 +738,7 @@ export default function RepairBoardPage() {
               <div className="flex-1 overflow-y-auto space-y-4 pr-1">
                 {colJobs.length === 0 ? (
                   <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-white/5 rounded-2xl p-4">
-                    No active job orders in this stage.
+                    No job cards in this stage.
                   </div>
                 ) : (
                   colJobs.map((job) => {
@@ -880,7 +880,7 @@ export default function RepairBoardPage() {
           <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-white/10 bg-zinc-950/80 flex justify-between items-center">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-cyan-400" /> New Customer Repair Session
+                <Plus className="w-5 h-5 text-cyan-400" /> New Job Card
               </h3>
               <button onClick={() => setIsCreateModalOpen(false)} className="text-zinc-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -901,7 +901,7 @@ export default function RepairBoardPage() {
               </div>
 
               <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Motorcycle Profile Model *</label>
+                <label className="block text-zinc-400 font-semibold mb-1.5">Bike Model *</label>
                 <select
                   value={newMotorcycleModel}
                   onChange={(e) => setNewMotorcycleModel(e.target.value)}
@@ -947,7 +947,7 @@ export default function RepairBoardPage() {
                   disabled={isSubmitting}
                   className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2"
                 >
-                  {isSubmitting ? <span>Placing...</span> : <span>Place Inline for Repair</span>}
+                  {isSubmitting ? <span>Saving...</span> : <span>Create Job Card</span>}
                 </button>
               </div>
             </form>
@@ -1067,7 +1067,7 @@ export default function RepairBoardPage() {
       <ContextualAuditDrawer
         isOpen={isAuditOpen}
         onClose={() => setIsAuditOpen(false)}
-        title="Repair Board Audit Trail"
+        title="Workshop Job Cards Audit Log"
         subtitle="Cryptographic audit stream for repair creation, status updates, diagnosis, and commission closures"
         actionPrefix="REPAIR_"
         resourceFilter="/repairs"

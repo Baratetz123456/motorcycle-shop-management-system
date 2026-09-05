@@ -181,10 +181,10 @@ export default function CustomerRepairHistoryPage() {
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <History className="w-8 h-8 text-cyan-400" />
-            Customer Repair History & Resume Queue
+            Customer Records
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
-            Review previous mechanic notes, itemized parts used, and manage returning customer repair queues.
+            Past repairs, parts used, and bikes linked to returning customers.
           </p>
         </div>
 
@@ -193,7 +193,7 @@ export default function CustomerRepairHistoryPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               type="text"
-              placeholder="Search Customer, Contact, Model..."
+              placeholder="Search customer, contact, bike..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
@@ -213,7 +213,7 @@ export default function CustomerRepairHistoryPage() {
               : "text-zinc-400 hover:text-white"
           )}
         >
-          <span>All Customer Histories</span>
+          <span>All Records</span>
           <span className="bg-zinc-950 px-2 py-0.5 rounded-full text-[10px] text-zinc-400">
             {histories.length}
           </span>
@@ -229,7 +229,7 @@ export default function CustomerRepairHistoryPage() {
           )}
         >
           <Wrench className="w-3.5 h-3.5" />
-          <span>Active Repair Sessions</span>
+          <span>On Bench</span>
         </button>
 
         <button
@@ -242,7 +242,7 @@ export default function CustomerRepairHistoryPage() {
           )}
         >
           <CheckCircle className="w-3.5 h-3.5" />
-          <span>Completed / Past Customers</span>
+          <span>Completed</span>
         </button>
       </div>
 
@@ -252,12 +252,12 @@ export default function CustomerRepairHistoryPage() {
           <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>
-                <th className="px-6 py-4 font-semibold">Customer Name</th>
-                <th className="px-6 py-4 font-semibold">Contact Info</th>
-                <th className="px-6 py-4 font-semibold">Motorcycle Model</th>
-                <th className="px-6 py-4 font-semibold text-center">Past Sessions</th>
-                <th className="px-6 py-4 font-semibold">Last Service Date</th>
-                <th className="px-6 py-4 font-semibold text-center">Current Status</th>
+                <th className="px-6 py-4 font-semibold">Customer</th>
+                <th className="px-6 py-4 font-semibold">Contact</th>
+                <th className="px-6 py-4 font-semibold">Bike Model</th>
+                <th className="px-6 py-4 font-semibold text-center">Past Jobs</th>
+                <th className="px-6 py-4 font-semibold">Last Service</th>
+                <th className="px-6 py-4 font-semibold text-center">Status</th>
                 <th className="px-6 py-4 font-semibold text-center">Actions</th>
               </tr>
             </thead>
@@ -265,7 +265,7 @@ export default function CustomerRepairHistoryPage() {
               {filteredHistories.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-zinc-500">
-                    No customer repair history records match your query.
+                    No customer records match your search.
                   </td>
                 </tr>
               ) : (
@@ -293,7 +293,7 @@ export default function CustomerRepairHistoryPage() {
 
                       <td className="px-6 py-4 text-center font-mono">
                         <span className="bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-md text-xs font-bold border border-white/5">
-                          {record.total_repair_sessions} Repairs
+                          {record.total_repair_sessions} Jobs
                         </span>
                       </td>
 
@@ -305,7 +305,7 @@ export default function CustomerRepairHistoryPage() {
                         {isActive ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
                             <Wrench className="w-3.5 h-3.5" />
-                            Active Inline
+                            Active on Bench
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
@@ -320,10 +320,10 @@ export default function CustomerRepairHistoryPage() {
                           <button
                             onClick={() => router.push(`/repairs/history/logs?id=${encodeURIComponent(record.customer_id)}`)}
                             className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-600 text-zinc-200 hover:text-white transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-sm"
-                            title="Open Full Repair History Logs"
+                            title="Open Customer Repair History"
                           >
                             <History className="w-3.5 h-3.5" />
-                            View Full Logs
+                            View History
                           </button>
 
                           {/* Disabled Button if Customer is Already Active Inline */}
@@ -331,19 +331,19 @@ export default function CustomerRepairHistoryPage() {
                             <button
                               disabled
                               className="px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-white/10 text-zinc-500 text-xs font-bold flex items-center gap-1.5 cursor-not-allowed opacity-60"
-                              title="This customer is currently active inline for repair"
+                              title="This customer is currently active on the bench"
                             >
                               <Lock className="w-3.5 h-3.5" />
-                              Active in Repair
+                              Active on Bench
                             </button>
                           ) : (
                             <button
                               onClick={() => handleResumeRepair(record)}
                               className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white transition-all text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
-                              title="Put this returning customer inline for a new repair session"
+                              title="Start a new job card for this returning customer"
                             >
                               <Play className="w-3.5 h-3.5" />
-                              Resume Repair
+                              Start Job
                             </button>
                           )}
                         </div>
@@ -358,7 +358,7 @@ export default function CustomerRepairHistoryPage() {
 
         {/* Footer */}
         <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400">
-          <div>Showing {filteredHistories.length} customer repair history record(s)</div>
+          <div>Showing {filteredHistories.length} customer record(s)</div>
           <div className="flex gap-4 items-center text-zinc-500">
             <span>• Accessible by Admin, Manager, and Mechanic</span>
           </div>

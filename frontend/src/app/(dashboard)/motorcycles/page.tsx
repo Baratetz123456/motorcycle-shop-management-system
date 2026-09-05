@@ -272,10 +272,10 @@ export default function MotorcycleProfilesPage() {
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Bike className="w-8 h-8 text-cyan-400" />
-            Motorcycle Profiles
+            Bike Registry
           </h1>
           <p className="text-zinc-400 mt-1 text-sm max-w-2xl">
-            Browse motorcycle specifications, filter by brand and category, and monitor service frequency across all customer models.
+            Master catalog of bike makes, models, and service intervals.
           </p>
         </div>
 
@@ -291,7 +291,7 @@ export default function MotorcycleProfilesPage() {
             className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2 text-sm"
           >
             <Plus className="w-4 h-4" />
-            + Register Motorcycle Profile
+            + Add Bike Model
           </button>
         </div>
       </div>
@@ -511,7 +511,7 @@ export default function MotorcycleProfilesPage() {
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/60">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Bike className="w-5 h-5 text-cyan-400" /> Register Motorcycle Profile
+                <Bike className="w-5 h-5 text-cyan-400" /> Add Bike Model
               </h3>
               <button
                 onClick={() => setIsRegisterModalOpen(false)}
@@ -595,7 +595,7 @@ export default function MotorcycleProfilesPage() {
                   disabled={isSubmitting}
                   className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? "Registering..." : "Save Motorcycle Profile"}
+                  {isSubmitting ? "Saving..." : "Save Bike Model"}
                 </button>
               </div>
             </form>
@@ -609,7 +609,7 @@ export default function MotorcycleProfilesPage() {
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/60">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Pencil className="w-5 h-5 text-cyan-400" /> Edit Motorcycle Profile
+                <Pencil className="w-5 h-5 text-cyan-400" /> Edit Bike Model
               </h3>
               <button
                 onClick={() => {
@@ -697,7 +697,7 @@ export default function MotorcycleProfilesPage() {
                   disabled={isSubmitting}
                   className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? "Updating..." : "Update Profile"}
+                  {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -711,7 +711,7 @@ export default function MotorcycleProfilesPage() {
           <div className="bg-zinc-900 border border-rose-500/30 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-rose-500/20 flex items-center justify-between bg-rose-950/30">
               <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-rose-400" /> Soft-Delete Motorcycle Profile
+                <ShieldAlert className="w-5 h-5 text-rose-400" /> Archive Bike Model
               </h3>
               <button
                 onClick={() => {

@@ -113,15 +113,15 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
-            Versiklo Enterprise
+            Versiklo
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">Role-Based POS & Management System</p>
+          <p className="text-sm text-zinc-400 mt-1">The all-in-one system for running your motorcycle shop</p>
         </div>
 
         <div className="bg-zinc-900/70 border border-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-2xl">
           <h2 className="text-lg font-semibold text-zinc-100 mb-6 flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-cyan-400" />
-            Sign in to your account
+            Sign in to your shop bench
           </h2>
 
           {error && (

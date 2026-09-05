@@ -213,7 +213,7 @@ function SalesReceiptContent() {
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
-            <span>Print Official Receipt</span>
+            <span>Print Receipt</span>
           </button>
         </div>
       </div>
@@ -232,8 +232,8 @@ function SalesReceiptContent() {
                 <Receipt className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-wide text-white">Official Sales Receipt</h1>
-                <p className="text-xs text-zinc-400">Versiklo Enterprise POS & Service Management</p>
+                <h1 className="text-2xl font-black tracking-wide text-white">Sales Receipt</h1>
+                <p className="text-xs text-zinc-400">Versiklo — Motorcycle Shop Management</p>
               </div>
             </div>
           </div>
@@ -266,7 +266,7 @@ function SalesReceiptContent() {
           {/* Left Column: Customer & Motorcycle Details */}
           <div className="p-5 rounded-2xl bg-zinc-950/80 border border-white/5 space-y-3 text-xs">
             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block border-b border-white/5 pb-2">
-              Customer & Vehicle Profile
+              Customer & Bike Profile
             </span>
 
             <div className="flex justify-between items-center">
@@ -275,8 +275,8 @@ function SalesReceiptContent() {
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-zinc-500">Motorcycle Model:</span>
-              <span className="font-mono font-semibold text-cyan-300">{transaction.motorcycle_name || "General Motorcycle"}</span>
+              <span className="text-zinc-500">Bike Model:</span>
+              <span className="font-mono font-semibold text-cyan-300">{transaction.motorcycle_name || "General Bike"}</span>
             </div>
 
             <div className="flex justify-between items-center">
@@ -326,7 +326,7 @@ function SalesReceiptContent() {
               <button
                 onClick={() => router.push(`/audit-logs?search=${encodeURIComponent(transaction.cashier_name || "")}`)}
                 className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/5 text-left transition-all"
-                title="View Cashier Audit Trail"
+                title="View Cashier Audit Log"
               >
                 <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Audit
@@ -364,7 +364,7 @@ function SalesReceiptContent() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-cyan-400" />
-              Itemized Purchased Products & Repair Services ({transaction.items?.length || 1})
+              Itemized Parts & Services ({transaction.items?.length || 1})
             </h3>
           </div>
 
@@ -492,7 +492,7 @@ function SalesReceiptContent() {
             className="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Sales Management</span>
+            <span>Back to Invoices</span>
           </button>
         </div>
 

@@ -34,11 +34,11 @@ interface AuditLogItem {
 
 const PAGE_FILTERS = [
   { label: "All Pages", value: "ALL" },
-  { label: "POS & Sales", value: "POS & Sales" },
-  { label: "Inventory", value: "Inventory" },
-  { label: "Repairs", value: "Repairs" },
+  { label: "Showroom Counter", value: "Showroom Counter" },
+  { label: "Parts & Stock", value: "Parts & Stock" },
+  { label: "Workshop", value: "Workshop" },
   { label: "Staff & Users", value: "Staff & Users" },
-  { label: "Settings", value: "Settings" },
+  { label: "Shop Settings", value: "Shop Settings" },
 ];
 
 export function mapLogToPage(resource: string, action: string): string {
@@ -46,19 +46,19 @@ export function mapLogToPage(resource: string, action: string): string {
   const act = (action || "").toLowerCase();
 
   if (res.includes("/pos") || res.includes("/sales") || act.includes("transaction") || act.includes("sale") || act.includes("checkout")) {
-    return "POS & Sales";
+    return "Showroom Counter";
   }
   if (res.includes("/inventory") || res.includes("/items") || act.includes("stock") || act.includes("item") || act.includes("price")) {
-    return "Inventory";
+    return "Parts & Stock";
   }
   if (res.includes("/repairs") || res.includes("/motorcycles") || act.includes("repair") || act.includes("job")) {
-    return "Repairs";
+    return "Workshop";
   }
   if (res.includes("/users") || res.includes("/auth/users") || act.includes("user") || act.includes("role") || act.includes("password")) {
     return "Staff & Users";
   }
   if (res.includes("/settings") || act.includes("settings")) {
-    return "Settings";
+    return "Shop Settings";
   }
   return "General Store";
 }
@@ -270,10 +270,10 @@ export default function SystemLogsPage() {
           <div>
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
               <Activity className="w-8 h-8 text-cyan-400" />
-              System History Logs
+              Audit Log
             </h1>
             <p className="text-zinc-400 mt-1 text-sm">
-              Comprehensive, non-technical history of database modifications, price adjustments, and customer transactions across all store pages.
+              Non-technical history of price adjustments, stock changes, and customer transactions across all shop pages.
             </p>
           </div>
 
@@ -287,7 +287,7 @@ export default function SystemLogsPage() {
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Export Change Logs (CSV)</span>
+                <span>Export CSV</span>
               </>
             )}
           </button>

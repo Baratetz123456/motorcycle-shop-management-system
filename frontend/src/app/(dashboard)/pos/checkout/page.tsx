@@ -693,7 +693,7 @@ function POSCheckoutContent() {
                     </>
                   ) : (
                     <>
-                      <span>Confirm & Complete Payment (₱{netTotalDue.toFixed(2)})</span>
+                      <span>Record Payment (₱{netTotalDue.toFixed(2)})</span>
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}

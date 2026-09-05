@@ -393,24 +393,24 @@ export default function POSPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-              Versiklo POS
+              Showroom Counter
             </h1>
             <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-              Point of Sale
+              Counter Sales
             </span>
           </div>
 
-          {/* Audit trail quick button */}
+          {/* Audit quick button */}
           <button
             onClick={() => setIsAuditOpen(true)}
             className="sm:hidden p-2 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300"
-            title="Audit Trail"
+            title="Audit Log"
           >
             <Activity className="w-4 h-4 text-cyan-400" />
           </button>
         </div>
 
-        {/* View Switcher: Catalog vs Current Order Cart (Full-page switch) */}
+        {/* View Switcher: Catalog vs Current Order (Full-page switch) */}
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex bg-zinc-900/90 p-1 rounded-2xl border border-white/10 text-xs w-full sm:w-auto shadow-inner">
             <button
@@ -429,7 +429,7 @@ export default function POSPage() {
             <button
               onClick={() => {
                 if (!selectedRepair) {
-                  setWarningMessage("Cannot view order cart: Please select an active customer repair first!");
+                  setWarningMessage("Cannot review order: Please select an active customer bike first!");
                   return;
                 }
                 setActiveView("cart");
@@ -443,14 +443,14 @@ export default function POSPage() {
                     ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
                     : "text-zinc-400 hover:text-white"
               )}
-              title={!selectedRepair ? "Please select an active customer repair to view or manage the order cart" : undefined}
+              title={!selectedRepair ? "Please select an active customer bike to review order" : undefined}
             >
               {!selectedRepair ? (
                 <Lock className="w-4 h-4 text-zinc-500" />
               ) : (
                 <ShoppingCart className="w-4 h-4" />
               )}
-              <span>Current Order Cart</span>
+              <span>Review Order</span>
               {selectedRepair && itemCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-zinc-950 font-mono text-[10px] font-black shadow-sm">
                   {itemCount}
@@ -464,7 +464,7 @@ export default function POSPage() {
             className="hidden sm:flex px-3.5 py-2 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors items-center gap-1.5 text-xs font-semibold shrink-0 shadow-sm"
           >
             <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Trail</span>
+            <span>Audit Log</span>
           </button>
         </div>
       </header>
@@ -658,7 +658,7 @@ export default function POSPage() {
                     )}
                   >
                     <Package className="w-4 h-4" />
-                    <span>Products</span>
+                    <span>Parts</span>
                   </button>
                 </div>
               </div>
@@ -1085,7 +1085,7 @@ export default function POSPage() {
                   disabled={!selectedRepair}
                   className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-sm shadow-xl shadow-cyan-500/20 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>Proceed to Complete Payment</span>
+                  <span>Go to Payment</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
@@ -1153,7 +1153,7 @@ export default function POSPage() {
       <ContextualAuditDrawer
         isOpen={isAuditOpen}
         onClose={() => setIsAuditOpen(false)}
-        title="POS & Checkout Audit Trail"
+        title="Showroom Counter Audit Log"
         subtitle="Cryptographic audit stream for cashier checkout transactions and active cart events"
         actionPrefix="POS_"
         resourceFilter="/pos"

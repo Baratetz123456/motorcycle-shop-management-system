@@ -296,7 +296,7 @@ export default function PayrollPage() {
               className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Return to Assigned Workspace</span>
+              <span>Return to Shop</span>
             </button>
           </div>
         </div>
@@ -313,14 +313,14 @@ export default function PayrollPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 flex items-center gap-3">
               <DollarSign className="w-8 h-8 text-emerald-400" />
-              Payroll & Commission Management
+              Payroll & Commissions
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               Admin / Manager Exclusive
             </span>
           </div>
           <p className="text-zinc-400 mt-1 text-sm">
-            Configure per-mechanic commission rates, manage cashier shift disbursements, and audit compensation periods.
+            Mechanic commission rates, cashier shift pay, and payouts.
           </p>
         </div>
 
@@ -330,7 +330,7 @@ export default function PayrollPage() {
             className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
           >
             <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Trail</span>
+            <span>Audit Log</span>
           </button>
 
           <button
@@ -339,7 +339,7 @@ export default function PayrollPage() {
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
           >
             <CheckCircle className="w-4 h-4" />
-            <span>{disbursing ? "Disbursing Funds..." : "Disburse All Pending"}</span>
+            <span>{disbursing ? "Disbursing..." : "Disburse All"}</span>
           </button>
         </div>
       </div>
@@ -801,8 +801,8 @@ export default function PayrollPage() {
       <ContextualAuditDrawer
         isOpen={isAuditOpen}
         onClose={() => setIsAuditOpen(false)}
-        title="Payroll & Compensation Audit Trail"
-        subtitle="Cryptographic audit stream for commission calculations and payroll disbursements"
+        title="Payroll & Commissions Audit Log"
+        subtitle="Audit log of commission rates and payroll payouts"
         actionPrefix="PAYROLL_"
         resourceFilter="/payroll"
       />

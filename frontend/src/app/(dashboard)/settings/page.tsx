@@ -495,12 +495,12 @@ function SettingsContent() {
           <div>
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
               <Settings className="w-8 h-8 text-cyan-400" />
-              {isAdmin ? "System Settings & Configuration" : "Staff Profile & Account Settings"}
+              {isAdmin ? "Shop Settings" : "My Profile"}
             </h1>
             <p className="text-zinc-400 mt-1 text-sm">
               {isAdmin 
-                ? "Configure enterprise store identity, regional standards, dynamic role accessibility, and administrator credentials."
-                : "Manage your personal staff account details, email address, visual theme, and authentication password."}
+                ? "Configure store currency, timezone, staff access, and appearance."
+                : "Manage your staff account details, appearance theme, and password."}
             </p>
           </div>
 
@@ -525,7 +525,7 @@ function SettingsContent() {
               )}
             >
               <Globe className="w-4 h-4" />
-              <span>General Preferences</span>
+              <span>General</span>
             </button>
 
             <button
@@ -538,7 +538,7 @@ function SettingsContent() {
               )}
             >
               <Sliders className="w-4 h-4" />
-              <span>Role Accessibility</span>
+              <span>Role Access</span>
             </button>
 
             <button
@@ -567,7 +567,7 @@ function SettingsContent() {
               )}
             >
               <User className="w-4 h-4" />
-              <span>Admin Profile</span>
+              <span>My Profile</span>
             </button>
 
             <button
@@ -580,7 +580,7 @@ function SettingsContent() {
               )}
             >
               <FileText className="w-4 h-4" />
-              <span>System Logs</span>
+              <span>Audit Log</span>
             </button>
           </div>
         )}
@@ -594,10 +594,10 @@ function SettingsContent() {
               <div>
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Building className="w-5 h-5 text-cyan-400" />
-                  General Store Identity & Standards
+                  Store Preferences
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Global branding, timezone scheduling, regional currency, and app color themes.
+                  Shop branding, timezone, currency, and appearance.
                 </p>
               </div>
 
@@ -713,7 +713,7 @@ function SettingsContent() {
                   className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-950 border border-white/5 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Restore Factory Defaults</span>
+                  <span>Reset Defaults</span>
                 </button>
 
                 <button
@@ -721,7 +721,7 @@ function SettingsContent() {
                   className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save System Preferences</span>
+                  <span>Save</span>
                 </button>
               </div>
             </form>
@@ -737,7 +737,7 @@ function SettingsContent() {
               <div>
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Sliders className="w-5 h-5 text-cyan-400" />
-                  Role-Based Store Module Accessibility
+                  Role Access Matrix
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
                   Control which operational sections each staff role is authorized to visit and operate.
@@ -849,7 +849,7 @@ function SettingsContent() {
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-950 border border-white/5 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset to Standard Defaults</span>
+                <span>Reset Defaults</span>
               </button>
 
               <button
@@ -858,7 +858,7 @@ function SettingsContent() {
                 className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                <span>Save Role Accessibility Matrix</span>
+                <span>Save</span>
               </button>
             </div>
           </div>
@@ -874,7 +874,7 @@ function SettingsContent() {
               <div>
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Users className="w-5 h-5 text-cyan-400" />
-                  Staff User Account Management
+                  Staff Accounts
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
                   Provision staff accounts, assign operational roles, and review individual user profiles.
@@ -886,7 +886,7 @@ function SettingsContent() {
                 className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/20 transition-all text-xs self-start sm:self-auto"
               >
                 <UserPlus className="w-4 h-4" />
-                <span>Register New User</span>
+                <span>+ Add Staff</span>
               </Link>
             </div>
 
@@ -1189,7 +1189,7 @@ function SettingsContent() {
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      <span>Save Profile Information</span>
+                      <span>Save</span>
                     </>
                   )}
                 </button>
@@ -1207,10 +1207,10 @@ function SettingsContent() {
               <div>
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Activity className="w-5 h-5 text-cyan-400" />
-                  System Change History Logs
+                  Audit Log Snapshot
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Live snapshot of business actions and database modifications across all store pages.
+                  Live snapshot of business actions and changes across all shop sections.
                 </p>
               </div>
 
@@ -1227,7 +1227,7 @@ function SettingsContent() {
                   Dedicated History Logs Page
                 </span>
                 <h3 className="text-lg md:text-xl font-black text-white">
-                  Access the Dedicated System Logs Page
+                  Access Dedicated Audit Logs
                 </h3>
                 <p className="text-xs md:text-sm text-zinc-400 max-w-2xl">
                   Inspect user-friendly change histories across all store sections, filter by page, view staff members who made changes, inspect details, and export clean audit reports.
@@ -1238,7 +1238,7 @@ function SettingsContent() {
                 href="/audit-logs"
                 className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2 shrink-0"
               >
-                <span>Open Dedicated Logs Page</span>
+                <span>View Full Log</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

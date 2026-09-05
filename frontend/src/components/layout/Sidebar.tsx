@@ -31,19 +31,20 @@ interface NavItem {
   label: string;
   href: string;
   icon: any;
+  group: string;
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard & Reports", href: "/reports", icon: BarChart3 },
-  { label: "Financial & Sales Reports", href: "/reports/extract", icon: FileSpreadsheet },
-  { label: "POS Checkout", href: "/pos", icon: ShoppingBag },
-  { label: "Sales Management", href: "/sales", icon: Receipt },
-  { label: "Inventory Management", href: "/inventory", icon: Package },
-  { label: "Payroll & Commissions", href: "/payroll", icon: DollarSign },
-  { label: "Motorcycle Profiles", href: "/motorcycles", icon: Bike },
-  { label: "Repair Board", href: "/repairs/board", icon: Wrench },
-  { label: "Customer Repair History", href: "/repairs/history", icon: History },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Dashboard", href: "/reports", icon: BarChart3, group: "DASHBOARD" },
+  { label: "Showroom Counter", href: "/pos", icon: ShoppingBag, group: "SHOWROOM" },
+  { label: "Job Cards", href: "/repairs/board", icon: Wrench, group: "WORKSHOP" },
+  { label: "Parts & Stock", href: "/inventory", icon: Package, group: "PARTS" },
+  { label: "Customer Records", href: "/repairs/history", icon: History, group: "CUSTOMERS" },
+  { label: "Bike Registry", href: "/motorcycles", icon: Bike, group: "CUSTOMERS" },
+  { label: "Invoices & Receipts", href: "/sales", icon: Receipt, group: "BACK OFFICE" },
+  { label: "Shop Reports", href: "/reports/extract", icon: FileSpreadsheet, group: "BACK OFFICE" },
+  { label: "Payroll", href: "/payroll", icon: DollarSign, group: "BACK OFFICE" },
+  { label: "Shop Settings", href: "/settings", icon: Settings, group: "BACK OFFICE" },
 ];
 
 export function Sidebar() {
@@ -159,7 +160,7 @@ export function Sidebar() {
               {!isCollapsed && (
                 <div className="truncate">
                   <h1 className="font-bold text-sm text-zinc-100 tracking-wide">{appName}</h1>
-                  <p className="text-[10px] text-zinc-400">Enterprise System</p>
+                  <p className="text-[10px] text-zinc-400">Shop Floor</p>
                 </div>
               )}
             </div>
@@ -175,27 +176,35 @@ export function Sidebar() {
           </div>
 
           {/* Dynamic Nav Items */}
-          <nav className="p-3 space-y-1.5">
-            {allowedNavItems.map((item) => {
+          <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+            {allowedNavItems.map((item, idx) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+              const prevItem = allowedNavItems[idx - 1];
+              const showGroupHeader = !prevItem || prevItem.group !== item.group;
 
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`flex items-center ${
-                    isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3.5 py-2.5"
-                  } rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-500/5"
-                      : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-cyan-400" : "text-zinc-400"}`} />
-                  {!isCollapsed && <span className="truncate">{item.label}</span>}
-                </Link>
+                <div key={item.href} className="space-y-1">
+                  {showGroupHeader && !isCollapsed && (
+                    <div className="pt-2 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                      {item.group}
+                    </div>
+                  )}
+                  <Link
+                    href={item.href}
+                    title={isCollapsed ? item.label : undefined}
+                    className={`flex items-center ${
+                      isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3.5 py-2.5"
+                    } rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-500/5"
+                        : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-cyan-400" : "text-zinc-400"}`} />
+                    {!isCollapsed && <span className="truncate">{item.label}</span>}
+                  </Link>
+                </div>
               );
             })}
           </nav>
