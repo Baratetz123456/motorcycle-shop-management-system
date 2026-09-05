@@ -339,7 +339,7 @@ export default function FinancialAndSalesExtractPage() {
     `Fiscal Annual Statement for Year ${selectedYear}`;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans p-6 md:p-8 overflow-y-auto">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans p-8 overflow-y-auto w-full">
       
       {/* Global Print Styles for Clean Vector PDF Download */}
       <style jsx global>{`

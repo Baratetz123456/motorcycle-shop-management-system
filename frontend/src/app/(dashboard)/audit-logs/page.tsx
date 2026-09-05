@@ -247,9 +247,9 @@ export default function SystemLogsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6 md:p-10 font-sans text-zinc-100 flex flex-col w-full overflow-y-auto">
+    <div className="min-h-screen bg-zinc-950 p-8 font-sans text-zinc-100 flex flex-col w-full overflow-y-auto">
       {/* Top Action & Navigation Bar */}
-      <div className="max-w-7xl w-full mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <Link
           href="/settings"
           className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-zinc-100 transition-colors bg-zinc-900 border border-white/10 px-4 py-2.5 rounded-xl hover:bg-zinc-800 self-start shadow-sm"
@@ -264,7 +264,7 @@ export default function SystemLogsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl w-full mx-auto space-y-6 flex-1 flex flex-col">
+      <div className="w-full space-y-6 flex-1 flex flex-col">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div>

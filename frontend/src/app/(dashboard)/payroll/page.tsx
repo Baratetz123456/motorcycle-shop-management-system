@@ -305,7 +305,7 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto">
+    <div className="min-h-screen bg-zinc-950 p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto w-full">
       
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

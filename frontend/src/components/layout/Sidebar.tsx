@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { isRouteAllowed, UserRole } from "@/lib/permissions";
@@ -14,15 +14,15 @@ import {
   ShieldCheck, 
   LogOut, 
   User, 
-  Bike,
-  Users,
-  KeyRound,
-  ChevronLeft,
-  ChevronRight,
-  Receipt,
-  History,
-  DollarSign,
-  FileSpreadsheet,
+  Bike, 
+  Users, 
+  KeyRound, 
+  ChevronLeft, 
+  ChevronRight, 
+  Receipt, 
+  History, 
+  DollarSign, 
+  FileSpreadsheet, 
   Settings
 } from "lucide-react";
 import { getSystemSettings } from "@/lib/settings";
@@ -43,7 +43,6 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Motorcycle Profiles", href: "/motorcycles", icon: Bike },
   { label: "Repair Board", href: "/repairs/board", icon: Wrench },
   { label: "Customer Repair History", href: "/repairs/history", icon: History },
-  { label: "User Management", href: "/users", icon: Users },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -57,7 +56,7 @@ export function Sidebar() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  useEffect(() => {
+  const syncStateFromStorage = useCallback(() => {
     const userRole = localStorage.getItem("user_role") as UserRole;
     const userEmail = localStorage.getItem("user_email") || "user@motoshop.com";
     const collapsedState = localStorage.getItem("sidebar_collapsed") === "true";
@@ -70,7 +69,15 @@ export function Sidebar() {
 
     const sysSettings = getSystemSettings();
     setAppName(sysSettings.appName);
+  }, []);
 
+  // Sync on mount and on every pathname navigation
+  useEffect(() => {
+    syncStateFromStorage();
+  }, [pathname, syncStateFromStorage]);
+
+  // Global listeners for storage and custom broadcast events
+  useEffect(() => {
     const handleSettingsUpdated = (e: any) => {
       if (e.detail?.appName) {
         setAppName(e.detail.appName);
@@ -81,13 +88,23 @@ export function Sidebar() {
       setPermissionsVersion((v) => v + 1);
     };
 
+    const handleStorageChange = () => {
+      syncStateFromStorage();
+      setPermissionsVersion((v) => v + 1);
+    };
+
     window.addEventListener("system_settings_updated", handleSettingsUpdated);
     window.addEventListener("permissions_updated", handlePermissionsUpdated);
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", handleStorageChange);
+
     return () => {
       window.removeEventListener("system_settings_updated", handleSettingsUpdated);
       window.removeEventListener("permissions_updated", handlePermissionsUpdated);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleStorageChange);
     };
-  }, []);
+  }, [syncStateFromStorage]);
 
   const toggleCollapse = () => {
     const nextState = !isCollapsed;
@@ -109,9 +126,12 @@ export function Sidebar() {
     }
   };
 
-  if (!role) return null;
+  const allowedNavItems = useMemo(() => {
+    if (!role) return [];
+    return ALL_NAV_ITEMS.filter((item) => isRouteAllowed(item.href, role));
+  }, [role, permissionsVersion]);
 
-  const allowedNavItems = ALL_NAV_ITEMS.filter((item) => isRouteAllowed(item.href, role));
+  if (!role) return null;
 
   const roleColors: Record<UserRole, string> = {
     admin: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",

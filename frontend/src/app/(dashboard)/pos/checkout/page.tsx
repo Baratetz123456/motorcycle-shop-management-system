@@ -258,7 +258,7 @@ function POSCheckoutContent() {
   };
 
   return (
-    <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-hidden">
+    <div className="w-full h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-hidden">
       
       {/* Top Navigation Header */}
       <div className="h-20 border-b border-white/10 px-8 bg-zinc-950/90 flex items-center justify-between shrink-0">
@@ -294,7 +294,7 @@ function POSCheckoutContent() {
       </div>
 
       {/* Main Full-Page Content Workspace */}
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="w-full flex-1 overflow-y-auto p-8">
         
         {isSuccess ? (
           /* Full-Page Official Receipt View */
@@ -412,7 +412,7 @@ function POSCheckoutContent() {
           </div>
         ) : (
           /* Full-Page Dual-Panel Workspace */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full w-full">
             
             {/* Left Panel: Order Details, Itemized Cart, & Discount (Span 7) */}
             <div className="lg:col-span-7 flex flex-col space-y-6">

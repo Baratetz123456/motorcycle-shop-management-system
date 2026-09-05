@@ -386,7 +386,7 @@ export default function POSPage() {
     });
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-50 font-sans">
+    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-50 font-sans w-full">
       
       {/* Top Main Navigation Header */}
       <header className="sticky top-0 z-30 bg-zinc-950/90 border-b border-white/10 backdrop-blur-xl px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
@@ -488,7 +488,7 @@ export default function POSPage() {
           
           {/* Section: Active Customer Repair Selection */}
           <section className="border-b border-white/10 bg-zinc-900/40 p-4 sm:p-6 backdrop-blur-md">
-            <div className="max-w-7xl mx-auto space-y-4">
+            <div className="w-full space-y-4">
               
               {/* If customer is already selected and NOT actively expanding selector */}
               {selectedRepair && !isChangingCustomer ? (
@@ -627,7 +627,7 @@ export default function POSPage() {
           </section>
 
           {/* Section: Catalog Controls (Strictly 2 Filters: Services & Products) */}
-          <section className="max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6 flex-1 flex flex-col">
+          <section className="w-full p-4 sm:p-8 space-y-6 flex-1 flex flex-col">
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               
@@ -866,7 +866,7 @@ export default function POSPage() {
 
       {/* VIEW 2: CURRENT ORDER CART (FULL PAGE) */}
       {activeView === "cart" && (
-        <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6 pb-20">
+        <main className="flex-1 w-full p-4 sm:p-8 space-y-6 pb-20">
           
           {/* Top Bar: Return to Catalog */}
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/10">

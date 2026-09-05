@@ -174,7 +174,7 @@ export default function CustomerRepairHistoryPage() {
   });
 
   return (
-    <div className="h-screen bg-zinc-950 p-8 flex flex-col overflow-hidden font-sans">
+    <div className="w-full h-screen bg-zinc-950 p-8 flex flex-col overflow-hidden font-sans">
       
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

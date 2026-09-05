@@ -99,7 +99,7 @@ export default function SalesManagementPage() {
   });
 
   return (
-    <div className="flex-1 p-8 flex flex-col h-full overflow-hidden font-sans text-zinc-100">
+    <div className="w-full flex-1 p-8 flex flex-col h-full overflow-hidden font-sans text-zinc-100">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
