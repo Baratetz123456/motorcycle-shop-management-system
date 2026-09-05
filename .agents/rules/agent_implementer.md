@@ -63,4 +63,11 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
     - **Active Catalog Filtering**: `GET /api/v1/inventory` and POS catalog queries must filter by `is_active == True` by default so deactivated items disappear immediately from active cashier selection.
     - **Product vs Service Attribute Invariants**: Products require physical inventory attributes (`brand`, `current_stock`, `reorder_level`), whereas Services represent labor charges without physical stock or brands. Service identifiers must use clean auto-generated namespaces (`SRV-` prefix) distinct from product SKUs.
 
+11. **Versiklo Canonical Content System & Shop Floor Invariant**:
+    - Strictly adhere to `frontend_style.md` Section 6.
+    - Use the Shop Floor Mental Model (*Showroom Counter*, *Workshop Job Cards*, *Parts & Stock*, *Customer Records*, *Bike Registry*, *Invoices & Receipts*, *Shop Reports*, *Payroll*, *Shop Settings*).
+    - Enforce "One Concept = One Word" (*Job Card*, *Part*, *Bike*, *Mechanic*, *Receipt*, *Audit Log*).
+    - Action buttons must be verb-first and max 3 words.
+    - Never alter PostgreSQL schema enums (`JobStatus`, `ItemType`) to match UI copy; map them cleanly at the Next.js presentation layer.
+
 

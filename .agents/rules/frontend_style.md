@@ -28,7 +28,7 @@ When generating or modifying React components in this project, you MUST adhere t
 
 ## 4. Transaction & Receipt UX Patterns
 - **Dedicated Pages vs Modals**: Complex receipts, invoice inspections, and transaction details must open in dedicated full-page routes (e.g., `/sales/receipt?id=...`), not modal popups.
-- **Standard Receipt Utilities**: Provide **Print Official Receipt** (`window.print()`), **Copy Invoice #**, staff attribution badges (Cashier & Mechanic), and linked navigation to audit logs.
+- **Standard Receipt Utilities**: Provide **Print Receipt** (`window.print()`), **Copy Invoice #**, staff attribution badges (Cashier & Mechanic), and linked navigation to audit logs.
 - **Suspense Boundaries**: Any page utilizing `useSearchParams()` must be wrapped in a `<Suspense>` boundary to ensure clean Next.js static and dynamic prerendering.
 
 ## 5. Design Aesthetics (The "WOW" Factor)
@@ -37,3 +37,44 @@ When generating or modifying React components in this project, you MUST adhere t
 - **Gradients**: Use vibrant text gradients for primary headers (e.g., `bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500`).
 - **Micro-animations**: Elements should respond to interaction. Use `transition-all`, `hover:scale-105`, `hover:border-cyan-500/50`, and subtle box shadows (`shadow-lg shadow-cyan-500/20`).
 - Avoid generic plain colors; use curated Tailwind hues like `cyan-400`, `blue-500`, `zinc-900`, `zinc-950`.
+
+## 6. Versiklo Canonical Content System & Shop Floor Copy
+
+When writing or updating user-facing copy, titles, buttons, or badges, you MUST strictly follow the canonical content guidelines:
+
+### 6.1. Product Identity & Jargon Invariants
+- **Product Name**: **Versiklo — Motorcycle Shop Management**.
+- **Audience**: Motorcycle shop owners, service managers, mechanics, and parts counter staff.
+- **Strictly Prohibited Jargon**: Never use *"ERP"*, *"DMS"*, *"SMS"*, *"cloud-native"*, *"microservices"*, *"role-based POS"*, or technical infrastructure jargon in user-facing copy.
+
+### 6.2. The Shop Floor Mental Model (6 Navigation Zones)
+- **`DASHBOARD`**: `/dashboard` — Today's revenue, active jobs, counter volume, quick actions.
+- **`SHOWROOM`**: `/pos` — Showroom Counter, counter sales, walk-in services, active cart.
+- **`WORKSHOP`**: `/repairs/board` — Workshop Job Cards (Kanban: *New*, *In Progress*, *Completed*, *Invoiced*).
+- **`PARTS`**: `/inventory` — Parts & Stock, inventory catalog, reorder levels, counter pricing.
+- **`CUSTOMERS`**:
+  - `/repairs/history` — Customer Records, returning customer repair logs, bikes on bench.
+  - `/motorcycles` — Bike Registry, catalog of bike makes, models, and service intervals.
+- **`BACK OFFICE`**:
+  - `/sales` — Invoices & Receipts, completed sales receipts, voided transactions.
+  - `/reports` — Shop Reports, revenue trends, mechanic commission reports.
+  - `/payroll` — Payroll & Commissions, mechanic commission rates, cashier shift pay.
+  - `/settings` — Shop Settings (Admin) / My Profile (Non-Admin), currency, timezone, appearance, staff accounts.
+
+### 6.3. "One Concept = One Word" Canonical Glossary
+Always enforce single canonical terms across every screen:
+- **`Job Card`**: Never use *Job Order*, *Work Order*, *JO*, or *Repair Session*.
+- **`Part`**: Never use *Product*, *SKU*, or *Merchandise* for inventory items.
+- **`Bike` / `Bike Model`**: Never use *Motorcycle Profile*, *Machine*, or *Vehicle*.
+- **`Mechanic`**: Never use *Technician*, *Tech*, or *Operator*.
+- **`Receipt` / `Sales Receipt`**: Never use *Official Receipt*, *Invoice Slip*, or *Ticket*.
+- **`Audit Log`**: Never use *Audit Trail*, *History Trail*, or *Change History Logs*.
+- **`Shop Settings`**: Never use *System Settings & Configuration* or *Store Identity*.
+
+### 6.4. Outcome-Based Action Buttons
+- Buttons must be verb-first, action-oriented, and maximum 3 words.
+- Examples: `New Job Card`, `Go to Payment`, `Record Payment`, `Print Receipt`, `Start Job`, `View History`, `Save`, `Reset Defaults`, `+ Add Staff`, `+ New Part`, `+ Add Bike Model`, `Export CSV`.
+
+### 6.5. Backend-Frontend Separation Invariant
+- Backend PostgreSQL enum types and SQLAlchemy models (`PENDING`, `ONGOING`, `COMPLETED`, `RELEASED`, `PRODUCT`, `SERVICE`) must never be renamed or broken.
+- All canonical copy harmonization happens strictly at the UI presentation and gateway mapping layer.
