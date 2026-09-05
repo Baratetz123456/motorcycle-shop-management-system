@@ -35,7 +35,9 @@ flowchart TD
   - Explicit `text` import for raw SQL statements.
   - Store snapshotting prior to `clearCart()` on checkout/confirmation screens.
   - Dedicated full-page routes for receipts and invoice inspections (`/sales/receipt?id=...`).
-  - KrakenD API gateway route synchronization.
+  - KrakenD API gateway route synchronization and cookie pass-through (`no-op` output encoding for auth endpoints).
+  - Ephemeral in-memory access tokens (`tokenStore`, never in `localStorage`) paired with true browser session cookies (`refresh_token` without `Max-Age`/`Expires`).
+  - Dual-timeout session lifecycle (30-minute sliding idle window, 8-hour absolute ceiling in Redis, with RTR reuse detection).
 
 ### 3. Phase 3: Review (`.agents/rules/agent_reviewer.md`)
 - Verify distributed Saga compliance and Transactional Outbox usage.

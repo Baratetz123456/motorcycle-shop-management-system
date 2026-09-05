@@ -21,6 +21,13 @@ When generating code, analyzing bugs, or extending this project, you MUST adhere
 - All frontend traffic must route through KrakenD (Port 8080) at `/api/v1/*`.
 - Do not expose microservice internal ports directly to the frontend.
 - **Single Entity & Collection Coverage**: All frontend routes must have corresponding endpoints in `krakend/krakend.json`, including single entity endpoints (e.g. `GET /api/v1/sales/transactions/{id}`).
+- **Cookie & Header Pass-Through Invariant (`no-op`)**:
+  - KrakenD strips backend response headers by default in JSON aggregating mode.
+  - Endpoints that set or clear cookies (`/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`, `/api/v1/auth/upgrade-session`) MUST use `"output_encoding": "no-op"` and backend `"encoding": "no-op"` so `Set-Cookie` headers are preserved and forwarded to the browser.
+  - Global `"input_headers"` must include `"Cookie"`.
+- **CORS Credentials Configuration**:
+  - When `"allow_credentials": true` is enabled, wildcard origins (`allow_origins: ["*"]`) are rejected by browser CORS standards. Origins must be explicitly listed (e.g. `["http://localhost:3000", "http://127.0.0.1:3000"]`).
+  - `"expose_headers"` must include `["Set-Cookie"]`, and `"allow_headers"` must include `"Cookie"`.
 
 ## 5. Database Schema & ORM Datatype Parity
 - SQLAlchemy model column types must strictly mirror PostgreSQL schema types in `init.sql`:

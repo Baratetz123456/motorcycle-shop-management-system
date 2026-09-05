@@ -14,10 +14,26 @@ When developing, modifying, or extending user authentication, authorization, rol
 - **Graceful Login Fallback & URL Masking**: If a user's default role landing page is restricted in custom permissions, fall back to their first authorized accessible page. Display access notices using human-readable page titles (e.g. "Inventory Management"), never raw resource paths. If all routes are restricted, block login with an explicit authorization warning.
 - **Sidebar Filtering**: Restricted routes must be completely hidden from the sidebar navigation for that user's active role.
 
-## 2. Session Invalidation & Token Versioning
-- `auth.users` contains a `token_version` integer column.
-- Whenever a user's role is updated or permissions change, increment `token_version` in the database.
-- `get_current_user` in `shared/security.py` MUST verify live `token_version` against DB on every request. Any token with an outdated `token_version` MUST return `401 Unauthorized` ("Session invalidated").
+## 2. Session Architecture, Token Lifetimes & Invalidation
+- **Ephemeral In-Memory Access Tokens**:
+  - **NEVER** store JWT access tokens in `localStorage` or `sessionStorage`.
+  - Access tokens must reside strictly in ephemeral React application memory (`tokenStore`), expiring in **15 minutes**.
+  - Upon closing the browser or tab, RAM is freed and the access token is instantly destroyed.
+- **True Browser Session Cookies**:
+  - `refresh_token` MUST be issued as an `HttpOnly`, `SameSite=Lax`, `Path=/api/v1/auth` cookie with **NO** `Max-Age` and **NO** `Expires` directives.
+  - The omission of expiration directives designates it as a true browser session cookie, instructing the browser to discard it immediately upon complete browser closure.
+- **Dual-Timeout Session Architecture (Redis)**:
+  - **Idle Inactivity Window**: 30-minute sliding expiration in Redis (`session:{id}`), refreshed upon active request/token refresh.
+  - **Absolute Shift Ceiling**: 8-hour hard maximum lifetime from initial session creation, preventing sessions from being kept alive indefinitely.
+  - **Refresh Token Rotation (RTR)**: Each refresh generates a new unique JTI and deletes the previous JTI. Replay of an old JTI triggers immediate session invalidation (reuse detection).
+- **Server-Side Logout Invalidation**:
+  - `/auth/logout` MUST proactively terminate the session in Redis (`session:{id}`) and revoke the active `refresh_jti`, alongside clearing the browser cookie (`Max-Age=0`).
+- **Live Token Versioning**:
+  - `auth.users` maintains a `token_version` integer column.
+  - Whenever a user's role or security state changes, increment `token_version`. Outdated token versions return HTTP `401 Unauthorized`.
+- **Frontend 401 Mutex & Inactivity Tracking**:
+  - Axios client must use an `isRefreshing` mutex and promise queue (`failedQueue`) to prevent concurrent refresh races on 401 responses.
+  - Client-side `useIdleTimer` tracks user activity and triggers proactive `/logout` after 30 minutes of idle inactivity.
 
 ## 3. Admin Self-Protection Guards
 - Admin users **MUST NOT** be allowed to change their own role (e.g. demote self from `admin`).
