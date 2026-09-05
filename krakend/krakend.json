@@ -241,6 +241,21 @@
     },
     {
       "endpoint": "/api/v1/inventory/{id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/items/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://inventory_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/inventory/{id}",
       "method": "PUT",
       "output_encoding": "json",
       "input_headers": ["Authorization", "Content-Type", "Idempotency-Key"],

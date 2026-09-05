@@ -128,6 +128,19 @@ async def get_items(
     result = await session.execute(query)
     return result.scalars().all()
 
+@app.get("/items/{item_id}", response_model=schemas.ItemResponse)
+async def get_item_by_id(
+    item_id: UUID,
+    current_user: dict = Depends(require_roles(["admin", "cashier", "manager", "mechanic"])),
+    session: AsyncSession = Depends(get_db)
+):
+    stmt = select(models.Item).where(models.Item.id == item_id)
+    result = await session.execute(stmt)
+    db_item = result.scalar_one_or_none()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_item
+
 @app.post("/items", response_model=schemas.ItemResponse)
 @idempotent
 async def create_item(

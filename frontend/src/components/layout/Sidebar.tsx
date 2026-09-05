@@ -163,6 +163,27 @@ export function Sidebar() {
     return ALL_NAV_ITEMS.filter((item) => isRouteAllowed(item.href, role));
   }, [role, permissionsVersion]);
 
+  // Compute exactly one active href to prevent multi-highlight collision (e.g. /reports vs /reports/extract)
+  const activeHref = useMemo(() => {
+    // 1. Direct exact match takes highest priority
+    const exactMatch = allowedNavItems.find((item) => item.href === pathname);
+    if (exactMatch) {
+      return exactMatch.href;
+    }
+
+    // 2. Sub-route mappings for deep workflow pages
+    if (pathname.startsWith("/repairs/jobs")) {
+      return "/repairs/board";
+    }
+
+    // 3. Fallback: Find matching items with slash boundary and select the longest matching prefix
+    const candidates = allowedNavItems
+      .filter((item) => item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)))
+      .sort((a, b) => b.href.length - a.href.length);
+
+    return candidates.length > 0 ? candidates[0].href : null;
+  }, [pathname, allowedNavItems]);
+
   if (!role) return null;
 
   const roleColors: Record<UserRole, string> = {
@@ -219,7 +240,7 @@ export function Sidebar() {
           <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
             {allowedNavItems.map((item, idx) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+              const isActive = item.href === activeHref;
               const prevItem = allowedNavItems[idx - 1];
               const showGroupHeader = !prevItem || prevItem.group !== item.group;
 
