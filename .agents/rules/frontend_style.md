@@ -11,8 +11,15 @@ When generating or modifying React components in this project, you MUST adhere t
 ## 2. Navigation & Layout Guidelines
 - **Collapsable Sidebar**: Main layout uses a collapsable sidebar with smooth width transitions (`w-64` expanded, `w-20` collapsed) and state persistence via `localStorage.getItem("sidebar_collapsed")`.
 - **Icon Tooltips**: When the sidebar is collapsed, display centered icons with `title` attributes for clear tooltips.
-- **Concise Navigation**: Avoid cluttering the top-level sidebar with primary action pages. Place contextual creation/registration buttons as header actions directly on management pages.
+- **Concise Navigation**: Avoid cluttering the top-level sidebar with administrative sub-pages (e.g., User Management and Audit Logs belong consolidated under Settings). Place contextual creation/registration buttons as header actions directly on management pages.
 - **Primary Data Table Columns**: For user lists, use **Email Address** as the primary column with a styled `(YOU)` tag for the logged-in user account.
+- **Universal Full-Width Fluid Layout**: All operational pages (POS terminal, checkout, active repair board, inventory, customer repair history, user management, audit logs, and settings) must expand fluidly across widescreen displays (`w-full min-h-screen bg-zinc-950 p-8`). Prohibit restrictive container caps (`max-w-7xl mx-auto` or `max-w-4xl mx-auto`).
+
+## 2.1. Tailwind CSS v4 Dynamic Theming Engine
+- **Theme Palette Invariant**: Tailwind CSS v4 resolves utility classes from CSS custom variables (`--color-cyan-*`, `--color-blue-*`, `--color-indigo-*`).
+- To support runtime theme switching across existing codebases without rewriting utilities, override root color tokens under `html[data-theme="..."]` in `globals.css` with `!important`.
+- **Pre-Hydration Flicker Guard**: Always include an inline blocking script in the `<head>` of `layout.tsx` reading `localStorage.getItem("motoshop_app_theme")` and setting `document.documentElement.setAttribute("data-theme", ...)` prior to paint.
+- **Settings vs. Profile Separation**: Store-wide identity and theme selection belong in the Admin **General Preferences** tab. Inside the **Profile** tab, wrap theme controls with `{!isAdmin && renderThemeSelector()}` to prevent duplicate controls for administrators.
 
 ## 3. State Management & Lifecycle Safety
 - Use **Zustand** for local, client-side state (like POS Cart or UI toggles).

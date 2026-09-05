@@ -11,6 +11,8 @@ When developing, modifying, or extending user authentication, authorization, rol
   - `mechanic` → `/repairs/board` (`/repair-board`)
 - **Dual Protection**: Enforce route access on BOTH frontend (`ProtectedRoute` & `permissions.ts`) AND backend (`require_roles` dependency in `shared/security.py`).
 - **Forbidden Status Code**: Return HTTP `403 Forbidden` for unauthorized roles (never 200 with error payload). Automatically log an `ACCESS_DENIED` security audit event.
+- **Graceful Login Fallback & URL Masking**: If a user's default role landing page is restricted in custom permissions, fall back to their first authorized accessible page. Display access notices using human-readable page titles (e.g. "Inventory Management"), never raw resource paths. If all routes are restricted, block login with an explicit authorization warning.
+- **Sidebar Filtering**: Restricted routes must be completely hidden from the sidebar navigation for that user's active role.
 
 ## 2. Session Invalidation & Token Versioning
 - `auth.users` contains a `token_version` integer column.
@@ -31,3 +33,9 @@ When developing, modifying, or extending user authentication, authorization, rol
 - In user tables, display **Email Address** as the primary identifying column with a `(YOU)` badge tag for the current logged-in user.
 - Keep sidebar navigation concise; place creation/registration actions (like "Register New User") as contextual action buttons on their respective management pages rather than top-level sidebar tabs.
 - Use a **collapsable sidebar** with smooth width transitions (`w-64` / `w-20`), icon tooltips, and state persistence in `localStorage`.
+
+## 6. Settings Integration & Staff Directory Format
+- **Sidebar Consolidation**: Do not include standalone top-level sidebar items for `User Management` or `Audit Logs`. Integrate them inside the `/settings` workspace (`/settings?tab=users` and `/settings?tab=logs`).
+- **User Management Table**: Restrict staff directory table columns to: Staff Name (with initials avatar), Email Address, and Assigned Role badge.
+- **Role Filter Pills**: Filter staff users using segmented pill buttons (`ALL`, `admin`, `manager`, `cashier`, `mechanic`).
+- **2-Column Registration**: User registration and edit forms must employ a balanced two-column grid layout with top navigation back-links returning to `/settings?tab=users`.
