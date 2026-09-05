@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { isRouteAllowed, UserRole } from "@/lib/permissions";
 import { apiClient } from "@/lib/api-client";
+import { canNavigate } from "@/lib/navigation-throttle";
 import { 
   ShoppingBag, 
   Package, 
@@ -229,7 +230,13 @@ export function Sidebar() {
                   )}
                   <Link
                     href={item.href}
-                    onClick={closeSidebar}
+                    onClick={(e) => {
+                      if (!canNavigate(item.href, pathname)) {
+                        e.preventDefault();
+                        return;
+                      }
+                      closeSidebar();
+                    }}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       isActive
                         ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-500/5"

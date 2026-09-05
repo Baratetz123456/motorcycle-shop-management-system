@@ -1,8 +1,9 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { getAppTheme, applyThemeToDocument } from '@/lib/theme';
+import { NavigationProgressBar } from '@/components/layout/NavigationProgressBar';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -30,6 +31,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Suspense fallback={null}>
+        <NavigationProgressBar />
+      </Suspense>
       {children}
     </QueryClientProvider>
   );

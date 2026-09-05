@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Wrench, 
   User, 
@@ -22,7 +22,8 @@ import {
   Activity,
   Lock,
   GripVertical,
-  AlertCircle
+  AlertCircle,
+  MousePointerClick
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -80,7 +81,18 @@ export default function RepairBoardPage() {
   // RBAC Role & Drag-and-Drop States
   const [userRole, setUserRole] = useState<string>("mechanic");
   const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
+  const draggedJobIdRef = useRef<string | null>(null);
+  const [isOverTrash, setIsOverTrash] = useState(false);
   const [dragOverColumn, setDragOverColumn] = useState<RepairStatus | null>(null);
+
+  // Mobile Touch Drag-and-Drop & Double-Tap
+  const [touchDraggedJob, setTouchDraggedJob] = useState<RepairJob | null>(null);
+  const [touchPosition, setTouchPosition] = useState<{ x: number; y: number } | null>(null);
+  const touchHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  const touchDraggedJobRef = useRef<RepairJob | null>(null);
+  const lastTapTimeRef = useRef<{ [jobId: string]: number }>({});
+
   const [alertNotification, setAlertNotification] = useState<{
     type: "warning" | "error" | "success";
     title: string;
@@ -323,37 +335,8 @@ export default function RepairBoardPage() {
     }
   };
 
-  // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, job: RepairJob) => {
-    e.dataTransfer.setData("text/plain", job.id);
-    e.dataTransfer.effectAllowed = "move";
-    setDraggedJobId(job.id);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedJobId(null);
-    setDragOverColumn(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent, colStatus: RepairStatus) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (dragOverColumn !== colStatus) {
-      setDragOverColumn(colStatus);
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e: React.DragEvent, newStatus: RepairStatus) => {
-    e.preventDefault();
-    setDragOverColumn(null);
-    const jobId = e.dataTransfer.getData("text/plain") || draggedJobId;
-    setDraggedJobId(null);
-    if (!jobId) return;
-
+  // Shared Job Stage Transition Executor (used by both desktop and mobile drag)
+  const executeMoveJob = async (jobId: string, newStatus: RepairStatus) => {
     const targetJob = jobs.find((j) => j.id === jobId);
     if (!targetJob) return;
 
@@ -412,6 +395,211 @@ export default function RepairBoardPage() {
         message: `Job Order ${targetJob.jo_number} for ${targetJob.customer} has been released and recorded in Customer Repair History.`
       });
     }
+  };
+
+  // Shared Trash Drop Executor (used by both desktop and mobile drag)
+  const executeTrashDrop = (jobId: string) => {
+    const targetJob = jobs.find((j) => j.id === jobId);
+    if (!targetJob) return;
+
+    const isPaid = Boolean(
+      targetJob.is_paid ||
+      (typeof window !== "undefined" && (
+        localStorage.getItem(`motoshop_job_paid_${targetJob.id}`) === "true" ||
+        localStorage.getItem(`motoshop_job_paid_${targetJob.jo_number}`) === "true"
+      ))
+    );
+    if (isPaid) {
+      setAlertNotification({
+        type: "error",
+        title: "Deletion Prohibited",
+        message: `Cannot delete paid Job Order (${targetJob.jo_number}) because it is already synchronized with sales, invoice, and inventory.`
+      });
+      return;
+    }
+    if (userRole === "cashier") {
+      setAlertNotification({
+        type: "error",
+        title: "Access Denied",
+        message: "Cashiers cannot delete job orders. Please contact a manager or mechanic."
+      });
+      return;
+    }
+    setDeleteConfirmJob(targetJob);
+  };
+
+  // --- Desktop Drag and drop handlers ---
+  const handleDragStart = (e: React.DragEvent, job: RepairJob) => {
+    e.dataTransfer.setData("text/plain", job.id);
+    e.dataTransfer.effectAllowed = "move";
+    draggedJobIdRef.current = job.id;
+    setDraggedJobId(job.id);
+  };
+
+  const handleDragEnd = () => {
+    draggedJobIdRef.current = null;
+    setDraggedJobId(null);
+    setDragOverColumn(null);
+    setIsOverTrash(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent, colStatus: RepairStatus) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverColumn !== colStatus) {
+      setDragOverColumn(colStatus);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: RepairStatus) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    const jobId = e.dataTransfer.getData("text/plain") || draggedJobIdRef.current || draggedJobId;
+    draggedJobIdRef.current = null;
+    setDraggedJobId(null);
+    if (!jobId) return;
+    await executeMoveJob(jobId, newStatus);
+  };
+
+  // --- Mobile Touch Event Handlers ---
+  const startTouchDrag = (job: RepairJob, clientX: number, clientY: number) => {
+    touchDraggedJobRef.current = job;
+    setTouchDraggedJob(job);
+    setTouchPosition({ x: clientX, y: clientY });
+    setDraggedJobId(job.id);
+    draggedJobIdRef.current = job.id;
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try { navigator.vibrate(40); } catch (e) {}
+    }
+  };
+
+  const handleCardTouchStart = (e: React.TouchEvent, job: RepairJob, isGripHandle = false) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    // Double-tap detection (< 350ms)
+    const now = Date.now();
+    const lastTap = lastTapTimeRef.current[job.id] || 0;
+    if (now - lastTap < 350) {
+      if (touchHoldTimerRef.current) {
+        clearTimeout(touchHoldTimerRef.current);
+        touchHoldTimerRef.current = null;
+      }
+      lastTapTimeRef.current[job.id] = 0;
+      router.push(`/repairs/jobs/${job.id}`);
+      return;
+    }
+    lastTapTimeRef.current[job.id] = now;
+
+    touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
+
+    if (isGripHandle) {
+      startTouchDrag(job, touch.clientX, touch.clientY);
+    } else {
+      if (touchHoldTimerRef.current) clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = setTimeout(() => {
+        startTouchDrag(job, touch.clientX, touch.clientY);
+      }, 200);
+    }
+  };
+
+  const handleCardTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    // If hold timer pending, cancel if moved more than 10px (normal scroll)
+    if (touchHoldTimerRef.current && touchStartPosRef.current) {
+      const dx = Math.abs(touch.clientX - touchStartPosRef.current.x);
+      const dy = Math.abs(touch.clientY - touchStartPosRef.current.y);
+      if (dx > 10 || dy > 10) {
+        clearTimeout(touchHoldTimerRef.current);
+        touchHoldTimerRef.current = null;
+      }
+    }
+
+    // If actively touch-dragging
+    if (touchDraggedJobRef.current) {
+      if (e.cancelable) e.preventDefault();
+      setTouchPosition({ x: touch.clientX, y: touch.clientY });
+
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (el) {
+        const trashEl = el.closest('[data-trash-zone="true"]');
+        if (trashEl) {
+          setIsOverTrash(true);
+          setDragOverColumn(null);
+          return;
+        } else {
+          setIsOverTrash(false);
+        }
+
+        const colEl = el.closest("[data-column-status]");
+        if (colEl) {
+          const status = colEl.getAttribute("data-column-status") as RepairStatus;
+          if (status && dragOverColumn !== status) {
+            setDragOverColumn(status);
+          }
+          return;
+        }
+      }
+      setDragOverColumn(null);
+      setIsOverTrash(false);
+    }
+  };
+
+  const handleCardTouchEnd = (e: React.TouchEvent) => {
+    if (touchHoldTimerRef.current) {
+      clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = null;
+    }
+
+    const dragged = touchDraggedJobRef.current;
+    if (dragged) {
+      const touch = e.changedTouches[0];
+      if (touch) {
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el) {
+          const trashEl = el.closest('[data-trash-zone="true"]');
+          if (trashEl) {
+            executeTrashDrop(dragged.id);
+          } else {
+            const colEl = el.closest("[data-column-status]");
+            if (colEl) {
+              const status = colEl.getAttribute("data-column-status") as RepairStatus;
+              if (status) {
+                executeMoveJob(dragged.id, status);
+              }
+            }
+          }
+        }
+      }
+
+      touchDraggedJobRef.current = null;
+      setTouchDraggedJob(null);
+      setTouchPosition(null);
+      setDraggedJobId(null);
+      draggedJobIdRef.current = null;
+      setDragOverColumn(null);
+      setIsOverTrash(false);
+    }
+  };
+
+  const handleCardTouchCancel = () => {
+    if (touchHoldTimerRef.current) {
+      clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = null;
+    }
+    touchDraggedJobRef.current = null;
+    setTouchDraggedJob(null);
+    setTouchPosition(null);
+    setDraggedJobId(null);
+    draggedJobIdRef.current = null;
+    setDragOverColumn(null);
+    setIsOverTrash(false);
   };
 
   // Open Edit Diagnosis & Reassignment modal
@@ -704,6 +892,11 @@ export default function RepairBoardPage() {
           return (
             <div
               key={col.status}
+              data-column-status={col.status}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+              }}
               onDragOver={(e) => handleDragOver(e, col.status)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
@@ -760,13 +953,18 @@ export default function RepairBoardPage() {
                         onDragStart={(e) => handleDragStart(e, job)}
                         onDragEnd={handleDragEnd}
                         onDoubleClick={() => router.push(`/repairs/jobs/${job.id}`)}
-                        title="Double-click to open Job Card profile • Drag to move or drag to bottom to delete"
+                        onTouchStart={(e) => handleCardTouchStart(e, job, false)}
+                        onTouchMove={handleCardTouchMove}
+                        onTouchEnd={handleCardTouchEnd}
+                        onTouchCancel={handleCardTouchCancel}
+                        style={{ touchAction: "manipulation" }}
+                        title="Double-click or double-tap to open Job Card profile • Drag to move or drag to bottom to delete"
                         className={clsx(
                           "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-all duration-300 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing select-none",
                           isPaid
                             ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]"
                             : "border-white/10",
-                          isBeingDragged && "opacity-40 border-cyan-400 border-dashed scale-[0.98]"
+                          isBeingDragged && "opacity-40 border-cyan-400 border-dashed"
                         )}
                       >
                         {/* JO Badge & Payment Status Tag */}
@@ -777,7 +975,7 @@ export default function RepairBoardPage() {
 
                           {isPaid ? (
                             <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 uppercase tracking-wider">
-                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                              <CheckCircle className="w-3 text-emerald-400" />
                               PAID
                             </span>
                           ) : (
@@ -819,28 +1017,27 @@ export default function RepairBoardPage() {
                           </span>
                         </div>
 
-                        {/* Card Footer Bar: Profile Navigation & Drag Handle */}
-                        <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/repairs/jobs/${job.id}`);
-                            }}
-                            className="p-1.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 text-cyan-400 hover:text-cyan-300 border border-white/10 transition-colors text-[11px] font-semibold flex items-center gap-1.5 group-hover:border-cyan-500/30"
-                            title="Open Job Card Profile (or double-click anywhere on card)"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>Job Profile &rarr;</span>
-                          </button>
-
-                          {/* Draggable Indicator Badge */}
+                        {/* Card Footer Bar: Double-Click Instruction & Drag Handle */}
+                        <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-2 select-none">
                           <div
-                            className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-900/80 px-2 py-1 rounded-lg border border-white/5 font-medium select-none cursor-grab"
+                            className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium group-hover:text-cyan-400/90 transition-colors pointer-events-none"
+                            title="Double-click or double-tap this card to open its full profile"
+                          >
+                            <MousePointerClick className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                            <span>Double-click to open</span>
+                          </div>
+
+                          {/* Draggable Indicator Badge / Mobile Touch Grip */}
+                          <div
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                              handleCardTouchStart(e, job, true);
+                            }}
+                            className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-900/90 px-2 py-1 rounded-lg border border-white/5 font-medium select-none cursor-grab active:cursor-grabbing hover:border-cyan-500/30 hover:text-cyan-300 transition-colors"
                             title="Drag this card into another column to change status, or drag to bottom trash can to delete"
                           >
                             <GripVertical className="w-3 h-3 text-zinc-400" />
-                            <span>Drag card</span>
+                            <span>Drag</span>
                           </div>
                         </div>
                       </div>
@@ -856,53 +1053,83 @@ export default function RepairBoardPage() {
       {/* Drag-to-Delete Trash Can Drop Zone */}
       {draggedJobId && (
         <div
+          data-trash-zone="true"
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = "move";
+            setIsOverTrash(true);
+          }}
           onDragOver={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             e.dataTransfer.dropEffect = "move";
+            if (!isOverTrash) setIsOverTrash(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const rect = e.currentTarget.getBoundingClientRect();
+            if (
+              e.clientX < rect.left ||
+              e.clientX >= rect.right ||
+              e.clientY < rect.top ||
+              e.clientY >= rect.bottom
+            ) {
+              setIsOverTrash(false);
+            }
           }}
           onDrop={(e) => {
             e.preventDefault();
-            const targetId = draggedJobId;
+            e.stopPropagation();
+            setIsOverTrash(false);
+            const targetId = e.dataTransfer.getData("text/plain") || draggedJobIdRef.current || draggedJobId;
+            draggedJobIdRef.current = null;
             setDraggedJobId(null);
-            const targetJob = jobs.find((j) => j.id === targetId);
-            if (targetJob) {
-              const isPaid = Boolean(
-                targetJob.is_paid ||
-                (typeof window !== "undefined" && (
-                  localStorage.getItem(`motoshop_job_paid_${targetJob.id}`) === "true" ||
-                  localStorage.getItem(`motoshop_job_paid_${targetJob.jo_number}`) === "true"
-                ))
-              );
-              if (isPaid) {
-                setAlertNotification({
-                  type: "error",
-                  title: "Deletion Prohibited",
-                  message: `Cannot delete paid Job Order (${targetJob.jo_number}) because it is already synchronized with sales, invoice, and inventory.`
-                });
-                return;
-              }
-              if (userRole === "cashier") {
-                setAlertNotification({
-                  type: "error",
-                  title: "Access Denied",
-                  message: "Cashiers cannot delete job orders. Please contact a manager or mechanic."
-                });
-                return;
-              }
-              setDeleteConfirmJob(targetJob);
-            }
+            if (!targetId) return;
+            executeTrashDrop(targetId);
           }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3.5 px-8 py-4 rounded-2xl bg-red-950/95 border-2 border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.5)] backdrop-blur-md animate-bounce cursor-pointer group"
+          className={clsx(
+            "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 backdrop-blur-xl transition-all duration-200 cursor-pointer shadow-2xl min-w-[440px] max-w-lg",
+            isOverTrash
+              ? "bg-red-900/95 border-red-400 scale-105 shadow-[0_0_60px_rgba(239,68,68,0.8)] ring-4 ring-red-500/40"
+              : "bg-red-950/90 border-red-500/80 shadow-[0_0_40px_rgba(239,68,68,0.4)]"
+          )}
         >
-          <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 group-hover:scale-110 group-hover:bg-red-500/30 transition-all border border-red-500/30">
-            <Trash2 className="w-6 h-6 animate-pulse" />
+          <div className="p-3 rounded-xl bg-red-500/20 text-red-400 transition-transform pointer-events-none border border-red-500/30">
+            <Trash2 className={clsx("w-6 h-6", isOverTrash ? "scale-125" : "animate-pulse")} />
           </div>
-          <div>
-            <p className="text-sm font-bold text-white tracking-wide">
-              Drop here to delete Job Card
+          <div className="pointer-events-none text-left">
+            <p className="text-sm font-black text-white uppercase tracking-wider">
+              {isOverTrash ? "Release to Delete Job Card" : "Drop here to delete Job Card"}
             </p>
-            <p className="text-xs text-red-300 font-medium">Release card into this zone to remove from workshop</p>
+            <p className="text-xs text-red-300 font-medium mt-0.5">
+              Release card into this zone to remove from workshop
+            </p>
           </div>
+        </div>
+      )}
+
+      {/* Mobile Floating Ghost Card Preview */}
+      {touchDraggedJob && touchPosition && (
+        <div
+          style={{
+            left: `${touchPosition.x}px`,
+            top: `${touchPosition.y}px`,
+            transform: "translate(-50%, -50%)",
+          }}
+          className="fixed z-[100] pointer-events-none w-72 p-4 rounded-2xl bg-zinc-900/95 border-2 border-cyan-500 shadow-[0_20px_50px_rgba(6,182,212,0.4)] backdrop-blur-md opacity-90 transition-none"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-mono font-bold text-xs text-cyan-400 bg-cyan-950 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
+              {touchDraggedJob.jo_number}
+            </span>
+            <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">
+              Moving...
+            </span>
+          </div>
+          <p className="text-sm font-bold text-white truncate">{touchDraggedJob.customer}</p>
+          <p className="text-xs text-zinc-400 truncate mt-0.5">{touchDraggedJob.motorcycle}</p>
         </div>
       )}
 

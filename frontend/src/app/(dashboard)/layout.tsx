@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Menu, Bike } from "lucide-react";
@@ -11,6 +12,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [appName, setAppName] = useState("Versiklo");
   const [shopDescription, setShopDescription] = useState("Shop Floor");
@@ -92,7 +94,9 @@ export default function DashboardLayout({
           )}
 
           <main className="flex-1 overflow-y-auto bg-zinc-950 flex flex-col min-w-0 w-full">
-            {children}
+            <div key={pathname} className="flex-1 flex flex-col min-w-0 w-full animate-page-enter">
+              {children}
+            </div>
           </main>
         </div>
       </div>

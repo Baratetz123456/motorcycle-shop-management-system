@@ -113,3 +113,22 @@ html[data-theme="amber"],
   --color-indigo-500: #f43f5e !important;
   --color-indigo-600: #e11d48 !important;
 }
+
+/* ==========================================================================
+   Global Fluid Page Transition Animation
+   ========================================================================== */
+@keyframes pageTransitionEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageTransitionEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
