@@ -2,10 +2,10 @@ import sys
 import os
 import csv
 import io
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List
 from uuid import UUID
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Query
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Response, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func, or_
@@ -19,12 +19,14 @@ from shared.security import get_current_user, require_roles, get_client_ip
 from shared.logger import get_logger
 from shared.logging_middleware import RequestLoggingMiddleware
 from auth_service import models, schemas
+from auth_service.session_manager import SessionManager
 
 logger = get_logger("auth_service")
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-for-local-dev")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
@@ -32,21 +34,38 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+def set_refresh_cookie(response: Response, cookie_val: str):
+    # CRITICAL: Omit max_age and expires to create a true browser SESSION COOKIE.
+    # When the browser is closed, this cookie is automatically discarded!
+    response.set_cookie(
+        key="refresh_token",
+        value=cookie_val,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite="lax",
+        path="/api/v1/auth"
+    )
+
 app = FastAPI(title="Auth Service")
 app.add_middleware(RequestLoggingMiddleware, service_name="auth_service")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 @app.post("/login", response_model=schemas.TokenResponse)
-async def login(credentials: schemas.LoginRequest, request: Request, session: AsyncSession = Depends(get_db)):
+async def login(
+    credentials: schemas.LoginRequest,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_db)
+):
     client_ip = get_client_ip(request)
     stmt = select(models.User).where(models.User.email == credentials.email)
     result = await session.execute(stmt)
@@ -68,16 +87,29 @@ async def login(credentials: schemas.LoginRequest, request: Request, session: As
             headers={"WWW-Authenticate": "Bearer"},
         )
         
+    # 1. Create server-side session in Redis (30m sliding idle TTL, 8h absolute ceiling)
+    sess = await SessionManager.create_session(
+        user_id=str(user.id),
+        role=user.role,
+        email=user.email,
+        ip=client_ip
+    )
+
+    # 2. Generate short-lived access token (15m)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={
             "sub": str(user.id), 
             "role": user.role, 
             "email": user.email,
-            "token_version": user.token_version
+            "token_version": user.token_version,
+            "session_id": sess["session_id"]
         }, 
         expires_delta=access_token_expires
     )
+
+    # 3. Set Refresh Token as an HttpOnly Session Cookie (no Max-Age / Expires)
+    set_refresh_cookie(response, f"{sess['session_id']}:{sess['refresh_jti']}")
     
     await log_audit_event(
         session=session,
@@ -85,7 +117,7 @@ async def login(credentials: schemas.LoginRequest, request: Request, session: As
         resource="/api/v1/auth/login",
         user_id=user.id,
         user_role=user.role,
-        details={"email": user.email},
+        details={"email": user.email, "session_id": sess["session_id"]},
         ip_address=client_ip
     )
     
@@ -98,19 +130,163 @@ async def login(credentials: schemas.LoginRequest, request: Request, session: As
         "last_name": user.last_name
     }
 
-@app.post("/logout")
-async def logout(request: Request, current_user: dict = Depends(get_current_user), session: AsyncSession = Depends(get_db)):
+@app.post("/refresh")
+async def refresh_token(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_db)
+):
+    raw_cookie = request.cookies.get("refresh_token")
+    if not raw_cookie or ":" not in raw_cookie:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session expired or missing. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    session_id, refresh_jti = raw_cookie.split(":", 1)
     client_ip = get_client_ip(request)
+
+    rotated = await SessionManager.rotate_refresh_token(session_id, refresh_jti, ip=client_ip)
+    if not rotated:
+        response.delete_cookie("refresh_token", path="/api/v1/auth")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session expired or token reused. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Verify user token_version & status in PostgreSQL
+    stmt = select(models.User).where(models.User.id == UUID(rotated["user_id"]))
+    res = await session.execute(stmt)
+    db_user = res.scalar_one_or_none()
+    if not db_user:
+        await SessionManager.terminate_session(session_id)
+        response.delete_cookie("refresh_token", path="/api/v1/auth")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account no longer active",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    new_access_token = create_access_token(
+        data={
+            "sub": str(db_user.id),
+            "role": db_user.role,
+            "email": db_user.email,
+            "token_version": db_user.token_version,
+            "session_id": session_id
+        },
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    new_cookie_val = f"{session_id}:{rotated['new_jti']}"
+    set_refresh_cookie(response, new_cookie_val)
+
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer",
+        "user_id": db_user.id,
+        "role": db_user.role,
+        "first_name": db_user.first_name,
+        "last_name": db_user.last_name
+    }
+
+@app.post("/upgrade-session")
+async def upgrade_session(
+    request: Request,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """
+    Transitional migration endpoint: Allows existing users with legacy bearer tokens
+    to seamlessly receive a session cookie without mid-shift interruption.
+    """
+    user_id = current_user.get("user_id")
+    user_role = current_user.get("role")
+    user_email = current_user.get("email")
+    client_ip = get_client_ip(request)
+
+    sess = await SessionManager.create_session(
+        user_id=str(user_id),
+        role=user_role,
+        email=user_email,
+        ip=client_ip
+    )
+
+    stmt = select(models.User).where(models.User.id == user_id)
+    res = await session.execute(stmt)
+    db_user = res.scalar_one_or_none()
+
+    new_access_token = create_access_token(
+        data={
+            "sub": str(user_id),
+            "role": user_role,
+            "email": user_email,
+            "token_version": db_user.token_version if db_user else 1,
+            "session_id": sess["session_id"]
+        },
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    set_refresh_cookie(response, f"{sess['session_id']}:{sess['refresh_jti']}")
+
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer",
+        "user_id": user_id,
+        "role": user_role,
+        "first_name": db_user.first_name if db_user else "",
+        "last_name": db_user.last_name if db_user else ""
+    }
+
+@app.post("/logout")
+async def logout(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_db)
+):
+    client_ip = get_client_ip(request)
+    raw_cookie = request.cookies.get("refresh_token")
+    user_id = None
+    user_role = None
+    user_email = None
+
+    if raw_cookie and ":" in raw_cookie:
+        session_id = raw_cookie.split(":", 1)[0]
+        await SessionManager.terminate_session(session_id)
+
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        try:
+            token = auth_header.split(" ")[1]
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = payload.get("sub")
+            user_role = payload.get("role")
+            user_email = payload.get("email")
+            sess_id_from_token = payload.get("session_id")
+            if sess_id_from_token:
+                await SessionManager.terminate_session(sess_id_from_token)
+        except Exception:
+            pass
+
+    response.delete_cookie(
+        key="refresh_token",
+        path="/api/v1/auth"
+    )
+
     await log_audit_event(
         session=session,
         action="LOGOUT",
         resource="/api/v1/auth/logout",
-        user_id=current_user.get("user_id"),
-        user_role=current_user.get("role"),
-        details={"email": current_user.get("email")},
+        user_id=UUID(user_id) if user_id else None,
+        user_role=user_role,
+        details={"email": user_email or "unknown"},
         ip_address=client_ip
     )
-    return {"msg": "Successfully logged out"}
+
+    return {"msg": "Successfully logged out and session terminated"}
 
 @app.post("/change-password")
 async def change_password(

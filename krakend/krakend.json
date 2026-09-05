@@ -6,7 +6,7 @@
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "output_encoding": "json",
-  "input_headers": ["Authorization", "Content-Type", "Idempotency-Key", "X-Forwarded-For", "Accept"],
+  "input_headers": ["Authorization", "Content-Type", "Idempotency-Key", "X-Forwarded-For", "Accept", "Cookie"],
   "extra_config": {
     "telemetry/logging": {
       "level": "INFO",
@@ -15,9 +15,11 @@
       "stdout": true
     },
     "security/cors": {
-      "allow_origins": ["*"],
+      "allow_origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"],
       "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-      "allow_headers": ["Origin", "Authorization", "Content-Type", "Idempotency-Key"]
+      "allow_headers": ["Origin", "Authorization", "Content-Type", "Idempotency-Key", "Cookie"],
+      "expose_headers": ["Set-Cookie"],
+      "allow_credentials": true
     },
     "router": {
       "return_error_details": "always"
@@ -27,12 +29,42 @@
     {
       "endpoint": "/api/v1/auth/login",
       "method": "POST",
-      "output_encoding": "json",
-      "input_headers": ["Content-Type"],
+      "output_encoding": "no-op",
+      "input_headers": ["Content-Type", "User-Agent", "X-Forwarded-For", "Accept"],
       "backend": [
         {
           "url_pattern": "/login",
-          "encoding": "json",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/refresh",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Cookie", "Content-Type", "User-Agent", "X-Forwarded-For", "Accept"],
+      "backend": [
+        {
+          "url_pattern": "/refresh",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/upgrade-session",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Cookie", "Content-Type", "User-Agent", "X-Forwarded-For", "Accept"],
+      "backend": [
+        {
+          "url_pattern": "/upgrade-session",
+          "encoding": "no-op",
           "sd": "static",
           "method": "POST",
           "host": ["http://auth_service:8000"]
@@ -42,12 +74,12 @@
     {
       "endpoint": "/api/v1/auth/logout",
       "method": "POST",
-      "output_encoding": "json",
-      "input_headers": ["Authorization"],
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Cookie", "X-Forwarded-For", "Accept"],
       "backend": [
         {
           "url_pattern": "/logout",
-          "encoding": "json",
+          "encoding": "no-op",
           "sd": "static",
           "method": "POST",
           "host": ["http://auth_service:8000"]

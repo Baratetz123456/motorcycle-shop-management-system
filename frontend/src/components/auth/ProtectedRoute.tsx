@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isRouteAllowed, getEffectiveLandingPage, getRouteFriendlyName, UserRole } from "@/lib/permissions";
+import { apiClient } from "@/lib/api-client";
+import { tokenStore } from "@/lib/auth-token";
+import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { ShieldAlert, ArrowRight, LogOut } from "lucide-react";
 
 interface DeniedState {
@@ -20,15 +23,67 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [countdown, setCountdown] = useState(2);
   const redirectedRef = useRef(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    const role = localStorage.getItem("user_role") as UserRole;
+  // Mount 30-minute idle inactivity protection across all protected routes
+  useIdleTimer();
 
+  const verifySession = useCallback(async () => {
+    let token = tokenStore.getToken();
+    let role = localStorage.getItem("user_role") as UserRole | null;
+
+    // 1. If in-memory token is absent, attempt silent refresh using HttpOnly session cookie
+    if (!token) {
+      try {
+        const { data } = await apiClient.post("/auth/refresh");
+        token = data.access_token;
+        tokenStore.setToken(token);
+        if (data.role) {
+          role = data.role as UserRole;
+          localStorage.setItem("user_role", data.role);
+        }
+        if (data.user_id) {
+          localStorage.setItem("user_id", data.user_id);
+        }
+        if (data.first_name || data.last_name) {
+          const fullName = [data.first_name, data.last_name].filter(Boolean).join(" ");
+          localStorage.setItem("user_name", fullName);
+        }
+      } catch (err) {
+        // 2. Transitional fallback: check if user has a legacy localStorage token to upgrade
+        const legacyToken = localStorage.getItem("auth_token");
+        if (legacyToken) {
+          try {
+            const upgradeRes = await apiClient.post(
+              "/auth/upgrade-session",
+              {},
+              { headers: { Authorization: `Bearer ${legacyToken}` } }
+            );
+            token = upgradeRes.data.access_token;
+            tokenStore.setToken(token);
+            localStorage.removeItem("auth_token"); // Migration complete for this user
+            if (upgradeRes.data.role) {
+              role = upgradeRes.data.role as UserRole;
+              localStorage.setItem("user_role", upgradeRes.data.role);
+            }
+          } catch (upgradeErr) {
+            localStorage.removeItem("auth_token");
+          }
+        }
+      }
+    }
+
+    // If still no token or role, user session has ended -> redirect to login
     if (!token || !role) {
+      tokenStore.clearToken();
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_name");
       router.push("/login");
       return;
     }
 
+    // Role-based route authorization guard
     if (!isRouteAllowed(pathname, role)) {
       const pageName = getRouteFriendlyName(pathname);
       const fallbackTarget = getEffectiveLandingPage(role);
@@ -50,7 +105,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     setIsAuthorized(true);
   }, [pathname, router]);
 
-  // Countdown timer for automatic redirection
+  useEffect(() => {
+    verifySession();
+  }, [verifySession]);
+
+  // Countdown timer for automatic redirection on access denied
   useEffect(() => {
     if (!deniedInfo) return;
 
@@ -78,11 +137,16 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiClient.post("/auth/logout");
+    } catch (_) {}
+    tokenStore.clearToken();
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user_role");
     localStorage.removeItem("user_id");
     localStorage.removeItem("user_email");
+    localStorage.removeItem("user_name");
     router.push("/login");
   };
 

@@ -22,6 +22,7 @@ import {
   X
 } from "lucide-react";
 import { getSystemSettings } from "@/lib/settings";
+import { tokenStore } from "@/lib/auth-token";
 
 import { UserAvatar } from "@/lib/avatars";
 
@@ -147,6 +148,7 @@ export function Sidebar() {
     } catch (e) {
       // Ignore logout API errors
     } finally {
+      tokenStore.clearToken();
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_role");
       localStorage.removeItem("user_id");

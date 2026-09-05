@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { tokenStore } from "@/lib/auth-token";
 import { recordUserAuditLog } from "@/lib/audit";
 import { ROLE_LANDING_PAGES, UserRole, getEffectiveLandingPage, getRouteFriendlyName } from "@/lib/permissions";
-import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2, UserCheck } from "lucide-react";
+import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2, Clock } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("admin@motoshop.com");
   const [password, setPassword] = useState("admin123");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,23 +18,33 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    // If already logged in, verify if user has an effective landing page
-    const token = localStorage.getItem("auth_token");
-    const role = localStorage.getItem("user_role") as UserRole;
-    if (token && role) {
-      const target = getEffectiveLandingPage(role);
-      if (target) {
-        router.push(target);
-      } else if (role !== "admin") {
-        // Locked out due to zero accessible workspaces
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("user_role");
-        localStorage.removeItem("user_id");
-        localStorage.removeItem("user_email");
-        setError(`Access Denied: Your assigned role (${role.toUpperCase()}) currently has no accessible store workspaces. Please contact a system administrator.`);
-      }
+    // Show banner if redirected due to idle inactivity or session expiry
+    if (searchParams.get("inactivity") === "1") {
+      setError("Your session expired due to 30 minutes of inactivity. Please sign in again.");
+    } else if (searchParams.get("expired") === "1") {
+      setError("Your session has expired. Please sign in to continue.");
     }
-  }, [router]);
+
+    // Check if user already has an active session cookie on mount
+    const checkActiveSession = async () => {
+      try {
+        const { data } = await apiClient.post("/auth/refresh");
+        if (data.access_token && data.role) {
+          tokenStore.setToken(data.access_token);
+          localStorage.setItem("user_role", data.role);
+          if (data.user_id) localStorage.setItem("user_id", data.user_id);
+          const target = getEffectiveLandingPage(data.role as UserRole);
+          if (target) {
+            router.push(target);
+          }
+        }
+      } catch (_) {
+        // No active session cookie found - stay on login page
+      }
+    };
+
+    checkActiveSession();
+  }, [router, searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,21 +65,28 @@ export default function LoginPage() {
       const effectiveLanding = getEffectiveLandingPage(userRole);
 
       if (!effectiveLanding && userRole !== "admin") {
-        // Zero operational store workspaces accessible - block login and wipe tokens
+        // Zero operational store workspaces accessible - terminate session and block
+        tokenStore.clearToken();
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user_role");
         localStorage.removeItem("user_id");
         localStorage.removeItem("user_email");
         localStorage.removeItem("user_name");
         try {
-          await apiClient.post("/auth/logout", {}, { headers: { Authorization: `Bearer ${access_token}` } }).catch(() => {});
+          await apiClient.post("/auth/logout").catch(() => {});
         } catch (e) {}
 
         setError(`Access Denied: Your assigned role (${userRole.toUpperCase()}) currently has no accessible store workspaces. Please contact a system administrator.`);
         return;
       }
 
-      localStorage.setItem("auth_token", access_token);
+      // 1. Store access token strictly in React memory (ephemeral, destroyed on tab close)
+      tokenStore.setToken(access_token);
+
+      // 2. Remove legacy insecure localStorage token if present
+      localStorage.removeItem("auth_token");
+
+      // 3. Store non-sensitive user metadata for UI rendering
       localStorage.setItem("user_role", userRole);
       localStorage.setItem("user_id", user_id);
       localStorage.setItem("user_email", email);
@@ -238,5 +257,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
+          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
