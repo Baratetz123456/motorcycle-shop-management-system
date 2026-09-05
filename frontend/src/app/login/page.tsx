@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
-import { ROLE_LANDING_PAGES, UserRole } from "@/lib/permissions";
+import { ROLE_LANDING_PAGES, UserRole, getEffectiveLandingPage, getRouteFriendlyName } from "@/lib/permissions";
 import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2, UserCheck } from "lucide-react";
 
 export default function LoginPage() {
@@ -16,11 +16,21 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    // If already logged in, redirect to role home
+    // If already logged in, verify if user has an effective landing page
     const token = localStorage.getItem("auth_token");
     const role = localStorage.getItem("user_role") as UserRole;
-    if (token && role && ROLE_LANDING_PAGES[role]) {
-      router.push(ROLE_LANDING_PAGES[role]);
+    if (token && role) {
+      const target = getEffectiveLandingPage(role);
+      if (target) {
+        router.push(target);
+      } else if (role !== "admin") {
+        // Locked out due to zero accessible workspaces
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_role");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("user_email");
+        setError(`Access Denied: Your assigned role (${role.toUpperCase()}) currently has no accessible store workspaces. Please contact a system administrator.`);
+      }
     }
   }, [router]);
 
@@ -39,6 +49,23 @@ export default function LoginPage() {
       const { access_token, role, user_id } = response.data;
       const userRole = role as UserRole;
 
+      // Determine effective fallback landing page
+      const effectiveLanding = getEffectiveLandingPage(userRole);
+
+      if (!effectiveLanding && userRole !== "admin") {
+        // Zero operational store workspaces accessible - block login and wipe tokens
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_role");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("user_email");
+        try {
+          await apiClient.post("/auth/logout", {}, { headers: { Authorization: `Bearer ${access_token}` } }).catch(() => {});
+        } catch (e) {}
+
+        setError(`Access Denied: Your assigned role (${userRole.toUpperCase()}) currently has no accessible store workspaces. Please contact a system administrator.`);
+        return;
+      }
+
       localStorage.setItem("auth_token", access_token);
       localStorage.setItem("user_role", userRole);
       localStorage.setItem("user_id", user_id);
@@ -46,8 +73,9 @@ export default function LoginPage() {
 
       recordUserAuditLog("USER_LOGIN", "/login", { email: email, role: userRole });
 
-      const landingPage = ROLE_LANDING_PAGES[userRole] || "/reports";
-      setSuccess(`Authenticated as ${userRole.toUpperCase()}! Redirecting to ${landingPage}...`);
+      const landingPage = effectiveLanding || "/reports";
+      const friendlyName = getRouteFriendlyName(landingPage);
+      setSuccess(`Authenticated as ${userRole.toUpperCase()}! Redirecting to ${friendlyName}...`);
       
       setTimeout(() => {
         router.push(landingPage);

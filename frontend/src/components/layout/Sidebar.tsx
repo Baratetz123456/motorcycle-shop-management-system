@@ -22,8 +22,10 @@ import {
   Receipt,
   History,
   DollarSign,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Settings
 } from "lucide-react";
+import { getSystemSettings } from "@/lib/settings";
 
 interface NavItem {
   label: string;
@@ -42,7 +44,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Repair Board", href: "/repairs/board", icon: Wrench },
   { label: "Customer Repair History", href: "/repairs/history", icon: History },
   { label: "User Management", href: "/users", icon: Users },
-  { label: "Audit Logs", href: "/audit-logs", icon: ShieldCheck },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -50,6 +52,8 @@ export function Sidebar() {
   const router = useRouter();
   const [role, setRole] = useState<UserRole | null>(null);
   const [email, setEmail] = useState<string>("");
+  const [appName, setAppName] = useState<string>("Versiklo");
+  const [permissionsVersion, setPermissionsVersion] = useState<number>(0);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -63,6 +67,26 @@ export function Sidebar() {
       setEmail(userEmail);
     }
     setIsCollapsed(collapsedState);
+
+    const sysSettings = getSystemSettings();
+    setAppName(sysSettings.appName);
+
+    const handleSettingsUpdated = (e: any) => {
+      if (e.detail?.appName) {
+        setAppName(e.detail.appName);
+      }
+    };
+
+    const handlePermissionsUpdated = () => {
+      setPermissionsVersion((v) => v + 1);
+    };
+
+    window.addEventListener("system_settings_updated", handleSettingsUpdated);
+    window.addEventListener("permissions_updated", handlePermissionsUpdated);
+    return () => {
+      window.removeEventListener("system_settings_updated", handleSettingsUpdated);
+      window.removeEventListener("permissions_updated", handlePermissionsUpdated);
+    };
   }, []);
 
   const toggleCollapse = () => {
@@ -114,7 +138,7 @@ export function Sidebar() {
               </div>
               {!isCollapsed && (
                 <div className="truncate">
-                  <h1 className="font-bold text-sm text-zinc-100 tracking-wide">Versiklo</h1>
+                  <h1 className="font-bold text-sm text-zinc-100 tracking-wide">{appName}</h1>
                   <p className="text-[10px] text-zinc-400">Enterprise System</p>
                 </div>
               )}

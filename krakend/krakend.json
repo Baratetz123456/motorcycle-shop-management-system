@@ -150,6 +150,7 @@
       "method": "GET",
       "output_encoding": "json",
       "input_headers": ["Authorization"],
+      "input_query_strings": ["*"],
       "backend": [
         {
           "url_pattern": "/audit-logs",
@@ -165,6 +166,7 @@
       "method": "GET",
       "output_encoding": "no-op",
       "input_headers": ["Authorization"],
+      "input_query_strings": ["*"],
       "backend": [
         {
           "url_pattern": "/audit-logs/export",

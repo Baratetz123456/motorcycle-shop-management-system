@@ -16,6 +16,7 @@ import {
   UserCheck
 } from "lucide-react";
 import Link from "next/link";
+import clsx from "clsx";
 
 interface UserItem {
   id: string;
@@ -125,8 +126,8 @@ export default function UserManagementPage() {
       )}
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-6 flex-shrink-0">
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-6 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
           {/* Search Input */}
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -139,24 +140,26 @@ export default function UserManagementPage() {
             />
           </div>
 
-          {/* Role Filter Dropdown */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-zinc-400" />
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="bg-zinc-950/80 border border-white/10 text-zinc-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer"
-            >
-              {ROLE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+          {/* Role Filter Pills */}
+          <div className="flex bg-zinc-950 p-1 rounded-2xl border border-white/10 text-xs shadow-inner flex-wrap gap-1">
+            {ROLE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSelectedRole(opt.value)}
+                className={clsx(
+                  "px-3.5 py-1.5 rounded-xl font-semibold transition-all text-xs flex items-center gap-1.5",
+                  selectedRole === opt.value
+                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
+                    : "text-zinc-400 hover:text-white"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="text-xs text-zinc-400 self-end sm:self-auto font-mono">
+        <div className="text-xs text-zinc-400 self-end md:self-auto font-mono">
           Total Users: <span className="font-semibold text-cyan-400">{total}</span>
         </div>
       </div>
@@ -170,21 +173,19 @@ export default function UserManagementPage() {
                 <th className="py-4 px-6">Staff Name</th>
                 <th className="py-4 px-6">Email Address</th>
                 <th className="py-4 px-6">Role</th>
-                <th className="py-4 px-6">Date Registered</th>
-                <th className="py-4 px-6 text-right">Profile</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 font-sans">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-zinc-500 text-sm">
+                  <td colSpan={3} className="py-12 text-center text-zinc-500 text-sm">
                     <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     Loading user records...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-zinc-500 text-sm">
+                  <td colSpan={3} className="py-12 text-center text-zinc-500 text-sm">
                     No users found matching current filters.
                   </td>
                 </tr>
@@ -199,13 +200,15 @@ export default function UserManagementPage() {
                       onClick={() => router.push(`/users/${u.id}`)}
                       className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
                     >
-                      <td className="py-4 px-6 font-bold text-zinc-100 flex items-center gap-2">
-                        <span className="group-hover:text-cyan-300 transition-colors">{fullName}</span>
-                        {isSelf && (
-                          <span className="px-1.5 py-0.5 text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded font-mono font-bold">
-                            YOU
-                          </span>
-                        )}
+                      <td className="py-4 px-6 font-bold text-zinc-100">
+                        <div className="flex items-center gap-2">
+                          <span className="group-hover:text-cyan-300 transition-colors">{fullName}</span>
+                          {isSelf && (
+                            <span className="px-1.5 py-0.5 text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded font-mono font-bold">
+                              YOU
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 px-6 font-mono text-xs text-zinc-400">
                         {u.email}
@@ -213,15 +216,6 @@ export default function UserManagementPage() {
                       <td className="py-4 px-6">
                         <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider ${getRoleBadgeColor(u.role)}`}>
                           {u.role}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-xs text-zinc-400">
-                        {u.created_at ? new Date(u.created_at).toLocaleDateString() : "-"}
-                      </td>
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-cyan-400 group-hover:text-cyan-300 font-semibold transition-all text-xs">
-                          <span>View Profile</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </span>
                       </td>
                     </tr>

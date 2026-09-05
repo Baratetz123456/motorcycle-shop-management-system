@@ -446,23 +446,32 @@ async def get_audit_logs(
     user_role: Optional[str] = Query(None),
     action: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    mutations_only: bool = Query(True),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     current_user: dict = Depends(require_roles(["admin"])),
     session: AsyncSession = Depends(get_db)
 ):
     client_ip = get_client_ip(request)
-    await log_audit_event(
-        session=session,
-        action="AUDIT_LOGS_VIEWED",
-        resource="/api/v1/audit-logs",
-        user_id=current_user.get("user_id"),
-        user_role=current_user.get("role"),
-        details={"page": page, "search": search, "action_filter": action},
-        ip_address=client_ip
-    )
 
-    query = select(AuditLog)
+    # Base query joining users table for human-readable staff names
+    query = select(
+        AuditLog,
+        models.User.first_name,
+        models.User.last_name,
+        models.User.email
+    ).outerjoin(models.User, AuditLog.user_id == models.User.id)
+
+    # Exclude non-mutating events when mutations_only is requested
+    NON_MUTATING_ACTIONS = [
+        "AUDIT_LOGS_VIEWED",
+        "LOGIN_SUCCESS",
+        "LOGOUT",
+        "LOGIN_FAILURE",
+        "AUDIT_EXPORT"
+    ]
+    if mutations_only:
+        query = query.where(AuditLog.action.notin_(NON_MUTATING_ACTIONS))
     
     if start_date:
         query = query.where(AuditLog.timestamp >= datetime.fromisoformat(start_date))
@@ -479,7 +488,10 @@ async def get_audit_logs(
                 AuditLog.action.ilike(search_pattern),
                 AuditLog.resource.ilike(search_pattern),
                 AuditLog.user_role.ilike(search_pattern),
-                AuditLog.ip_address.ilike(search_pattern)
+                AuditLog.ip_address.ilike(search_pattern),
+                models.User.first_name.ilike(search_pattern),
+                models.User.last_name.ilike(search_pattern),
+                models.User.email.ilike(search_pattern)
             )
         )
         
@@ -491,21 +503,28 @@ async def get_audit_logs(
     query = query.order_by(desc(AuditLog.timestamp)).offset(offset).limit(page_size)
     
     result = await session.execute(query)
-    logs = result.scalars().all()
+    rows = result.all()
     
-    items = [
-        {
+    items = []
+    for row in rows:
+        log = row[0]
+        fname = row[1] or ""
+        lname = row[2] or ""
+        uemail = row[3] or ""
+        user_name = f"{fname} {lname}".strip() or (uemail.split('@')[0].capitalize() if uemail else "System / Automated")
+
+        items.append({
             "id": str(log.id),
             "timestamp": log.timestamp.isoformat() if log.timestamp else None,
             "user_id": str(log.user_id) if log.user_id else None,
             "user_role": log.user_role,
+            "user_name": user_name,
+            "user_email": uemail,
             "action": log.action,
             "resource": log.resource,
             "details": log.details,
             "ip_address": log.ip_address,
-        }
-        for log in logs
-    ]
+        })
     
     return {
         "items": items,
@@ -518,6 +537,7 @@ async def get_audit_logs(
 @app.get("/audit-logs/export")
 async def export_audit_logs(
     request: Request,
+    mutations_only: bool = Query(True),
     current_user: dict = Depends(require_roles(["admin"])),
     session: AsyncSession = Depends(get_db)
 ):
@@ -532,23 +552,41 @@ async def export_audit_logs(
         ip_address=client_ip
     )
     
-    query = select(AuditLog).order_by(desc(AuditLog.timestamp)).limit(1000)
+    query = select(
+        AuditLog,
+        models.User.first_name,
+        models.User.last_name,
+        models.User.email
+    ).outerjoin(models.User, AuditLog.user_id == models.User.id)
+
+    if mutations_only:
+        query = query.where(AuditLog.action.notin_([
+            "AUDIT_LOGS_VIEWED", "LOGIN_SUCCESS", "LOGOUT", "LOGIN_FAILURE", "AUDIT_EXPORT"
+        ]))
+
+    query = query.order_by(desc(AuditLog.timestamp)).limit(1000)
     result = await session.execute(query)
-    logs = result.scalars().all()
+    rows = result.all()
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "Timestamp", "User ID", "User Role", "Action", "Resource", "IP Address", "Details"])
+    writer.writerow(["ID", "Timestamp", "Staff Name", "Email", "User Role", "Action", "Resource Target", "Details"])
 
-    for log in logs:
+    for row in rows:
+        log = row[0]
+        fname = row[1] or ""
+        lname = row[2] or ""
+        uemail = row[3] or ""
+        user_name = f"{fname} {lname}".strip() or "System / Automated"
+
         writer.writerow([
             str(log.id),
             log.timestamp.isoformat() if log.timestamp else "",
-            str(log.user_id) if log.user_id else "",
+            user_name,
+            uemail,
             log.user_role or "",
             log.action,
             log.resource,
-            log.ip_address or "",
             str(log.details) if log.details else ""
         ])
 
@@ -556,5 +594,5 @@ async def export_audit_logs(
     return StreamingResponse(
         io.BytesIO(output.getvalue().encode('utf-8')),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=audit_logs_export.csv"}
+        headers={"Content-Disposition": "attachment; filename=system_history_logs_export.csv"}
     )
