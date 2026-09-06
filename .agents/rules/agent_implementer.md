@@ -70,4 +70,17 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
     - Action buttons must be verb-first and max 3 words.
     - Never alter PostgreSQL schema enums (`JobStatus`, `ItemType`) to match UI copy; map them cleanly at the Next.js presentation layer.
 
+12. **User & Staff API Gateway Parity (`/auth/users`)**:
+    - When querying or assigning staff, cashiers, or mechanics from the frontend, **never call `/users`**.
+    - Always target KrakenD's routed path: `GET /api/v1/auth/users` (with optional pagination query e.g. `?page_size=50`).
+    - The Auth microservice wraps user collections in a paginated envelope (`{ items: User[], total: number }`). Always safely extract the list via `response.data?.items ?? (Array.isArray(response.data) ? response.data : [])`.
 
+13. **React Rules of Hooks & Hydration Guard Invariant**:
+    - In components utilizing client-side authentication, role guards, or hydration gates (e.g. `if (!role) return null;` or `if (!isHydrated) return null;`), **all hooks (`useRef`, `useState`, `useCallback`, `useMemo`, `useEffect`) MUST be declared unconditionally at the very top of the component**.
+    - Placing any hook after an early return triggers `React has detected a change in the order of Hooks called`, crashing the application tree on hydration or role changes.
+
+14. **High-Performance Drag-and-Drop & Kanban Lifecycles**:
+    - **Optimistic State Updates**: Kanban moves must update local component state immediately on drop. Never wait for backend API promises before reordering cards in the UI. If a card is a local mock (`jo-` prefix), bypass the backend call entirely and retain the optimistic change locally.
+    - **GPU-Accelerated Direct Transforms for Touch**: During mobile/touch dragging, never write touch/cursor coordinates to React component state at 60–120Hz. Use direct DOM manipulation on a dedicated ghost ref (`floatingGhostRef.current.style.transform = \`translate3d(${x}px, ${y}px, 0)\``) with `willChange: "transform"` and throttle collision checks with `requestAnimationFrame`.
+    - **Child Pointer-Events Suppression**: When dragging a card over columns containing other cards, apply `pointer-events-none` to all non-dragged cards (`draggedJobId && !isBeingDragged && "pointer-events-none"`). This prevents child element oscillation between `dragenter` and `dragleave`, ensuring fluid hover states.
+    - **RAF-Deferred Drag State**: When initiating an HTML5 drag (`onDragStart`), defer setting `draggedJobId` via `requestAnimationFrame(() => setDraggedJobId(id))` so the browser's native drag image preview captures the card at full opacity before drag styling applies.
