@@ -9,7 +9,9 @@ import {
   Eye, 
   Ban, 
   History,
-  ChevronRight
+  ChevronRight,
+  Calendar,
+  X
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -51,6 +53,49 @@ export default function SalesManagementPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
+
+  // Date Range Filter State
+  type DatePreset = "ALL" | "TODAY" | "WEEK" | "MONTH" | "CUSTOM";
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [datePreset, setDatePreset] = useState<DatePreset>("ALL");
+
+  const handleSelectPreset = (preset: DatePreset) => {
+    setDatePreset(preset);
+    const today = new Date();
+    const formatYMD = (d: Date) => d.toISOString().slice(0, 10);
+
+    if (preset === "ALL") {
+      setStartDate("");
+      setEndDate("");
+    } else if (preset === "TODAY") {
+      const todayStr = formatYMD(today);
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === "WEEK") {
+      const pastWeek = new Date(today);
+      pastWeek.setDate(pastWeek.getDate() - 7);
+      setStartDate(formatYMD(pastWeek));
+      setEndDate(formatYMD(today));
+    } else if (preset === "MONTH") {
+      const pastMonth = new Date(today);
+      pastMonth.setDate(pastMonth.getDate() - 30);
+      setStartDate(formatYMD(pastMonth));
+      setEndDate(formatYMD(today));
+    }
+  };
+
+  const handleCustomDateChange = (start: string, end: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setDatePreset("CUSTOM");
+  };
+
+  const handleClearDateFilter = () => {
+    setDatePreset("ALL");
+    setStartDate("");
+    setEndDate("");
+  };
 
   useEffect(() => {
     const userRole = (localStorage.getItem("user_role") as UserRole) || "cashier";
@@ -96,13 +141,31 @@ export default function SalesManagementPage() {
 
     const matchesStatus = statusFilter === "ALL" || t.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    if (!matchesSearch || !matchesStatus) return false;
+
+    // Date range filter against t.created_at
+    if (startDate || endDate) {
+      if (!t.created_at) return false;
+      const txTime = new Date(t.created_at).getTime();
+      if (isNaN(txTime)) return false;
+
+      if (startDate) {
+        const start = new Date(`${startDate}T00:00:00`).getTime();
+        if (txTime < start) return false;
+      }
+      if (endDate) {
+        const end = new Date(`${endDate}T23:59:59.999`).getTime();
+        if (txTime > end) return false;
+      }
+    }
+
+    return true;
   });
 
   return (
-    <div className="w-full flex-1 p-8 flex flex-col h-full overflow-hidden font-sans text-zinc-100">
+    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col overflow-hidden font-sans text-zinc-100">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Receipt className="w-8 h-8 text-cyan-400" />
@@ -125,28 +188,95 @@ export default function SalesManagementPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-4 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-zinc-400" />
-          <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs">
-            {["ALL", "COMPLETED", "VOIDED"].map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={clsx(
-                  "px-3 py-1.5 rounded-lg font-medium transition-all",
-                  statusFilter === st
-                    ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20 font-bold"
-                    : "text-zinc-400 hover:text-white"
-                )}
-              >
-                {st}
-              </button>
-            ))}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl shrink-0">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Status Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-zinc-400" />
+            <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs">
+              {["ALL", "COMPLETED", "VOIDED"].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  className={clsx(
+                    "px-3 py-1.5 rounded-lg font-medium transition-all",
+                    statusFilter === st
+                      ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20 font-bold"
+                      : "text-zinc-400 hover:text-white"
+                  )}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          {/* Date Range Filter Controls */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-zinc-950/70 p-1 rounded-xl border border-white/10">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-cyan-400 ml-1.5 mr-0.5" />
+              {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
+                const labels = {
+                  ALL: "All Time",
+                  TODAY: "Today",
+                  WEEK: "This Week",
+                  MONTH: "This Month",
+                };
+                const isSelected = datePreset === preset;
+                return (
+                  <button
+                    key={preset}
+                    onClick={() => handleSelectPreset(preset)}
+                    className={clsx(
+                      "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all",
+                      isSelected
+                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 border border-transparent"
+                    )}
+                  >
+                    {labels[preset]}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="h-3.5 w-px bg-white/10 hidden sm:block" />
+
+            {/* Custom Date Inputs */}
+            <div className="flex items-center gap-1 text-xs text-zinc-400">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
+                className="bg-zinc-900 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                title="Filter from transaction date"
+              />
+              <span className="text-zinc-500 text-[11px]">to</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
+                className="bg-zinc-900 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                title="Filter to transaction date"
+              />
+
+              {(startDate || endDate || datePreset !== "ALL") && (
+                <button
+                  onClick={handleClearDateFilter}
+                  className="p-1 hover:bg-zinc-800 rounded-md text-zinc-400 hover:text-rose-400 transition-colors ml-0.5"
+                  title="Clear date filter"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="relative w-full sm:w-80">
+        {/* Search Bar */}
+        <div className="relative w-full lg:w-72">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
@@ -159,8 +289,8 @@ export default function SalesManagementPage() {
       </div>
 
       {/* Transactions Table */}
-      <div className="flex-1 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-x-auto flex-1">
+      <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+        <div className="overflow-auto flex-1 min-h-0">
           <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>
@@ -175,8 +305,22 @@ export default function SalesManagementPage() {
             <tbody className="divide-y divide-white/5">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-zinc-500">
-                    No sales transactions found.
+                  <td colSpan={6} className="text-center py-16 text-zinc-500">
+                    <Calendar className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
+                    <p className="font-semibold text-zinc-400">No sales transactions match your filter criteria.</p>
+                    {(startDate || endDate || search || statusFilter !== "ALL") && (
+                      <button
+                        onClick={() => {
+                          setSearch("");
+                          setStatusFilter("ALL");
+                          handleClearDateFilter();
+                        }}
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Reset All Filters</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -237,7 +381,7 @@ export default function SalesManagementPage() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400 shrink-0">
           <div>Displaying {filteredTransactions.length} transaction record(s)</div>
           <div className="flex gap-4 items-center text-zinc-500">
             <span>• Commission rates are determined by each assigned mechanic</span>

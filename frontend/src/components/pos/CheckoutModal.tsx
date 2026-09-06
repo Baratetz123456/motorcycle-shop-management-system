@@ -74,9 +74,19 @@ export function CheckoutModal({
 
   const isPolling = sagaStatus === 'PENDING' || isCheckingOut;
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !isPolling) {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isPolling]);
+
   return (
     <>
-      <button 
+      <button
         disabled={disabled}
         onClick={handleOpenModal}
         className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
@@ -86,29 +96,33 @@ export function CheckoutModal({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
           <div 
-            className="absolute inset-0 bg-black/75 backdrop-blur-md transition-opacity" 
+            className="fixed inset-0" 
             onClick={() => !isPolling && handleCloseModal()}
           />
           
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl w-full max-w-md my-auto overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl shadow-black/80 backdrop-blur-2xl w-full max-w-md my-auto overflow-hidden relative z-10 animate-in zoom-in-95 duration-200">
             
             {/* Header */}
-            <div className="p-6 border-b border-white/10 bg-zinc-950/80 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-cyan-400" /> Complete Checkout Payment
-                </h3>
-                <p className="text-zinc-400 text-xs mt-0.5">
-                  Customer: <span className="text-cyan-300 font-semibold">{customerName || "Walk-in Customer"}</span>
-                </p>
+            <div className="px-6 py-5 border-b border-white/10 bg-zinc-950/70 backdrop-blur-md flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-sm bg-cyan-500/10 border-cyan-500/20 text-cyan-400">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-100">Complete Checkout Payment</h3>
+                  <p className="text-xs text-zinc-400">
+                    Customer: <span className="text-cyan-300 font-semibold">{customerName || "Walk-in Customer"}</span>
+                  </p>
+                </div>
               </div>
 
               {!isPolling && (
                 <button 
                   onClick={handleCloseModal}
-                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                  aria-label="Close modal"
+                  className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-white/10 transition-colors border border-transparent hover:border-white/10"
                 >
                   <X className="w-5 h-5" />
                 </button>

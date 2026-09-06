@@ -236,10 +236,10 @@ export default function CustomerRepairHistoryPage() {
   });
 
   return (
-    <div className="w-full h-screen bg-zinc-950 p-8 flex flex-col overflow-hidden font-sans">
+    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col overflow-hidden font-sans">
       
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <History className="w-8 h-8 text-cyan-400" />
@@ -265,7 +265,7 @@ export default function CustomerRepairHistoryPage() {
       </div>
 
       {/* Filters Bar: Status Tabs & Date Range Filter */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 shrink-0">
         {/* Status Tabs */}
         <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
           <button
@@ -373,8 +373,8 @@ export default function CustomerRepairHistoryPage() {
       </div>
 
       {/* History Table */}
-      <div className="flex-1 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-x-auto flex-1">
+      <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+        <div className="overflow-auto flex-1 min-h-0">
           <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>
@@ -464,7 +464,7 @@ export default function CustomerRepairHistoryPage() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400 shrink-0">
           <div>Showing {filteredHistories.length} customer record(s)</div>
           <div className="flex gap-4 items-center text-zinc-500">
             <span>• Accessible by Admin, Manager, and Mechanic</span>

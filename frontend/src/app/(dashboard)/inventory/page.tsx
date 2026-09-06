@@ -21,6 +21,7 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
+import { Modal, ModalBody, ModalFooter } from "@/components/ui/Modal";
 
 export interface CatalogItem {
   id: string;
@@ -319,9 +320,9 @@ function InventoryContent() {
   };
 
   return (
-    <div className="w-full h-screen bg-zinc-950 p-6 sm:p-8 flex flex-col overflow-hidden font-sans">
+    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col overflow-hidden font-sans">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
             <Boxes className="w-8 h-8 text-cyan-400" />
@@ -355,14 +356,14 @@ function InventoryContent() {
 
       {/* Deleted Item Notification Banner */}
       {deletedNotice && (
-        <div className="mb-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2.5 animate-in fade-in">
+        <div className="mb-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2.5 animate-in fade-in shrink-0">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{deletedNotice}</span>
         </div>
       )}
 
       {/* Main Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
         {/* Strictly 2 Main Filter Tabs */}
         <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
           <button
@@ -406,7 +407,7 @@ function InventoryContent() {
       </div>
 
       {/* Category Sub-Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-none shrink-0">
         <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-bold shrink-0 mr-1 flex items-center gap-1">
           <Filter className="w-3 h-3" /> Category:
         </span>
@@ -447,8 +448,8 @@ function InventoryContent() {
       </div>
 
       {/* Streamlined Catalog Table */}
-      <div className="flex-1 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-x-auto flex-1">
+      <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+        <div className="overflow-auto flex-1 min-h-0">
           <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>
@@ -574,7 +575,7 @@ function InventoryContent() {
         </div>
 
         {/* Footer Info */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400">
+        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400 shrink-0">
           <div>
             Displaying <span className="font-semibold text-white">{filteredItems.length}</span> {activeTab === "PRODUCT" ? "product(s)" : "service(s)"}
             {activeTab === "PRODUCT" && (
@@ -590,234 +591,214 @@ function InventoryContent() {
       </div>
 
       {/* Registration Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            {/* Modal Header */}
-            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-zinc-950/50">
-              <div className="flex items-center gap-3">
-                <div className={clsx(
-                  "p-2.5 rounded-xl border",
-                  formData.item_type === "PRODUCT" 
-                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
-                    : "bg-purple-500/10 text-purple-400 border-purple-500/30"
-                )}>
-                  {formData.item_type === "PRODUCT" ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white">
-                    Add New {formData.item_type === "PRODUCT" ? "Part / Product" : "Service"}
-                  </h2>
-                  <p className="text-xs text-zinc-400">Add an item to the workshop catalog</p>
-                </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        size="lg"
+        title={`Add New ${formData.item_type === "PRODUCT" ? "Part / Product" : "Service"}`}
+        subtitle="Add an item to the active workshop catalog"
+        icon={formData.item_type === "PRODUCT" ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
+        iconVariant={formData.item_type === "PRODUCT" ? "cyan" : "purple"}
+        preventBackdropClose={isSubmitting}
+      >
+        <form onSubmit={handleCreateItemSubmit}>
+          <ModalBody>
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
               </div>
+            )}
+
+            {/* Type Switcher */}
+            <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10">
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-zinc-400 hover:text-white transition-colors"
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    ...formData,
+                    item_type: "PRODUCT",
+                    sku: generateAutoCode("PRODUCT"),
+                    category: "Fluids",
+                    current_stock: 10,
+                    reorder_level: 5,
+                  });
+                }}
+                className={clsx(
+                  "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all",
+                  formData.item_type === "PRODUCT"
+                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                    : "text-zinc-400 hover:text-white"
+                )}
               >
-                <X className="w-5 h-5" />
+                Product / Part
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    ...formData,
+                    item_type: "SERVICE",
+                    sku: generateAutoCode("SERVICE"),
+                    category: "Maintenance",
+                    current_stock: 0,
+                    reorder_level: 0,
+                    brand: "",
+                  });
+                }}
+                className={clsx(
+                  "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all",
+                  formData.item_type === "SERVICE"
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                    : "text-zinc-400 hover:text-white"
+                )}
+              >
+                Workshop Service
               </button>
             </div>
 
-            {/* Modal Form */}
-            <form onSubmit={handleCreateItemSubmit} className="p-6 space-y-4">
-              {errorMsg && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>{errorMsg}</span>
-                </div>
-              )}
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                Item Name
+              </label>
+              <input
+                type="text"
+                required
+                placeholder={formData.item_type === "PRODUCT" ? "e.g. Motul 7100 10W-40 4T (1L)" : "e.g. Engine Oil Change & Filter Service"}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              />
+            </div>
 
-              {/* Type Switcher */}
-              <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData({
-                      ...formData,
-                      item_type: "PRODUCT",
-                      sku: generateAutoCode("PRODUCT"),
-                      category: "Fluids",
-                      current_stock: 10,
-                      reorder_level: 5,
-                    });
-                  }}
-                  className={clsx(
-                    "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all",
-                    formData.item_type === "PRODUCT"
-                      ? "bg-cyan-500 text-white shadow-md"
-                      : "text-zinc-400 hover:text-white"
-                  )}
-                >
-                  Product / Part
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData({
-                      ...formData,
-                      item_type: "SERVICE",
-                      sku: generateAutoCode("SERVICE"),
-                      category: "Maintenance",
-                      current_stock: 0,
-                      reorder_level: 0,
-                      brand: "",
-                    });
-                  }}
-                  className={clsx(
-                    "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all",
-                    formData.item_type === "SERVICE"
-                      ? "bg-purple-600 text-white shadow-md"
-                      : "text-zinc-400 hover:text-white"
-                  )}
-                >
-                  Workshop Service
-                </button>
-              </div>
-
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Item Name
+                  SKU / Code
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={formData.item_type === "PRODUCT" ? "e.g. Motul 7100 10W-40 4T (1L)" : "e.g. Engine Oil Change & Filter Service"}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  value={formData.sku}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  Category
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                >
+                  {customCategories.map((c) => (
+                    <option key={c} value={c} className="bg-zinc-900 text-zinc-100">{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {formData.item_type === "PRODUCT" && (
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  Brand
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Motul, Honda, Yamaha"
+                  value={formData.brand}
+                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  Cost Price (₱)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={formData.cost_price}
+                  onChange={(e) => setFormData({ ...formData, cost_price: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  Selling Price (₱)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={formData.selling_price}
+                  onChange={(e) => setFormData({ ...formData, selling_price: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
+              </div>
+            </div>
+
+            {formData.item_type === "PRODUCT" && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    SKU / Code
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Category
-                  </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  >
-                    {customCategories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {formData.item_type === "PRODUCT" && (
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Brand
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Motul, Honda, Yamaha"
-                    value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Cost Price (₱)
+                    Current Stock
                   </label>
                   <input
                     type="number"
-                    step="0.01"
                     min="0"
                     required
-                    value={formData.cost_price}
-                    onChange={(e) => setFormData({ ...formData, cost_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    value={formData.current_stock}
+                    onChange={(e) => setFormData({ ...formData, current_stock: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Selling Price (₱)
+                    Reorder Threshold
                   </label>
                   <input
                     type="number"
-                    step="0.01"
                     min="0"
                     required
-                    value={formData.selling_price}
-                    onChange={(e) => setFormData({ ...formData, selling_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    value={formData.reorder_level}
+                    onChange={(e) => setFormData({ ...formData, reorder_level: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                   />
                 </div>
               </div>
+            )}
+          </ModalBody>
 
-              {formData.item_type === "PRODUCT" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                      Current Stock
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      value={formData.current_stock}
-                      onChange={(e) => setFormData({ ...formData, current_stock: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                      Reorder Threshold
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      value={formData.reorder_level}
-                      onChange={(e) => setFormData({ ...formData, reorder_level: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-sm font-semibold transition-all shadow-md shadow-cyan-500/20 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Saving..." : "Save to Catalog"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting ? <span>Saving...</span> : <span>Save to Catalog</span>}
+            </button>
+          </ModalFooter>
+        </form>
+      </Modal>
 
       {/* Contextual Audit Drawer */}
       <ContextualAuditDrawer

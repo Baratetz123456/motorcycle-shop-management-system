@@ -30,7 +30,8 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Wrench
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
@@ -39,6 +40,7 @@ import {
   saveSystemSettings, 
   TIMEZONE_OPTIONS, 
   COUNTRY_OPTIONS, 
+  BOARD_RETENTION_OPTIONS,
   DEFAULT_SETTINGS,
   SystemSettings 
 } from "@/lib/settings";
@@ -368,6 +370,7 @@ function SettingsContent() {
 
   const handleSaveGeneral = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) return;
     saveSystemSettings(settings);
 
     // Commit theme if changed
@@ -706,7 +709,8 @@ function SettingsContent() {
 
         {/* TAB 1: GENERAL APP CONFIGURATION (Admin Only) */}
         {isAdmin && activeTab === "general" && (
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-8 animate-in fade-in">
+          <div className="space-y-8">
+            <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-8 animate-in fade-in">
             <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10 relative z-10">
@@ -751,17 +755,16 @@ function SettingsContent() {
                   </span>
                 </div>
 
-                {/* Shop Floor Description */}
+                {/* Description / Subtitle */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                    Shop Floor Description / Subtitle <span className="text-cyan-400">*</span>
+                    Description / Subtitle
                   </label>
                   <div className="relative">
                     <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                     <input
                       type="text"
-                      required
-                      value={settings.shopDescription || "Shop Floor"}
+                      value={settings.shopDescription ?? ""}
                       onChange={(e) => setSettings({ ...settings, shopDescription: e.target.value })}
                       placeholder="e.g. Shop Floor or Speed Workshop"
                       className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
@@ -879,7 +882,139 @@ function SettingsContent() {
               </div>
             </form>
           </div>
-        )}
+
+          {/* Workshop & Repair Boards Configuration (Admin Only) */}
+          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-8 animate-in fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10 relative z-10">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-cyan-400" />
+                  Workshop & Repair Boards
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Customize the 4 stage board names and configure job card display retention for released/invoiced orders.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-zinc-400">
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Admin Configurable</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveGeneral} className="space-y-6 relative z-10">
+              {/* Board Stage Names */}
+              <div>
+                <h3 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                  <span>Board Stage Display Names</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">(4 standard workshop stages)</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mb-4">
+                  Rename columns to match your shop terminology. The underlying repair workflows remain consistent.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Stage 1: PENDING */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                      Stage 1 (Pending)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.boardPendingTitle ?? "New"}
+                      onChange={(e) => setSettings({ ...settings, boardPendingTitle: e.target.value })}
+                      placeholder="New"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-1 block">Default: New</span>
+                  </div>
+
+                  {/* Stage 2: ONGOING */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                      Stage 2 (Ongoing)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.boardOngoingTitle ?? "In Progress"}
+                      onChange={(e) => setSettings({ ...settings, boardOngoingTitle: e.target.value })}
+                      placeholder="In Progress"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-1 block">Default: In Progress</span>
+                  </div>
+
+                  {/* Stage 3: COMPLETED */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                      Stage 3 (Completed)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.boardCompletedTitle ?? "Completed"}
+                      onChange={(e) => setSettings({ ...settings, boardCompletedTitle: e.target.value })}
+                      placeholder="Completed"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-1 block">Default: Completed</span>
+                  </div>
+
+                  {/* Stage 4: RELEASED */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                      Stage 4 (Invoiced / Released)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.boardReleasedTitle ?? "Invoiced"}
+                      onChange={(e) => setSettings({ ...settings, boardReleasedTitle: e.target.value })}
+                      placeholder="Invoiced"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    />
+                    <span className="text-[10px] text-zinc-500 mt-1 block">Default: Invoiced</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Record Retention for Released Jobs */}
+              <div className="pt-4 border-t border-white/10">
+                <div className="max-w-md">
+                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                    Invoiced / Released Card Retention on Board
+                  </label>
+                  <div className="relative">
+                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                    <select
+                      value={settings.boardRetentionDays || "7"}
+                      onChange={(e) => setSettings({ ...settings, boardRetentionDays: e.target.value })}
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    >
+                      {BOARD_RETENTION_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="bg-zinc-900 text-zinc-100">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <span className="text-[11px] text-zinc-500 mt-1.5 block">
+                    Determines how long finished, invoiced repair cards remain visible on the active Kanban board before being archived to Customer Records & Reports.
+                  </span>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-4 border-t border-white/10">
+                <button
+                  type="submit"
+                  className="w-full sm:w-auto px-6 py-2.5 font-semibold rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Board Preferences</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
         {/* TAB 2: ROLE ACCESSIBILITY MATRIX (Admin Only - No Resource Paths) */}
         {isAdmin && activeTab === "roles" && (

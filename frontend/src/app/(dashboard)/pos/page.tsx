@@ -31,6 +31,7 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
+import { ConfirmModal } from "@/components/ui/Modal";
 
 interface CatalogItem {
   id: string;
@@ -1212,58 +1213,39 @@ export default function POSPage() {
       )}
 
       {/* Confirmation Modal for Clearing Cart */}
-      {isClearConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-red-400">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-                <Trash2 className="w-5 h-5 text-red-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-white">Clear Current Order Cart?</h3>
-                <p className="text-xs text-zinc-400">This action will remove all items from the current cart.</p>
-              </div>
+      <ConfirmModal
+        isOpen={isClearConfirmOpen}
+        onClose={() => setIsClearConfirmOpen(false)}
+        onConfirm={() => {
+          clearCart();
+          if (selectedRepair) {
+            localStorage.removeItem(`motoshop_cart_${selectedRepair.job_id}`);
+          }
+          setIsClearConfirmOpen(false);
+        }}
+        title="Clear Current Order Cart?"
+        description="This action will remove all items and services from the current checkout session."
+        warningDetails={
+          <div className="space-y-1.5 font-mono">
+            <div className="flex justify-between text-zinc-400">
+              <span>Customer:</span>
+              <span className="font-bold text-white font-sans">{selectedRepair?.customer_name || "Walk-in Customer"}</span>
             </div>
-
-            <div className="bg-zinc-950 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400">
-                <span>Active Customer:</span>
-                <span className="font-bold text-white">{selectedRepair?.customer_name || "N/A"}</span>
-              </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Items to Remove:</span>
-                <span className="font-bold text-white">{itemCount} items</span>
-              </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Cart Order Total:</span>
-                <span className="font-bold font-mono text-emerald-400">₱{total.toFixed(2)}</span>
-              </div>
+            <div className="flex justify-between text-zinc-400">
+              <span>Items to remove:</span>
+              <span className="font-bold text-white">{itemCount} items</span>
             </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                onClick={() => setIsClearConfirmOpen(false)}
-                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  clearCart();
-                  if (selectedRepair) {
-                    localStorage.removeItem(`motoshop_cart_${selectedRepair.job_id}`);
-                  }
-                  setIsClearConfirmOpen(false);
-                }}
-                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shadow-lg shadow-red-600/30 flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Yes, Clear Cart</span>
-              </button>
+            <div className="flex justify-between text-zinc-400">
+              <span>Total value:</span>
+              <span className="font-bold text-emerald-400">₱{total.toFixed(2)}</span>
             </div>
           </div>
-        </div>
-      )}
+        }
+        confirmText="Yes, Clear Cart"
+        cancelText="Keep Cart"
+        confirmVariant="danger"
+        icon={<Trash2 className="w-5 h-5" />}
+      />
 
       {/* Contextual Audit Drawer */}
       <ContextualAuditDrawer

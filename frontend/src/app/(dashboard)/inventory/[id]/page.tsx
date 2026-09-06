@@ -27,6 +27,7 @@ import {
   Info
 } from "lucide-react";
 import clsx from "clsx";
+import { Modal, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 
 export interface CatalogItem {
   id: string;
@@ -645,195 +646,170 @@ export default function ItemProfilePage() {
       </div>
 
       {/* Edit Item Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-zinc-950/50">
-              <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-cyan-400" />
-                Edit {isProduct ? "Product" : "Service"} Details
-              </h3>
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        size="lg"
+        title={`Edit ${isProduct ? "Product" : "Service"} Details`}
+        subtitle={`Modify catalog attributes for ${item.sku}`}
+        icon={<Edit3 className="w-5 h-5" />}
+        iconVariant={isProduct ? "cyan" : "purple"}
+        preventBackdropClose={isSubmittingEdit}
+      >
+        <form onSubmit={handleSaveEdit}>
+          <ModalBody>
+            {editError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                Item Name
+              </label>
+              <input
+                type="text"
+                required
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              />
             </div>
 
-            <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
-              {editError && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>{editError}</span>
-                </div>
-              )}
-
+            {isProduct && (
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Item Name
+                  Brand
                 </label>
                 <input
                   type="text"
+                  value={editForm.brand}
+                  onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })}
+                  placeholder="e.g. Motul, Honda, Yamaha"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                Category
+              </label>
+              <select
+                value={editForm.category}
+                onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              >
+                {COMMON_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat} className="bg-zinc-900 text-zinc-100">{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  Cost Price (₱)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
                   required
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  value={editForm.cost_price}
+                  onChange={(e) => setEditForm({ ...editForm, cost_price: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                 />
               </div>
 
-              {isProduct && (
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Brand
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.brand}
-                    onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })}
-                    placeholder="e.g. Motul, Honda, Yamaha"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  />
-                </div>
-              )}
-
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Category
+                  Selling Price (₱)
                 </label>
-                <select
-                  value={editForm.category}
-                  onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                >
-                  {COMMON_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={editForm.selling_price}
+                  onChange={(e) => setEditForm({ ...editForm, selling_price: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
               </div>
+            </div>
 
+            {isProduct && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Cost Price (₱)
+                    Current Stock
                   </label>
                   <input
                     type="number"
-                    step="0.01"
                     min="0"
                     required
-                    value={editForm.cost_price}
-                    onChange={(e) => setEditForm({ ...editForm, cost_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    value={editForm.current_stock}
+                    onChange={(e) => setEditForm({ ...editForm, current_stock: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                    Selling Price (₱)
+                    Reorder Threshold
                   </label>
                   <input
                     type="number"
-                    step="0.01"
                     min="0"
                     required
-                    value={editForm.selling_price}
-                    onChange={(e) => setEditForm({ ...editForm, selling_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    value={editForm.reorder_level}
+                    onChange={(e) => setEditForm({ ...editForm, reorder_level: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                   />
                 </div>
               </div>
+            )}
+          </ModalBody>
 
-              {isProduct && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                      Current Stock
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      value={editForm.current_stock}
-                      onChange={(e) => setEditForm({ ...editForm, current_stock: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
-                      Reorder Alert Level
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      value={editForm.reorder_level}
-                      onChange={(e) => setEditForm({ ...editForm, reorder_level: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingEdit}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-sm font-semibold transition-all shadow-md shadow-cyan-500/20 disabled:opacity-50"
-                >
-                  {isSubmittingEdit ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmittingEdit}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmittingEdit ? <span>Saving...</span> : <span>Save Changes</span>}
+            </button>
+          </ModalFooter>
+        </form>
+      </Modal>
 
       {/* Delete Item Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-zinc-900 border border-red-500/30 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 text-center space-y-4">
-            <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto text-red-400 shadow-lg shadow-red-500/10">
-              <Trash2 className="w-7 h-7" />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-bold text-white mb-1">Delete {item.name}?</h3>
-              <p className="text-xs text-zinc-400 font-mono mb-3">{item.sku}</p>
-              <p className="text-xs text-zinc-400 bg-zinc-950/60 p-3 rounded-xl border border-white/5 leading-relaxed">
-                This item will be deactivated and removed from the active inventory catalog. Past sales receipts and completed job cards containing this item will remain untouched.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition-colors flex-1"
-              >
-                Keep Item
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteItem}
-                disabled={isDeleting}
-                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors flex-1 shadow-lg shadow-red-600/25 disabled:opacity-50"
-              >
-                {isDeleting ? "Deleting..." : "Confirm Delete"}
-              </button>
-            </div>
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteItem}
+        title={`Delete ${item.name}?`}
+        description={
+          <div>
+            Are you sure you want to delete <span className="font-semibold text-white">{item.name}</span> (<span className="font-mono text-cyan-400">{item.sku}</span>)?
           </div>
-        </div>
-      )}
+        }
+        warningDetails="This item will be deactivated and removed from the active inventory catalog. Past sales receipts and completed job cards containing this item will remain untouched."
+        confirmText="Confirm Delete"
+        cancelText="Keep Item"
+        confirmVariant="danger"
+        isLoading={isDeleting}
+        icon={<Trash2 className="w-5 h-5" />}
+      />
     </div>
   );
 }

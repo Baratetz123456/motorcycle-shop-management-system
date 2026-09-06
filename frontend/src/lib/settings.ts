@@ -5,7 +5,22 @@ export interface SystemSettings {
   country: string;
   currency: string;
   currencySymbol: string;
+  // Workshop Board Column Names
+  boardPendingTitle?: string;
+  boardOngoingTitle?: string;
+  boardCompletedTitle?: string;
+  boardReleasedTitle?: string;
+  // Record Retention for Released/Invoiced Jobs ("1" | "3" | "7" | "30" | "all")
+  boardRetentionDays?: string;
 }
+
+export const BOARD_RETENTION_OPTIONS = [
+  { label: "24 Hours (1 Day)", value: "1" },
+  { label: "3 Days", value: "3" },
+  { label: "7 Days (1 Week)", value: "7" },
+  { label: "30 Days (1 Month)", value: "30" },
+  { label: "All Time (No Expiration)", value: "all" },
+];
 
 export const TIMEZONE_OPTIONS = [
   { label: "Asia/Manila (GMT+8)", value: "Asia/Manila" },
@@ -36,6 +51,11 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   country: "Philippines",
   currency: "PHP",
   currencySymbol: "₱",
+  boardPendingTitle: "New",
+  boardOngoingTitle: "In Progress",
+  boardCompletedTitle: "Completed",
+  boardReleasedTitle: "Invoiced",
+  boardRetentionDays: "7",
 };
 
 const SETTINGS_STORAGE_KEY = "motoshop_app_settings";

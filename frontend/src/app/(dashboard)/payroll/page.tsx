@@ -30,6 +30,7 @@ import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { fetchStaffCompensationFromDB } from "@/lib/compensation";
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
 
 interface CommissionRecord {
   id: string;
@@ -691,111 +692,106 @@ export default function PayrollPage() {
       )}
 
       {/* Official Printable Payslip Modal */}
-      {selectedPayslip && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl p-8 space-y-6">
-            
-            {/* Payslip Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
-              <div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-xl font-black text-white">Official Employee Payslip</h3>
+      <Modal
+        isOpen={!!selectedPayslip}
+        onClose={() => setSelectedPayslip(null)}
+        size="lg"
+      >
+        {selectedPayslip && (
+          <>
+            <ModalHeader
+              icon={DollarSign}
+              iconVariant="emerald"
+              title="Official Employee Payslip"
+              subtitle="Versiklo Enterprise Compensation Statement"
+              onClose={() => setSelectedPayslip(null)}
+            />
+
+            <ModalBody className="space-y-4">
+              {/* Payslip Body Details */}
+              <div className="bg-zinc-950 p-5 rounded-2xl border border-white/5 space-y-3 text-xs">
+                <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                  <span className="text-zinc-500">Employee Name:</span>
+                  <span className="font-bold text-white text-sm">{selectedPayslip.name}</span>
                 </div>
-                <p className="text-xs text-zinc-400">Versiklo Enterprise Compensation Statement</p>
-              </div>
-              <button
-                onClick={() => setSelectedPayslip(null)}
-                className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Payslip Body Details */}
-            <div className="bg-zinc-950 p-5 rounded-2xl border border-white/5 space-y-3 text-xs">
-              <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-zinc-500">Employee Name:</span>
-                <span className="font-bold text-white text-sm">{selectedPayslip.name}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-500">Role Attribution:</span>
-                <span className="font-mono text-cyan-400 font-semibold">{selectedPayslip.role}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-500">Statement Reference #:</span>
-                <span className="font-mono text-zinc-300 font-bold">{selectedPayslip.payslipNo}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-500">Pay Settlement Period:</span>
-                <span className="text-zinc-300 font-medium">{selectedPayslip.payPeriod}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-500">Settlement Status:</span>
-                <span className={clsx(
-                  "font-bold uppercase",
-                  selectedPayslip.status === "DISBURSED" ? "text-emerald-400" : "text-amber-400"
-                )}>
-                  {selectedPayslip.status}
-                </span>
-              </div>
-
-              {/* Earnings Breakdown */}
-              <div className="pt-3 border-t border-white/10 space-y-2">
-                {selectedPayslip.role === "Mechanic" ? (
-                  <>
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Total Labor Handled:</span>
-                      <span className="font-mono text-zinc-200">₱{selectedPayslip.laborTotal?.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-cyan-400">
-                      <span>Assigned Individual Rate:</span>
-                      <span className="font-mono font-bold">{selectedPayslip.commissionRate}%</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Logged Shifts Worked:</span>
-                      <span className="font-mono text-zinc-200">₱650.00 / shift base</span>
-                    </div>
-                    <div className="flex justify-between text-purple-400">
-                      <span>POS Transactions Handled:</span>
-                      <span className="font-mono font-bold">{selectedPayslip.itemsProcessed} orders</span>
-                    </div>
-                  </>
-                )}
-
-                <div className="flex justify-between items-center text-base font-bold text-white pt-2 border-t border-white/5">
-                  <span>Net Payout Disbursed:</span>
-                  <span className="font-mono text-emerald-400 text-xl font-black">
-                    ₱{selectedPayslip.totalPayout.toFixed(2)}
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-500">Role Attribution:</span>
+                  <span className="font-mono text-cyan-400 font-semibold">{selectedPayslip.role}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-500">Statement Reference #:</span>
+                  <span className="font-mono text-zinc-300 font-bold">{selectedPayslip.payslipNo}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-500">Pay Settlement Period:</span>
+                  <span className="text-zinc-300 font-medium">{selectedPayslip.payPeriod}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-500">Settlement Status:</span>
+                  <span className={clsx(
+                    "font-bold uppercase",
+                    selectedPayslip.status === "DISBURSED" ? "text-emerald-400" : "text-amber-400"
+                  )}>
+                    {selectedPayslip.status}
                   </span>
                 </div>
-              </div>
-            </div>
 
-            {/* Payslip Action Buttons */}
-            <div className="flex gap-3 pt-2">
+                {/* Earnings Breakdown */}
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  {selectedPayslip.role === "Mechanic" ? (
+                    <>
+                      <div className="flex justify-between text-zinc-400">
+                        <span>Total Labor Handled:</span>
+                        <span className="font-mono text-zinc-200">₱{selectedPayslip.laborTotal?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-cyan-400">
+                        <span>Assigned Individual Rate:</span>
+                        <span className="font-mono font-bold">{selectedPayslip.commissionRate}%</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-zinc-400">
+                        <span>Logged Shifts Worked:</span>
+                        <span className="font-mono text-zinc-200">₱650.00 / shift base</span>
+                      </div>
+                      <div className="flex justify-between text-purple-400">
+                        <span>POS Transactions Handled:</span>
+                        <span className="font-mono font-bold">{selectedPayslip.itemsProcessed} orders</span>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex justify-between items-center text-base font-bold text-white pt-2 border-t border-white/5">
+                    <span>Net Payout Disbursed:</span>
+                    <span className="font-mono text-emerald-400 text-xl font-black">
+                      ₱{selectedPayslip.totalPayout.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </ModalBody>
+
+            <ModalFooter>
               <button
+                type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 border border-white/10"
+                className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2 border border-white/10 hover:border-white/20"
               >
                 <Printer className="w-4 h-4 text-cyan-400" />
                 <span>Print Official Payslip</span>
               </button>
-
               <button
+                type="button"
                 onClick={() => setSelectedPayslip(null)}
-                className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl transition-all shadow-md"
+                className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl transition-all shadow-lg shadow-cyan-500/20"
               >
                 <span>Close Statement</span>
               </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+            </ModalFooter>
+          </>
+        )}
+      </Modal>
 
       {/* Contextual Audit Drawer */}
       <ContextualAuditDrawer

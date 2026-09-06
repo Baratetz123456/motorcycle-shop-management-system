@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
+import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 
 export interface MotorcycleProfile {
   id: string;
@@ -506,225 +507,224 @@ export default function MotorcycleProfilesPage() {
       </div>
 
       {/* Modal: Register Motorcycle Profile */}
-      {isRegisterModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/60">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Bike className="w-5 h-5 text-cyan-400" /> Add Bike Model
-              </h3>
-              <button
-                onClick={() => setIsRegisterModalOpen(false)}
-                className="text-zinc-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        size="md"
+      >
+        <ModalHeader
+          icon={Bike}
+          iconVariant="cyan"
+          title="Add Bike Model"
+          subtitle="Register a new motorcycle model in the catalog"
+          onClose={() => setIsRegisterModalOpen(false)}
+        />
+
+        <form onSubmit={handleRegister}>
+          <ModalBody className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">Make / Brand *</label>
+              <input
+                type="text"
+                required
+                list="brand-suggestions"
+                placeholder="e.g. Yamaha, Honda, Kawasaki"
+                value={formBrand}
+                onChange={(e) => setFormBrand(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              />
+              <datalist id="brand-suggestions">
+                {availableBrands.map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
             </div>
 
-            <form onSubmit={handleRegister} className="p-6 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. MT-07, Click 125i, Ninja 400"
+                value={formModel}
+                onChange={(e) => setFormModel(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Make / Brand *</label>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Year *</label>
                 <input
-                  type="text"
+                  type="number"
                   required
-                  list="brand-suggestions"
-                  placeholder="e.g. Yamaha, Honda, Kawasaki"
-                  value={formBrand}
-                  onChange={(e) => setFormBrand(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  min={1970}
+                  max={new Date().getFullYear() + 2}
+                  value={formYear}
+                  onChange={(e) => setFormYear(Number(e.target.value))}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono transition-all"
                 />
-                <datalist id="brand-suggestions">
-                  {availableBrands.map((b) => (
-                    <option key={b} value={b} />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
+                <select
+                  value={formCategory}
+                  onChange={(e) => setFormCategory(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                >
+                  {CATEGORY_PRESETS.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
-                </datalist>
+                </select>
               </div>
+            </div>
+          </ModalBody>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. MT-07, Click 125i, Ninja 400"
-                  value={formModel}
-                  onChange={(e) => setFormModel(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Year *</label>
-                  <input
-                    type="number"
-                    required
-                    min={1970}
-                    max={new Date().getFullYear() + 2}
-                    value={formYear}
-                    onChange={(e) => setFormYear(Number(e.target.value))}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  >
-                    {CATEGORY_PRESETS.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
-                >
-                  {isSubmitting ? "Saving..." : "Save Bike Model"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => setIsRegisterModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting ? "Saving..." : "Save Bike Model"}
+            </button>
+          </ModalFooter>
+        </form>
+      </Modal>
 
       {/* Modal: Edit Motorcycle Profile (Admin Only) */}
-      {isEditModalOpen && selectedProfile && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/60">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Pencil className="w-5 h-5 text-cyan-400" /> Edit Bike Model
-              </h3>
-              <button
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setSelectedProfile(null);
-                }}
-                className="text-zinc-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Modal
+        isOpen={isEditModalOpen && !!selectedProfile}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedProfile(null);
+        }}
+        size="md"
+      >
+        {selectedProfile && (
+          <>
+            <ModalHeader
+              icon={Pencil}
+              iconVariant="cyan"
+              title="Edit Bike Model"
+              subtitle={`${selectedProfile.brand} ${selectedProfile.model} (${selectedProfile.year})`}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedProfile(null);
+              }}
+            />
 
-            <form onSubmit={handleEdit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Make / Brand *</label>
-                <input
-                  type="text"
-                  required
-                  list="brand-suggestions-edit"
-                  value={formBrand}
-                  onChange={(e) => setFormBrand(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
-                <datalist id="brand-suggestions-edit">
-                  {availableBrands.map((b) => (
-                    <option key={b} value={b} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={formModel}
-                  onChange={(e) => setFormModel(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleEdit}>
+              <ModalBody className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Year *</label>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Make / Brand *</label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    min={1970}
-                    max={new Date().getFullYear() + 2}
-                    value={formYear}
-                    onChange={(e) => setFormYear(Number(e.target.value))}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono"
+                    list="brand-suggestions-edit"
+                    value={formBrand}
+                    onChange={(e) => setFormBrand(e.target.value)}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  />
+                  <datalist id="brand-suggestions-edit">
+                    {availableBrands.map((b) => (
+                      <option key={b} value={b} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formModel}
+                    onChange={(e) => setFormModel(e.target.value)}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  >
-                    {CATEGORY_PRESETS.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Model Year *</label>
+                    <input
+                      type="number"
+                      required
+                      min={1970}
+                      max={new Date().getFullYear() + 2}
+                      value={formYear}
+                      onChange={(e) => setFormYear(Number(e.target.value))}
+                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono transition-all"
+                    />
+                  </div>
 
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Category *</label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value)}
+                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                    >
+                      {CATEGORY_PRESETS.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </ModalBody>
+
+              <ModalFooter>
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditModalOpen(false);
                     setSelectedProfile(null);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
+                  className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
-              </div>
+              </ModalFooter>
             </form>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
 
       {/* Modal: Destructive Soft Delete Confirmation (Admin Only) */}
-      {isDeleteModalOpen && selectedProfile && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-zinc-900 border border-rose-500/30 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-rose-500/20 flex items-center justify-between bg-rose-950/30">
-              <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-rose-400" /> Archive Bike Model
-              </h3>
-              <button
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setSelectedProfile(null);
-                }}
-                className="text-zinc-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
+      <ConfirmModal
+        isOpen={isDeleteModalOpen && !!selectedProfile}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedProfile(null);
+        }}
+        onConfirm={handleDelete}
+        isLoading={isSubmitting}
+        confirmVariant="danger"
+        title="Archive Bike Model"
+        confirmText="Yes, Soft-Delete Profile"
+        cancelText="Keep Profile"
+        message={
+          selectedProfile ? (
+            <div className="space-y-4">
               <p className="text-sm text-zinc-300">
                 Are you sure you want to soft-delete the profile for{" "}
                 <span className="font-bold text-white">
@@ -733,37 +733,16 @@ export default function MotorcycleProfilesPage() {
                 ?
               </p>
 
-              <div className="p-3.5 bg-rose-950/20 border border-rose-500/20 rounded-xl text-xs text-rose-300">
+              <div className="p-3.5 bg-rose-950/20 border border-rose-500/20 rounded-xl text-xs text-rose-300 text-left">
                 <p className="font-semibold mb-1">Preservation Notice:</p>
                 <p className="text-zinc-400">
                   This profile will be archived and hidden from the active catalog. Historical repair job orders, invoices, and customer service records will remain fully intact.
                 </p>
               </div>
-
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDeleteModalOpen(false);
-                    setSelectedProfile(null);
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
-                >
-                  Keep Profile
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={isSubmitting}
-                  className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-[0_0_15px_-3px_rgba(244,63,94,0.4)] disabled:opacity-50"
-                >
-                  {isSubmitting ? "Archiving..." : "Yes, Soft-Delete Profile"}
-                </button>
-              </div>
             </div>
-          </div>
-        </div>
-      )}
+          ) : ""
+        }
+      />
 
     </div>
   );

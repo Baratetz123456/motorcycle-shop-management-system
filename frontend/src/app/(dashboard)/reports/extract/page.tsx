@@ -34,6 +34,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
 import { fetchStaffCompensationFromDB, extractInvoiceLaborAndCommission } from "@/lib/compensation";
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
 
 interface SalesTransaction {
   id: string;
@@ -884,121 +885,118 @@ export default function FinancialAndSalesExtractPage() {
       </div>
 
       {/* Modal: Add Shop Operating Expense */}
-      {isExpenseModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Plus className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-xl font-bold text-white">Record Shop Expense</h3>
-              </div>
-              <button
-                onClick={() => setIsExpenseModalOpen(false)}
-                className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800"
+      <Modal
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
+        size="lg"
+      >
+        <ModalHeader
+          icon={Plus}
+          iconVariant="cyan"
+          title="Record Shop Expense"
+          subtitle="Add an operating expense or shop disbursement record"
+          onClose={() => setIsExpenseModalOpen(false)}
+        />
+
+        <form onSubmit={handleAddExpense}>
+          <ModalBody className="space-y-4 text-xs">
+            <div>
+              <label className="block text-zinc-400 font-semibold mb-1.5">Expense Category *</label>
+              <select
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value as ExpenseCategory)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
               >
-                <X className="w-5 h-5" />
-              </button>
+                <option value="ELECTRICITY_UTILITIES">Electricity & Utilities (Power, Water, Internet)</option>
+                <option value="RENT">Facility Rent & Bay Space Lease</option>
+                <option value="STAFF_WAGES">Staff Wages & Shift Allowances</option>
+                <option value="CONSUMABLE_PARTS">Consumable Parts & Fluids (Oil, Cleaners, Rags)</option>
+                <option value="TOOLS_EQUIPMENT">Shop Tools & Equipment Purchased</option>
+                <option value="MISCELLANEOUS">Miscellaneous Operational Expense</option>
+              </select>
             </div>
 
-            <form onSubmit={handleAddExpense} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1">Expense Category *</label>
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value as ExpenseCategory)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 focus:outline-none focus:border-cyan-500"
-                >
-                  <option value="ELECTRICITY_UTILITIES">Electricity & Utilities (Power, Water, Internet)</option>
-                  <option value="RENT">Facility Rent & Bay Space Lease</option>
-                  <option value="STAFF_WAGES">Staff Wages & Shift Allowances</option>
-                  <option value="CONSUMABLE_PARTS">Consumable Parts & Fluids (Oil, Cleaners, Rags)</option>
-                  <option value="TOOLS_EQUIPMENT">Shop Tools & Equipment Purchased</option>
-                  <option value="MISCELLANEOUS">Miscellaneous Operational Expense</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-zinc-400 font-semibold mb-1.5">Description *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Meralco Electric Power - Main Service Bay"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              />
+            </div>
 
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-zinc-400 font-semibold mb-1">Description *</label>
+                <label className="block text-zinc-400 font-semibold mb-1.5">Amount (PHP) *</label>
                 <input
-                  type="text"
+                  type="number"
+                  step="0.01"
+                  min="1"
                   required
-                  placeholder="e.g. Meralco Electric Power - Main Service Bay"
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
+                  placeholder="0.00"
+                  value={newAmount}
+                  onChange={(e) => setNewAmount(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-zinc-400 font-semibold mb-1">Amount (PHP) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="1"
-                    required
-                    placeholder="0.00"
-                    value={newAmount}
-                    onChange={(e) => setNewAmount(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 font-mono focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
+              <div>
+                <label className="block text-zinc-400 font-semibold mb-1.5">Date Logged *</label>
+                <input
+                  type="date"
+                  required
+                  value={expenseDate}
+                  onChange={(e) => setExpenseDate(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-zinc-400 font-semibold mb-1">Date Logged *</label>
-                  <input
-                    type="date"
-                    required
-                    value={expenseDate}
-                    onChange={(e) => setExpenseDate(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 font-mono focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-zinc-400 font-semibold mb-1.5">Vendor / Payee</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Hardware Store / Meralco"
+                  value={newVendor}
+                  onChange={(e) => setNewVendor(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-zinc-400 font-semibold mb-1">Vendor / Payee</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Hardware Store / Meralco"
-                    value={newVendor}
-                    onChange={(e) => setNewVendor(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-semibold mb-1">Receipt / Invoice Ref #</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. OR-5491"
-                    value={newRef}
-                    onChange={(e) => setNewRef(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 font-mono placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
+              <div>
+                <label className="block text-zinc-400 font-semibold mb-1.5">Receipt / Invoice Ref #</label>
+                <input
+                  type="text"
+                  placeholder="e.g. OR-5491"
+                  value={newRef}
+                  onChange={(e) => setNewRef(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm font-mono placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
               </div>
+            </div>
+          </ModalBody>
 
-              <div className="flex gap-3 pt-4 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setIsExpenseModalOpen(false)}
-                  className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold transition-all shadow-md shadow-cyan-500/20"
-                >
-                  Save Expense
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => setIsExpenseModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2"
+            >
+              Save Expense
+            </button>
+          </ModalFooter>
+        </form>
+      </Modal>
 
     </div>
   );

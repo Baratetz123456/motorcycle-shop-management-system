@@ -26,6 +26,7 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { RepairStatus, RepairJob } from "@/app/(dashboard)/repairs/board/page";
+import { ConfirmModal } from "@/components/ui/Modal";
 
 // --- Diagnosis Log Types ---
 interface DiagnosisEntry {
@@ -1010,50 +1011,30 @@ export default function JobCardProfilePage() {
       </div>
 
       {/* ============ DELETE CONFIRMATION MODAL ============ */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-red-500/30 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-5 text-center">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto border border-red-500/30">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-xl font-bold text-white">Delete Job Card?</h3>
-              <p className="text-xs text-zinc-400">
-                Are you sure you want to permanently remove <strong className="text-white">{job.customer}</strong> ({job.jo_number}) from the workshop system?
-              </p>
-            </div>
-
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
+        confirmVariant="danger"
+        title="Delete Job Card?"
+        confirmText="Confirm & Delete"
+        message={
+          <div className="space-y-3">
+            <p className="text-zinc-300">
+              Are you sure you want to permanently remove <strong className="text-white">{job.customer}</strong> ({job.jo_number}) from the workshop system?
+            </p>
             {deleteError && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl">
                 {deleteError}
               </div>
             )}
-
             <p className="text-xs text-amber-300 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-left">
               <strong>Warning:</strong> This will delete all diagnosis records, remove the customer&apos;s active repair cart, and clear the workshop card.
             </p>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-zinc-300 text-xs font-semibold transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={handleConfirmDelete}
-                className="flex-1 py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 rounded-xl text-white text-xs font-bold transition-all shadow-lg shadow-red-600/20"
-              >
-                {isDeleting ? "Deleting..." : "Confirm & Delete"}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        }
+      />
     </div>
   );
 }

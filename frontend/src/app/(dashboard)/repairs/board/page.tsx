@@ -29,6 +29,8 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
+import { getSystemSettings, SystemSettings } from "@/lib/settings";
+import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 
 export type RepairStatus = "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
 
@@ -60,6 +62,7 @@ export default function RepairBoardPage() {
   const [jobs, setJobs] = useState<RepairJob[]>([]);
   const [modelsCatalog, setModelsCatalog] = useState<MotorcycleModelOption[]>([]);
   const [mechanicsList, setMechanicsList] = useState<{ id: string; name: string }[]>([]);
+  const [settings, setSettings] = useState<SystemSettings>(getSystemSettings);
   
   // Modals & State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -130,11 +133,16 @@ export default function RepairBoardPage() {
     const handleSync = () => {
       fetchJobs();
     };
+    const handleSettingsUpdated = () => {
+      setSettings(getSystemSettings());
+    };
     window.addEventListener("focus", handleSync);
     window.addEventListener("storage", handleSync);
+    window.addEventListener("system_settings_updated", handleSettingsUpdated);
     return () => {
       window.removeEventListener("focus", handleSync);
       window.removeEventListener("storage", handleSync);
+      window.removeEventListener("system_settings_updated", handleSettingsUpdated);
     };
   }, [searchParams]);
 
@@ -807,14 +815,14 @@ export default function RepairBoardPage() {
   };
 
   const columns: { title: string; status: RepairStatus; color: string; bg: string }[] = [
-    { title: "New", status: "PENDING", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-    { title: "In Progress", status: "ONGOING", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
-    { title: "Completed", status: "COMPLETED", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-    { title: "Invoiced", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+    { title: settings.boardPendingTitle || "New", status: "PENDING", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+    { title: settings.boardOngoingTitle || "In Progress", status: "ONGOING", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
+    { title: settings.boardCompletedTitle || "Completed", status: "COMPLETED", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
   ];
 
   return (
-    <div className="w-full h-screen bg-zinc-950 p-8 flex flex-col font-sans overflow-hidden">
+    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col font-sans overflow-hidden">
       
       {/* Top Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
@@ -876,9 +884,22 @@ export default function RepairBoardPage() {
       )}
 
       {/* Kanban Board Columns Grid */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-hidden">
         {columns.map((col) => {
-          const colJobs = jobs.filter((j) => j.status === col.status);
+          let colJobs = jobs.filter((j) => j.status === col.status);
+
+          // Apply retention filter to RELEASED stage if configured
+          if (col.status === "RELEASED" && settings.boardRetentionDays && settings.boardRetentionDays !== "all") {
+            const retentionDays = parseInt(settings.boardRetentionDays, 10);
+            if (!isNaN(retentionDays) && retentionDays > 0) {
+              const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+              colJobs = colJobs.filter((j) => {
+                const jobTime = new Date(j.created_at).getTime();
+                return isNaN(jobTime) || jobTime >= cutoffTime;
+              });
+            }
+          }
+
           const isOver = dragOverColumn === col.status;
           const activeDraggedCard = draggedJobId ? jobs.find((j) => j.id === draggedJobId) : null;
           const isUnpaidAndTargetReleased =
@@ -901,7 +922,7 @@ export default function RepairBoardPage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
               className={clsx(
-                "border rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl transition-all duration-200",
+                "border rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl transition-all duration-200 min-h-0",
                 isOver && isUnpaidAndTargetReleased
                   ? "bg-red-950/20 border-red-500/60 ring-2 ring-red-500/40"
                   : isOver
@@ -910,11 +931,19 @@ export default function RepairBoardPage() {
               )}
             >
               {/* Column Header */}
-              <div className={clsx("p-3.5 rounded-2xl border mb-4 flex items-center justify-between", col.bg)}>
+              <div className={clsx("p-3.5 rounded-2xl border mb-4 flex items-center justify-between shrink-0", col.bg)}>
                 <div className="flex items-center gap-2">
                   <span className={clsx("font-bold text-sm uppercase tracking-wider", col.color)}>
                     {col.title}
                   </span>
+                  {col.status === "RELEASED" && (
+                    <span 
+                      className="text-[10px] text-zinc-400 font-normal bg-zinc-900/80 px-2 py-0.5 rounded-md border border-white/5" 
+                      title="Retention period configured in Shop Settings"
+                    >
+                      {settings.boardRetentionDays === "all" ? "All Time" : `${settings.boardRetentionDays || 7}d`}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {isOver && isUnpaidAndTargetReleased && (
@@ -929,7 +958,7 @@ export default function RepairBoardPage() {
               </div>
 
               {/* Job Order Cards Column Body */}
-              <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
                 {colJobs.length === 0 ? (
                   <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-white/5 rounded-2xl p-4">
                     No job cards in this stage.
@@ -1134,193 +1163,180 @@ export default function RepairBoardPage() {
       )}
 
       {/* Modal 1: Create New Job Order Modal */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/10 bg-zinc-950/80 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-cyan-400" /> New Job Card
-              </h3>
-              <button onClick={() => setIsCreateModalOpen(false)} className="text-zinc-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateJob} className="p-6 space-y-4 text-xs">
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Customer Full Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Carlos Mendoza"
-                  value={newCustomer}
-                  onChange={(e) => setNewCustomer(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Bike Model *</label>
-                <select
-                  value={newMotorcycleModel}
-                  onChange={(e) => setNewMotorcycleModel(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                >
-                  {modelsCatalog.map((m) => (
-                    <option key={m.id} value={m.model}>
-                      {m.brand} - {m.model} ({m.year})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Assigned Mechanic *</label>
-                <select
-                  value={assignedMechanic}
-                  onChange={(e) => setAssignedMechanic(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                >
-                  {mechanicsList.length > 0 ? (
-                    mechanicsList.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="Shop Mechanic">Shop Mechanic</option>
-                  )}
-                </select>
-              </div>
-
-              <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2"
-                >
-                  {isSubmitting ? <span>Saving...</span> : <span>Create Job Card</span>}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal 2: Edit Diagnosis Notes & Reassign Mechanic Modal */}
-      {editJobModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/10 bg-zinc-950/80 flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-cyan-400" /> Edit Diagnosis Notes & Mechanic
-                </h3>
-                <p className="text-xs text-cyan-300 font-mono mt-0.5">{editJobModal.customer} ({editJobModal.jo_number})</p>
-              </div>
-              <button onClick={() => setEditJobModal(null)} className="text-zinc-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveJobDetails} className="p-6 space-y-4 text-xs">
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5 flex items-center gap-1 text-cyan-400">
-                  <FileText className="w-3.5 h-3.5" /> Mechanic Diagnosis & Service Notes
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Enter detailed repair diagnosis, symptoms, parts replaced, or service instructions..."
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5 flex items-center gap-1 text-purple-300">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Reassign Mechanic
-                </label>
-                <select
-                  value={editMechanic}
-                  onChange={(e) => setEditMechanic(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                >
-                  {mechanicsList.length > 0 ? (
-                    mechanicsList.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="Shop Mechanic">Shop Mechanic</option>
-                  )}
-                </select>
-              </div>
-
-              <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditJobModal(null)}
-                  className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-cyan-500/20"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal 3: Confirm Remove Active Customer / Cancel Job Order Modal */}
-      {deleteConfirmJob && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-red-500/30 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-4 text-center">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto border border-red-500/30">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        size="md"
+      >
+        <ModalHeader
+          icon={Plus}
+          iconVariant="cyan"
+          title="New Job Card"
+          subtitle="Create a new repair job card for an incoming customer"
+          onClose={() => setIsCreateModalOpen(false)}
+        />
+        <form onSubmit={handleCreateJob}>
+          <ModalBody className="space-y-4 text-xs">
+            <div>
+              <label className="block text-zinc-400 font-semibold mb-1.5">Customer Full Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Carlos Mendoza"
+                value={newCustomer}
+                onChange={(e) => setNewCustomer(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              />
             </div>
 
             <div>
-              <h3 className="text-xl font-bold text-white">Remove Active Customer Job Order?</h3>
-              <p className="text-xs text-zinc-400 mt-1">
+              <label className="block text-zinc-400 font-semibold mb-1.5">Bike Model *</label>
+              <select
+                value={newMotorcycleModel}
+                onChange={(e) => setNewMotorcycleModel(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              >
+                {modelsCatalog.map((m) => (
+                  <option key={m.id} value={m.model}>
+                    {m.brand} - {m.model} ({m.year})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 font-semibold mb-1.5">Assigned Mechanic *</label>
+              <select
+                value={assignedMechanic}
+                onChange={(e) => setAssignedMechanic(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              >
+                {mechanicsList.length > 0 ? (
+                  mechanicsList.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="Shop Mechanic">Shop Mechanic</option>
+                )}
+              </select>
+            </div>
+          </ModalBody>
+
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting ? <span>Saving...</span> : <span>Create Job Card</span>}
+            </button>
+          </ModalFooter>
+        </form>
+      </Modal>
+
+      {/* Modal 2: Edit Diagnosis Notes & Reassign Mechanic Modal */}
+      <Modal
+        isOpen={!!editJobModal}
+        onClose={() => setEditJobModal(null)}
+        size="lg"
+      >
+        {editJobModal && (
+          <>
+            <ModalHeader
+              icon={Edit3}
+              iconVariant="cyan"
+              title="Edit Diagnosis Notes & Mechanic"
+              subtitle={`${editJobModal.customer} (${editJobModal.jo_number})`}
+              onClose={() => setEditJobModal(null)}
+            />
+
+            <form onSubmit={handleSaveJobDetails}>
+              <ModalBody className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-zinc-400 font-semibold mb-1.5 flex items-center gap-1 text-cyan-400">
+                    <FileText className="w-3.5 h-3.5" /> Mechanic Diagnosis & Service Notes
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="Enter detailed repair diagnosis, symptoms, parts replaced, or service instructions..."
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3 text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-400 font-semibold mb-1.5 flex items-center gap-1 text-purple-300">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Reassign Mechanic
+                  </label>
+                  <select
+                    value={editMechanic}
+                    onChange={(e) => setEditMechanic(e.target.value)}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  >
+                    {mechanicsList.length > 0 ? (
+                      mechanicsList.map((m) => (
+                        <option key={m.id} value={m.name}>
+                          {m.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="Shop Mechanic">Shop Mechanic</option>
+                    )}
+                  </select>
+                </div>
+              </ModalBody>
+
+              <ModalFooter>
+                <button
+                  type="button"
+                  onClick={() => setEditJobModal(null)}
+                  className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
+                >
+                  Save Changes
+                </button>
+              </ModalFooter>
+            </form>
+          </>
+        )}
+      </Modal>
+
+      {/* Modal 3: Confirm Remove Active Customer / Cancel Job Order Modal */}
+      <ConfirmModal
+        isOpen={!!deleteConfirmJob}
+        onClose={() => setDeleteConfirmJob(null)}
+        onConfirm={handleConfirmRemoveJob}
+        title="Remove Active Customer Job Order?"
+        confirmText="Confirm & Remove Customer"
+        confirmVariant="danger"
+        message={
+          deleteConfirmJob ? (
+            <div className="space-y-3">
+              <p className="text-zinc-300">
                 Are you sure you want to remove <strong className="text-white">{deleteConfirmJob.customer}</strong> ({deleteConfirmJob.jo_number}) from the repair board?
               </p>
+              <p className="text-xs text-amber-300 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-left">
+                This action will release the active session and remove the customer from the POS active carts selection bar.
+              </p>
             </div>
-
-            <p className="text-xs text-amber-300 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
-              This action will release the active session and remove the customer from the POS active carts selection bar.
-            </p>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setDeleteConfirmJob(null)}
-                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-zinc-300 text-xs font-semibold transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmRemoveJob}
-                className="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white text-xs font-bold transition-all shadow-lg"
-              >
-                Confirm & Remove Customer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ) : ""
+        }
+      />
 
       {/* Contextual Audit Drawer */}
       <ContextualAuditDrawer

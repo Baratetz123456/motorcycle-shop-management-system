@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import clsx from "clsx";
 import { UserAvatar } from "@/lib/avatars";
+import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 
 interface UserProfile {
   id: string;
@@ -415,189 +416,160 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-6 shadow-2xl relative">
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        size="md"
+      >
+        <ModalHeader
+          icon={Edit3}
+          iconVariant="cyan"
+          title="Edit Staff Profile"
+          subtitle="Modify staff details, role, and compensation"
+          onClose={() => setIsEditModalOpen(false)}
+        />
 
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-                <Edit3 className="w-5 h-5" />
-              </div>
+        <form onSubmit={handleUpdateProfile}>
+          <ModalBody className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <h3 className="text-lg font-bold text-zinc-100">Edit Staff Profile</h3>
-                <p className="text-xs text-zinc-400">Modify staff details, role, and compensation</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editFirstName}
-                    onChange={(e) => setEditFirstName(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editLastName}
-                    onChange={(e) => setEditLastName(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Email Address</label>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">First Name</label>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono"
+                  value={editFirstName}
+                  onChange={(e) => setEditFirstName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
                 />
               </div>
-
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Assigned Role</label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value)}
-                  disabled={isSelf}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 disabled:opacity-50"
-                >
-                  <option value="cashier">Cashier</option>
-                  <option value="mechanic">Mechanic</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
-                </select>
-                {isSelf && (
-                  <p className="text-[10px] text-zinc-500 mt-1">You cannot modify your own administrative role.</p>
-                )}
+                <label className="block text-xs font-semibold text-zinc-400 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editLastName}
+                  onChange={(e) => setEditLastName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                />
               </div>
+            </div>
 
-              {/* Conditional Compensation */}
-              {editRole === "mechanic" && (
-                <div className="p-3.5 rounded-xl bg-zinc-950/90 border border-amber-500/30 space-y-1.5">
-                  <label className="block text-xs font-semibold text-amber-400">
-                    Mechanic Commission Rate (%) *
-                  </label>
-                  <div className="relative">
-                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.5"
-                      required
-                      value={editCommissionRate}
-                      onChange={(e) => setEditCommissionRate(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-zinc-900 border border-white/10 rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-100 font-mono focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <p className="text-[10px] text-zinc-500">
-                    Percentage of service labor charge earned by the mechanic on completed jobs.
-                  </p>
-                </div>
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">Email Address</label>
+              <input
+                type="email"
+                required
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 font-mono transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">Assigned Role</label>
+              <select
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value)}
+                disabled={isSelf}
+                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 disabled:opacity-50 transition-all"
+              >
+                <option value="cashier">Cashier</option>
+                <option value="mechanic">Mechanic</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+              {isSelf && (
+                <p className="text-[10px] text-zinc-500 mt-1">You cannot modify your own administrative role.</p>
               )}
+            </div>
 
-              {editRole === "cashier" && (
-                <div className="p-3.5 rounded-xl bg-zinc-950/90 border border-emerald-500/30 space-y-1.5">
-                  <label className="block text-xs font-semibold text-emerald-400">
-                    Daily Shift Wage (₱) *
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400 select-none">
-                      ₱
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="10"
-                      required
-                      value={editBaseWage}
-                      onChange={(e) => setEditBaseWage(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-zinc-900 border border-white/10 rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-100 font-mono focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-                  <p className="text-[10px] text-zinc-500">
-                    Standard daily pay received per completed cashier shift.
-                  </p>
+            {/* Conditional Compensation */}
+            {editRole === "mechanic" && (
+              <div className="p-3.5 rounded-xl bg-zinc-950/90 border border-amber-500/30 space-y-1.5">
+                <label className="block text-xs font-semibold text-amber-400">
+                  Mechanic Commission Rate (%) *
+                </label>
+                <div className="relative">
+                  <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    required
+                    value={editCommissionRate}
+                    onChange={(e) => setEditCommissionRate(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 pl-8 pr-3 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
+                  />
                 </div>
-              )}
-
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  className="px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50"
-                >
-                  {isUpdating ? "Saving..." : "Save Changes"}
-                </button>
+                <p className="text-[10px] text-zinc-500">
+                  Percentage of service labor charge earned by the mechanic on completed jobs.
+                </p>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+            )}
+
+            {editRole === "cashier" && (
+              <div className="p-3.5 rounded-xl bg-zinc-950/90 border border-emerald-500/30 space-y-1.5">
+                <label className="block text-xs font-semibold text-emerald-400">
+                  Daily Shift Wage (₱) *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400 select-none">
+                    ₱
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="10"
+                    required
+                    value={editBaseWage}
+                    onChange={(e) => setEditBaseWage(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 pl-8 pr-3 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                  />
+                </div>
+                <p className="text-[10px] text-zinc-500">
+                  Standard daily pay received per completed cashier shift.
+                </p>
+              </div>
+            )}
+          </ModalBody>
+
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
+            </button>
+          </ModalFooter>
+        </form>
+      </Modal>
 
       {/* Delete User Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-zinc-900 border border-rose-500/30 rounded-2xl p-6 shadow-2xl relative">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-zinc-100">Confirm Deletion</h3>
-                <p className="text-xs text-zinc-400">This action permanently deletes the user account</p>
-              </div>
-            </div>
-
-            <p className="text-sm text-zinc-300 mb-6">
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteUser}
+        isLoading={isDeleting}
+        confirmVariant="danger"
+        title="Confirm Deletion"
+        confirmText="Yes, Delete User"
+        message={
+          <div className="space-y-3">
+            <p className="text-sm text-zinc-300">
               Are you sure you want to delete <span className="font-semibold text-white">{user.email}</span> ({fullName})? This action cannot be undone.
             </p>
-
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteUser}
-                disabled={isDeleting}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-rose-600/20 disabled:opacity-50"
-              >
-                {isDeleting ? "Deleting..." : "Yes, Delete User"}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        }
+      />
 
     </div>
   );

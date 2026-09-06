@@ -93,8 +93,8 @@ export default function DashboardLayout({
             </header>
           )}
 
-          <main className="flex-1 overflow-y-auto bg-zinc-950 flex flex-col min-w-0 w-full">
-            <div key={pathname} className="flex-1 flex flex-col min-w-0 w-full animate-page-enter">
+          <main className="flex-1 min-h-0 overflow-y-auto bg-zinc-950 flex flex-col min-w-0 w-full">
+            <div key={pathname} className="flex-1 min-h-0 flex flex-col min-w-0 w-full animate-page-enter">
               {children}
             </div>
           </main>
