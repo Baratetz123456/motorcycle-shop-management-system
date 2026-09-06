@@ -54,6 +54,7 @@ import {
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
 import { THEME_OPTIONS, getAppTheme, saveAppTheme, applyThemeToDocument, AppTheme } from "@/lib/theme";
 import { AVATAR_PRESETS, UserAvatar } from "@/lib/avatars";
+import { recordUserAuditLog } from "@/lib/audit";
 
 type SettingsTab = "general" | "roles" | "users" | "profile" | "logs";
 
@@ -380,6 +381,19 @@ function SettingsContent() {
       savedThemeRef.current = activeTheme;
     }
 
+    recordUserAuditLog("SETTINGS_UPDATED", "/settings", {
+      appName: settings.appName,
+      shopDescription: settings.shopDescription,
+      currency: settings.currency,
+      timezone: settings.timezone,
+      boardPendingTitle: settings.boardPendingTitle,
+      boardOngoingTitle: settings.boardOngoingTitle,
+      boardCompletedTitle: settings.boardCompletedTitle,
+      boardReleasedTitle: settings.boardReleasedTitle,
+      boardRetentionDays: settings.boardRetentionDays,
+      theme: activeTheme,
+    });
+
     setGeneralSuccess("Application preferences and theme updated successfully.");
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
@@ -392,6 +406,11 @@ function SettingsContent() {
     saveAppTheme("cyan");
     setSavedTheme("cyan");
     savedThemeRef.current = "cyan";
+
+    recordUserAuditLog("SETTINGS_RESTORED_DEFAULTS", "/settings", {
+      reason: "Restored factory defaults",
+    });
+
     setGeneralSuccess("Preferences restored to factory defaults.");
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
@@ -426,6 +445,12 @@ function SettingsContent() {
     });
 
     saveCustomPermissions(updatedRoutes);
+
+    recordUserAuditLog("ROLE_PERMISSIONS_UPDATED", "/settings", {
+      moduleCount: CONFIGURABLE_MODULES.length,
+      updatedRoutes,
+    });
+
     setRolesSuccess("Role accessibility matrix saved. Updated navigation permissions are now active across all store sessions.");
     setTimeout(() => setRolesSuccess(null), 4000);
   };
@@ -439,6 +464,11 @@ function SettingsContent() {
       resetModuleMap[mod.id] = effective[primaryRoute] || ["admin"];
     });
     setModulePermissions(resetModuleMap);
+
+    recordUserAuditLog("ROLE_PERMISSIONS_RESET", "/settings", {
+      reason: "Standard default assignments restored",
+    });
+
     setRolesSuccess("Role accessibility restored to standard default assignments.");
     setTimeout(() => setRolesSuccess(null), 4000);
   };

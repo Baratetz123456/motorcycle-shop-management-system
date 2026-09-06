@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { saveStaffCompensationToDB } from "@/lib/compensation";
+import { recordUserAuditLog } from "@/lib/audit";
 
 const getRoleDutiesSummary = (role: string) => {
   switch (role.toLowerCase()) {
@@ -121,6 +122,12 @@ export default function RegisterUserPage() {
       }
 
       setSuccess(`User '${firstName} ${lastName}' (${email}) registered successfully and saved to database as ${role.toUpperCase()}!`);
+      recordUserAuditLog("CREATE_USER", `/users/${response.data?.id || ""}`, {
+        userId: response.data?.id,
+        name: `${firstName} ${lastName}`,
+        email,
+        role,
+      });
       setFirstName("");
       setLastName("");
       setEmail("");

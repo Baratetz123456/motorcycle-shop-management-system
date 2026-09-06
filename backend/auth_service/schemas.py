@@ -53,3 +53,10 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AuditLogCreate(BaseModel):
+    action: str
+    resource: str
+    details: Optional[dict] = None
+    user_id: Optional[str] = None
+    user_role: Optional[str] = None

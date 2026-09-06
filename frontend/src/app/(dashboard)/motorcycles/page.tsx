@@ -21,6 +21,7 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
+import { recordUserAuditLog } from "@/lib/audit";
 
 export interface MotorcycleProfile {
   id: string;
@@ -183,6 +184,13 @@ export default function MotorcycleProfilesPage() {
       });
       if (res.data) {
         setProfiles((prev) => [res.data, ...prev]);
+        recordUserAuditLog("MOTORCYCLE_CREATED", "/motorcycles", {
+          id: res.data.id,
+          brand: res.data.brand,
+          model: res.data.model,
+          year: res.data.year,
+          category: res.data.category,
+        });
         setStatusMessage({
           type: "success",
           text: `Motorcycle profile "${res.data.brand} ${res.data.model}" successfully registered.`
@@ -219,6 +227,13 @@ export default function MotorcycleProfilesPage() {
         setProfiles((prev) =>
           prev.map((p) => (p.id === selectedProfile.id ? res.data : p))
         );
+        recordUserAuditLog("MOTORCYCLE_UPDATED", `/motorcycles/${selectedProfile.id}`, {
+          id: selectedProfile.id,
+          brand: res.data.brand,
+          model: res.data.model,
+          year: res.data.year,
+          category: res.data.category,
+        });
         setStatusMessage({
           type: "success",
           text: `Motorcycle profile "${res.data.brand} ${res.data.model}" updated successfully.`
@@ -246,6 +261,13 @@ export default function MotorcycleProfilesPage() {
     try {
       await apiClient.delete(`/repairs/motorcycle-models/${selectedProfile.id}`);
       setProfiles((prev) => prev.filter((p) => p.id !== selectedProfile.id));
+      recordUserAuditLog("MOTORCYCLE_DELETED", `/motorcycles/${selectedProfile.id}`, {
+        id: selectedProfile.id,
+        brand: selectedProfile.brand,
+        model: selectedProfile.model,
+        year: selectedProfile.year,
+        action: "soft_delete",
+      });
       setStatusMessage({
         type: "success",
         text: `Motorcycle profile "${selectedProfile.brand} ${selectedProfile.model}" has been archived.`

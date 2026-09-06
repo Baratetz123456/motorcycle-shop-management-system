@@ -5,6 +5,7 @@ import { useCheckoutSaga } from "@/hooks/useCheckoutSaga";
 import { usePosStore } from "@/lib/store/pos-store";
 import { CreditCard, Banknote, Loader2, CheckCircle2, XCircle, X, ArrowRight, ShieldCheck } from "lucide-react";
 import clsx from "clsx";
+import { recordUserAuditLog } from "@/lib/audit";
 
 export function CheckoutModal({ 
   disabled,
@@ -48,11 +49,18 @@ export function CheckoutModal({
   // Handle successful completion
   useEffect(() => {
     if (isSagaComplete) {
+      recordUserAuditLog("POS_CHECKOUT", "/pos", {
+        transactionId: transactionData?.id,
+        invoiceNo: transactionData?.invoice_no,
+        total: transactionData?.total || total,
+        paymentMethod,
+        customerName: customerName || "Walk-in Customer",
+      });
       if (onPaymentSuccess) {
         onPaymentSuccess();
       }
     }
-  }, [isSagaComplete, onPaymentSuccess]);
+  }, [isSagaComplete, onPaymentSuccess, transactionData, total, paymentMethod, customerName]);
 
   const handleCheckout = async () => {
     try {

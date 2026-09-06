@@ -661,6 +661,35 @@ async def delete_user(
 
 # --- Audit Logs Endpoints ---
 
+@app.post("/audit-logs", status_code=status.HTTP_201_CREATED)
+async def create_audit_log(
+    request: Request,
+    payload: schemas.AuditLogCreate,
+    session: AsyncSession = Depends(get_db)
+):
+    client_ip = get_client_ip(request)
+    
+    uid = None
+    if payload.user_id:
+        try:
+            uid = UUID(payload.user_id)
+        except Exception:
+            uid = None
+
+    event = AuditLog(
+        user_id=uid,
+        user_role=payload.user_role or "admin",
+        action=payload.action,
+        resource=payload.resource,
+        details=payload.details,
+        ip_address=client_ip
+    )
+    session.add(event)
+    await session.commit()
+    await session.refresh(event)
+
+    return {"status": "recorded", "id": str(event.id)}
+
 @app.get("/audit-logs")
 async def get_audit_logs(
     request: Request,

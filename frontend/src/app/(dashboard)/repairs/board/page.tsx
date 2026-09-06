@@ -31,6 +31,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
+import { recordUserAuditLog } from "@/lib/audit";
 
 export type RepairStatus = "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
 
@@ -394,6 +395,15 @@ export default function RepairBoardPage() {
     );
     syncJobsState(updated);
 
+    recordUserAuditLog("REPAIR_STATUS_UPDATED", `/repairs/jobs/${jobId}`, {
+      job_id: jobId,
+      jo_number: targetJob.jo_number,
+      customer: targetJob.customer,
+      motorcycle: targetJob.motorcycle,
+      old_status: targetJob.status,
+      new_status: newStatus,
+    });
+
     // If successfully moved to RELEASED, sync customer history
     if (newStatus === "RELEASED") {
       syncCustomerRepairHistory(targetJob);
@@ -651,6 +661,15 @@ export default function RepairBoardPage() {
         : j
     );
     syncJobsState(updated);
+
+    recordUserAuditLog("DIAGNOSIS_UPDATED", `/repairs/jobs/${finalJobId}`, {
+      job_id: finalJobId,
+      jo_number: editJobModal.jo_number,
+      customer: editJobModal.customer,
+      mechanic: editMechanic,
+      notes_length: editNotes.length,
+    });
+
     setEditJobModal(null);
   };
 
@@ -744,6 +763,13 @@ export default function RepairBoardPage() {
       } catch (e) {}
     }
 
+    recordUserAuditLog("REPAIR_ORDER_DELETED", `/repairs/jobs/${targetId}`, {
+      job_id: targetId,
+      jo_number: deleteConfirmJob.jo_number,
+      customer: deleteConfirmJob.customer,
+      motorcycle: deleteConfirmJob.motorcycle,
+    });
+
     setDeleteConfirmJob(null);
     setAlertNotification({
       type: "success",
@@ -810,6 +836,15 @@ export default function RepairBoardPage() {
     }
 
     syncJobsState([createdJob, ...jobs]);
+
+    recordUserAuditLog("REPAIR_ORDER_CREATED", `/repairs/jobs/${createdJob.id}`, {
+      job_id: createdJob.id,
+      jo_number: createdJob.jo_number,
+      customer: createdJob.customer,
+      motorcycle: createdJob.motorcycle,
+      mechanic: createdJob.mechanic,
+    });
+
     setNewCustomer("");
     setIsCreateModalOpen(false);
   };

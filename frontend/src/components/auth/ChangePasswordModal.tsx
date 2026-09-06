@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
 import { CheckCircle2, ShieldAlert, Lock } from "lucide-react";
 import { Modal, ModalBody, ModalFooter } from "@/components/ui/Modal";
+import { recordUserAuditLog } from "@/lib/audit";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -51,6 +52,9 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
       });
 
       setSuccess("Password updated successfully.");
+      recordUserAuditLog("PASSWORD_CHANGED", "/auth/change-password", {
+        timestamp: new Date().toISOString(),
+      });
       setTimeout(() => {
         onClose();
       }, 1500);

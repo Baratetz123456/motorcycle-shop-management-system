@@ -179,6 +179,21 @@
     },
     {
       "endpoint": "/api/v1/audit-logs",
+      "method": "POST",
+      "output_encoding": "json",
+      "input_headers": ["Authorization", "Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/audit-logs",
+          "encoding": "json",
+          "sd": "static",
+          "method": "POST",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/audit-logs",
       "method": "GET",
       "output_encoding": "json",
       "input_headers": ["Authorization"],

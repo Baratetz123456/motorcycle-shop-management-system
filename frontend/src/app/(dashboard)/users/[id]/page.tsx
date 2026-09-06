@@ -26,6 +26,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { UserAvatar } from "@/lib/avatars";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
+import { recordUserAuditLog } from "@/lib/audit";
 
 interface UserProfile {
   id: string;
@@ -147,6 +148,13 @@ export default function UserProfilePage() {
 
       setUser(res.data);
       setSuccess(`Profile for '${editEmail}' updated successfully.`);
+      recordUserAuditLog("UPDATE_USER", `/users/${user.id}`, {
+        userId: user.id,
+        email: editEmail,
+        role: editRole,
+        firstName: editFirstName,
+        lastName: editLastName,
+      });
       setIsEditModalOpen(false);
     } catch (err: any) {
       console.error("Failed to update user profile:", err);
@@ -164,6 +172,12 @@ export default function UserProfilePage() {
     setError(null);
     try {
       await apiClient.delete(`/auth/users/${user.id}`);
+      recordUserAuditLog("DELETE_USER", `/users/${user.id}`, {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        name: `${user.first_name} ${user.last_name}`,
+      });
       setIsDeleteModalOpen(false);
       router.push("/users");
     } catch (err: any) {

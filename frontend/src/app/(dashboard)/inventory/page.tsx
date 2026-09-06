@@ -22,6 +22,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { Modal, ModalBody, ModalFooter } from "@/components/ui/Modal";
+import { recordUserAuditLog } from "@/lib/audit";
 
 export interface CatalogItem {
   id: string;
@@ -297,6 +298,16 @@ function InventoryContent() {
         }
       } catch (e) {}
 
+      recordUserAuditLog("CREATE_ITEM", `/inventory/${createdItem.id}`, {
+        id: createdItem.id,
+        name: createdItem.name,
+        sku: createdItem.sku,
+        item_type: createdItem.item_type,
+        category: createdItem.category,
+        selling_price: createdItem.selling_price,
+        current_stock: createdItem.current_stock,
+      });
+
       setIsModalOpen(false);
     } catch (err: any) {
       // Fallback local persistence
@@ -313,6 +324,17 @@ function InventoryContent() {
         customList.unshift(newItem);
         localStorage.setItem("motoshop_custom_inventory", JSON.stringify(customList));
       } catch (e) {}
+
+      recordUserAuditLog("CREATE_ITEM", `/inventory/${newItem.id}`, {
+        id: newItem.id,
+        name: newItem.name,
+        sku: newItem.sku,
+        item_type: newItem.item_type,
+        category: newItem.category,
+        selling_price: newItem.selling_price,
+        current_stock: newItem.current_stock,
+      });
+
       setIsModalOpen(false);
     } finally {
       setIsSubmitting(false);
