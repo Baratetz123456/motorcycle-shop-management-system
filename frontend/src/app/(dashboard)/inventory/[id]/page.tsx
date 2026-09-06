@@ -338,9 +338,10 @@ export default function ItemProfilePage() {
   const isOptimalStock = isProduct && item.current_stock > item.reorder_level;
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6 font-sans">
-      {/* Top Action & Navigation Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16">
+      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+        {/* Top Action & Navigation Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button
           onClick={() => router.push("/inventory")}
           className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
@@ -810,6 +811,8 @@ export default function ItemProfilePage() {
         isLoading={isDeleting}
         icon={<Trash2 className="w-5 h-5" />}
       />
+      </div>
     </div>
   );
 }
+

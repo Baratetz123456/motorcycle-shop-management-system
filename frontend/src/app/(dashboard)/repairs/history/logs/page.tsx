@@ -150,22 +150,22 @@ function CustomerRepairHistoryLogsContent() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-zinc-950 flex flex-col items-center justify-center font-sans text-zinc-400">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center font-sans text-zinc-400">
         <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm">Loading customer repair history logs...</p>
+        <p className="text-sm font-medium">Loading customer repair history logs...</p>
       </div>
     );
   }
 
   if (!customer) {
     return (
-      <div className="h-screen bg-zinc-950 p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
+      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
         <AlertCircle className="w-12 h-12 text-red-400 mb-3" />
         <h2 className="text-xl font-bold mb-1">Customer Record Not Found</h2>
         <p className="text-xs text-zinc-400 mb-6">Could not find repair logs matching the requested customer identifier.</p>
         <button
           onClick={() => router.push("/repairs/history")}
-          className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-2"
+          className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Repair History</span>
@@ -177,53 +177,54 @@ function CustomerRepairHistoryLogsContent() {
   const isActive = customer.active_status === "ACTIVE_REPAIR";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans p-6 md:p-10 overflow-y-auto">
-      {/* Top Action & Navigation Bar */}
-      <div className="max-w-5xl w-full mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 no-print">
-        <button
-          onClick={() => router.push("/repairs/history")}
-          className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Repair History</span>
-        </button>
-
-        <div className="flex items-center gap-3">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 touch-pan-y">
+      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+        {/* Top Action & Navigation Bar */}
+        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
           <button
-            onClick={() => window.print()}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 transition-colors flex items-center gap-2 text-xs font-bold shadow-md"
+            onClick={() => router.push("/repairs/history")}
+            className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
           >
-            <Printer className="w-4 h-4 text-cyan-400" />
-            <span>Print Service Record</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Repair History</span>
           </button>
 
-          {isActive ? (
+          <div className="flex items-center gap-3">
             <button
-              disabled
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed opacity-60"
+              onClick={() => window.print()}
+              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 transition-colors flex items-center gap-2 text-xs font-bold shadow-md"
             >
-              <Lock className="w-4 h-4" />
-              <span>Active in Repair</span>
+              <Printer className="w-4 h-4 text-cyan-400" />
+              <span>Print Service Record</span>
             </button>
-          ) : (
-            <button
-              onClick={() => handleResumeRepair(customer)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
-            >
-              <Play className="w-4 h-4" />
-              <span>Start Job</span>
-            </button>
-          )}
-        </div>
-      </div>
 
-      {/* Main Profile & Detailed Service Record View */}
-      <div className="max-w-5xl w-full mx-auto space-y-6">
-        
-        {/* Customer Profile Banner Card */}
-        <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
-            <div className="flex items-center gap-4">
+            {isActive ? (
+              <button
+                disabled
+                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed opacity-60"
+              >
+                <Lock className="w-4 h-4" />
+                <span>Active in Repair</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => handleResumeRepair(customer)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+              >
+                <Play className="w-4 h-4" />
+                <span>Start Job</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Main Profile & Detailed Service Record View */}
+        <div className="w-full space-y-6">
+          
+          {/* Customer Profile Banner Card */}
+          <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
+              <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-2xl shadow-inner">
                 {customer.customer_name.split(" ").map((n) => n[0]).join("")}
               </div>
@@ -420,6 +421,7 @@ function CustomerRepairHistoryLogsContent() {
         </div>
 
       </div>
+      </div>
     </div>
   );
 }
@@ -427,9 +429,9 @@ function CustomerRepairHistoryLogsContent() {
 export default function CustomerRepairHistoryLogsPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen bg-zinc-950 flex flex-col items-center justify-center font-sans text-zinc-400">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center font-sans text-zinc-400">
         <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm">Loading service record...</p>
+        <p className="text-sm font-medium">Loading service record...</p>
       </div>
     }>
       <CustomerRepairHistoryLogsContent />

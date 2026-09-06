@@ -21,4 +21,6 @@ class User(Base):
     commission_rate = Column(Numeric(5, 2), nullable=True, default=40.0)
     base_wage = Column(Numeric(10, 2), nullable=True, default=650.0)
     avatar = Column(String(50), nullable=False, default='avatar-1')
+    theme = Column(String(50), nullable=False, default='cyan')
+    display_mode = Column(String(20), nullable=False, default='dark')
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)

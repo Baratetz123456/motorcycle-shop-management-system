@@ -231,47 +231,47 @@ export default function UserProfilePage() {
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Staff Member";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans p-8 overflow-y-auto w-full">
-      
-      {/* Top Action & Navigation Bar */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <Link
-          href="/settings?tab=users"
-          className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Users List</span>
-        </Link>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={openEditModal}
-            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-white/10 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-lg"
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16">
+      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+        {/* Top Action & Navigation Bar */}
+        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <Link
+            href="/settings?tab=users"
+            className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
           >
-            <Edit3 className="w-4 h-4 text-cyan-400" />
-            <span>Edit Profile</span>
-          </button>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Users List</span>
+          </Link>
 
-          <button
-            onClick={() => setIsDeleteModalOpen(true)}
-            disabled={isSelf}
-            title={isSelf ? "You cannot delete your own account" : "Delete User Account"}
-            className={clsx(
-              "px-4 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 border",
-              isSelf
-                ? "bg-zinc-950 text-zinc-600 border-white/5 cursor-not-allowed opacity-50"
-                : "bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border-rose-500/30 hover:border-rose-500/50 shadow-lg shadow-rose-950/30"
-            )}
-          >
-            <Trash2 className="w-4 h-4 text-rose-400" />
-            <span>Delete User</span>
-          </button>
+          {/* Action Controls */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={openEditModal}
+              className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-white/10 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-lg"
+            >
+              <Edit3 className="w-4 h-4 text-cyan-400" />
+              <span>Edit Profile</span>
+            </button>
+
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={isSelf}
+              title={isSelf ? "You cannot delete your own account" : "Delete User Account"}
+              className={clsx(
+                "px-4 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 border",
+                isSelf
+                  ? "bg-zinc-950 text-zinc-600 border-white/5 cursor-not-allowed opacity-50"
+                  : "bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border-rose-500/30 hover:border-rose-500/50 shadow-lg shadow-rose-950/30"
+              )}
+            >
+              <Trash2 className="w-4 h-4 text-rose-400" />
+              <span>Delete User</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Main Profile Document Container */}
-      <div className="w-full space-y-6">
+        {/* Main Profile Document Container */}
+        <div className="w-full space-y-6">
         {/* Notifications */}
         {error && (
           <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
@@ -585,6 +585,8 @@ export default function UserProfilePage() {
         }
       />
 
+      </div>
     </div>
   );
 }
+

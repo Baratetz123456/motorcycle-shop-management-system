@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { isRouteAllowed, UserRole } from "@/lib/permissions";
@@ -56,6 +56,12 @@ export function Sidebar() {
   const [shopDescription, setShopDescription] = useState<string>("Shop Floor");
   const [permissionsVersion, setPermissionsVersion] = useState<number>(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const navRef = useRef<HTMLElement>(null);
+  const isDraggingRef = useRef(false);
+  const startYRef = useRef(0);
+  const scrollTopRef = useRef(0);
+  const hasDraggedRef = useRef(false);
 
   const syncStateFromStorage = useCallback(() => {
     const userRole = localStorage.getItem("user_role") as UserRole;
@@ -184,6 +190,28 @@ export function Sidebar() {
     return candidates.length > 0 ? candidates[0].href : null;
   }, [pathname, allowedNavItems]);
 
+  const handleNavMouseDown = (e: React.MouseEvent) => {
+    if (!navRef.current) return;
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    startYRef.current = e.pageY - navRef.current.offsetTop;
+    scrollTopRef.current = navRef.current.scrollTop;
+  };
+
+  const handleNavMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !navRef.current) return;
+    const y = e.pageY - navRef.current.offsetTop;
+    const walk = (y - startYRef.current) * 1.5;
+    if (Math.abs(y - startYRef.current) > 5) {
+      hasDraggedRef.current = true;
+    }
+    navRef.current.scrollTop = scrollTopRef.current - walk;
+  };
+
+  const handleNavMouseUpOrLeave = () => {
+    isDraggingRef.current = false;
+  };
+
   if (!role) return null;
 
   const roleColors: Record<UserRole, string> = {
@@ -206,77 +234,92 @@ export function Sidebar() {
 
       {/* Sliding Sidebar Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-zinc-950 border-r border-white/10 flex flex-col justify-between h-screen font-sans shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-zinc-950 border-r border-white/10 flex flex-col h-screen font-sans shadow-2xl transition-transform duration-300 ease-in-out ${
           isCollapsed ? "-translate-x-full pointer-events-none" : "translate-x-0"
         }`}
       >
-        <div>
-          {/* Brand Header & Close Button */}
-          <div className="h-16 border-b border-white/10 flex items-center justify-between px-4">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
-                <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
-                  <Bike className="w-5 h-5 text-cyan-400" />
-                </div>
-              </div>
-              <div className="truncate">
-                <h1 className="font-bold text-sm text-zinc-100 tracking-wide">{appName}</h1>
-                <p className="text-[10px] text-zinc-400">{shopDescription}</p>
+        {/* Brand Header & Close Button (Strictly shrink-0) */}
+        <div className="h-16 shrink-0 border-b border-white/10 flex items-center justify-between px-4">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
+              <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
+                <Bike className="w-5 h-5 text-cyan-400" />
               </div>
             </div>
-
-            {/* Close Drawer Button */}
-            <button
-              onClick={closeSidebar}
-              className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition-colors shrink-0"
-              title="Close menu"
-              aria-label="Close menu"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="truncate">
+              <h1 className="font-bold text-sm text-zinc-100 tracking-wide">{appName}</h1>
+              <p className="text-[10px] text-zinc-400">{shopDescription}</p>
+            </div>
           </div>
 
-          {/* Dynamic Nav Items */}
-          <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
-            {allowedNavItems.map((item, idx) => {
-              const Icon = item.icon;
-              const isActive = item.href === activeHref;
-              const prevItem = allowedNavItems[idx - 1];
-              const showGroupHeader = !prevItem || prevItem.group !== item.group;
-
-              return (
-                <div key={item.href} className="space-y-1">
-                  {showGroupHeader && (
-                    <div className="pt-2 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                      {item.group}
-                    </div>
-                  )}
-                  <Link
-                    href={item.href}
-                    onClick={(e) => {
-                      if (!canNavigate(item.href, pathname)) {
-                        e.preventDefault();
-                        return;
-                      }
-                      closeSidebar();
-                    }}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-500/5"
-                        : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
-                    }`}
-                  >
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-cyan-400" : "text-zinc-400"}`} />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                </div>
-              );
-            })}
-          </nav>
+          {/* Close Drawer Button */}
+          <button
+            onClick={closeSidebar}
+            className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition-colors shrink-0"
+            title="Close menu"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* User Profile & Footer Controls */}
-        <div className="p-3 border-t border-white/10 space-y-3">
+        {/* Dynamic Nav Items (Flex-1 min-h-0 with independent drag and touch scroll) */}
+        <nav
+          ref={navRef}
+          onMouseDown={handleNavMouseDown}
+          onMouseMove={handleNavMouseMove}
+          onMouseUp={handleNavMouseUpOrLeave}
+          onMouseLeave={handleNavMouseUpOrLeave}
+          className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto sidebar-nav-scroll touch-pan-y overscroll-contain select-none cursor-grab active:cursor-grabbing"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {allowedNavItems.map((item, idx) => {
+            const Icon = item.icon;
+            const isActive = item.href === activeHref;
+            const prevItem = allowedNavItems[idx - 1];
+            const showGroupHeader = !prevItem || prevItem.group !== item.group;
+
+            return (
+              <div key={item.href} className="space-y-1">
+                {showGroupHeader && (
+                  <div className="pt-2 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                    {item.group}
+                  </div>
+                )}
+                <Link
+                  href={item.href}
+                  data-active={isActive ? "true" : "false"}
+                  onClick={(e) => {
+                    if (hasDraggedRef.current) {
+                      e.preventDefault();
+                      return;
+                    }
+                    if (!canNavigate(item.href, pathname)) {
+                      e.preventDefault();
+                      return;
+                    }
+                    closeSidebar();
+                  }}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all relative group ${
+                    isActive
+                      ? "nav-active-item bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-500/5 font-semibold"
+                      : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="nav-active-bar absolute left-1.5 top-2 bottom-2 w-1 rounded-full bg-cyan-400" />
+                  )}
+                  <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-cyan-400" : "text-zinc-400 group-hover:text-zinc-200"}`} />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              </div>
+            );
+          })}
+        </nav>
+
+
+        {/* User Profile & Footer Controls (Strictly shrink-0, guaranteed visible in viewport) */}
+        <div className="shrink-0 p-3 border-t border-white/10 space-y-3 bg-zinc-950/80 backdrop-blur-xs">
           <div className="flex items-center gap-3 px-1">
             <UserAvatar avatarId={userAvatar} className="w-8 h-8" />
             <div className="flex-1 min-w-0">

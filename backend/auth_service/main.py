@@ -49,6 +49,14 @@ def set_refresh_cookie(response: Response, cookie_val: str):
 app = FastAPI(title="Auth Service")
 app.add_middleware(RequestLoggingMiddleware, service_name="auth_service")
 
+@app.on_event("startup")
+async def startup_event():
+    try:
+        from shared.database import engine, Base, init_db_schemas
+        await init_db_schemas(engine, Base.metadata)
+    except Exception as e:
+        logger.warning(f"Startup DB schema initialization notice: {e}")
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -128,7 +136,9 @@ async def login(
         "role": user.role,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "avatar": user.avatar or "avatar-1"
+        "avatar": user.avatar or "avatar-1",
+        "theme": getattr(user, "theme", "cyan") or "cyan",
+        "display_mode": getattr(user, "display_mode", "dark") or "dark"
     }
 
 @app.post("/refresh")
@@ -388,6 +398,8 @@ async def register_user(
         password_hash=hashed_pw,
         role=user_data.role,
         avatar=user_data.avatar if user_data.avatar else "avatar-1",
+        theme=user_data.theme if user_data.theme else "cyan",
+        display_mode=user_data.display_mode if user_data.display_mode else "dark",
         commission_rate=user_data.commission_rate if user_data.commission_rate is not None else 40.0,
         base_wage=user_data.base_wage if user_data.base_wage is not None else 650.0
     )
@@ -458,6 +470,8 @@ async def get_users(
             "email": u.email,
             "role": u.role,
             "avatar": u.avatar or "avatar-1",
+            "theme": getattr(u, "theme", "cyan") or "cyan",
+            "display_mode": getattr(u, "display_mode", "dark") or "dark",
             "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
             "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
             "created_at": u.created_at.isoformat() if u.created_at else None
@@ -500,6 +514,8 @@ async def get_user_by_id(
         "email": u.email,
         "role": u.role,
         "avatar": u.avatar or "avatar-1",
+        "theme": getattr(u, "theme", "cyan") or "cyan",
+        "display_mode": getattr(u, "display_mode", "dark") or "dark",
         "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
         "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
         "created_at": u.created_at.isoformat() if u.created_at else None
@@ -576,6 +592,12 @@ async def update_user(
 
     if update_data.avatar:
         db_user.avatar = update_data.avatar
+
+    if update_data.theme:
+        db_user.theme = update_data.theme
+
+    if update_data.display_mode:
+        db_user.display_mode = update_data.display_mode
 
     if role_changed:
         db_user.token_version += 1 # Invalidate active user tokens immediately!

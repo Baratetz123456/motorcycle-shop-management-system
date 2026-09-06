@@ -515,8 +515,8 @@ export default function JobCardProfilePage() {
   const currentStageIndex = STAGES.findIndex((s) => s.status === job.status);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 lg:p-8 font-sans flex flex-col w-full overflow-y-auto">
-      <div className="w-full max-w-7xl mx-auto space-y-8 pb-16 animate-in fade-in duration-300">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16">
+      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
 
         {/* ============ TOP NAVIGATION & ACTION BAR ============ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

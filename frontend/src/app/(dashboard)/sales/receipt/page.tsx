@@ -159,22 +159,22 @@ function SalesReceiptContent() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-zinc-950 flex flex-col items-center justify-center font-sans text-zinc-400">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center font-sans text-zinc-400">
         <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm">Loading invoice receipt details...</p>
+        <p className="text-sm font-medium">Loading invoice receipt details...</p>
       </div>
     );
   }
 
   if (!transaction) {
     return (
-      <div className="h-screen bg-zinc-950 p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
+      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
         <AlertCircle className="w-12 h-12 text-red-400 mb-3" />
         <h2 className="text-xl font-bold mb-1">Receipt Not Found</h2>
         <p className="text-xs text-zinc-400 mb-6">Could not find a valid transaction matching the requested ID.</p>
         <button
           onClick={() => router.push("/sales")}
-          className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-2"
+          className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Sales Management</span>
@@ -186,43 +186,41 @@ function SalesReceiptContent() {
   const isCompleted = transaction.status === "COMPLETED";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans p-8 overflow-y-auto w-full">
-      
-      {/* Top Action & Navigation Bar */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <button
-          onClick={() => router.push("/sales")}
-          className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Return to Sales Management</span>
-        </button>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleCopyInvoice}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
-            title="Copy Invoice Number"
-          >
-            {copiedInvoice ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-cyan-400" />}
-            <span>{copiedInvoice ? "Copied" : "Copy Invoice #"}</span>
-          </button>
-
-          <button
-            onClick={() => window.print()}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print Receipt</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Official Receipt Document Container */}
-      <div className="w-full bg-zinc-900/60 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-8">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y">
+      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
         
-        {/* Decorative Watermark / Accent Glow */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Top Action & Navigation Bar */}
+        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+          <button
+            onClick={() => router.push("/sales")}
+            className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Sales Management</span>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCopyInvoice}
+              className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
+              title="Copy Invoice Number"
+            >
+              {copiedInvoice ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-cyan-400" />}
+              <span>{copiedInvoice ? "Copied" : "Copy Invoice #"}</span>
+            </button>
+
+            <button
+              onClick={() => window.print()}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Print Receipt</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Official Receipt Document Container */}
+        <div className="w-full bg-zinc-900/60 border border-white/10 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-8">
 
         {/* Receipt Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
@@ -368,7 +366,7 @@ function SalesReceiptContent() {
             </h3>
           </div>
 
-          <div className="bg-zinc-950 rounded-2xl border border-white/10 overflow-hidden">
+          <div className="bg-zinc-950 rounded-2xl border border-white/10 overflow-x-auto shadow-inner">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-zinc-900/60 text-zinc-400 font-semibold uppercase text-xs">
@@ -496,6 +494,7 @@ function SalesReceiptContent() {
           </button>
         </div>
 
+      </div>
       </div>
     </div>
   );

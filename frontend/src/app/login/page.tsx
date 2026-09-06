@@ -6,6 +6,7 @@ import { apiClient } from "@/lib/api-client";
 import { tokenStore } from "@/lib/auth-token";
 import { recordUserAuditLog } from "@/lib/audit";
 import { ROLE_LANDING_PAGES, UserRole, getEffectiveLandingPage, getRouteFriendlyName } from "@/lib/permissions";
+import { syncUserPreferences, getAppTheme, applyThemeToDocument, getAppMode, applyModeToDocument } from "@/lib/theme";
 import { KeyRound, Mail, ShieldAlert, ArrowRight, Wrench, Sparkles, CheckCircle2, Clock } from "lucide-react";
 
 function LoginForm() {
@@ -59,7 +60,7 @@ function LoginForm() {
         password,
       });
 
-      const { access_token, role, user_id, first_name, last_name, avatar } = response.data;
+      const { access_token, role, user_id, first_name, last_name, avatar, theme, display_mode } = response.data;
       const userRole = role as UserRole;
 
       // Determine effective fallback landing page
@@ -97,6 +98,14 @@ function LoginForm() {
       }
       const fullName = [first_name, last_name].filter(Boolean).join(" ");
       localStorage.setItem("user_name", fullName || email.split("@")[0]);
+
+      // 4. Sync Account Personal Theme & Display Mode
+      if (theme || display_mode) {
+        syncUserPreferences(theme, display_mode, user_id);
+      } else {
+        applyThemeToDocument(getAppTheme(user_id));
+        applyModeToDocument(getAppMode(user_id));
+      }
 
       recordUserAuditLog("USER_LOGIN", "/login", { email: email, role: userRole });
 

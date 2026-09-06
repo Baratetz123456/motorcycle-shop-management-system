@@ -64,6 +64,9 @@ async def init_db_schemas(target_engine, base_metadata=None):
         "ALTER TABLE IF EXISTS repairs.motorcycles ADD COLUMN IF NOT EXISTS notes TEXT;",
         "ALTER TABLE IF EXISTS auth.users ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5, 2) DEFAULT 40.0;",
         "ALTER TABLE IF EXISTS auth.users ADD COLUMN IF NOT EXISTS base_wage NUMERIC(10, 2) DEFAULT 650.0;",
+        "ALTER TABLE IF EXISTS auth.users ADD COLUMN IF NOT EXISTS avatar VARCHAR(50) DEFAULT 'avatar-1';",
+        "ALTER TABLE IF EXISTS auth.users ADD COLUMN IF NOT EXISTS theme VARCHAR(50) DEFAULT 'cyan';",
+        "ALTER TABLE IF EXISTS auth.users ADD COLUMN IF NOT EXISTS display_mode VARCHAR(20) DEFAULT 'dark';",
     ]
 
     for stmt in column_migrations:

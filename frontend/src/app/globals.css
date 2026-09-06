@@ -132,3 +132,409 @@ html[data-theme="amber"],
   animation: pageTransitionEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
 }
+
+/* ==========================================================================
+   Versiklo Appearance Mode Engine: High-Contrast Light Mode
+   Dual-tone cool slate canvas (#f8fafc) paired with crisp white cards (#ffffff),
+   WCAG AAA jewel-tone accents, sharp slate typography, and clean dark mode reversibility.
+   ========================================================================== */
+html[data-mode="light"],
+[data-mode="light"] {
+  /* Dual-Tone Canvas & Surface Scale */
+  --color-zinc-950: #f8fafc !important; /* Cool Slate Canvas */
+  --color-zinc-900: #ffffff !important; /* Solid Crisp White Cards */
+  --color-zinc-850: #f8fafc !important;
+  --color-zinc-800: #f1f5f9 !important; /* Slate-100 Input & Action Surfaces */
+  --color-zinc-700: #e2e8f0 !important; /* Slate-200 Dividers & Card Outlines */
+  --color-zinc-600: #64748b !important; /* Slate-500 Secondary Metadata */
+  --color-zinc-500: #475569 !important; /* Slate-600 Muted Captions */
+  --color-zinc-400: #334155 !important; /* Slate-700 Standard Body Text */
+  --color-zinc-300: #1e293b !important; /* Slate-800 Emphasized Body */
+  --color-zinc-200: #0f172a !important; /* Slate-900 Section Headings */
+  --color-zinc-100: #020617 !important; /* Slate-950 Bold Titles */
+  --color-zinc-50: #000000 !important;
+
+  /* Base Light Mode Fallback Accents (High-Contrast Jewel Tones) */
+  --color-cyan-400: #0284c7 !important; /* Sky 600 */
+  --color-cyan-300: #0369a1 !important; /* Sky 700 */
+
+  color-scheme: light;
+}
+
+html[data-mode="light"] body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Headings in Light Mode */
+html[data-mode="light"] h1,
+html[data-mode="light"] h2,
+html[data-mode="light"] h3,
+html[data-mode="light"] h4,
+html[data-mode="light"] h5,
+html[data-mode="light"] h6 {
+  color: #0f172a;
+}
+
+/* Default text-white remapping to high-contrast dark slate */
+html[data-mode="light"] .text-white {
+  color: #0f172a !important;
+}
+
+/* Strictly preserve pure white text on solid/gradient colored action buttons */
+html[data-mode="light"] button[class*="bg-gradient"],
+html[data-mode="light"] button[class*="bg-cyan-600"],
+html[data-mode="light"] button[class*="bg-cyan-500"],
+html[data-mode="light"] button[class*="bg-blue-600"],
+html[data-mode="light"] button[class*="bg-blue-500"],
+html[data-mode="light"] button[class*="bg-red-600"],
+html[data-mode="light"] button[class*="bg-red-500"],
+html[data-mode="light"] button[class*="bg-emerald-600"],
+html[data-mode="light"] button[class*="bg-emerald-500"],
+html[data-mode="light"] button[class*="bg-purple-600"],
+html[data-mode="light"] button[class*="bg-purple-500"],
+html[data-mode="light"] a[class*="bg-gradient"],
+html[data-mode="light"] a[class*="bg-cyan-600"],
+html[data-mode="light"] a[class*="bg-blue-600"],
+html[data-mode="light"] [class*="bg-gradient"] .text-white,
+html[data-mode="light"] [class*="bg-cyan-600"] .text-white,
+html[data-mode="light"] [class*="bg-blue-600"] .text-white,
+html[data-mode="light"] [class*="bg-red-600"] .text-white,
+html[data-mode="light"] [class*="bg-emerald-600"] .text-white,
+html[data-mode="light"] [class*="bg-purple-600"] .text-white {
+  color: #ffffff !important;
+}
+
+/* High-Contrast Jewel Accent Text Remapping in Light Mode */
+html[data-mode="light"] .text-cyan-400,
+html[data-mode="light"] .text-cyan-300 {
+  color: #0369a1 !important;
+}
+
+html[data-mode="light"] .text-emerald-400,
+html[data-mode="light"] .text-emerald-300 {
+  color: #047857 !important;
+}
+
+html[data-mode="light"] .text-amber-400,
+html[data-mode="light"] .text-amber-300 {
+  color: #b45309 !important;
+}
+
+html[data-mode="light"] .text-purple-400,
+html[data-mode="light"] .text-purple-300 {
+  color: #6d28d9 !important;
+}
+
+html[data-mode="light"] .text-blue-400,
+html[data-mode="light"] .text-blue-300 {
+  color: #1d4ed8 !important;
+}
+
+html[data-mode="light"] .text-red-400,
+html[data-mode="light"] .text-red-300 {
+  color: #b91c1c !important;
+}
+
+/* High-Contrast Status Badge Background Pills in Light Mode */
+html[data-mode="light"] [class*="bg-cyan-500/10"],
+html[data-mode="light"] [class*="bg-cyan-500/20"] {
+  background-color: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+  color: #0369a1 !important;
+}
+
+html[data-mode="light"] [class*="bg-emerald-500/10"],
+html[data-mode="light"] [class*="bg-emerald-500/20"] {
+  background-color: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+  color: #047857 !important;
+}
+
+html[data-mode="light"] [class*="bg-amber-500/10"],
+html[data-mode="light"] [class*="bg-amber-500/20"] {
+  background-color: #fef3c7 !important;
+  border-color: #fcd34d !important;
+  color: #b45309 !important;
+}
+
+html[data-mode="light"] [class*="bg-purple-500/10"],
+html[data-mode="light"] [class*="bg-purple-500/20"] {
+  background-color: #ede9fe !important;
+  border-color: #c4b5fd !important;
+  color: #6d28d9 !important;
+}
+
+html[data-mode="light"] [class*="bg-red-500/10"],
+html[data-mode="light"] [class*="bg-red-500/20"],
+html[data-mode="light"] [class*="bg-rose-500/10"],
+html[data-mode="light"] [class*="bg-rose-500/20"] {
+  background-color: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+html[data-mode="light"] [class*="bg-blue-500/10"],
+html[data-mode="light"] [class*="bg-blue-600/10"] {
+  background-color: #dbeafe !important;
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+}
+
+/* Card Surfaces & Glassmorphism Replacement in Light Mode */
+html[data-mode="light"] [class*="bg-zinc-900/60"],
+html[data-mode="light"] [class*="bg-zinc-900/40"],
+html[data-mode="light"] [class*="bg-zinc-900/80"],
+html[data-mode="light"] [class*="bg-zinc-950/60"],
+html[data-mode="light"] [class*="bg-zinc-950/80"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.02) !important;
+}
+
+/* Borders in Light Mode */
+html[data-mode="light"] [class*="border-white/5"],
+html[data-mode="light"] [class*="border-white/10"],
+html[data-mode="light"] [class*="border-white/20"],
+html[data-mode="light"] [class*="border-white/30"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Subtle transparent white fills */
+html[data-mode="light"] [class*="bg-white/5"],
+html[data-mode="light"] [class*="bg-white/[0.02]"] {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+}
+
+/* Sidebar & Sticky Footer & Header In Light Mode */
+html[data-mode="light"] aside {
+  background-color: #ffffff !important;
+  border-right-color: #e2e8f0 !important;
+}
+
+/* Sidebar Active Link & Jewel Indicator in Light Mode */
+html[data-mode="light"] aside a.nav-active-item,
+html[data-mode="light"] aside a[data-active="true"] {
+  background: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px -1px rgba(2, 132, 199, 0.12) !important;
+}
+
+html[data-mode="light"] aside a.nav-active-item .nav-active-bar,
+html[data-mode="light"] aside a[data-active="true"] .nav-active-bar {
+  background-color: #0284c7 !important;
+}
+
+html[data-mode="light"] aside a.nav-active-item svg,
+html[data-mode="light"] aside a[data-active="true"] svg {
+  color: #0369a1 !important;
+}
+
+html[data-mode="light"] aside a:not([data-active="true"]):hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html[data-mode="light"] aside a:not([data-active="true"]):hover svg {
+  color: #334155 !important;
+}
+
+html[data-mode="light"] header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+
+html[data-mode="light"] [class*="bg-zinc-950/95"] {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border-top-color: #e2e8f0 !important;
+}
+
+/* High-Contrast Sign Out Button in Light Mode */
+html[data-mode="light"] aside button[title="Sign Out"] {
+  background-color: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+  box-shadow: 0 1px 2px 0 rgba(185, 28, 28, 0.05) !important;
+}
+
+html[data-mode="light"] aside button[title="Sign Out"]:hover {
+  background-color: #fecaca !important;
+  border-color: #f87171 !important;
+  color: #7f1d1d !important;
+}
+
+html[data-mode="light"] aside button[title="Sign Out"] svg {
+  color: #991b1b !important;
+}
+
+/* High-Contrast Disabled Buttons in Light Mode */
+html[data-mode="light"] button:disabled,
+html[data-mode="light"] button[disabled] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+  opacity: 0.85 !important;
+  cursor: not-allowed !important;
+}
+
+html[data-mode="light"] button:disabled svg,
+html[data-mode="light"] button[disabled] svg,
+html[data-mode="light"] button:disabled span,
+html[data-mode="light"] button[disabled] span {
+  color: #475569 !important;
+}
+
+/* Sleek Draggable Sidebar Scrollbar */
+.sidebar-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.sidebar-nav-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  cursor: grab;
+}
+
+.sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+html[data-mode="light"] .sidebar-nav-scroll {
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+html[data-mode="light"] .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+}
+
+html[data-mode="light"] .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+
+/* Form Inputs & Selects in Light Mode */
+html[data-mode="light"] input,
+html[data-mode="light"] select,
+html[data-mode="light"] textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-mode="light"] input:focus,
+html[data-mode="light"] select:focus,
+html[data-mode="light"] textarea:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+}
+
+html[data-mode="light"] input::placeholder,
+html[data-mode="light"] textarea::placeholder {
+  color: #64748b !important;
+}
+
+html[data-mode="light"] select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html[data-mode="light"] .shadow-2xl {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* ==========================================================================
+   Versiklo Daylight Themes (Active under Light Mode)
+   ========================================================================== */
+
+/* 1. Cobalt Horizon (Deep Sapphire Blue & Royal Indigo) */
+html[data-mode="light"][data-theme="cobalt"],
+html[data-mode="light"] [data-theme="cobalt"] {
+  --color-cyan-200: #bfdbfe !important;
+  --color-cyan-300: #93c5fd !important;
+  --color-cyan-400: #2563eb !important;
+  --color-cyan-500: #1d4ed8 !important;
+  --color-cyan-600: #1e40af !important;
+  --color-cyan-950: #eff6ff !important;
+
+  --color-blue-400: #4f46e5 !important;
+  --color-blue-500: #4338ca !important;
+  --color-blue-600: #3730a3 !important;
+  --color-blue-950: #e0e7ff !important;
+
+  --color-indigo-400: #0891b2 !important;
+  --color-indigo-500: #0e7490 !important;
+  --color-indigo-600: #155e75 !important;
+}
+
+/* 2. Emerald Alpine (Deep Forest Pine & Mountain Teal) */
+html[data-mode="light"][data-theme="emerald-alpine"],
+html[data-mode="light"] [data-theme="emerald-alpine"] {
+  --color-cyan-200: #a7f3d0 !important;
+  --color-cyan-300: #6ee7b7 !important;
+  --color-cyan-400: #059669 !important;
+  --color-cyan-500: #047857 !important;
+  --color-cyan-600: #065f46 !important;
+  --color-cyan-950: #ecfdf5 !important;
+
+  --color-blue-400: #0d9488 !important;
+  --color-blue-500: #0f766e !important;
+  --color-blue-600: #115e59 !important;
+  --color-blue-950: #f0fdfa !important;
+
+  --color-indigo-400: #0e7490 !important;
+  --color-indigo-500: #155e75 !important;
+  --color-indigo-600: #164e63 !important;
+}
+
+/* 3. Amethyst Royal (Deep Velvet Violet & Rich Mulberry) */
+html[data-mode="light"][data-theme="amethyst"],
+html[data-mode="light"] [data-theme="amethyst"] {
+  --color-cyan-200: #ddd6fe !important;
+  --color-cyan-300: #c4b5fd !important;
+  --color-cyan-400: #7c3aed !important;
+  --color-cyan-500: #6d28d9 !important;
+  --color-cyan-600: #5b21b6 !important;
+  --color-cyan-950: #f5f3ff !important;
+
+  --color-blue-400: #9333ea !important;
+  --color-blue-500: #7e22ce !important;
+  --color-blue-600: #6b21a8 !important;
+  --color-blue-950: #faf5ff !important;
+
+  --color-indigo-400: #4f46e5 !important;
+  --color-indigo-500: #4338ca !important;
+  --color-indigo-600: #3730a3 !important;
+}
+
+/* 4. Crimson Sunset (Vibrant Ruby Coral & Deep Flame) */
+html[data-mode="light"][data-theme="crimson"],
+html[data-mode="light"] [data-theme="crimson"] {
+  --color-cyan-200: #fecdd3 !important;
+  --color-cyan-300: #fda4af !important;
+  --color-cyan-400: #e11d48 !important;
+  --color-cyan-500: #be123c !important;
+  --color-cyan-600: #9f1239 !important;
+  --color-cyan-950: #fff1f2 !important;
+
+  --color-blue-400: #ea580c !important;
+  --color-blue-500: #c2410c !important;
+  --color-blue-600: #9a3412 !important;
+  --color-blue-950: #fff7ed !important;
+
+  --color-indigo-400: #d97706 !important;
+  --color-indigo-500: #b45309 !important;
+  --color-indigo-600: #92400e !important;
+}
+
+
