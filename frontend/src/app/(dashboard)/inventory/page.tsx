@@ -429,7 +429,7 @@ function InventoryContent() {
       </div>
 
       {/* Category Sub-Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-none shrink-0">
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-none shrink-0 touch-pan-x overscroll-contain">
         <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-bold shrink-0 mr-1 flex items-center gap-1">
           <Filter className="w-3 h-3" /> Category:
         </span>
@@ -471,7 +471,7 @@ function InventoryContent() {
 
       {/* Streamlined Catalog Table */}
       <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-auto flex-1 min-h-0">
+        <div className="overflow-auto flex-1 min-h-0 touch-pan-x overscroll-contain">
           <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>

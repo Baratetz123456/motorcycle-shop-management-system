@@ -374,7 +374,7 @@ export default function CustomerRepairHistoryPage() {
 
       {/* History Table */}
       <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-auto flex-1 min-h-0">
+        <div className="overflow-auto flex-1 min-h-0 touch-pan-x overscroll-contain">
           <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>

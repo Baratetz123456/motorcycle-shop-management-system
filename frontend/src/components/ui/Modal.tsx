@@ -182,7 +182,7 @@ export function ModalBody({
   return (
     <div
       className={clsx(
-        "p-6 space-y-4 max-h-[calc(85vh-140px)] overflow-y-auto font-sans",
+        "p-6 space-y-4 max-h-[calc(85vh-140px)] overflow-y-auto font-sans touch-pan-y overscroll-contain scrollbar-compact",
         className
       )}
     >

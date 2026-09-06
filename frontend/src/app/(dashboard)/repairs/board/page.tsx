@@ -91,7 +91,9 @@ export default function RepairBoardPage() {
 
   // Mobile Touch Drag-and-Drop & Double-Tap
   const [touchDraggedJob, setTouchDraggedJob] = useState<RepairJob | null>(null);
-  const [touchPosition, setTouchPosition] = useState<{ x: number; y: number } | null>(null);
+  const floatingGhostRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const dragOverColumnRef = useRef<RepairStatus | null>(null);
   const touchHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const touchDraggedJobRef = useRef<RepairJob | null>(null);
@@ -344,7 +346,7 @@ export default function RepairBoardPage() {
     }
   };
 
-  // Shared Job Stage Transition Executor (used by both desktop and mobile drag)
+  // Shared Job Stage Transition Executor (Optimistic & Zero-Lag)
   const executeMoveJob = async (jobId: string, newStatus: RepairStatus) => {
     const targetJob = jobs.find((j) => j.id === jobId);
     if (!targetJob) return;
@@ -353,7 +355,11 @@ export default function RepairBoardPage() {
     if (targetJob.status === newStatus) return;
 
     const isPaid = Boolean(
-      targetJob.is_paid || localStorage.getItem(`motoshop_job_paid_${targetJob.id}`) === "true"
+      targetJob.is_paid ||
+      (typeof window !== "undefined" && (
+        localStorage.getItem(`motoshop_job_paid_${targetJob.id}`) === "true" ||
+        localStorage.getItem(`motoshop_job_paid_${targetJob.jo_number}`) === "true"
+      ))
     );
 
     // Business Rule: Can ONLY set to RELEASED when already paid!
@@ -366,33 +372,18 @@ export default function RepairBoardPage() {
       return;
     }
 
-    try {
-      await apiClient.patch(`/repairs/jobs/${jobId}/status`, { status: newStatus });
-    } catch (err: any) {
-      const detailMsg = err?.response?.data?.detail || "Failed to update job status on server";
-      setAlertNotification({
-        type: "error",
-        title: "Status Update Error",
-        message: detailMsg
-      });
-      return;
-    }
-
+    const previousJobs = [...jobs];
     const updated = jobs.map((j) =>
       j.id === jobId
         ? {
             ...j,
             status: newStatus,
-            is_paid: Boolean(
-              j.is_paid ||
-              (typeof window !== "undefined" && (
-                localStorage.getItem(`motoshop_job_paid_${j.id}`) === "true" ||
-                localStorage.getItem(`motoshop_job_paid_${j.jo_number}`) === "true"
-              ))
-            )
+            is_paid: isPaid,
           }
         : j
     );
+
+    // 1. Optimistic instant local state update
     syncJobsState(updated);
 
     recordUserAuditLog("REPAIR_STATUS_UPDATED", `/repairs/jobs/${jobId}`, {
@@ -412,6 +403,22 @@ export default function RepairBoardPage() {
         title: "Job Order Released",
         message: `Job Order ${targetJob.jo_number} for ${targetJob.customer} has been released and recorded in Customer Repair History.`
       });
+    }
+
+    // 2. Asynchronous backend synchronization in the background
+    if (!String(jobId).startsWith("jo-")) {
+      try {
+        await apiClient.patch(`/repairs/jobs/${jobId}/status`, { status: newStatus });
+      } catch (err: any) {
+        // Rollback state if server request fails
+        syncJobsState(previousJobs);
+        const detailMsg = err?.response?.data?.detail || "Failed to update job status on server";
+        setAlertNotification({
+          type: "error",
+          title: "Status Update Error",
+          message: detailMsg
+        });
+      }
     }
   };
 
@@ -451,11 +458,16 @@ export default function RepairBoardPage() {
     e.dataTransfer.setData("text/plain", job.id);
     e.dataTransfer.effectAllowed = "move";
     draggedJobIdRef.current = job.id;
-    setDraggedJobId(job.id);
+
+    // Use requestAnimationFrame so browser captures a clean native drag preview before applying opacity-30
+    requestAnimationFrame(() => {
+      setDraggedJobId(job.id);
+    });
   };
 
   const handleDragEnd = () => {
     draggedJobIdRef.current = null;
+    dragOverColumnRef.current = null;
     setDraggedJobId(null);
     setDragOverColumn(null);
     setIsOverTrash(false);
@@ -464,7 +476,8 @@ export default function RepairBoardPage() {
   const handleDragOver = (e: React.DragEvent, colStatus: RepairStatus) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    if (dragOverColumn !== colStatus) {
+    if (dragOverColumnRef.current !== colStatus) {
+      dragOverColumnRef.current = colStatus;
       setDragOverColumn(colStatus);
     }
   };
@@ -475,6 +488,7 @@ export default function RepairBoardPage() {
 
   const handleDrop = async (e: React.DragEvent, newStatus: RepairStatus) => {
     e.preventDefault();
+    dragOverColumnRef.current = null;
     setDragOverColumn(null);
     const jobId = e.dataTransfer.getData("text/plain") || draggedJobIdRef.current || draggedJobId;
     draggedJobIdRef.current = null;
@@ -484,15 +498,45 @@ export default function RepairBoardPage() {
   };
 
   // --- Mobile Touch Event Handlers ---
+  const cleanupTouchDrag = () => {
+    if (touchHoldTimerRef.current) {
+      clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = null;
+    }
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+      document.body.style.userSelect = "";
+    }
+    touchDraggedJobRef.current = null;
+    setTouchDraggedJob(null);
+    setDraggedJobId(null);
+    draggedJobIdRef.current = null;
+    dragOverColumnRef.current = null;
+    setDragOverColumn(null);
+    setIsOverTrash(false);
+  };
+
   const startTouchDrag = (job: RepairJob, clientX: number, clientY: number) => {
     touchDraggedJobRef.current = job;
     setTouchDraggedJob(job);
-    setTouchPosition({ x: clientX, y: clientY });
     setDraggedJobId(job.id);
     draggedJobIdRef.current = job.id;
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       try { navigator.vibrate(40); } catch (e) {}
     }
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "hidden";
+      document.body.style.userSelect = "none";
+    }
+    requestAnimationFrame(() => {
+      if (floatingGhostRef.current) {
+        floatingGhostRef.current.style.transform = `translate3d(${clientX}px, ${clientY}px, 0)`;
+      }
+    });
   };
 
   const handleCardTouchStart = (e: React.TouchEvent, job: RepairJob, isGripHandle = false) => {
@@ -521,7 +565,7 @@ export default function RepairBoardPage() {
       if (touchHoldTimerRef.current) clearTimeout(touchHoldTimerRef.current);
       touchHoldTimerRef.current = setTimeout(() => {
         startTouchDrag(job, touch.clientX, touch.clientY);
-      }, 200);
+      }, 250);
     }
   };
 
@@ -529,11 +573,11 @@ export default function RepairBoardPage() {
     const touch = e.touches[0];
     if (!touch) return;
 
-    // If hold timer pending, cancel if moved more than 10px (normal scroll)
+    // If hold timer pending, cancel if moved more than 8px (normal scroll)
     if (touchHoldTimerRef.current && touchStartPosRef.current) {
       const dx = Math.abs(touch.clientX - touchStartPosRef.current.x);
       const dy = Math.abs(touch.clientY - touchStartPosRef.current.y);
-      if (dx > 10 || dy > 10) {
+      if (dx > 8 || dy > 8) {
         clearTimeout(touchHoldTimerRef.current);
         touchHoldTimerRef.current = null;
       }
@@ -542,39 +586,53 @@ export default function RepairBoardPage() {
     // If actively touch-dragging
     if (touchDraggedJobRef.current) {
       if (e.cancelable) e.preventDefault();
-      setTouchPosition({ x: touch.clientX, y: touch.clientY });
+      const x = touch.clientX;
+      const y = touch.clientY;
 
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (el) {
-        const trashEl = el.closest('[data-trash-zone="true"]');
-        if (trashEl) {
-          setIsOverTrash(true);
-          setDragOverColumn(null);
-          return;
-        } else {
-          setIsOverTrash(false);
-        }
-
-        const colEl = el.closest("[data-column-status]");
-        if (colEl) {
-          const status = colEl.getAttribute("data-column-status") as RepairStatus;
-          if (status && dragOverColumn !== status) {
-            setDragOverColumn(status);
-          }
-          return;
-        }
+      // Direct GPU-accelerated translation without React re-render
+      if (floatingGhostRef.current) {
+        floatingGhostRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       }
-      setDragOverColumn(null);
-      setIsOverTrash(false);
+
+      // Throttle collision detection to once per animation frame
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(() => {
+          rafIdRef.current = null;
+          const el = document.elementFromPoint(x, y);
+          if (el) {
+            const trashEl = el.closest('[data-trash-zone="true"]');
+            if (trashEl) {
+              setIsOverTrash(true);
+              if (dragOverColumnRef.current !== null) {
+                dragOverColumnRef.current = null;
+                setDragOverColumn(null);
+              }
+              return;
+            } else {
+              setIsOverTrash(false);
+            }
+
+            const colEl = el.closest("[data-column-status]");
+            if (colEl) {
+              const status = colEl.getAttribute("data-column-status") as RepairStatus;
+              if (status && dragOverColumnRef.current !== status) {
+                dragOverColumnRef.current = status;
+                setDragOverColumn(status);
+              }
+              return;
+            }
+          }
+          if (dragOverColumnRef.current !== null) {
+            dragOverColumnRef.current = null;
+            setDragOverColumn(null);
+          }
+          setIsOverTrash(false);
+        });
+      }
     }
   };
 
   const handleCardTouchEnd = (e: React.TouchEvent) => {
-    if (touchHoldTimerRef.current) {
-      clearTimeout(touchHoldTimerRef.current);
-      touchHoldTimerRef.current = null;
-    }
-
     const dragged = touchDraggedJobRef.current;
     if (dragged) {
       const touch = e.changedTouches[0];
@@ -595,29 +653,12 @@ export default function RepairBoardPage() {
           }
         }
       }
-
-      touchDraggedJobRef.current = null;
-      setTouchDraggedJob(null);
-      setTouchPosition(null);
-      setDraggedJobId(null);
-      draggedJobIdRef.current = null;
-      setDragOverColumn(null);
-      setIsOverTrash(false);
     }
+    cleanupTouchDrag();
   };
 
   const handleCardTouchCancel = () => {
-    if (touchHoldTimerRef.current) {
-      clearTimeout(touchHoldTimerRef.current);
-      touchHoldTimerRef.current = null;
-    }
-    touchDraggedJobRef.current = null;
-    setTouchDraggedJob(null);
-    setTouchPosition(null);
-    setDraggedJobId(null);
-    draggedJobIdRef.current = null;
-    setDragOverColumn(null);
-    setIsOverTrash(false);
+    cleanupTouchDrag();
   };
 
   // Open Edit Diagnosis & Reassignment modal
@@ -957,7 +998,7 @@ export default function RepairBoardPage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
               className={clsx(
-                "border rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl transition-all duration-200 min-h-0",
+                "border rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl transition-colors duration-150 min-h-0",
                 isOver && isUnpaidAndTargetReleased
                   ? "bg-red-950/20 border-red-500/60 ring-2 ring-red-500/40"
                   : isOver
@@ -993,7 +1034,7 @@ export default function RepairBoardPage() {
               </div>
 
               {/* Job Order Cards Column Body */}
-              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 touch-pan-y overscroll-contain scrollbar-compact">
                 {colJobs.length === 0 ? (
                   <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-white/5 rounded-2xl p-4">
                     No job cards in this stage.
@@ -1024,11 +1065,12 @@ export default function RepairBoardPage() {
                         style={{ touchAction: "manipulation" }}
                         title="Double-click or double-tap to open Job Card profile • Drag to move or drag to bottom to delete"
                         className={clsx(
-                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-all duration-300 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing select-none",
+                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-colors duration-150 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing select-none",
                           isPaid
                             ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]"
                             : "border-white/10",
-                          isBeingDragged && "opacity-40 border-cyan-400 border-dashed"
+                          isBeingDragged && "opacity-30 border-cyan-400 border-dashed",
+                          draggedJobId && !isBeingDragged && "pointer-events-none"
                         )}
                       >
                         {/* JO Badge & Payment Status Tag */}
@@ -1175,14 +1217,14 @@ export default function RepairBoardPage() {
       )}
 
       {/* Mobile Floating Ghost Card Preview */}
-      {touchDraggedJob && touchPosition && (
+      {touchDraggedJob && (
         <div
+          ref={floatingGhostRef}
           style={{
-            left: `${touchPosition.x}px`,
-            top: `${touchPosition.y}px`,
-            transform: "translate(-50%, -50%)",
+            transform: "translate3d(-9999px, -9999px, 0)",
+            willChange: "transform",
           }}
-          className="fixed z-[100] pointer-events-none w-72 p-4 rounded-2xl bg-zinc-900/95 border-2 border-cyan-500 shadow-[0_20px_50px_rgba(6,182,212,0.4)] backdrop-blur-md opacity-90 transition-none"
+          className="fixed top-0 left-0 -ml-36 -mt-16 z-[100] pointer-events-none w-72 p-4 rounded-2xl bg-zinc-900/95 border-2 border-cyan-500 shadow-[0_20px_50px_rgba(6,182,212,0.4)] backdrop-blur-md opacity-95 transition-none select-none"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono font-bold text-xs text-cyan-400 bg-cyan-950 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">

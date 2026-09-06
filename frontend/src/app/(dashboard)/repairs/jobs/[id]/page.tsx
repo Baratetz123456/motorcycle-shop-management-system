@@ -115,13 +115,17 @@ export default function JobCardProfilePage() {
 
   const fetchMechanics = async () => {
     try {
-      const res = await apiClient.get<any[]>("/users");
-      if (Array.isArray(res.data)) {
-        const mechs = res.data
-          .filter((u) => u.role === "mechanic")
-          .map((u) => ({
+      const res = await apiClient.get<any>("/auth/users?page_size=50");
+      const userList = Array.isArray(res.data)
+        ? res.data
+        : (Array.isArray(res.data?.items) ? res.data.items : []);
+
+      if (userList.length > 0) {
+        const mechs = userList
+          .filter((u: any) => u.role === "mechanic" || u.role === "admin" || u.role === "manager")
+          .map((u: any) => ({
             id: u.id,
-            name: `${u.first_name} ${u.last_name}`.trim(),
+            name: `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email,
           }));
         if (mechs.length > 0) {
           setMechanicsList(mechs);
@@ -129,7 +133,7 @@ export default function JobCardProfilePage() {
         }
       }
     } catch (e) {
-      console.warn("Could not fetch mechanics list", e);
+      // Graceful fallback to default mechanics list on network or offline fallback
     }
 
     setMechanicsList([

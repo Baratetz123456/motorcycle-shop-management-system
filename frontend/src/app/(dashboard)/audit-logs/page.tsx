@@ -685,7 +685,7 @@ export default function SystemLogsPage() {
 
       {/* Main Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
       <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-auto flex-1 min-h-0">
+        <div className="overflow-auto flex-1 min-h-0 touch-pan-x overscroll-contain">
           <table className="w-full text-left text-sm text-zinc-300">
             <thead className="bg-zinc-950/90 border-b border-white/10 text-zinc-400 font-semibold text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
               <tr>

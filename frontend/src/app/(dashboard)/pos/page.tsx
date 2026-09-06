@@ -716,7 +716,7 @@ export default function POSPage() {
             </div>
 
             {/* Sub-Filter Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1 touch-pan-x overscroll-contain">
               {(activeFilter === "SERVICE" ? SERVICES_SUB_FILTERS : PARTS_SUB_FILTERS).map((pill) => {
                 const isSelected = activeSubFilter === pill.id;
                 return (
@@ -1045,7 +1045,7 @@ export default function POSPage() {
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto touch-pan-x overscroll-contain">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-white/5">
                     <tr>
