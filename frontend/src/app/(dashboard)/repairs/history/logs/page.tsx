@@ -211,7 +211,7 @@ function CustomerRepairHistoryLogsContent() {
               className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
             >
               <Play className="w-4 h-4" />
-              <span>Resume Repair</span>
+              <span>Start Job</span>
             </button>
           )}
         </div>

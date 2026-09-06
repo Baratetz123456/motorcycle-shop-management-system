@@ -14,6 +14,7 @@ class TokenResponse(BaseModel):
     role: str
     first_name: Optional[str] = ""
     last_name: Optional[str] = ""
+    avatar: Optional[str] = "avatar-1"
 
 class UserRegisterRequest(BaseModel):
     first_name: str = Field(..., min_length=1)
@@ -21,6 +22,7 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
     password: str = Field(default="Welcome123!")
+    avatar: Optional[str] = "avatar-1"
     commission_rate: Optional[float] = None
     base_wage: Optional[float] = None
 
@@ -29,6 +31,7 @@ class UserUpdateRequest(BaseModel):
     last_name: str = Field(..., min_length=1)
     email: EmailStr
     role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
+    avatar: Optional[str] = None
     commission_rate: Optional[float] = None
     base_wage: Optional[float] = None
 
@@ -43,6 +46,7 @@ class UserResponse(BaseModel):
     last_name: str
     email: EmailStr
     role: str
+    avatar: Optional[str] = "avatar-1"
     commission_rate: Optional[float] = None
     base_wage: Optional[float] = None
     created_at: Optional[datetime] = None

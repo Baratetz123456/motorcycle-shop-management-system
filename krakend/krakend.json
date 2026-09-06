@@ -89,12 +89,12 @@
     {
       "endpoint": "/api/v1/auth/change-password",
       "method": "POST",
-      "output_encoding": "json",
+      "output_encoding": "no-op",
       "input_headers": ["Authorization", "Content-Type"],
       "backend": [
         {
           "url_pattern": "/change-password",
-          "encoding": "json",
+          "encoding": "no-op",
           "sd": "static",
           "method": "POST",
           "host": ["http://auth_service:8000"]
@@ -104,12 +104,12 @@
     {
       "endpoint": "/api/v1/auth/users/register",
       "method": "POST",
-      "output_encoding": "json",
+      "output_encoding": "no-op",
       "input_headers": ["Authorization", "Content-Type"],
       "backend": [
         {
           "url_pattern": "/users/register",
-          "encoding": "json",
+          "encoding": "no-op",
           "sd": "static",
           "method": "POST",
           "host": ["http://auth_service:8000"]
@@ -150,12 +150,12 @@
     {
       "endpoint": "/api/v1/auth/users/{id}",
       "method": "PUT",
-      "output_encoding": "json",
+      "output_encoding": "no-op",
       "input_headers": ["Authorization", "Content-Type"],
       "backend": [
         {
           "url_pattern": "/users/{id}",
-          "encoding": "json",
+          "encoding": "no-op",
           "sd": "static",
           "method": "PUT",
           "host": ["http://auth_service:8000"]
@@ -165,12 +165,12 @@
     {
       "endpoint": "/api/v1/auth/users/{id}",
       "method": "DELETE",
-      "output_encoding": "json",
+      "output_encoding": "no-op",
       "input_headers": ["Authorization"],
       "backend": [
         {
           "url_pattern": "/users/{id}",
-          "encoding": "json",
+          "encoding": "no-op",
           "sd": "static",
           "method": "DELETE",
           "host": ["http://auth_service:8000"]

@@ -33,6 +33,7 @@ function LoginForm() {
           tokenStore.setToken(data.access_token);
           localStorage.setItem("user_role", data.role);
           if (data.user_id) localStorage.setItem("user_id", data.user_id);
+          if (data.avatar) localStorage.setItem("user_avatar", data.avatar);
           const target = getEffectiveLandingPage(data.role as UserRole);
           if (target) {
             router.push(target);
@@ -58,7 +59,7 @@ function LoginForm() {
         password,
       });
 
-      const { access_token, role, user_id, first_name, last_name } = response.data;
+      const { access_token, role, user_id, first_name, last_name, avatar } = response.data;
       const userRole = role as UserRole;
 
       // Determine effective fallback landing page
@@ -72,6 +73,7 @@ function LoginForm() {
         localStorage.removeItem("user_id");
         localStorage.removeItem("user_email");
         localStorage.removeItem("user_name");
+        localStorage.removeItem("user_avatar");
         try {
           await apiClient.post("/auth/logout").catch(() => {});
         } catch (e) {}
@@ -90,6 +92,9 @@ function LoginForm() {
       localStorage.setItem("user_role", userRole);
       localStorage.setItem("user_id", user_id);
       localStorage.setItem("user_email", email);
+      if (avatar) {
+        localStorage.setItem("user_avatar", avatar);
+      }
       const fullName = [first_name, last_name].filter(Boolean).join(" ");
       localStorage.setItem("user_name", fullName || email.split("@")[0]);
 

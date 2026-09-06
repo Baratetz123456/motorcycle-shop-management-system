@@ -54,6 +54,49 @@ export default function CustomerRepairHistoryPage() {
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<"ALL" | "ACTIVE" | "PAST">("ALL");
 
+  // Date Range Filter State
+  type DatePreset = "ALL" | "TODAY" | "WEEK" | "MONTH" | "CUSTOM";
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [datePreset, setDatePreset] = useState<DatePreset>("ALL");
+
+  const handleSelectPreset = (preset: DatePreset) => {
+    setDatePreset(preset);
+    const today = new Date();
+    const formatYMD = (d: Date) => d.toISOString().slice(0, 10);
+
+    if (preset === "ALL") {
+      setStartDate("");
+      setEndDate("");
+    } else if (preset === "TODAY") {
+      const todayStr = formatYMD(today);
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === "WEEK") {
+      const pastWeek = new Date(today);
+      pastWeek.setDate(pastWeek.getDate() - 7);
+      setStartDate(formatYMD(pastWeek));
+      setEndDate(formatYMD(today));
+    } else if (preset === "MONTH") {
+      const pastMonth = new Date(today);
+      pastMonth.setDate(pastMonth.getDate() - 30);
+      setStartDate(formatYMD(pastMonth));
+      setEndDate(formatYMD(today));
+    }
+  };
+
+  const handleCustomDateChange = (start: string, end: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setDatePreset("CUSTOM");
+  };
+
+  const handleClearDateFilter = () => {
+    setDatePreset("ALL");
+    setStartDate("");
+    setEndDate("");
+  };
+
   useEffect(() => {
     fetchCustomerHistories();
   }, []);
@@ -168,9 +211,28 @@ export default function CustomerRepairHistoryPage() {
       h.contact_number.toLowerCase().includes(search.toLowerCase()) ||
       h.motorcycle_model.toLowerCase().includes(search.toLowerCase());
     
-    if (filterTab === "ACTIVE") return matchesSearch && h.active_status === "ACTIVE_REPAIR";
-    if (filterTab === "PAST") return matchesSearch && h.active_status === "INACTIVE";
-    return matchesSearch;
+    if (!matchesSearch) return false;
+
+    if (filterTab === "ACTIVE" && h.active_status !== "ACTIVE_REPAIR") return false;
+    if (filterTab === "PAST" && h.active_status !== "INACTIVE") return false;
+
+    // Date range filter against h.last_service_date
+    if (startDate || endDate) {
+      if (!h.last_service_date) return false;
+      const serviceTime = new Date(h.last_service_date).getTime();
+      if (isNaN(serviceTime)) return false;
+
+      if (startDate) {
+        const start = new Date(`${startDate}T00:00:00`).getTime();
+        if (serviceTime < start) return false;
+      }
+      if (endDate) {
+        const end = new Date(`${endDate}T23:59:59.999`).getTime();
+        if (serviceTime > end) return false;
+      }
+    }
+
+    return true;
   });
 
   return (
@@ -202,48 +264,112 @@ export default function CustomerRepairHistoryPage() {
         </div>
       </div>
 
-      {/* Tabs Bar */}
-      <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit mb-6">
-        <button
-          onClick={() => setFilterTab("ALL")}
-          className={clsx(
-            "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-            filterTab === "ALL"
-              ? "bg-zinc-800 text-white shadow-md border border-white/10"
-              : "text-zinc-400 hover:text-white"
-          )}
-        >
-          <span>All Records</span>
-          <span className="bg-zinc-950 px-2 py-0.5 rounded-full text-[10px] text-zinc-400">
-            {histories.length}
-          </span>
-        </button>
+      {/* Filters Bar: Status Tabs & Date Range Filter */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+        {/* Status Tabs */}
+        <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
+          <button
+            onClick={() => setFilterTab("ALL")}
+            className={clsx(
+              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
+              filterTab === "ALL"
+                ? "bg-zinc-800 text-white shadow-md border border-white/10"
+                : "text-zinc-400 hover:text-white"
+            )}
+          >
+            <span>All Records</span>
+            <span className="bg-zinc-950 px-2 py-0.5 rounded-full text-[10px] text-zinc-400">
+              {histories.length}
+            </span>
+          </button>
 
-        <button
-          onClick={() => setFilterTab("ACTIVE")}
-          className={clsx(
-            "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-            filterTab === "ACTIVE"
-              ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30"
-              : "text-zinc-400 hover:text-white"
-          )}
-        >
-          <Wrench className="w-3.5 h-3.5" />
-          <span>On Bench</span>
-        </button>
+          <button
+            onClick={() => setFilterTab("ACTIVE")}
+            className={clsx(
+              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
+              filterTab === "ACTIVE"
+                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30"
+                : "text-zinc-400 hover:text-white"
+            )}
+          >
+            <Wrench className="w-3.5 h-3.5" />
+            <span>On Bench</span>
+          </button>
 
-        <button
-          onClick={() => setFilterTab("PAST")}
-          className={clsx(
-            "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-            filterTab === "PAST"
-              ? "bg-purple-500/20 text-purple-300 shadow-md border border-purple-500/30"
-              : "text-zinc-400 hover:text-white"
-          )}
-        >
-          <CheckCircle className="w-3.5 h-3.5" />
-          <span>Completed</span>
-        </button>
+          <button
+            onClick={() => setFilterTab("PAST")}
+            className={clsx(
+              "px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
+              filterTab === "PAST"
+                ? "bg-purple-500/20 text-purple-300 shadow-md border border-purple-500/30"
+                : "text-zinc-400 hover:text-white"
+            )}
+          >
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span>Completed</span>
+          </button>
+        </div>
+
+        {/* Date Range Filter Controls */}
+        <div className="flex flex-wrap items-center gap-2 bg-zinc-900/60 p-2 rounded-2xl border border-white/10">
+          <div className="flex items-center gap-1">
+            <Calendar className="w-4 h-4 text-cyan-400 ml-1 mr-1" />
+            {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
+              const labels = {
+                ALL: "All Time",
+                TODAY: "Today",
+                WEEK: "This Week",
+                MONTH: "This Month",
+              };
+              const isSelected = datePreset === preset;
+              return (
+                <button
+                  key={preset}
+                  onClick={() => handleSelectPreset(preset)}
+                  className={clsx(
+                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                    isSelected
+                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 border border-transparent"
+                  )}
+                >
+                  {labels[preset]}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          {/* Custom Date Inputs */}
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
+              className="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+              title="Filter from service date"
+            />
+            <span className="text-zinc-500 text-[11px]">to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
+              className="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+              title="Filter to service date"
+            />
+
+            {(startDate || endDate || datePreset !== "ALL") && (
+              <button
+                onClick={handleClearDateFilter}
+                className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-rose-400 transition-colors ml-0.5"
+                title="Clear date filter"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* History Table */}
@@ -253,19 +379,31 @@ export default function CustomerRepairHistoryPage() {
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>
                 <th className="px-6 py-4 font-semibold">Customer</th>
-                <th className="px-6 py-4 font-semibold">Contact</th>
                 <th className="px-6 py-4 font-semibold">Bike Model</th>
-                <th className="px-6 py-4 font-semibold text-center">Past Jobs</th>
                 <th className="px-6 py-4 font-semibold">Last Service</th>
                 <th className="px-6 py-4 font-semibold text-center">Status</th>
-                <th className="px-6 py-4 font-semibold text-center">Actions</th>
+                <th className="px-6 py-4 font-semibold text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredHistories.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-zinc-500">
-                    No customer records match your search.
+                  <td colSpan={5} className="text-center py-16 text-zinc-500">
+                    <Calendar className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
+                    <p className="font-semibold text-zinc-400">No customer records match your filter criteria.</p>
+                    {(startDate || endDate || search || filterTab !== "ALL") && (
+                      <button
+                        onClick={() => {
+                          setSearch("");
+                          setFilterTab("ALL");
+                          handleClearDateFilter();
+                        }}
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Reset All Filters</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -273,28 +411,24 @@ export default function CustomerRepairHistoryPage() {
                   const isActive = record.active_status === "ACTIVE_REPAIR";
 
                   return (
-                    <tr key={record.customer_id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr 
+                      key={record.customer_id} 
+                      onClick={() => router.push(`/repairs/history/logs?id=${encodeURIComponent(record.customer_id)}`)}
+                      className="hover:bg-white/[0.04] transition-all cursor-pointer group"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                          <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:border-cyan-500/50 transition-colors">
                             <User className="w-4 h-4" />
                           </div>
-                          <span className="font-bold text-zinc-100">{record.customer_name}</span>
+                          <span className="font-bold text-zinc-100 group-hover:text-cyan-300 transition-colors">
+                            {record.customer_name}
+                          </span>
                         </div>
-                      </td>
-
-                      <td className="px-6 py-4 text-xs text-zinc-400 font-mono">
-                        {record.contact_number}
                       </td>
 
                       <td className="px-6 py-4 font-semibold text-zinc-200">
                         {record.motorcycle_model}
-                      </td>
-
-                      <td className="px-6 py-4 text-center font-mono">
-                        <span className="bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-md text-xs font-bold border border-white/5">
-                          {record.total_repair_sessions} Jobs
-                        </span>
                       </td>
 
                       <td className="px-6 py-4 text-xs text-zinc-400">
@@ -315,37 +449,10 @@ export default function CustomerRepairHistoryPage() {
                         )}
                       </td>
 
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => router.push(`/repairs/history/logs?id=${encodeURIComponent(record.customer_id)}`)}
-                            className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-600 text-zinc-200 hover:text-white transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-sm"
-                            title="Open Customer Repair History"
-                          >
-                            <History className="w-3.5 h-3.5" />
-                            View History
-                          </button>
-
-                          {/* Disabled Button if Customer is Already Active Inline */}
-                          {isActive ? (
-                            <button
-                              disabled
-                              className="px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-white/10 text-zinc-500 text-xs font-bold flex items-center gap-1.5 cursor-not-allowed opacity-60"
-                              title="This customer is currently active on the bench"
-                            >
-                              <Lock className="w-3.5 h-3.5" />
-                              Active on Bench
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleResumeRepair(record)}
-                              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white transition-all text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
-                              title="Start a new job card for this returning customer"
-                            >
-                              <Play className="w-3.5 h-3.5" />
-                              Start Job
-                            </button>
-                          )}
+                      <td className="px-6 py-4 text-right">
+                        <div className="inline-flex items-center text-xs text-zinc-500 group-hover:text-cyan-400 transition-colors font-medium">
+                          <span className="hidden group-hover:inline mr-1">View Profile</span>
+                          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </td>
                     </tr>

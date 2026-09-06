@@ -127,7 +127,8 @@ async def login(
         "user_id": user.id,
         "role": user.role,
         "first_name": user.first_name,
-        "last_name": user.last_name
+        "last_name": user.last_name,
+        "avatar": user.avatar or "avatar-1"
     }
 
 @app.post("/refresh")
@@ -189,7 +190,8 @@ async def refresh_token(
         "user_id": db_user.id,
         "role": db_user.role,
         "first_name": db_user.first_name,
-        "last_name": db_user.last_name
+        "last_name": db_user.last_name,
+        "avatar": db_user.avatar or "avatar-1"
     }
 
 @app.post("/upgrade-session")
@@ -238,7 +240,8 @@ async def upgrade_session(
         "user_id": user_id,
         "role": user_role,
         "first_name": db_user.first_name if db_user else "",
-        "last_name": db_user.last_name if db_user else ""
+        "last_name": db_user.last_name if db_user else "",
+        "avatar": db_user.avatar if db_user else "avatar-1"
     }
 
 @app.post("/logout")
@@ -384,6 +387,7 @@ async def register_user(
         email=user_data.email,
         password_hash=hashed_pw,
         role=user_data.role,
+        avatar=user_data.avatar if user_data.avatar else "avatar-1",
         commission_rate=user_data.commission_rate if user_data.commission_rate is not None else 40.0,
         base_wage=user_data.base_wage if user_data.base_wage is not None else 650.0
     )
@@ -453,6 +457,7 @@ async def get_users(
             "last_name": u.last_name,
             "email": u.email,
             "role": u.role,
+            "avatar": u.avatar or "avatar-1",
             "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
             "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
             "created_at": u.created_at.isoformat() if u.created_at else None
@@ -472,9 +477,16 @@ async def get_users(
 async def get_user_by_id(
     request: Request,
     user_id: UUID,
-    current_user: dict = Depends(require_roles(["admin", "manager", "cashier"])),
+    current_user: dict = Depends(require_roles(["admin", "manager", "cashier", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
+    caller_role = current_user.get("role")
+    is_privileged = caller_role in ["admin", "manager"]
+    is_self = str(user_id) == str(current_user.get("user_id"))
+
+    if not is_privileged and not is_self:
+        raise HTTPException(status_code=403, detail="Forbidden: You can only view your own profile")
+
     stmt = select(models.User).where(models.User.id == user_id)
     result = await session.execute(stmt)
     u = result.scalar_one_or_none()
@@ -487,6 +499,7 @@ async def get_user_by_id(
         "last_name": u.last_name,
         "email": u.email,
         "role": u.role,
+        "avatar": u.avatar or "avatar-1",
         "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
         "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
         "created_at": u.created_at.isoformat() if u.created_at else None
@@ -497,7 +510,7 @@ async def update_user(
     request: Request,
     user_id: UUID,
     update_data: schemas.UserUpdateRequest,
-    current_user: dict = Depends(require_roles(["admin"])),
+    current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_db)
 ):
     stmt = select(models.User).where(models.User.id == user_id)
@@ -507,10 +520,39 @@ async def update_user(
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Rule: Admin cannot change their own role
+    caller_role = current_user.get("role")
+    is_admin = caller_role == "admin"
     is_self = str(user_id) == str(current_user.get("user_id"))
-    if is_self and update_data.role != db_user.role:
+
+    # Permission check: must be admin OR self
+    if not is_admin and not is_self:
+        ip = get_client_ip(request)
+        await log_audit_event(
+            session=session,
+            action="ACCESS_DENIED",
+            resource=f"/api/v1/auth/users/{user_id}",
+            user_id=current_user.get("user_id"),
+            user_role=caller_role,
+            details={
+                "target_user_id": str(user_id),
+                "reason": "Forbidden: You can only update your own profile"
+            },
+            ip_address=ip
+        )
+        raise HTTPException(status_code=403, detail="Forbidden: You can only update your own profile")
+
+    # Rule: Admin cannot change their own role
+    if is_admin and is_self and update_data.role != db_user.role:
         raise HTTPException(status_code=400, detail="Admin cannot change their own role")
+
+    # Rule: Non-admin users cannot change their own role or compensation
+    if not is_admin:
+        if update_data.role != db_user.role:
+            raise HTTPException(status_code=403, detail="Non-admin users cannot change their role")
+        if update_data.commission_rate is not None and update_data.commission_rate != float(db_user.commission_rate or 0):
+            raise HTTPException(status_code=403, detail="Non-admin users cannot modify commission rate")
+        if update_data.base_wage is not None and update_data.base_wage != float(db_user.base_wage or 0):
+            raise HTTPException(status_code=403, detail="Non-admin users cannot modify base wage")
 
     # Check email uniqueness if email changed
     if update_data.email != db_user.email:
@@ -519,17 +561,21 @@ async def update_user(
         if check_res.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Email is already in use by another account.")
 
-    role_changed = update_data.role != db_user.role
+    role_changed = is_admin and (update_data.role != db_user.role)
     old_role = db_user.role
 
     db_user.first_name = update_data.first_name
     db_user.last_name = update_data.last_name
     db_user.email = update_data.email
-    db_user.role = update_data.role
-    if update_data.commission_rate is not None:
-        db_user.commission_rate = update_data.commission_rate
-    if update_data.base_wage is not None:
-        db_user.base_wage = update_data.base_wage
+    if is_admin:
+        db_user.role = update_data.role
+        if update_data.commission_rate is not None:
+            db_user.commission_rate = update_data.commission_rate
+        if update_data.base_wage is not None:
+            db_user.base_wage = update_data.base_wage
+
+    if update_data.avatar:
+        db_user.avatar = update_data.avatar
 
     if role_changed:
         db_user.token_version += 1 # Invalidate active user tokens immediately!
@@ -540,11 +586,12 @@ async def update_user(
         action="UPDATE_USER",
         resource=f"/api/v1/auth/users/{user_id}",
         user_id=current_user.get("user_id"),
-        user_role=current_user.get("role"),
+        user_role=caller_role,
         details={
             "target_user_id": str(user_id),
             "updated_email": update_data.email,
-            "role": update_data.role,
+            "role": db_user.role,
+            "avatar": db_user.avatar,
             "commission_rate": float(db_user.commission_rate) if db_user.commission_rate is not None else None,
             "base_wage": float(db_user.base_wage) if db_user.base_wage is not None else None
         },
@@ -557,7 +604,7 @@ async def update_user(
             action="CHANGE_ROLE",
             resource=f"/api/v1/auth/users/{user_id}",
             user_id=current_user.get("user_id"),
-            user_role=current_user.get("role"),
+            user_role=caller_role,
             details={
                 "target_user_id": str(user_id),
                 "old_role": old_role,

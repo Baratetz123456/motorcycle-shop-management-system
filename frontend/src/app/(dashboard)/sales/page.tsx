@@ -8,7 +8,8 @@ import {
   CheckCircle, 
   Eye, 
   Ban, 
-  History
+  History,
+  ChevronRight
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -149,7 +150,7 @@ export default function SalesManagementPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
-            placeholder="Search Invoice #, Cashier, Mechanic..."
+            placeholder="Search Invoice #, Customer, Bike..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
@@ -166,17 +167,15 @@ export default function SalesManagementPage() {
                 <th className="px-6 py-4 font-semibold">Invoice No</th>
                 <th className="px-6 py-4 font-semibold">Date & Time</th>
                 <th className="px-6 py-4 font-semibold">Customer / Motorcycle</th>
-                <th className="px-6 py-4 font-semibold">Cashier Name</th>
-                <th className="px-6 py-4 font-semibold">Mechanic Name</th>
                 <th className="px-6 py-4 font-semibold text-right">Total Amount</th>
                 <th className="px-6 py-4 font-semibold text-center">Status</th>
-                <th className="px-6 py-4 font-semibold text-center">Actions</th>
+                <th className="px-6 py-4 font-semibold text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-zinc-500">
+                  <td colSpan={6} className="text-center py-12 text-zinc-500">
                     No sales transactions found.
                   </td>
                 </tr>
@@ -185,7 +184,11 @@ export default function SalesManagementPage() {
                   const isCompleted = tx.status === "COMPLETED";
 
                   return (
-                    <tr key={tx.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr 
+                      key={tx.id} 
+                      onClick={() => router.push(`/sales/receipt?id=${encodeURIComponent(tx.id)}`)}
+                      className="hover:bg-white/[0.04] transition-all cursor-pointer group"
+                    >
                       <td className="px-6 py-4 font-mono font-bold text-cyan-400">{tx.invoice_no}</td>
 
                       <td className="px-6 py-4 text-xs text-zinc-400">
@@ -193,18 +196,12 @@ export default function SalesManagementPage() {
                       </td>
 
                       <td className="px-6 py-4">
-                        <div className="font-bold text-zinc-100">{tx.customer_name || "Walk-in Customer"}</div>
+                        <div className="font-bold text-zinc-100 group-hover:text-cyan-300 transition-colors">
+                          {tx.customer_name || "Walk-in Customer"}
+                        </div>
                         {tx.motorcycle_name && (
                           <div className="text-xs text-zinc-400 font-mono mt-0.5">{tx.motorcycle_name}</div>
                         )}
-                      </td>
-
-                      <td className="px-6 py-4 text-xs font-mono text-emerald-400">
-                        {tx.cashier_name || "Cashier User"}
-                      </td>
-
-                      <td className="px-6 py-4 text-xs font-mono text-purple-400">
-                        {tx.mechanic_name || "N/A"}
                       </td>
 
                       <td className="px-6 py-4 text-right font-mono font-bold text-white text-base">
@@ -225,15 +222,11 @@ export default function SalesManagementPage() {
                         )}
                       </td>
 
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => router.push(`/sales/receipt?id=${encodeURIComponent(tx.id)}`)}
-                          className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-600 text-zinc-200 hover:text-white transition-colors text-xs font-semibold flex items-center gap-1.5 mx-auto shadow-sm"
-                          title="Open Full-Page Invoice Receipt"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          View Receipt
-                        </button>
+                      <td className="px-6 py-4 text-right">
+                        <div className="inline-flex items-center text-xs text-zinc-500 group-hover:text-cyan-400 transition-colors font-medium">
+                          <span className="hidden group-hover:inline mr-1">View Receipt</span>
+                          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </td>
                     </tr>
                   );

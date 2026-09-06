@@ -61,6 +61,7 @@ interface UserProfileData {
   last_name: string;
   email: string;
   role: string;
+  avatar?: string | null;
 }
 
 interface RecentAuditItem {
@@ -79,6 +80,7 @@ interface StaffUserItem {
   last_name: string;
   email: string;
   role: string;
+  avatar?: string | null;
   created_at: string | null;
 }
 
@@ -253,7 +255,13 @@ function SettingsContent() {
           last_name: res.data.last_name || "",
           email: res.data.email || fallbackEmail,
           role: res.data.role || currentRole,
+          avatar: res.data.avatar || "avatar-1",
         });
+        const activeAvatar = res.data.avatar || localStorage.getItem("user_avatar") || "avatar-1";
+        setSelectedAvatar(activeAvatar);
+        setSavedAvatar(activeAvatar);
+        savedAvatarRef.current = activeAvatar;
+        localStorage.setItem("user_avatar", activeAvatar);
       }
     } catch (e) {
       setProfile({
@@ -447,6 +455,7 @@ function SettingsContent() {
         last_name: profile.last_name,
         email: profile.email,
         role: profile.role,
+        avatar: selectedAvatar,
       });
 
       if (res.data) {
@@ -456,6 +465,7 @@ function SettingsContent() {
           last_name: res.data.last_name || profile.last_name,
           email: res.data.email || profile.email,
           role: res.data.role || profile.role,
+          avatar: res.data.avatar || selectedAvatar,
         });
         localStorage.setItem("user_email", res.data.email || profile.email);
         const updatedName = [res.data.first_name || profile.first_name, res.data.last_name || profile.last_name].filter(Boolean).join(" ");
@@ -466,12 +476,10 @@ function SettingsContent() {
       }
 
       // Commit Avatar selection to localStorage and broadcast to sidebar
-      if (selectedAvatar !== savedAvatar) {
-        localStorage.setItem("user_avatar", selectedAvatar);
-        window.dispatchEvent(new CustomEvent("user_profile_updated", { detail: { avatarId: selectedAvatar } }));
-        setSavedAvatar(selectedAvatar);
-        savedAvatarRef.current = selectedAvatar;
-      }
+      localStorage.setItem("user_avatar", selectedAvatar);
+      window.dispatchEvent(new CustomEvent("user_profile_updated", { detail: { avatarId: selectedAvatar } }));
+      setSavedAvatar(selectedAvatar);
+      savedAvatarRef.current = selectedAvatar;
 
       // If non-admin and theme changed, commit theme
       if (!isAdmin && activeTheme !== savedTheme) {
@@ -1158,8 +1166,14 @@ function SettingsContent() {
                         <tr key={user.id} className="hover:bg-white/[0.02] transition-colors group">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center font-bold text-cyan-400 text-xs shrink-0">
-                                {initials}
+                              <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900 shadow-sm">
+                                {user.avatar ? (
+                                  <UserAvatar avatarId={user.avatar} className="w-9 h-9" />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center font-bold text-cyan-400 text-xs">
+                                    {initials}
+                                  </div>
+                                )}
                               </div>
                               <div>
                                 <div className="font-bold text-white group-hover:text-cyan-300 transition-colors">

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
+import { UserAvatar } from "@/lib/avatars";
 
 interface UserProfile {
   id: string;
@@ -31,6 +32,7 @@ interface UserProfile {
   last_name: string;
   email: string;
   role: string;
+  avatar?: string | null;
   commission_rate?: number | null;
   base_wage?: number | null;
   created_at: string | null;
@@ -278,9 +280,15 @@ export default function UserProfilePage() {
           {/* Top Banner with Avatar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10 relative z-10">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-2xl shadow-inner">
-                {user.first_name ? user.first_name[0] : "U"}
-                {user.last_name ? user.last_name[0] : ""}
+              <div className="w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900 shadow-inner">
+                {user.avatar ? (
+                  <UserAvatar avatarId={user.avatar} className="w-16 h-16" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center text-cyan-400 font-bold text-2xl">
+                    {user.first_name ? user.first_name[0] : "U"}
+                    {user.last_name ? user.last_name[0] : ""}
+                  </div>
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
