@@ -233,3 +233,10 @@ async def checkout(
     await session.refresh(db_tx)
     
     return db_tx
+
+# AWS Lambda Handler (Serverless deployment)
+try:
+    from mangum import Mangum
+    handler = Mangum(app, lifespan="off", api_gateway_base_path="/api/v1/sales")
+except ImportError:
+    handler = None

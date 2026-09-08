@@ -339,7 +339,7 @@ export default function ItemProfilePage() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16">
-      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+      <div className="w-full space-y-8 animate-profile-enter">
         {/* Top Action & Navigation Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button
@@ -397,8 +397,6 @@ export default function ItemProfilePage() {
 
       {/* Hero Overview Card */}
       <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
-
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-start gap-4">
             <div className={clsx(

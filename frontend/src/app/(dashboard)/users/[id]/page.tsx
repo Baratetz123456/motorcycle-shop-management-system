@@ -232,7 +232,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16">
-      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+      <div className="w-full space-y-8 animate-profile-enter">
         {/* Top Action & Navigation Bar */}
         <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <Link
@@ -289,9 +289,6 @@ export default function UserProfilePage() {
 
         {/* Staff Profile Document Card */}
         <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-8">
-          {/* Ambient Glow */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
           {/* Top Banner with Avatar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10 relative z-10">
             <div className="flex items-center gap-4">

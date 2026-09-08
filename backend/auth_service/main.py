@@ -870,3 +870,10 @@ async def export_audit_logs(
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=system_history_logs_export.csv"}
     )
+
+# AWS Lambda Handler (Serverless deployment)
+try:
+    from mangum import Mangum
+    handler = Mangum(app, lifespan="off", api_gateway_base_path="/api/v1/auth")
+except ImportError:
+    handler = None

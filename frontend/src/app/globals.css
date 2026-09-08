@@ -133,6 +133,22 @@ html[data-theme="amber"],
   will-change: opacity, transform;
 }
 
+@keyframes profileSilkEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-profile-enter {
+  animation: profileSilkEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
 /* ==========================================================================
    Versiklo Appearance Mode Engine: High-Contrast Light Mode
    Dual-tone cool slate canvas (#f8fafc) paired with crisp white cards (#ffffff),

@@ -187,7 +187,7 @@ function SalesReceiptContent() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y">
-      <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+      <div className="w-full space-y-8 animate-profile-enter">
         
         {/* Top Action & Navigation Bar */}
         <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">

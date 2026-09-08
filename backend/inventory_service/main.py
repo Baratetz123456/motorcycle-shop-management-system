@@ -282,3 +282,10 @@ async def adjust_stock(
     await session.refresh(db_item)
     
     return db_item
+
+# AWS Lambda Handler (Serverless deployment)
+try:
+    from mangum import Mangum
+    handler = Mangum(app, lifespan="off", api_gateway_base_path="/api/v1/inventory")
+except ImportError:
+    handler = None
