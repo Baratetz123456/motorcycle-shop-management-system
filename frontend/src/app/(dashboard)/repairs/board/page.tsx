@@ -32,6 +32,7 @@ import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer"
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
+import { RepairBoardSkeleton } from "@/components/repairs/RepairBoardSkeleton";
 
 export type RepairStatus = "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
 
@@ -61,6 +62,7 @@ export default function RepairBoardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<RepairJob[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [modelsCatalog, setModelsCatalog] = useState<MotorcycleModelOption[]>([]);
   const [mechanicsList, setMechanicsList] = useState<{ id: string; name: string }[]>([]);
   const [settings, setSettings] = useState<SystemSettings>(getSystemSettings);
@@ -150,88 +152,92 @@ export default function RepairBoardPage() {
   }, [searchParams]);
 
   const fetchJobs = async () => {
-    let deletedSet = new Set<string>();
     try {
-      const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
-      deletedSet = new Set(deletedIds);
-    } catch (e) {}
+      let deletedSet = new Set<string>();
+      try {
+        const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
+        deletedSet = new Set(deletedIds);
+      } catch (e) {}
 
-    let fetchedList: RepairJob[] = [];
-    let fetchSuccess = false;
-    try {
-      const res = await apiClient.get<any[]>("/repairs/jobs");
-      if (Array.isArray(res.data)) {
-        fetchSuccess = true;
-        fetchedList = res.data
-          .filter((j) => !deletedSet.has(j.id) && !deletedSet.has(j.jo_number))
-          .map((j) => {
-            const isPaid = Boolean(
-              j.is_paid ||
-              (typeof window !== "undefined" && (
-                localStorage.getItem(`motoshop_job_paid_${j.id}`) === "true" ||
-                localStorage.getItem(`motoshop_job_paid_${j.jo_number}`) === "true"
-              ))
-            );
-            return {
-              id: j.id,
-              jo_number: j.jo_number,
-              customer: j.customer_name || "Walk-in Customer",
-              motorcycle: j.motorcycle_id || "Motorcycle",
-              mechanic: j.mechanic_name || "Shop Mechanic",
-              mechanic_id: j.mechanic_id || "mech-1",
-              mechanic_notes: j.mechanic_notes || "",
-              labor_charge: Number(j.labor_charge || 0),
-              parts_charge: Number(j.parts_charge || 0),
-              status: (j.status || "PENDING") as RepairStatus,
-              is_paid: isPaid,
-              created_at: j.created_at || new Date().toISOString(),
-            };
-          });
+      let fetchedList: RepairJob[] = [];
+      let fetchSuccess = false;
+      try {
+        const res = await apiClient.get<any[]>("/repairs/jobs");
+        if (Array.isArray(res.data)) {
+          fetchSuccess = true;
+          fetchedList = res.data
+            .filter((j) => !deletedSet.has(j.id) && !deletedSet.has(j.jo_number))
+            .map((j) => {
+              const isPaid = Boolean(
+                j.is_paid ||
+                (typeof window !== "undefined" && (
+                  localStorage.getItem(`motoshop_job_paid_${j.id}`) === "true" ||
+                  localStorage.getItem(`motoshop_job_paid_${j.jo_number}`) === "true"
+                ))
+              );
+              return {
+                id: j.id,
+                jo_number: j.jo_number,
+                customer: j.customer_name || "Walk-in Customer",
+                motorcycle: j.motorcycle_id || "Motorcycle",
+                mechanic: j.mechanic_name || "Shop Mechanic",
+                mechanic_id: j.mechanic_id || "mech-1",
+                mechanic_notes: j.mechanic_notes || "",
+                labor_charge: Number(j.labor_charge || 0),
+                parts_charge: Number(j.parts_charge || 0),
+                status: (j.status || "PENDING") as RepairStatus,
+                is_paid: isPaid,
+                created_at: j.created_at || new Date().toISOString(),
+              };
+            });
+        }
+      } catch (e) {
+        console.error("Failed to fetch jobs from server", e);
       }
-    } catch (e) {
-      console.error("Failed to fetch jobs from server", e);
-    }
 
-    if (fetchSuccess && fetchedList.length > 0) {
-      // Merge with any unpersisted offline jobs if present
+      if (fetchSuccess && fetchedList.length > 0) {
+        // Merge with any unpersisted offline jobs if present
+        const storedJobs = localStorage.getItem("motoshop_jobs");
+        let localOnly: RepairJob[] = [];
+        if (storedJobs) {
+          try {
+            const parsed: RepairJob[] = JSON.parse(storedJobs);
+            if (Array.isArray(parsed)) {
+              const fetchedIds = new Set(fetchedList.map((j) => j.id));
+              localOnly = parsed.filter(
+                (p) => String(p.id).startsWith("jo-") && !fetchedIds.has(p.id) && !deletedSet.has(p.id) && !deletedSet.has(p.jo_number)
+              );
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+        const combined = [...localOnly, ...fetchedList];
+        setJobs(combined);
+        syncJobsState(combined);
+        return;
+      }
+
       const storedJobs = localStorage.getItem("motoshop_jobs");
-      let localOnly: RepairJob[] = [];
-      if (storedJobs) {
+      let mergedJobs: RepairJob[] = [];
+
+      if (storedJobs !== null) {
         try {
           const parsed: RepairJob[] = JSON.parse(storedJobs);
           if (Array.isArray(parsed)) {
-            const fetchedIds = new Set(fetchedList.map((j) => j.id));
-            localOnly = parsed.filter(
-              (p) => String(p.id).startsWith("jo-") && !fetchedIds.has(p.id) && !deletedSet.has(p.id) && !deletedSet.has(p.jo_number)
-            );
+            mergedJobs = parsed.filter((p) => !deletedSet.has(p.id) && !deletedSet.has(p.jo_number));
           }
         } catch (e) {
           // ignore
         }
+      } else {
+        mergedJobs = [];
       }
-      const combined = [...localOnly, ...fetchedList];
-      setJobs(combined);
-      syncJobsState(combined);
-      return;
+
+      setJobs(mergedJobs);
+    } finally {
+      setIsLoading(false);
     }
-
-    const storedJobs = localStorage.getItem("motoshop_jobs");
-    let mergedJobs: RepairJob[] = [];
-
-    if (storedJobs !== null) {
-      try {
-        const parsed: RepairJob[] = JSON.parse(storedJobs);
-        if (Array.isArray(parsed)) {
-          mergedJobs = parsed.filter((p) => !deletedSet.has(p.id) && !deletedSet.has(p.jo_number));
-        }
-      } catch (e) {
-        // ignore
-      }
-    } else {
-      mergedJobs = [];
-    }
-
-    setJobs(mergedJobs);
   };
 
   const fetchMotorcycleModels = async () => {
@@ -896,6 +902,10 @@ export default function RepairBoardPage() {
     { title: settings.boardCompletedTitle || "Completed", status: "COMPLETED", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
     { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
   ];
+
+  if (isLoading) {
+    return <RepairBoardSkeleton />;
+  }
 
   return (
     <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col font-sans overflow-hidden">

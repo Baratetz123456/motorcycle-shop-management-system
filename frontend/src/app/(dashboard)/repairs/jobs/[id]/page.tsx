@@ -27,6 +27,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { RepairStatus, RepairJob } from "@/app/(dashboard)/repairs/board/page";
 import { ConfirmModal } from "@/components/ui/Modal";
+import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
 
 // --- Diagnosis Log Types ---
 interface DiagnosisEntry {
@@ -488,9 +489,8 @@ export default function JobCardProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-zinc-400 text-sm font-medium">Loading Job Card details...</p>
+      <div className="p-4 sm:p-6">
+        <DetailViewSkeleton hasTable={true} />
       </div>
     );
   }

@@ -22,6 +22,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export interface MotorcycleProfile {
   id: string;
@@ -425,13 +426,13 @@ export default function MotorcycleProfilesPage() {
             {[1, 2, 3, 4, 5, 6].map((idx) => (
               <div
                 key={idx}
-                className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6 h-48 animate-pulse flex flex-col justify-between"
+                className="bg-zinc-900/40 border border-white/5 rounded-2xl p-6 h-48 flex flex-col justify-between backdrop-blur-sm"
               >
                 <div className="space-y-3">
-                  <div className="h-5 bg-zinc-800 rounded w-1/3" />
-                  <div className="h-8 bg-zinc-800 rounded w-3/4" />
+                  <Skeleton className="h-5 w-1/3 rounded" />
+                  <Skeleton className="h-7 w-3/4 rounded-lg" />
                 </div>
-                <div className="h-10 bg-zinc-800 rounded w-full" />
+                <Skeleton className="h-10 w-full rounded-xl" />
               </div>
             ))}
           </div>

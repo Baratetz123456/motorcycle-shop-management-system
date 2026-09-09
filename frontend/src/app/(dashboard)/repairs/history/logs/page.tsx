@@ -25,6 +25,7 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { CustomerHistoryRecord } from "../page";
+import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
 
 function CustomerRepairHistoryLogsContent() {
   const router = useRouter();
@@ -150,9 +151,8 @@ function CustomerRepairHistoryLogsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center font-sans text-zinc-400">
-        <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-medium">Loading customer repair history logs...</p>
+      <div className="p-4 sm:p-6">
+        <DetailViewSkeleton hasTable={true} />
       </div>
     );
   }
@@ -429,9 +429,8 @@ function CustomerRepairHistoryLogsContent() {
 export default function CustomerRepairHistoryLogsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[70vh] flex flex-col items-center justify-center font-sans text-zinc-400">
-        <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-medium">Loading service record...</p>
+      <div className="p-4 sm:p-6">
+        <DetailViewSkeleton hasTable={true} />
       </div>
     }>
       <CustomerRepairHistoryLogsContent />

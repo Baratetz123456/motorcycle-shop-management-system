@@ -27,6 +27,7 @@ import clsx from "clsx";
 import { UserAvatar } from "@/lib/avatars";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
+import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
 
 interface UserProfile {
   id: string;
@@ -204,9 +205,8 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center font-sans text-zinc-400">
-        <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm">Loading staff profile details...</p>
+      <div className="p-4 sm:p-6">
+        <DetailViewSkeleton hasTable={false} />
       </div>
     );
   }

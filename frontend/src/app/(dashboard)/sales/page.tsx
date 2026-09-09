@@ -18,6 +18,7 @@ import { apiClient } from "@/lib/api-client";
 import { UserRole } from "@/lib/permissions";
 import { useRouter } from "next/navigation";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export interface TransactionRecord {
   id: string;
@@ -49,6 +50,7 @@ export default function SalesManagementPage() {
   const router = useRouter();
   const [role, setRole] = useState<UserRole>("cashier");
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,31 +106,35 @@ export default function SalesManagementPage() {
   }, []);
 
   const fetchTransactions = async () => {
-    let list: TransactionRecord[] = [];
     try {
-      const res = await apiClient.get<TransactionRecord[]>("/sales/transactions");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        list = res.data;
-      }
-    } catch (e) {
-      // empty list on error
-    }
-
-    const storedLogs = localStorage.getItem("motoshop_sales_logs");
-    if (storedLogs) {
+      let list: TransactionRecord[] = [];
       try {
-        const localList = JSON.parse(storedLogs);
-        if (Array.isArray(localList) && localList.length > 0) {
-          const existingIds = new Set(list.map((t) => t.id));
-          const combined = [...localList.filter((t: any) => !existingIds.has(t.id)), ...list];
-          setTransactions(combined);
-          return;
+        const res = await apiClient.get<TransactionRecord[]>("/sales/transactions");
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          list = res.data;
         }
       } catch (e) {
-        // ignore
+        // empty list on error
       }
+
+      const storedLogs = localStorage.getItem("motoshop_sales_logs");
+      if (storedLogs) {
+        try {
+          const localList = JSON.parse(storedLogs);
+          if (Array.isArray(localList) && localList.length > 0) {
+            const existingIds = new Set(list.map((t) => t.id));
+            const combined = [...localList.filter((t: any) => !existingIds.has(t.id)), ...list];
+            setTransactions(combined);
+            return;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      setTransactions(list);
+    } finally {
+      setIsLoading(false);
     }
-    setTransactions(list);
   };
 
   const filteredTransactions = transactions.filter((t) => {
@@ -303,7 +309,33 @@ export default function SalesManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredTransactions.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 7 }).map((_, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-white/[0.01]">
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-5 w-24 rounded-lg" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-32 rounded" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-28 rounded" />
+                        <Skeleton className="h-3 w-36 rounded" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Skeleton className="h-4 w-20 rounded ml-auto" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Skeleton className="h-5 w-20 rounded-full mx-auto" />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Skeleton className="h-4 w-12 rounded ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              ) : filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-16 text-zinc-500">
                     <Calendar className="w-10 h-10 mx-auto text-zinc-600 mb-2" />

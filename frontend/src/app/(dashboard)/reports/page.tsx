@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
+import { ReportsSkeleton } from "@/components/reports/ReportsSkeleton";
 
 interface SalesLog {
   id: string;
@@ -55,15 +56,17 @@ export default function DashboardReportsPage() {
   const [recentSales, setRecentSales] = useState<SalesLog[]>([]);
   const [revenueChartData, setRevenueChartData] = useState<{ name: string; revenue: number }[]>([]);
   const [repairsChartData, setRepairsChartData] = useState<{ name: string; completed: number }[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     loadSalesAndInventoryMetrics();
   }, []);
 
   const loadSalesAndInventoryMetrics = async () => {
-    let salesTotal = 0;
-    let completedTxCount = 0;
-    let salesList: SalesLog[] = [];
+    try {
+      let salesTotal = 0;
+      let completedTxCount = 0;
+      let salesList: SalesLog[] = [];
 
     // 1. Fetch Sales Transactions
     try {
@@ -162,7 +165,14 @@ export default function DashboardReportsPage() {
     } catch (e) {
       // ignore
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  if (isLoading) {
+    return <ReportsSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 p-8 text-zinc-50 font-sans overflow-y-auto w-full">

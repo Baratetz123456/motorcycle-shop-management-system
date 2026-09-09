@@ -23,6 +23,7 @@ import {
 import { apiClient } from "@/lib/api-client";
 import { UserRole } from "@/lib/permissions";
 import { extractInvoiceLaborAndCommission, fetchStaffCompensationFromDB } from "@/lib/compensation";
+import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
 
 interface TransactionRecord {
   id: string;
@@ -159,9 +160,8 @@ function SalesReceiptContent() {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center font-sans text-zinc-400">
-        <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-medium">Loading invoice receipt details...</p>
+      <div className="p-4 sm:p-6">
+        <DetailViewSkeleton hasTable={true} />
       </div>
     );
   }
@@ -503,8 +503,8 @@ function SalesReceiptContent() {
 export default function SalesReceiptPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen bg-zinc-950 flex items-center justify-center text-zinc-400 font-sans text-sm">
-        Loading receipt...
+      <div className="p-4 sm:p-6">
+        <DetailViewSkeleton hasTable={true} />
       </div>
     }>
       <SalesReceiptContent />

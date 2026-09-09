@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export interface AuditLogItem {
   id: string;
@@ -698,12 +699,28 @@ export default function SystemLogsPage() {
             </thead>
             <tbody className="divide-y divide-white/5 font-sans">
               {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="py-20 text-center text-zinc-500 text-sm">
-                    <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    Loading system audit history...
-                  </td>
-                </tr>
+                Array.from({ length: 8 }).map((_, idx) => (
+                  <tr key={idx} className="hover:bg-white/[0.01]">
+                    <td className="py-3.5 px-5">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-28 rounded" />
+                        <Skeleton className="h-3 w-16 rounded" />
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-5">
+                      <Skeleton className="h-5 w-24 rounded-full" />
+                    </td>
+                    <td className="py-3.5 px-5">
+                      <Skeleton className="h-4 w-32 rounded" />
+                    </td>
+                    <td className="py-3.5 px-5">
+                      <Skeleton className="h-4 w-48 rounded" />
+                    </td>
+                    <td className="py-3.5 px-5 text-right">
+                      <Skeleton className="h-4 w-24 rounded ml-auto" />
+                    </td>
+                  </tr>
+                ))
               ) : paginatedLogs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-20 text-center text-zinc-500 text-sm">

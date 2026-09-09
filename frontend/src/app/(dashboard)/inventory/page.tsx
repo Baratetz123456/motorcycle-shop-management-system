@@ -23,6 +23,8 @@ import { apiClient } from "@/lib/api-client";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { Modal, ModalBody, ModalFooter } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 
 export interface CatalogItem {
   id: string;
@@ -124,55 +126,61 @@ function InventoryContent() {
     reorder_level: 5,
   });
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   useEffect(() => {
     fetchItems();
   }, []);
 
   const fetchItems = async () => {
-    let list: CatalogItem[] = [];
     try {
-      const res = await apiClient.get<CatalogItem[]>("/inventory");
-      if (Array.isArray(res.data)) {
-        list = res.data;
-      }
-    } catch (err) {
-      // Empty list on error
-    }
-
-    const storedCustom = localStorage.getItem("motoshop_custom_inventory");
-    if (storedCustom) {
+      let list: CatalogItem[] = [];
       try {
-        const customList: CatalogItem[] = JSON.parse(storedCustom);
-        if (Array.isArray(customList) && customList.length > 0) {
-          const existingIds = new Set(list.map((i) => i.id));
-          const toAdd = customList.filter((ci) => !existingIds.has(ci.id));
-          list = [...toAdd, ...list];
+        const res = await apiClient.get<CatalogItem[]>("/inventory");
+        if (Array.isArray(res.data)) {
+          list = res.data;
         }
-      } catch (e) {}
-    }
+      } catch (err) {
+        // Empty list on error
+      }
 
-    const storedInv = localStorage.getItem("motoshop_inventory_stock");
-    if (storedInv) {
-      try {
-        const invMap = JSON.parse(storedInv);
-        list = list.map((item) => {
-          if (invMap[item.id] !== undefined) {
-            return { ...item, current_stock: invMap[item.id] };
+      const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+      if (storedCustom) {
+        try {
+          const customList: CatalogItem[] = JSON.parse(storedCustom);
+          if (Array.isArray(customList) && customList.length > 0) {
+            const existingIds = new Set(list.map((i) => i.id));
+            const toAdd = customList.filter((ci) => !existingIds.has(ci.id));
+            list = [...toAdd, ...list];
           }
-          return item;
-        });
+        } catch (e) {}
+      }
+
+      const storedInv = localStorage.getItem("motoshop_inventory_stock");
+      if (storedInv) {
+        try {
+          const invMap = JSON.parse(storedInv);
+          list = list.map((item) => {
+            if (invMap[item.id] !== undefined) {
+              return { ...item, current_stock: invMap[item.id] };
+            }
+            return item;
+          });
+        } catch (e) {}
+      }
+
+      // Filter out soft-deleted items
+      let deletedIdsSet = new Set<string>();
+      try {
+        const delArr = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
+        deletedIdsSet = new Set(delArr);
       } catch (e) {}
+
+      list = list.filter((item) => item.is_active !== false && !deletedIdsSet.has(item.id) && !deletedIdsSet.has(item.sku));
+      setItems(list);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Filter out soft-deleted items
-    let deletedIdsSet = new Set<string>();
-    try {
-      const delArr = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
-      deletedIdsSet = new Set(delArr);
-    } catch (e) {}
-
-    list = list.filter((item) => item.is_active !== false && !deletedIdsSet.has(item.id) && !deletedIdsSet.has(item.sku));
-    setItems(list);
   };
 
   // Reset category pill when switching main tab
@@ -486,7 +494,26 @@ function InventoryContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredItems.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 7 }).map((_, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-white/[0.01]">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                        <div className="space-y-1.5 flex-1">
+                          <Skeleton className="h-4 w-36 rounded" />
+                          <Skeleton className="h-3 w-20 rounded" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-24 rounded" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 rounded ml-auto" /></td>
+                    <td className="px-6 py-4 text-center"><Skeleton className="h-5 w-24 rounded-full mx-auto" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-4 w-8 rounded ml-auto" /></td>
+                  </tr>
+                ))
+              ) : filteredItems.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-16 text-zinc-500">
                     <Boxes className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
@@ -839,8 +866,12 @@ export default function InventoryManagementPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
-          <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto w-full">
+          <div className="space-y-1.5">
+            <div className="h-8 w-56 bg-zinc-800/50 rounded-xl animate-shimmer" />
+            <div className="h-4 w-72 bg-zinc-800/50 rounded animate-shimmer" />
+          </div>
+          <TableSkeleton columns={6} rows={7} />
         </div>
       }
     >

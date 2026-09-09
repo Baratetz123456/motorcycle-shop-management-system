@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { 
   getSystemSettings, 
   saveSystemSettings, 
@@ -1538,12 +1540,25 @@ function SettingsContent() {
                   </thead>
                   <tbody className="divide-y divide-white/5 font-sans">
                     {staffLoading ? (
-                      <tr>
-                        <td colSpan={4} className="py-16 text-center text-zinc-500 text-xs">
-                          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                          Loading staff user records...
-                        </td>
-                      </tr>
+                      Array.from({ length: 5 }).map((_, idx) => (
+                        <tr key={idx} className="hover:bg-white/[0.01]">
+                          <td className="py-3.5 px-6">
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                              <Skeleton className="h-4 w-32 rounded" />
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-6">
+                            <Skeleton className="h-4 w-40 rounded" />
+                          </td>
+                          <td className="py-3.5 px-6">
+                            <Skeleton className="h-5 w-20 rounded-full" />
+                          </td>
+                          <td className="py-3.5 px-6 text-right">
+                            <Skeleton className="h-4 w-4 rounded ml-auto" />
+                          </td>
+                        </tr>
+                      ))
                     ) : staffUsers.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="py-16 text-center text-zinc-500 text-xs">
@@ -2054,12 +2069,19 @@ function SettingsContent() {
                     </thead>
                     <tbody className="divide-y divide-white/5 font-sans">
                       {isLoadingLogs ? (
-                        <tr>
-                          <td colSpan={4} className="py-8 text-center text-zinc-500 text-xs">
-                            <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                            Loading recent change logs...
-                          </td>
-                        </tr>
+                        Array.from({ length: 4 }).map((_, idx) => (
+                          <tr key={idx} className="hover:bg-white/[0.01]">
+                            <td className="py-3 px-4"><Skeleton className="h-4 w-28 rounded" /></td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <Skeleton className="h-4 w-20 rounded" />
+                                <Skeleton className="h-4 w-12 rounded-full" />
+                              </div>
+                            </td>
+                            <td className="py-3 px-4"><Skeleton className="h-4 w-28 rounded" /></td>
+                            <td className="py-3 px-4"><Skeleton className="h-4 w-36 rounded" /></td>
+                          </tr>
+                        ))
                       ) : recentLogs.length === 0 ? (
                         <tr>
                           <td colSpan={4} className="py-8 text-center text-zinc-500 text-xs">
@@ -2103,8 +2125,12 @@ export default function SettingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
-          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto w-full">
+          <div className="space-y-1.5">
+            <div className="h-8 w-60 bg-zinc-800/50 rounded-xl animate-shimmer" />
+            <div className="h-4 w-80 bg-zinc-800/50 rounded animate-shimmer" />
+          </div>
+          <TableSkeleton columns={4} rows={6} />
         </div>
       }
     >

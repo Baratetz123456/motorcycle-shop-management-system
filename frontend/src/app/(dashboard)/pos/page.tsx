@@ -32,6 +32,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { ConfirmModal } from "@/components/ui/Modal";
+import { PosCatalogCardsSkeleton, PosRepairsCardsSkeleton } from "@/components/pos/PosSkeleton";
 
 interface CatalogItem {
   id: string;
@@ -102,6 +103,8 @@ export default function POSPage() {
 
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [activeRepairs, setActiveRepairs] = useState<ActiveRepairCart[]>([]);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(true);
+  const [isLoadingRepairs, setIsLoadingRepairs] = useState<boolean>(true);
   
   // Rule: Cashier newly logging in/visiting page has NO selected customer by default
   const [selectedRepair, setSelectedRepair] = useState<ActiveRepairCart | null>(null);
@@ -193,131 +196,139 @@ export default function POSPage() {
 
   // Real-time catalog & stock synchronization with Inventory Management
   const fetchCatalog = async () => {
-    let list: CatalogItem[] = [];
     try {
-      const res = await apiClient.get<CatalogItem[]>("/inventory");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        list = res.data;
-      }
-    } catch (e) {
-      // empty list
-    }
-
-    // 1. Merge custom inventory items created in Inventory Management
-    try {
-      const storedCustom = localStorage.getItem("motoshop_custom_inventory");
-      if (storedCustom) {
-        const customList: CatalogItem[] = JSON.parse(storedCustom);
-        if (Array.isArray(customList) && customList.length > 0) {
-          const existingIds = new Set(list.map((i) => i.id));
-          const toAdd = customList.filter((ci) => !existingIds.has(ci.id));
-          list = [...toAdd, ...list];
+      let list: CatalogItem[] = [];
+      try {
+        const res = await apiClient.get<CatalogItem[]>("/inventory");
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          list = res.data;
         }
+      } catch (e) {
+        // empty list
       }
-    } catch (e) {}
 
-    // 2. Synchronize real-time stock levels with Inventory Management
-    try {
-      const storedInv = localStorage.getItem("motoshop_inventory_stock");
-      if (storedInv) {
-        const invMap = JSON.parse(storedInv);
-        list = list.map((item) => {
-          if (item.item_type === "PRODUCT" && invMap[item.id] !== undefined) {
-            return { ...item, current_stock: Math.max(0, Number(invMap[item.id])) };
+      // 1. Merge custom inventory items created in Inventory Management
+      try {
+        const storedCustom = localStorage.getItem("motoshop_custom_inventory");
+        if (storedCustom) {
+          const customList: CatalogItem[] = JSON.parse(storedCustom);
+          if (Array.isArray(customList) && customList.length > 0) {
+            const existingIds = new Set(list.map((i) => i.id));
+            const toAdd = customList.filter((ci) => !existingIds.has(ci.id));
+            list = [...toAdd, ...list];
           }
-          return item;
-        });
-      }
-    } catch (e) {}
+        }
+      } catch (e) {}
 
-    // 3. Filter out soft-deleted items to ensure sold items / completed repair logs remain safe
-    let deletedIdsSet = new Set<string>();
-    try {
-      const delArr = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
-      deletedIdsSet = new Set(delArr);
-    } catch (e) {}
-    list = list.filter((item) => item.is_active !== false && !deletedIdsSet.has(item.id) && !deletedIdsSet.has(item.sku));
+      // 2. Synchronize real-time stock levels with Inventory Management
+      try {
+        const storedInv = localStorage.getItem("motoshop_inventory_stock");
+        if (storedInv) {
+          const invMap = JSON.parse(storedInv);
+          list = list.map((item) => {
+            if (item.item_type === "PRODUCT" && invMap[item.id] !== undefined) {
+              return { ...item, current_stock: Math.max(0, Number(invMap[item.id])) };
+            }
+            return item;
+          });
+        }
+      } catch (e) {}
 
-    setCatalog(list);
+      // 3. Filter out soft-deleted items to ensure sold items / completed repair logs remain safe
+      let deletedIdsSet = new Set<string>();
+      try {
+        const delArr = JSON.parse(localStorage.getItem("motoshop_deleted_inventory_ids") || "[]");
+        deletedIdsSet = new Set(delArr);
+      } catch (e) {}
+      list = list.filter((item) => item.is_active !== false && !deletedIdsSet.has(item.id) && !deletedIdsSet.has(item.sku));
+
+      setCatalog(list);
+    } finally {
+      setIsLoadingCatalog(false);
+    }
   };
 
   const fetchActiveRepairs = async () => {
-    let deletedSet = new Set<string>();
     try {
-      const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
-      deletedSet = new Set(deletedIds);
-    } catch (e) {}
+      let deletedSet = new Set<string>();
+      try {
+        const deletedIds: string[] = JSON.parse(localStorage.getItem("motoshop_deleted_job_ids") || "[]");
+        deletedSet = new Set(deletedIds);
+      } catch (e) {}
 
-    let apiRepairs: ActiveRepairCart[] = [];
-    try {
-      const res = await apiClient.get<ActiveRepairCart[]>("/repairs/jobs/active-carts");
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        apiRepairs = res.data;
+      let apiRepairs: ActiveRepairCart[] = [];
+      try {
+        const res = await apiClient.get<ActiveRepairCart[]>("/repairs/jobs/active-carts");
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          apiRepairs = res.data;
+        }
+      } catch (e) {
+        // ignore network error
       }
-    } catch (e) {
-      // ignore network error
+
+      // Merge with repairs from local storage (motoshop_active_repairs / motoshop_jobs)
+      let localRepairs: ActiveRepairCart[] = [];
+      try {
+        const storedActive = localStorage.getItem("motoshop_active_repairs");
+        if (storedActive) {
+          const parsed = JSON.parse(storedActive);
+          if (Array.isArray(parsed)) {
+            localRepairs = parsed;
+          }
+        }
+        const storedJobs = localStorage.getItem("motoshop_jobs");
+        if (storedJobs) {
+          const parsedJobs: any[] = JSON.parse(storedJobs);
+          if (Array.isArray(parsedJobs)) {
+            const fromJobs = parsedJobs.map((j) => ({
+              job_id: j.id,
+              jo_number: j.jo_number,
+              customer_name: j.customer || j.customer_name,
+              motorcycle_name: j.motorcycle || j.motorcycle_name || j.motorcycle_id,
+              status: j.status,
+              is_paid: Boolean(j.is_paid),
+              labor_charge: Number(j.labor_charge || 0),
+              parts_charge: Number(j.parts_charge || 0),
+              total_amount: Number(j.labor_charge || 0) + Number(j.parts_charge || 0),
+            }));
+            const existingJobIds = new Set(localRepairs.map((r) => r.job_id));
+            fromJobs.forEach((fj) => {
+              if (!existingJobIds.has(fj.job_id)) {
+                localRepairs.push(fj);
+              }
+            });
+          }
+        }
+      } catch (e) {}
+
+      // Combine local & server repairs (API takes precedence, local fallback)
+      const combinedMap = new Map<string, ActiveRepairCart>();
+      localRepairs.forEach((r) => combinedMap.set(r.job_id, r));
+      apiRepairs.forEach((r) => combinedMap.set(r.job_id, r));
+
+      const finalRepairs = Array.from(combinedMap.values()).filter((r) => {
+        if (deletedSet.has(r.job_id) || deletedSet.has(r.jo_number)) return false;
+        const isPaidLocal = typeof window !== "undefined" && (
+          localStorage.getItem(`motoshop_job_paid_${r.job_id}`) === "true" ||
+          localStorage.getItem(`motoshop_job_paid_${r.jo_number}`) === "true"
+        );
+        if (r.is_paid || isPaidLocal) return false;
+        // Exclude RELEASED repairs as they are already finalized
+        if (r.status === "RELEASED") return false;
+        return true;
+      });
+
+      setActiveRepairs(finalRepairs);
+
+      // If currently selected repair is no longer active (e.g. was paid or released or deleted), reset selection
+      setSelectedRepair((current) => {
+        if (!current) return null;
+        const stillActive = finalRepairs.find((r) => r.job_id === current.job_id);
+        return stillActive || null;
+      });
+    } finally {
+      setIsLoadingRepairs(false);
     }
-
-    // Merge with repairs from local storage (motoshop_active_repairs / motoshop_jobs)
-    let localRepairs: ActiveRepairCart[] = [];
-    try {
-      const storedActive = localStorage.getItem("motoshop_active_repairs");
-      if (storedActive) {
-        const parsed = JSON.parse(storedActive);
-        if (Array.isArray(parsed)) {
-          localRepairs = parsed;
-        }
-      }
-      const storedJobs = localStorage.getItem("motoshop_jobs");
-      if (storedJobs) {
-        const parsedJobs: any[] = JSON.parse(storedJobs);
-        if (Array.isArray(parsedJobs)) {
-          const fromJobs = parsedJobs.map((j) => ({
-            job_id: j.id,
-            jo_number: j.jo_number,
-            customer_name: j.customer || j.customer_name,
-            motorcycle_name: j.motorcycle || j.motorcycle_name || j.motorcycle_id,
-            status: j.status,
-            is_paid: Boolean(j.is_paid),
-            labor_charge: Number(j.labor_charge || 0),
-            parts_charge: Number(j.parts_charge || 0),
-            total_amount: Number(j.labor_charge || 0) + Number(j.parts_charge || 0),
-          }));
-          const existingJobIds = new Set(localRepairs.map((r) => r.job_id));
-          fromJobs.forEach((fj) => {
-            if (!existingJobIds.has(fj.job_id)) {
-              localRepairs.push(fj);
-            }
-          });
-        }
-      }
-    } catch (e) {}
-
-    // Combine local & server repairs (API takes precedence, local fallback)
-    const combinedMap = new Map<string, ActiveRepairCart>();
-    localRepairs.forEach((r) => combinedMap.set(r.job_id, r));
-    apiRepairs.forEach((r) => combinedMap.set(r.job_id, r));
-
-    const finalRepairs = Array.from(combinedMap.values()).filter((r) => {
-      if (deletedSet.has(r.job_id) || deletedSet.has(r.jo_number)) return false;
-      const isPaidLocal = typeof window !== "undefined" && (
-        localStorage.getItem(`motoshop_job_paid_${r.job_id}`) === "true" ||
-        localStorage.getItem(`motoshop_job_paid_${r.jo_number}`) === "true"
-      );
-      if (r.is_paid || isPaidLocal) return false;
-      // Exclude RELEASED repairs as they are already finalized
-      if (r.status === "RELEASED") return false;
-      return true;
-    });
-
-    setActiveRepairs(finalRepairs);
-
-    // If currently selected repair is no longer active (e.g. was paid or released or deleted), reset selection
-    setSelectedRepair((current) => {
-      if (!current) return null;
-      const stillActive = finalRepairs.find((r) => r.job_id === current.job_id);
-      return stillActive || null;
-    });
   };
 
   const selectActiveCustomerRepair = (repair: ActiveRepairCart, shouldResetCart = true) => {
@@ -591,69 +602,85 @@ export default function POSPage() {
                     )}
                   </div>
 
-                  {/* Customer Repair Selection Cards (Base Labor completely removed) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-                    {activeRepairs.map((repair) => {
-                      const isSelected = selectedRepair?.job_id === repair.job_id;
+                  {/* Customer Repair Selection Cards */}
+                  {isLoadingRepairs ? (
+                    <div className="pt-1">
+                      <PosRepairsCardsSkeleton count={4} />
+                    </div>
+                  ) : activeRepairs.length === 0 ? (
+                    <div className="p-8 text-center bg-zinc-900/40 border border-white/5 rounded-2xl text-zinc-500 text-xs flex flex-col items-center justify-center">
+                      <User className="w-8 h-8 mb-2 opacity-30 text-zinc-400" />
+                      <p>No active customer job orders found.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+                      {activeRepairs.map((repair) => {
+                        const isSelected = selectedRepair?.job_id === repair.job_id;
 
-                      return (
-                        <div
-                          key={repair.job_id}
-                          onClick={() => selectActiveCustomerRepair(repair)}
-                          className={clsx(
-                            "group p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 relative overflow-hidden",
-                            isSelected
-                              ? "bg-cyan-950/40 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400"
-                              : "bg-zinc-900/80 border-white/10 hover:border-cyan-500/40 hover:bg-zinc-900"
-                          )}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-950 text-cyan-400 border border-white/5">
-                                {repair.jo_number}
+                        return (
+                          <div
+                            key={repair.job_id}
+                            onClick={() => selectActiveCustomerRepair(repair)}
+                            className={clsx(
+                              "group p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 relative overflow-hidden",
+                              isSelected
+                                ? "bg-cyan-950/40 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400"
+                                : "bg-zinc-900/80 border-white/10 hover:border-cyan-500/40 hover:bg-zinc-900"
+                            )}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between gap-2 mb-2">
+                                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-950 text-cyan-400 border border-white/5">
+                                  {repair.jo_number}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                  {repair.status}
+                                </span>
+                              </div>
+
+                              <h3 className="font-bold text-white text-sm group-hover:text-cyan-300 transition-colors">
+                                {repair.customer_name}
+                              </h3>
+                              <p className="text-xs text-zinc-400 flex items-center gap-1.5 mt-1">
+                                <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                                <span className="truncate">{repair.motorcycle_name}</span>
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                              <span className="text-[10px] text-zinc-500 uppercase font-semibold">
+                                Charges
                               </span>
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                {repair.status}
+                              <span className="text-xs font-mono font-bold text-cyan-400">
+                                ₱{repair.total_amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                               </span>
                             </div>
 
-                            <h3 className="font-bold text-white text-sm group-hover:text-cyan-300 transition-colors">
-                              {repair.customer_name}
-                            </h3>
-                            <p className="text-xs text-zinc-400 flex items-center gap-1.5 mt-1">
-                              <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                              <span className="truncate">{repair.motorcycle_name}</span>
-                            </p>
+                            <div className="pt-1">
+                              <button
+                                type="button"
+                                className={clsx(
+                                  "w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                                  isSelected
+                                    ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/30"
+                                    : "bg-zinc-800 text-zinc-300 group-hover:bg-cyan-600 group-hover:text-white"
+                                )}
+                              >
+                                {isSelected ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>Selected</span>
+                                  </>
+                                ) : (
+                                  <span>Select</span>
+                                )}
+                              </button>
+                            </div>
                           </div>
-
-                          <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                            <span className="text-[10px] text-zinc-500 uppercase font-semibold">
-                              Customer Repair Session
-                            </span>
-
-                            <button
-                              type="button"
-                              className={clsx(
-                                "px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all",
-                                isSelected
-                                  ? "bg-cyan-500 text-zinc-950 shadow-md"
-                                  : "bg-zinc-800 group-hover:bg-cyan-600 text-zinc-200 group-hover:text-white"
-                              )}
-                            >
-                              {isSelected ? (
-                                <>
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>Selected</span>
-                                </>
-                              ) : (
-                                <span>Select</span>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -747,14 +774,19 @@ export default function POSPage() {
             )}
 
             {/* Catalog Grid (Ordered by Popularity: 'sold' for products, 'completed' for services) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 flex-1">
-              {filteredCatalog.length === 0 ? (
-                <div className="col-span-full py-16 flex flex-col items-center justify-center text-zinc-500 text-xs">
-                  <Package className="w-12 h-12 mb-3 opacity-30" />
-                  <p>No {activeFilter.toLowerCase()}s found in inventory catalog.</p>
-                </div>
-              ) : (
-                filteredCatalog.map((product) => {
+            {isLoadingCatalog ? (
+              <div className="flex-1 pt-1">
+                <PosCatalogCardsSkeleton count={8} />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 flex-1">
+                {filteredCatalog.length === 0 ? (
+                  <div className="col-span-full py-16 flex flex-col items-center justify-center text-zinc-500 text-xs">
+                    <Package className="w-12 h-12 mb-3 opacity-30" />
+                    <p>No {activeFilter.toLowerCase()}s found in inventory catalog.</p>
+                  </div>
+                ) : (
+                  filteredCatalog.map((product) => {
                   const isService = product.item_type === "SERVICE";
                   const cartItem = cart.find((c) => c.id === product.id);
                   const frequency = frequencyMap[product.name] || 0;
@@ -920,7 +952,8 @@ export default function POSPage() {
                 })
               )}
             </div>
-          </section>
+          )}
+        </section>
 
           {/* Sticky Bottom Action Bar for Mobile Screens (Only visible when customer is selected) */}
           {selectedRepair && cart.length > 0 && (
