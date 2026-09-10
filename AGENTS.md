@@ -38,6 +38,10 @@ flowchart TD
   - KrakenD API gateway route synchronization and cookie pass-through (`no-op` output encoding for auth endpoints).
   - Ephemeral in-memory access tokens (`tokenStore`, never in `localStorage`) paired with true browser session cookies (`refresh_token` without `Max-Age`/`Expires`).
   - Dual-timeout session lifecycle (30-minute sliding idle window, 8-hour absolute ceiling in Redis, with RTR reuse detection).
+  - Root `document.body` portaling for mobile floating action buttons (`FloatingFilterButton`) and slide-up drawers/modals with safe-area bottom insets (`env(safe-area-inset-bottom)`).
+  - Consolidated audit logs strictly housed in Settings (`/settings?tab=logs`) and `/audit-logs` (never scattered as standalone buttons on operational pages).
+  - Card-free split-screen login layout directly on the canvas without boxed card enclosures.
+  - Public route silent refresh guard: verify `user_role` before firing `/auth/refresh` on `/login` to avoid red 401 console errors.
 
 ### 3. Phase 3: Review (`.agents/rules/agent_reviewer.md`)
 - Verify distributed Saga compliance and Transactional Outbox usage.

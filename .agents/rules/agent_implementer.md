@@ -84,3 +84,10 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
     - **GPU-Accelerated Direct Transforms for Touch**: During mobile/touch dragging, never write touch/cursor coordinates to React component state at 60–120Hz. Use direct DOM manipulation on a dedicated ghost ref (`floatingGhostRef.current.style.transform = \`translate3d(${x}px, ${y}px, 0)\``) with `willChange: "transform"` and throttle collision checks with `requestAnimationFrame`.
     - **Child Pointer-Events Suppression**: When dragging a card over columns containing other cards, apply `pointer-events-none` to all non-dragged cards (`draggedJobId && !isBeingDragged && "pointer-events-none"`). This prevents child element oscillation between `dragenter` and `dragleave`, ensuring fluid hover states.
     - **RAF-Deferred Drag State**: When initiating an HTML5 drag (`onDragStart`), defer setting `draggedJobId` via `requestAnimationFrame(() => setDraggedJobId(id))` so the browser's native drag image preview captures the card at full opacity before drag styling applies.
+
+15. **Public Route Silent Refresh Guard & DevTools Error Suppression**:
+    - **Eager Refresh Guard on Login**: When designing public or login pages, **never dispatch unconditional `POST /auth/refresh` calls on mount**.
+      - Pre-check: Verify `localStorage.getItem("user_role")` exists and confirm the user did not arrive via an explicit logout or timeout redirect (`searchParams.get("inactivity") === "1"` or `searchParams.get("expired") === "1"`).
+      - If no prior session indicator is present, bypass the refresh call entirely to prevent noisy red 401 Unauthorized errors in browser DevTools.
+    - **Upstream DevTools Error Suppression Shield**: Maintain the 4-layer client-side error shield in `layout.tsx` (`window.onerror` returning `true`, `window.addEventListener('error', ..., true)`, `window.addEventListener('unhandledrejection', ...)`, and `console.error` filter) to silence upstream Chromium DevTools Live Metrics `reportAllChanges (startTime)` VM script crashes.
+

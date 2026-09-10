@@ -12,6 +12,7 @@ When generating or modifying React components in this project, you MUST adhere t
 - **Collapsable Sidebar**: Main layout uses a collapsable sidebar with smooth width transitions (`w-64` expanded, `w-20` collapsed) and state persistence via `localStorage.getItem("sidebar_collapsed")`.
 - **Icon Tooltips**: When the sidebar is collapsed, display centered icons with `title` attributes for clear tooltips.
 - **Concise Navigation**: Avoid cluttering the top-level sidebar with administrative sub-pages (e.g., User Management and Audit Logs belong consolidated under Settings). Place contextual creation/registration buttons as header actions directly on management pages.
+- **Consolidated Audit Logs Invariant**: Do NOT scatter individual "Audit Log", "Audit Trail", or "Stock Audit" buttons across operational shop pages (`/sales`, `/repairs/board`, `/pos`, `/payroll`, `/inventory`, `/sales/receipt`). System-wide audit logs belong strictly consolidated under the **Settings** page (`/settings?tab=logs`) and the dedicated `/audit-logs` route.
 - **Primary Data Table Columns**: For user lists, use **Email Address** as the primary column with a styled `(YOU)` tag for the logged-in user account.
 - **Universal Full-Width Fluid Layout**: All operational pages (POS terminal, checkout, active repair board, inventory, customer repair history, user management, audit logs, and settings) must expand fluidly across widescreen displays (`w-full min-h-screen bg-zinc-950 p-8`). Prohibit restrictive container caps (`max-w-7xl mx-auto` or `max-w-4xl mx-auto`).
 
@@ -20,6 +21,13 @@ When generating or modifying React components in this project, you MUST adhere t
 - To support runtime theme switching across existing codebases without rewriting utilities, override root color tokens under `html[data-theme="..."]` in `globals.css` with `!important`.
 - **Pre-Hydration Flicker Guard**: Always include an inline blocking script in the `<head>` of `layout.tsx` reading `localStorage.getItem("motoshop_app_theme")` and setting `document.documentElement.setAttribute("data-theme", ...)` prior to paint.
 - **Settings vs. Profile Separation**: Store-wide identity and theme selection belong in the Admin **General Preferences** tab. Inside the **Profile** tab, wrap theme controls with `{!isAdmin && renderThemeSelector()}` to prevent duplicate controls for administrators.
+
+## 2.2. Mobile Floating Action Buttons (FAB) & Bottom Drawer Invariants
+- **Root Document Body Portaling**: Floating Action Buttons (`FloatingFilterButton`) and slide-up bottom sheets/drawers (`MobileFilterSheet`, `Modal`, `CheckoutModal`) must mount directly into `document.body` via `createPortal(content, document.body)` with an SSR-safe `mounted` state guard (`const [mounted, setMounted] = useState(false)`). This guarantees elements are never trapped or displaced by parent overflow containers or CSS transform containing blocks (`will-change: transform`, animations).
+- **Sticky Bottom & Safe Area Insets**:
+  - FABs: Anchored with `fixed right-5 z-40 md:hidden` and `bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))`.
+  - Bottom Drawer Footers: Slide-up action buttons (e.g., "Apply & View Results") must be styled with `shrink-0 sticky bottom-0 z-20 bg-zinc-950` and bottom safe-area insets (`paddingBottom: max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))`).
+- **Zero Horizontal Scrolling on Mobile**: Prohibit horizontal swipe pill rails (`overflow-x-auto no-scrollbar touch-pan-x`) on mobile viewports (`< md`). Use full-width vertical stacks, 2-to-3 column responsive grids, or mobile select dropdowns.
 
 ## 3. State Management & Lifecycle Safety
 - Use **Zustand** for local, client-side state (like POS Cart or UI toggles).
@@ -33,6 +41,13 @@ When generating or modifying React components in this project, you MUST adhere t
 - **Dedicated Pages vs Modals**: Complex receipts, invoice inspections, and transaction details must open in dedicated full-page routes (e.g., `/sales/receipt?id=...`), not modal popups.
 - **Standard Receipt Utilities**: Provide **Print Receipt** (`window.print()`), **Copy Invoice #**, staff attribution badges (Cashier & Mechanic), and linked navigation to audit logs.
 - **Suspense Boundaries**: Any page utilizing `useSearchParams()` must be wrapped in a `<Suspense>` boundary to ensure clean Next.js static and dynamic prerendering.
+
+## 4.1. Card-Free Split-Screen Login Invariant
+- The login page must **never use a boxed card container** (`bg-zinc-900/70 border border-white/10 rounded-2xl shadow-2xl p-6`).
+- Standardize on a modern split-screen layout:
+  - **Desktop Showcase Banner (`hidden lg:flex lg:w-1/2`)**: Workshop platform identity with Versiklo badge, workshop capability badges (Repair Kanban, Fast POS, Commission Ledgers), and a live microservice status indicator.
+  - **Seamless Form Panel (`w-full lg:w-1/2`)**: Borderless, frameless inputs (`bg-zinc-900/80 border border-white/10 focus:border-cyan-500 rounded-xl`), high-contrast Cyan submit button, and streamlined quick-demo role chips (`Admin`, `Cashier`, `Mechanic`, `Manager`) sitting directly on the canvas without card enclosure boxes.
+  - **Mobile Responsive**: Adapts naturally to a full-screen borderless layout on mobile viewports without cramped card padding.
 
 ## 5. Design Aesthetics (The "WOW" Factor)
 - Always use a Dark Mode default (`bg-zinc-950`).
