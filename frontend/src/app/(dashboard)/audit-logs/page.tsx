@@ -529,7 +529,7 @@ export default function SystemLogsPage() {
             <span>Back to Settings</span>
           </Link>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-2.5">
+            <h1 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-2.5">
               <Activity className="w-7 h-7 text-cyan-400" />
               Audit Log
             </h1>
@@ -548,7 +548,7 @@ export default function SystemLogsPage() {
           <button
             onClick={handleExport}
             disabled={isExporting || filteredLogs.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/20 transition-all text-xs disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 rounded-xl font-bold transition-all text-xs disabled:opacity-50"
           >
             {isExporting ? (
               <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -587,7 +587,7 @@ export default function SystemLogsPage() {
                 className={clsx(
                   "px-2.5 py-1 rounded-lg font-semibold transition-all text-xs flex items-center gap-1",
                   selectedPage === f.value
-                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
                     : "text-zinc-400 hover:text-white"
                 )}
               >

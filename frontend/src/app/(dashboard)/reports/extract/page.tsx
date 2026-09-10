@@ -386,7 +386,7 @@ export default function FinancialAndSalesExtractPage() {
       <div className="no-print flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 flex items-center gap-3">
+            <h1 className="text-3xl font-black text-white flex items-center gap-3">
               <FileText className="w-8 h-8 text-cyan-400" />
               Sales & Financial Extraction
             </h1>
@@ -419,7 +419,7 @@ export default function FinancialAndSalesExtractPage() {
 
           <button
             onClick={() => window.print()}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
             <span>Download / Print PDF</span>
@@ -442,7 +442,7 @@ export default function FinancialAndSalesExtractPage() {
               className={clsx(
                 "flex-1 md:flex-none px-5 py-2 rounded-lg font-bold transition-all",
                 reportType === item.key
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                   : "text-zinc-400 hover:text-white"
               )}
             >
@@ -990,7 +990,7 @@ export default function FinancialAndSalesExtractPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-colors flex items-center gap-2"
             >
               Save Expense
             </button>

@@ -294,7 +294,7 @@ export default function MotorcycleProfilesPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 flex-shrink-0">
         <div>
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <Bike className="w-8 h-8 text-cyan-400" />
             Bike Registry
           </h1>
@@ -312,7 +312,7 @@ export default function MotorcycleProfilesPage() {
               setFormCategory("Scooter");
               setIsRegisterModalOpen(true);
             }}
-            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] flex items-center gap-2 text-sm"
+            className="bg-cyan-500 hover:bg-cyan-400 text-zinc-950 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
           >
             <Plus className="w-4 h-4" />
             + Add Bike Model
@@ -617,7 +617,7 @@ export default function MotorcycleProfilesPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isSubmitting ? "Saving..." : "Save Bike Model"}
             </button>
@@ -722,7 +722,7 @@ export default function MotorcycleProfilesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>

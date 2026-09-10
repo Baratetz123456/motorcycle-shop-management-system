@@ -100,7 +100,7 @@ export function LegalHub({ initialTab = "privacy" }: LegalHubProps) {
             </button>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 flex items-center justify-center shadow-md">
+              <div className="w-8 h-8 rounded-xl bg-cyan-500 p-0.5 flex items-center justify-center">
                 <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
                   <Bike className="w-4 h-4 text-cyan-400" />
                 </div>
@@ -164,7 +164,7 @@ export function LegalHub({ initialTab = "privacy" }: LegalHubProps) {
       </header>
 
       {/* Hero Banner with Metadata */}
-      <section className="border-b border-white/10 bg-gradient-to-b from-zinc-900/40 to-transparent py-10 px-4 sm:px-6 lg:px-8 print:py-4 print:border-none">
+      <section className="border-b border-white/10 bg-zinc-900/40 py-10 px-4 sm:px-6 lg:px-8 print:py-4 print:border-none">
         <div className="max-w-7xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider print:hidden">
             <Lock className="w-3.5 h-3.5" />
@@ -238,7 +238,7 @@ export function LegalHub({ initialTab = "privacy" }: LegalHubProps) {
           </nav>
 
           {/* Quick Shop Floor Notice Card */}
-          <div className="p-5 bg-gradient-to-br from-zinc-900/90 to-zinc-900/40 border border-white/10 rounded-3xl space-y-2.5 text-xs text-zinc-400 backdrop-blur-md">
+          <div className="p-5 bg-zinc-900 border border-white/10 rounded-3xl space-y-2.5 text-xs text-zinc-400 backdrop-blur-md">
             <div className="flex items-center gap-2 text-cyan-400 font-bold">
               <Bike className="w-4 h-4" />
               <span>Workshop Custody Rule</span>

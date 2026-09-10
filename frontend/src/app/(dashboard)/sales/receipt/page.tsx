@@ -211,7 +211,7 @@ function SalesReceiptContent() {
 
             <button
               onClick={() => window.print()}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Print Receipt</span>

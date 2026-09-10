@@ -293,12 +293,12 @@ export function ConfirmModal({
           onClick={onConfirm}
           disabled={isLoading}
           className={clsx(
-            "px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2",
+            "px-5 py-2.5 rounded-xl font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2",
             confirmVariant === "danger"
-              ? "bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 shadow-rose-600/20"
+              ? "bg-red-600 hover:bg-red-500 text-white shadow-sm"
               : confirmVariant === "warning"
-              ? "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 shadow-amber-600/20"
-              : "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-cyan-500/20"
+              ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-sm"
+              : "bg-cyan-500 hover:bg-cyan-400 text-zinc-950 shadow-sm"
           )}
         >
           {isLoading ? (

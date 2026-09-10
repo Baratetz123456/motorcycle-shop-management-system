@@ -209,7 +209,7 @@ function CustomerRepairHistoryLogsContent() {
             ) : (
               <button
                 onClick={() => handleResumeRepair(customer)}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2"
               >
                 <Play className="w-4 h-4" />
                 <span>Start Job</span>
@@ -225,7 +225,7 @@ function CustomerRepairHistoryLogsContent() {
           <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
               <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-2xl shadow-inner">
+              <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-cyan-400 font-bold text-2xl">
                 {customer.customer_name.split(" ").map((n) => n[0]).join("")}
               </div>
               <div>

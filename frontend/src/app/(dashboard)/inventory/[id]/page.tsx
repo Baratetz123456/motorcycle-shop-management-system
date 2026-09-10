@@ -399,25 +399,13 @@ export default function ItemProfilePage() {
       <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-start gap-4">
-            <div className={clsx(
-              "w-16 h-16 rounded-2xl p-0.5 shadow-lg shrink-0 flex items-center justify-center",
-              isProduct 
-                ? "bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-cyan-500/20" 
-                : "bg-gradient-to-tr from-purple-500 to-indigo-600 shadow-purple-500/20"
-            )}>
-              <div className="w-full h-full bg-zinc-950 rounded-[14px] flex items-center justify-center">
-                {isProduct ? <Package className="w-8 h-8 text-cyan-400" /> : <Wrench className="w-8 h-8 text-purple-400" />}
-              </div>
+            <div className="w-16 h-16 rounded-2xl shrink-0 flex items-center justify-center bg-zinc-900 border border-cyan-500/30">
+              {isProduct ? <Package className="w-8 h-8 text-cyan-400" /> : <Wrench className="w-8 h-8 text-cyan-400" />}
             </div>
 
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className={clsx(
-                  "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
-                  isProduct 
-                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" 
-                    : "bg-purple-500/10 text-purple-400 border-purple-500/30"
-                )}>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border bg-cyan-500/10 text-cyan-400 border-cyan-500/30">
                   {item.item_type}
                 </span>
 
@@ -783,7 +771,7 @@ export default function ItemProfilePage() {
             <button
               type="submit"
               disabled={isSubmittingEdit}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isSubmittingEdit ? <span>Saving...</span> : <span>Save Changes</span>}
             </button>

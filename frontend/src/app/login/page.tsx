@@ -139,17 +139,14 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 relative overflow-hidden font-sans">
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-
       <div className="w-full max-w-md p-6 relative z-10">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20 mb-4 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-cyan-500 p-0.5 mb-4 flex items-center justify-center">
             <div className="w-full h-full bg-zinc-950 rounded-[14px] flex items-center justify-center">
               <Wrench className="w-8 h-8 text-cyan-400" />
             </div>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white">
             Versiklo
           </h1>
           <p className="text-sm text-zinc-400 mt-1">The all-in-one system for running your motorcycle shop</p>
@@ -216,7 +213,7 @@ function LoginForm() {
               id="login-button"
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium py-2.5 px-4 rounded-xl shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+              className="w-full mt-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 group disabled:opacity-50"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

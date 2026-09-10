@@ -716,7 +716,7 @@ export default function JobCardProfilePage() {
               <button
                 type="submit"
                 disabled={isSavingMechanic}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-purple-500/20 flex items-center gap-2 transition-all whitespace-nowrap"
+                className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors whitespace-nowrap"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{isSavingMechanic ? "Saving..." : "Save Mechanic"}</span>
@@ -770,7 +770,7 @@ export default function JobCardProfilePage() {
                   type="button"
                   onClick={handleAddDiagnosis}
                   disabled={!newDiagnosisText.trim()}
-                  className="ml-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-cyan-500/20"
+                  className="ml-auto px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Diagnosis Note</span>

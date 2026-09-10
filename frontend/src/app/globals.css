@@ -33,7 +33,7 @@ body {
    (text-cyan-*, bg-cyan-*, border-cyan-*, gradients, rings) reflect the theme.
    ========================================================================== */
 
-/* 1. Cyan Drift (Default Electric Cyan & Velocity Blue) */
+/* 1. Cyan Drift (Flat Electric Cyan on Dark Zinc) */
 :root,
 html[data-theme="cyan"],
 [data-theme="cyan"] {
@@ -44,17 +44,17 @@ html[data-theme="cyan"],
   --color-cyan-600: #0891b2 !important;
   --color-cyan-950: #083344 !important;
 
-  --color-blue-400: #60a5fa !important;
-  --color-blue-500: #3b82f6 !important;
-  --color-blue-600: #2563eb !important;
-  --color-blue-950: #172554 !important;
+  --color-blue-400: #22d3ee !important;
+  --color-blue-500: #06b6d4 !important;
+  --color-blue-600: #0891b2 !important;
+  --color-blue-950: #083344 !important;
 
-  --color-indigo-400: #818cf8 !important;
-  --color-indigo-500: #6366f1 !important;
-  --color-indigo-600: #4f46e5 !important;
+  --color-indigo-400: #22d3ee !important;
+  --color-indigo-500: #06b6d4 !important;
+  --color-indigo-600: #0891b2 !important;
 }
 
-/* 2. Emerald Speed (Neon Emerald & Mint Teal) */
+/* 2. Emerald Speed (Flat Neon Emerald on Dark Zinc) */
 html[data-theme="emerald"],
 [data-theme="emerald"] {
   --color-cyan-200: #a7f3d0 !important;
@@ -64,17 +64,17 @@ html[data-theme="emerald"],
   --color-cyan-600: #059669 !important;
   --color-cyan-950: #022c22 !important;
 
-  --color-blue-400: #2dd4bf !important;
-  --color-blue-500: #14b8a6 !important;
-  --color-blue-600: #0d9488 !important;
-  --color-blue-950: #042f2e !important;
+  --color-blue-400: #34d399 !important;
+  --color-blue-500: #10b981 !important;
+  --color-blue-600: #059669 !important;
+  --color-blue-950: #022c22 !important;
 
   --color-indigo-400: #34d399 !important;
   --color-indigo-500: #10b981 !important;
   --color-indigo-600: #059669 !important;
 }
 
-/* 3. Violet Hyperdrive (Hyper Purple & Electric Indigo) */
+/* 3. Violet Hyperdrive (Flat Electric Violet on Dark Zinc) */
 html[data-theme="violet"],
 [data-theme="violet"] {
   --color-cyan-200: #e9d5ff !important;
@@ -84,17 +84,17 @@ html[data-theme="violet"],
   --color-cyan-600: #9333ea !important;
   --color-cyan-950: #3b0764 !important;
 
-  --color-blue-400: #818cf8 !important;
-  --color-blue-500: #6366f1 !important;
-  --color-blue-600: #4f46e5 !important;
-  --color-blue-950: #1e1b4b !important;
+  --color-blue-400: #c084fc !important;
+  --color-blue-500: #a855f7 !important;
+  --color-blue-600: #9333ea !important;
+  --color-blue-950: #3b0764 !important;
 
   --color-indigo-400: #c084fc !important;
   --color-indigo-500: #a855f7 !important;
-  --color-indigo-600: #7c3aed !important;
+  --color-indigo-600: #9333ea !important;
 }
 
-/* 4. Amber Forge (Sunset Gold, Amber & Crimson Flame) */
+/* 4. Amber Forge (Flat Sunset Amber on Dark Zinc) */
 html[data-theme="amber"],
 [data-theme="amber"] {
   --color-cyan-200: #fde68a !important;
@@ -104,14 +104,14 @@ html[data-theme="amber"],
   --color-cyan-600: #d97706 !important;
   --color-cyan-950: #451a03 !important;
 
-  --color-blue-400: #fb923c !important;
-  --color-blue-500: #f97316 !important;
-  --color-blue-600: #ea580c !important;
-  --color-blue-950: #431407 !important;
+  --color-blue-400: #fbbf24 !important;
+  --color-blue-500: #f59e0b !important;
+  --color-blue-600: #d97706 !important;
+  --color-blue-950: #451a03 !important;
 
-  --color-indigo-400: #fb7185 !important;
-  --color-indigo-500: #f43f5e !important;
-  --color-indigo-600: #e11d48 !important;
+  --color-indigo-400: #fbbf24 !important;
+  --color-indigo-500: #f59e0b !important;
+  --color-indigo-600: #d97706 !important;
 }
 
 /* ==========================================================================

@@ -101,12 +101,9 @@ export function NavigationProgressBar() {
       aria-hidden="true"
     >
       <div
-        className="h-[3px] bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 shadow-[0_0_12px_rgba(6,182,212,0.8)] relative transition-all duration-200 ease-out"
+        className="h-[3px] bg-cyan-500 relative transition-all duration-200 ease-out"
         style={{ width: `${progress}%` }}
-      >
-        {/* Trailing neon beacon light */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-[5px] bg-white/60 shadow-[0_0_16px_4px_rgba(34,211,238,0.95)] rounded-full blur-[0.5px]" />
-      </div>
+      />
     </div>
   );
 }

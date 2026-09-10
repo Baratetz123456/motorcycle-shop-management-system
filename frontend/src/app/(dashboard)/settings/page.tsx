@@ -876,9 +876,9 @@ function SettingsContent() {
       {/* Top Header & Navigation Tabs */}
       <div className="px-6 pt-6 pb-2 shrink-0">
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-white/10">
+        <div className="pb-3 border-b border-white/10">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-2.5">
+            <h1 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-2.5">
               <Settings className="w-7 h-7 text-cyan-400" />
               {isAdmin ? "Shop Settings" : "My Profile"}
             </h1>
@@ -888,82 +888,77 @@ function SettingsContent() {
                 : "Manage your staff account details, appearance theme, and password."}
             </p>
           </div>
-
-          <div className="flex items-center gap-2 bg-zinc-900 border border-white/10 px-3.5 py-1.5 rounded-xl self-start md:self-auto shadow-inner">
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span className={clsx("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-lg border", getRoleBadgeStyle(currentUserRole))}>
-              {currentUserRole || "USER"}
-            </span>
-          </div>
         </div>
 
         {/* Segmented Navigation Tabs (Rendered for Admin Only) */}
         {isAdmin && (
-          <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner flex-wrap gap-1.5 mt-3">
-            <button
-              onClick={() => handleTabChange("general")}
-              className={clsx(
-                "flex-1 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
-                activeTab === "general"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-              )}
-            >
-              <Globe className="w-4 h-4" />
-              <span>General</span>
-            </button>
+          <div className="overflow-x-auto no-scrollbar touch-pan-x -mx-6 px-6 sm:mx-0 sm:px-0 mt-3 pb-1">
+            <div className="inline-flex sm:flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner gap-1.5 min-w-max sm:min-w-0">
+              <button
+                onClick={() => handleTabChange("general")}
+                className={clsx(
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  activeTab === "general"
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                )}
+              >
+                <Globe className="w-4 h-4 shrink-0" />
+                <span>General</span>
+              </button>
 
-            <button
-              onClick={() => handleTabChange("roles")}
-              className={clsx(
-                "flex-1 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
-                activeTab === "roles"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-              )}
-            >
-              <Sliders className="w-4 h-4" />
-              <span>Role Access</span>
-            </button>
+              <button
+                onClick={() => handleTabChange("roles")}
+                className={clsx(
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  activeTab === "roles"
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                )}
+              >
+                <Sliders className="w-4 h-4 shrink-0" />
+                <span>Role Access</span>
+              </button>
 
-            <button
-              onClick={() => handleTabChange("users")}
-              className={clsx(
-                "flex-1 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
-                activeTab === "users"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-              )}
-            >
-              <Users className="w-4 h-4" />
-              <span>Staff & Users</span>
-            </button>
+              <button
+                onClick={() => handleTabChange("users")}
+                className={clsx(
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  activeTab === "users"
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                )}
+              >
+                <Users className="w-4 h-4 shrink-0" />
+                <span>Staff & Users</span>
+              </button>
 
-            <button
-              onClick={() => handleTabChange("profile")}
-              className={clsx(
-                "flex-1 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
-                activeTab === "profile"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-              )}
-            >
-              <User className="w-4 h-4" />
-              <span>My Profile</span>
-            </button>
+              <button
+                onClick={() => handleTabChange("profile")}
+                className={clsx(
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  activeTab === "profile"
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                )}
+              >
+                <User className="w-4 h-4 shrink-0" />
+                <span>My Profile</span>
+              </button>
 
-            <button
-              onClick={() => handleTabChange("logs")}
-              className={clsx(
-                "flex-1 min-w-[130px] px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2",
-                activeTab === "logs"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-              )}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Audit Log</span>
-            </button>
+              <button
+                onClick={() => handleTabChange("logs")}
+                className={clsx(
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  activeTab === "logs"
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                )}
+              >
+                <FileText className="w-4 h-4 shrink-0" />
+                <span>Audit Log</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -1349,7 +1344,7 @@ function SettingsContent() {
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 font-semibold rounded-xl shadow-lg transition-all text-xs flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-cyan-500/20"
+                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Store Settings</span>
@@ -1376,8 +1371,97 @@ function SettingsContent() {
                   </div>
                 </div>
 
-                {/* Matrix Table */}
-                <div className="relative z-10 overflow-x-auto rounded-2xl border border-white/10 bg-zinc-950/60 shadow-xl">
+                {/* Mobile View: Adaptive Role Access Module Cards */}
+                <div className="block md:hidden space-y-3 relative z-10">
+                  {CONFIGURABLE_MODULES.map((mod) => {
+                    const currentRoles = modulePermissions[mod.id] || ["admin"];
+                    const isManager = currentRoles.includes("manager");
+                    const isCashier = currentRoles.includes("cashier");
+                    const isMechanic = currentRoles.includes("mechanic");
+
+                    return (
+                      <div key={mod.id} className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 space-y-3 shadow-md">
+                        <div>
+                          <div className="font-bold text-white text-sm">{mod.name}</div>
+                          <div className="text-xs text-zinc-400 mt-0.5">{mod.description}</div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
+                          {/* Admin (Locked) */}
+                          <div className="flex items-center justify-between p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs">
+                            <span className="font-bold text-cyan-400">Admin</span>
+                            <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-cyan-400 bg-cyan-500/20 px-2 py-0.5 rounded-md">
+                              <Lock className="w-3 h-3" /> Locked
+                            </span>
+                          </div>
+
+                          {/* Manager Toggle */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleModuleRole(mod.id, "manager")}
+                            className={clsx(
+                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95",
+                              isManager
+                                ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                                : "bg-zinc-900/80 text-zinc-500 border-white/5"
+                            )}
+                          >
+                            <span>Manager</span>
+                            <span className={clsx(
+                              "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
+                              isManager ? "bg-purple-500/30 text-purple-200" : "bg-zinc-800 text-zinc-600"
+                            )}>
+                              {isManager ? "Allowed" : "Off"}
+                            </span>
+                          </button>
+
+                          {/* Cashier Toggle */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleModuleRole(mod.id, "cashier")}
+                            className={clsx(
+                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95",
+                              isCashier
+                                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                : "bg-zinc-900/80 text-zinc-500 border-white/5"
+                            )}
+                          >
+                            <span>Cashier</span>
+                            <span className={clsx(
+                              "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
+                              isCashier ? "bg-emerald-500/30 text-emerald-200" : "bg-zinc-800 text-zinc-600"
+                            )}>
+                              {isCashier ? "Allowed" : "Off"}
+                            </span>
+                          </button>
+
+                          {/* Mechanic Toggle */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleModuleRole(mod.id, "mechanic")}
+                            className={clsx(
+                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95",
+                              isMechanic
+                                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                                : "bg-zinc-900/80 text-zinc-500 border-white/5"
+                            )}
+                          >
+                            <span>Mechanic</span>
+                            <span className={clsx(
+                              "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
+                              isMechanic ? "bg-amber-500/30 text-amber-200" : "bg-zinc-800 text-zinc-600"
+                            )}>
+                              {isMechanic ? "Allowed" : "Off"}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop View: Full Matrix Table */}
+                <div className="hidden md:block relative z-10 overflow-x-auto rounded-2xl border border-white/10 bg-zinc-950/60 shadow-xl">
                   <table className="w-full text-left text-sm text-zinc-300">
                     <thead className="bg-zinc-950 border-b border-white/10 text-xs uppercase text-zinc-400 font-semibold tracking-wider">
                       <tr>
@@ -1536,7 +1620,7 @@ function SettingsContent() {
                 <button
                   type="button"
                   onClick={handleSaveRoles}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Permissions</span>
@@ -1563,7 +1647,7 @@ function SettingsContent() {
 
               <Link
                 href="/users/register"
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/20 transition-all text-xs self-start sm:self-auto shrink-0"
+                className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>+ Add Staff</span>
@@ -1592,30 +1676,103 @@ function SettingsContent() {
               </div>
 
               {/* Role Filter Pills */}
-              <div className="flex flex-wrap items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-white/10">
-                <Filter className="w-3.5 h-3.5 text-zinc-500 ml-1.5 mr-0.5 hidden sm:block" />
-                {STAFF_ROLE_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setStaffRoleFilter(option.value)}
-                    className={clsx(
-                      "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border",
-                      staffRoleFilter === option.value
-                        ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm"
-                        : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/60"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="overflow-x-auto no-scrollbar -mx-1 px-1 py-0.5">
+                <div className="inline-flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-white/10 min-w-max">
+                  <Filter className="w-3.5 h-3.5 text-zinc-500 ml-1.5 mr-0.5 hidden sm:block shrink-0" />
+                  {STAFF_ROLE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setStaffRoleFilter(option.value)}
+                      className={clsx(
+                        "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border whitespace-nowrap shrink-0",
+                        staffRoleFilter === option.value
+                          ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm"
+                          : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/60"
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Staff Users Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
             <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
               <div className="overflow-auto flex-1 min-h-0">
-                <table className="w-full text-left text-xs text-zinc-300">
+                {/* Mobile View: Adaptive Staff Account Cards */}
+                <div className="block md:hidden p-3 space-y-3">
+                  {staffLoading ? (
+                    Array.from({ length: 4 }).map((_, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl bg-zinc-950/60 border border-white/5 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                          <div className="space-y-1.5 flex-1">
+                            <Skeleton className="h-4 w-32 rounded" />
+                            <Skeleton className="h-3 w-40 rounded" />
+                          </div>
+                          <Skeleton className="h-5 w-16 rounded-full" />
+                        </div>
+                      </div>
+                    ))
+                  ) : staffUsers.length === 0 ? (
+                    <div className="py-12 text-center text-zinc-500 text-xs">
+                      No staff accounts found matching your criteria.
+                    </div>
+                  ) : (
+                    staffUsers.map((user) => {
+                      const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Staff Member";
+                      const initials = `${user.first_name ? user.first_name[0] : ""}${user.last_name ? user.last_name[0] : ""}`.toUpperCase() || "U";
+                      return (
+                        <div
+                          key={user.id}
+                          onClick={() => router.push(`/users/${user.id}`)}
+                          className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer space-y-3 active:scale-[0.99] group shadow-sm"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900 shadow-sm">
+                                {user.avatar ? (
+                                  <UserAvatar avatarId={user.avatar} className="w-10 h-10" />
+                                ) : (
+                                  <div className="w-full h-full bg-zinc-800 flex items-center justify-center font-bold text-cyan-400 text-sm">
+                                    {initials}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-white group-hover:text-cyan-400 transition-colors text-sm truncate">
+                                  {fullName}
+                                </div>
+                                <div className="text-[10px] text-zinc-500 font-mono">
+                                  ID: {user.id.slice(0, 8)}
+                                </div>
+                              </div>
+                            </div>
+
+                            <span className={clsx("px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border shrink-0", getRoleBadgeStyle(user.role))}>
+                              {user.role}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                            <span className="text-zinc-400 font-mono text-[11px] truncate mr-2">
+                              {user.email}
+                            </span>
+                            <span className="flex items-center gap-1 text-[11px] font-semibold text-cyan-400 shrink-0">
+                              <span>Edit Profile</span>
+                              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Desktop View: Traditional Data Table */}
+                <table className="hidden md:table w-full text-left text-xs text-zinc-300">
                   <thead className="bg-zinc-950/90 border-b border-white/10 uppercase text-[11px] text-zinc-400 font-semibold tracking-wider sticky top-0 z-10 backdrop-blur-md">
                     <tr>
                       <th className="py-3.5 px-6">Staff Member</th>
@@ -1667,7 +1824,7 @@ function SettingsContent() {
                                   {user.avatar ? (
                                     <UserAvatar avatarId={user.avatar} className="w-9 h-9" />
                                   ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center font-bold text-cyan-400 text-xs">
+                                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center font-bold text-cyan-400 text-xs">
                                       {initials}
                                     </div>
                                   )}
@@ -1705,8 +1862,8 @@ function SettingsContent() {
               </div>
 
               {/* Pinned Pagination Controls */}
-              <div className="p-3.5 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400 shrink-0">
-                <div>
+              <div className="p-3.5 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
+                <div className="text-center sm:text-left">
                   Showing <span className="font-bold text-white">{staffUsers.length}</span> of{" "}
                   <span className="font-bold text-white">{staffTotal}</span> registered staff members (Page{" "}
                   <span className="font-bold text-white">{staffPage}</span> of{" "}
@@ -1902,10 +2059,7 @@ function SettingsContent() {
                               <div className="flex flex-col items-center text-center p-2">
                                 {/* Large 80px Avatar */}
                                 <div className="relative mb-3">
-                                  <div className={clsx(
-                                    "w-20 h-20 rounded-full p-1 bg-gradient-to-tr transition-all duration-300 shadow-xl",
-                                    activePreset.bgGradient
-                                  )}>
+                                  <div className="w-20 h-20 rounded-full p-1 bg-zinc-800 border border-zinc-700 transition-all duration-300 shadow-xl">
                                     <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-1 overflow-hidden">
                                       {activePreset.renderFace()}
                                     </div>
@@ -1971,10 +2125,7 @@ function SettingsContent() {
                                 )}
 
                                 {/* Flat Avatar Graphic */}
-                                <div className={clsx(
-                                  "w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr transition-transform group-hover:scale-105 shadow-md shrink-0 mt-0.5",
-                                  preset.bgGradient
-                                )}>
+                                <div className="w-14 h-14 rounded-full p-0.5 bg-zinc-800 border border-zinc-700 transition-transform group-hover:scale-105 shrink-0 mt-0.5">
                                   <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-0.5 overflow-hidden">
                                     {preset.renderFace()}
                                   </div>
@@ -2064,10 +2215,10 @@ function SettingsContent() {
                   type="submit"
                   disabled={isUpdatingProfile}
                   className={clsx(
-                    "w-full sm:w-auto px-6 py-2.5 font-semibold rounded-xl shadow-lg transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50",
+                    "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 disabled:opacity-50",
                     isProfileDirty
-                      ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-white ring-2 ring-cyan-400/50 shadow-cyan-500/30 scale-105"
-                      : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-cyan-500/20"
+                      ? "bg-amber-400 hover:bg-amber-300 text-zinc-950 ring-2 ring-amber-400/50 scale-105"
+                      : "bg-cyan-500 hover:bg-cyan-400 text-zinc-950"
                   )}
                 >
                   {isUpdatingProfile ? (
@@ -2106,7 +2257,7 @@ function SettingsContent() {
               </div>
 
               {/* Dedicated Page Hero Banner */}
-              <div className="relative z-10 p-6 md:p-8 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-zinc-900 border border-cyan-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+              <div className="relative z-10 p-6 md:p-8 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
                 <div className="space-y-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                     Dedicated History Logs Page
@@ -2121,7 +2272,7 @@ function SettingsContent() {
 
                 <Link
                   href="/audit-logs"
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all text-xs flex items-center justify-center gap-2 shrink-0"
+                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shrink-0"
                 >
                   <span>View Full Log</span>
                   <ArrowRight className="w-4 h-4" />

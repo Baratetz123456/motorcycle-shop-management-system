@@ -152,7 +152,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
           <button
             type="submit"
             disabled={isLoading}
-            className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

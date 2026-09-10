@@ -272,7 +272,7 @@ function POSCheckoutContent() {
           </button>
 
           <div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <CreditCard className="w-8 h-8 text-cyan-400" />
               POS Checkout Payment
             </h1>
@@ -403,7 +403,7 @@ function POSCheckoutContent() {
               <button
                 type="button"
                 onClick={handleReturnToPOS}
-                className="flex-1 py-3.5 px-4 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3.5 px-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm rounded-2xl transition-all flex items-center justify-center gap-2"
               >
                 <span>Return to POS Checkout</span>
                 <ArrowRight className="w-4 h-4" />
@@ -524,7 +524,7 @@ function POSCheckoutContent() {
                     )}
                     <div className="flex justify-between items-end pt-2 border-t border-white/5">
                       <span className="text-zinc-300 font-bold text-sm">Discounted Net Total Due:</span>
-                      <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 font-mono">
+                      <span className="text-2xl font-black text-cyan-400 font-mono">
                         ₱{netTotalDue.toFixed(2)}
                       </span>
                     </div>
@@ -684,7 +684,7 @@ function POSCheckoutContent() {
                   type="button"
                   onClick={handleExecutePayment}
                   disabled={isCheckingOut || cart.length === 0 || isCashInsufficient}
-                  className="w-full py-4 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white text-base font-bold rounded-2xl shadow-[0_0_25px_-5px_rgba(6,182,212,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                  className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-base font-bold rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                 >
                   {isCheckingOut ? (
                     <>

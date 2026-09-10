@@ -153,9 +153,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (deniedInfo) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-zinc-100 font-sans relative overflow-hidden">
-        <div className="absolute top-1/3 -left-32 w-80 h-80 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/3 -right-32 w-80 h-80 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
-
         <div className="max-w-md w-full bg-zinc-900/80 border border-red-500/30 rounded-2xl p-7 text-center shadow-2xl backdrop-blur-xl relative z-10">
           <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-400 shadow-lg shadow-red-500/10">
             <ShieldAlert className="w-7 h-7" />
@@ -170,7 +167,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
           <div className="space-y-3">
             <button
               onClick={handleImmediateNavigate}
-              className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-medium py-2.5 px-4 rounded-xl shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2 group text-sm"
+              className="w-full bg-red-600 hover:bg-red-500 text-white font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 group text-sm"
             >
               <span>Go to {deniedInfo.fallbackName}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -194,7 +191,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
             </div>
             <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
               <div
-                className="bg-gradient-to-r from-red-500 to-orange-500 h-full rounded-full transition-all duration-1000 ease-linear"
+                className="bg-red-500 h-full rounded-full transition-all duration-1000 ease-linear"
                 style={{ width: `${(countdown / 2) * 100}%` }}
               />
             </div>

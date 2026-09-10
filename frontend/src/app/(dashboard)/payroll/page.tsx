@@ -312,8 +312,8 @@ export default function PayrollPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 flex items-center gap-3">
-              <DollarSign className="w-8 h-8 text-emerald-400" />
+            <h1 className="text-3xl font-black text-white flex items-center gap-3">
+              <DollarSign className="w-8 h-8 text-cyan-400" />
               Payroll & Commissions
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
@@ -337,7 +337,7 @@ export default function PayrollPage() {
           <button
             onClick={() => handleDisbursePayroll("ALL")}
             disabled={disbursing || totalPendingPayroll === 0}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
           >
             <CheckCircle className="w-4 h-4" />
             <span>{disbursing ? "Disbursing..." : "Disburse All"}</span>
@@ -365,7 +365,7 @@ export default function PayrollPage() {
               className={clsx(
                 "px-3.5 py-1.5 rounded-lg font-semibold transition-all",
                 selectedPeriod === item.key
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
                   : "text-zinc-400 hover:text-white"
               )}
             >
@@ -784,7 +784,7 @@ export default function PayrollPage() {
               <button
                 type="button"
                 onClick={() => setSelectedPayslip(null)}
-                className="flex-1 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl transition-all shadow-lg shadow-cyan-500/20"
+                className="flex-1 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs rounded-xl transition-all"
               >
                 <span>Close Statement</span>
               </button>

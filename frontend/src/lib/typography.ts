@@ -6,13 +6,13 @@
 export const TYPOGRAPHY = {
   // Page Header Level
   pageTitle:
-    "text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 flex items-center gap-3",
+    "text-3xl font-bold text-white flex items-center gap-3",
   pageIcon: "w-8 h-8 text-cyan-400",
   pageSubtitle: "text-zinc-400 mt-1 text-sm",
 
   // Action Buttons
   primaryButton:
-    "px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2",
+    "px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm transition-colors flex items-center gap-2 shadow-sm",
   secondaryButton:
     "px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md",
 

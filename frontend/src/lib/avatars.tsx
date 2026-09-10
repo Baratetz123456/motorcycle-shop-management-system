@@ -510,9 +510,9 @@ export function UserAvatar({
 
   return (
     <div
-      className={`rounded-full p-0.5 bg-gradient-to-tr ${preset.bgGradient} ${
-        showRing ? `border ${preset.borderColor}` : ""
-      } flex items-center justify-center shrink-0 shadow-md transition-transform ${className}`}
+      className={`rounded-full p-0.5 bg-zinc-800 ${
+        showRing ? "border border-zinc-700" : ""
+      } flex items-center justify-center shrink-0 transition-transform ${className}`}
       title={`${preset.name} (${preset.roleHint} • ${preset.department})`}
     >
       <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center overflow-hidden p-0.5">

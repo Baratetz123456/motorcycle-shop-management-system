@@ -241,7 +241,7 @@ export function Sidebar() {
         {/* Brand Header & Close Button (Strictly shrink-0) */}
         <div className="h-16 shrink-0 border-b border-white/10 flex items-center justify-between px-4">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-cyan-500 p-0.5 flex items-center justify-center shrink-0">
               <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
                 <Bike className="w-5 h-5 text-cyan-400" />
               </div>
@@ -302,7 +302,7 @@ export function Sidebar() {
                   }}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all relative group ${
                     isActive
-                      ? "nav-active-item bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-500/5 font-semibold"
+                      ? "nav-active-item bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-semibold"
                       : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
                   }`}
                 >

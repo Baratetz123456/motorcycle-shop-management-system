@@ -97,7 +97,7 @@ export function CheckoutModal({
       <button
         disabled={disabled}
         onClick={handleOpenModal}
-        className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+        className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         <span>Charge</span>
         <span>₱{total.toFixed(2)}</span>
@@ -183,7 +183,7 @@ export function CheckoutModal({
 
                       <button 
                         onClick={handleCloseModal}
-                        className="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+                        className="w-full py-3.5 bg-cyan-500 hover:bg-cyan-400 rounded-xl text-zinc-950 font-bold transition-colors flex items-center justify-center gap-2"
                       >
                         <span>Done / Start New Sale</span>
                         <ArrowRight className="w-4 h-4" />
@@ -262,7 +262,7 @@ export function CheckoutModal({
                     type="button"
                     onClick={handleCheckout}
                     disabled={isPolling}
-                    className="w-full py-4 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white text-base font-bold rounded-2xl shadow-[0_0_25px_-5px_rgba(6,182,212,0.5)] transition-all flex items-center justify-center gap-2 active:scale-95"
+                    className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-base font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 active:scale-95"
                   >
                     <span>Confirm & Complete Payment (₱{total.toFixed(2)})</span>
                     <ArrowRight className="w-5 h-5" />

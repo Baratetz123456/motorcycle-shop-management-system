@@ -81,7 +81,7 @@ export default function DashboardLayout({
                 </button>
 
                 <div className="flex items-center gap-2 border-l border-white/10 pl-3">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 p-0.5 flex items-center justify-center shadow-sm">
+                  <div className="w-6 h-6 rounded-lg bg-cyan-500 p-0.5 flex items-center justify-center">
                     <div className="w-full h-full bg-zinc-950 rounded-[6px] flex items-center justify-center">
                       <Bike className="w-3.5 h-3.5 text-cyan-400" />
                     </div>
