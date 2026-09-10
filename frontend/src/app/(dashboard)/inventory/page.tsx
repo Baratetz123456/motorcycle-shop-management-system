@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
-import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { Modal, ModalBody, ModalFooter } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -66,7 +65,6 @@ function InventoryContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -375,13 +373,6 @@ function InventoryContent() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsAuditOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold"
-          >
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Log</span>
-          </button>
 
           {canManage && (
             <button
@@ -1052,16 +1043,6 @@ function InventoryContent() {
           </div>
         </div>
       </MobileFilterSheet>
-
-      {/* Contextual Audit Drawer */}
-      <ContextualAuditDrawer
-        isOpen={isAuditOpen}
-        onClose={() => setIsAuditOpen(false)}
-        title="Inventory Activity & Stock Audit"
-        subtitle="Audit stream for product creation, catalog edits, and stock deductions"
-        actionPrefix="INVENTORY_"
-        resourceFilter="/inventory"
-      />
     </div>
   );
 }

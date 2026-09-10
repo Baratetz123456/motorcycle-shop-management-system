@@ -30,7 +30,6 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
-import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { PosCatalogCardsSkeleton, PosRepairsCardsSkeleton } from "@/components/pos/PosSkeleton";
 
@@ -111,7 +110,6 @@ export default function POSPage() {
   const [isChangingCustomer, setIsChangingCustomer] = useState(false);
   const [search, setSearch] = useState("");
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [frequencyMap, setFrequencyMap] = useState<Record<string, number>>({});
 
@@ -443,15 +441,6 @@ export default function POSPage() {
               Counter Sales
             </span>
           </div>
-
-          {/* Audit quick button */}
-          <button
-            onClick={() => setIsAuditOpen(true)}
-            className="sm:hidden p-2 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300"
-            title="Audit Log"
-          >
-            <Activity className="w-4 h-4 text-cyan-400" />
-          </button>
         </div>
 
         {/* View Switcher: Catalog vs Current Order (Full-page switch) */}
@@ -502,14 +491,6 @@ export default function POSPage() {
               )}
             </button>
           </div>
-
-          <button
-            onClick={() => setIsAuditOpen(true)}
-            className="hidden sm:flex px-3.5 py-2 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors items-center gap-1.5 text-xs font-semibold shrink-0 shadow-sm"
-          >
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Log</span>
-          </button>
         </div>
       </header>
 
@@ -1276,16 +1257,6 @@ export default function POSPage() {
         cancelText="Keep Cart"
         confirmVariant="danger"
         icon={<Trash2 className="w-5 h-5" />}
-      />
-
-      {/* Contextual Audit Drawer */}
-      <ContextualAuditDrawer
-        isOpen={isAuditOpen}
-        onClose={() => setIsAuditOpen(false)}
-        title="Showroom Counter Audit Log"
-        subtitle="Cryptographic audit stream for cashier checkout transactions and active cart events"
-        actionPrefix="POS_"
-        resourceFilter="/pos"
       />
     </div>
   );

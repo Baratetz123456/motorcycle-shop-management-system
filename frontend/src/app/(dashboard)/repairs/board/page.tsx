@@ -28,7 +28,6 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
@@ -72,7 +71,6 @@ export default function RepairBoardPage() {
   const [editJobModal, setEditJobModal] = useState<RepairJob | null>(null);
   const [deleteConfirmJob, setDeleteConfirmJob] = useState<RepairJob | null>(null);
   const [historyModalJob, setHistoryModalJob] = useState<RepairJob | null>(null);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states
@@ -924,14 +922,6 @@ export default function RepairBoardPage() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsAuditOpen(true)}
-            className="px-4 py-3 rounded-2xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
-          >
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Log</span>
-          </button>
-
-          <button
             onClick={() => setIsCreateModalOpen(true)}
             className="px-5 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm transition-colors flex items-center gap-2"
           >
@@ -1423,16 +1413,6 @@ export default function RepairBoardPage() {
             </div>
           ) : ""
         }
-      />
-
-      {/* Contextual Audit Drawer */}
-      <ContextualAuditDrawer
-        isOpen={isAuditOpen}
-        onClose={() => setIsAuditOpen(false)}
-        title="Workshop Job Cards Audit Log"
-        subtitle="Cryptographic audit stream for repair creation, status updates, diagnosis, and commission closures"
-        actionPrefix="REPAIR_"
-        resourceFilter="/repairs"
       />
 
     </div>

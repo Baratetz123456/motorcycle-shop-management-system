@@ -319,19 +319,8 @@ function SalesReceiptContent() {
               </div>
             </div>
 
-            {/* Quick Links to Audit Logs */}
-            <div className="pt-2 grid grid-cols-3 gap-2">
-              <button
-                onClick={() => router.push(`/audit-logs?search=${encodeURIComponent(transaction.cashier_name || "")}`)}
-                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/5 text-left transition-all"
-                title="View Cashier Audit Log"
-              >
-                <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" /> Audit
-                </span>
-                <span className="text-[9px] text-zinc-400 block truncate">Cashier Log</span>
-              </button>
-
+            {/* Quick Links */}
+            <div className="pt-2 grid grid-cols-2 gap-2">
               <button
                 onClick={() => router.push(`/repairs/history?mechanic=${encodeURIComponent(transaction.mechanic_name || "")}`)}
                 className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/5 text-left transition-all"

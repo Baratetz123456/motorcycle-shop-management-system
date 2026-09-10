@@ -17,7 +17,6 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { UserRole } from "@/lib/permissions";
 import { useRouter } from "next/navigation";
-import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 
@@ -55,7 +54,6 @@ export default function SalesManagementPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Date Range Filter State
@@ -190,15 +188,6 @@ export default function SalesManagementPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsAuditOpen(true)}
-            className="px-4 py-2.5 bg-zinc-900 border border-white/10 hover:border-cyan-500/30 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
-          >
-            <History className="w-4 h-4 text-cyan-400" />
-            <span>Audit Log</span>
-          </button>
-        </div>
       </div>
 
       {/* Desktop Filter & Search Bar */}
@@ -628,15 +617,6 @@ export default function SalesManagementPage() {
         </div>
       </div>
 
-      {/* Contextual Audit Drawer */}
-      <ContextualAuditDrawer
-        isOpen={isAuditOpen}
-        onClose={() => setIsAuditOpen(false)}
-        title="Invoices & Receipts Audit Log"
-        subtitle="Audit log of completed sales, receipts, and voided transactions"
-        actionPrefix="SALES_"
-        resourceFilter="/sales"
-      />
     </div>
   );
 }

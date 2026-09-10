@@ -28,7 +28,6 @@ import {
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
-import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { fetchStaffCompensationFromDB } from "@/lib/compensation";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
@@ -81,7 +80,6 @@ export default function PayrollPage() {
   const [mechanicRates, setMechanicRates] = useState<Record<string, number>>({});
 
   const [selectedPayslip, setSelectedPayslip] = useState<any | null>(null);
-  const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false);
   const [expandedMechanic, setExpandedMechanic] = useState<string | null>(null);
   const [disbursing, setDisbursing] = useState<boolean>(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -333,13 +331,6 @@ export default function PayrollPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => setIsAuditOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
-          >
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span>Audit Log</span>
-          </button>
 
           <button
             onClick={() => handleDisbursePayroll("ALL")}
@@ -874,16 +865,6 @@ export default function PayrollPage() {
           </div>
         </div>
       </MobileFilterSheet>
-
-      {/* Contextual Audit Drawer */}
-      <ContextualAuditDrawer
-        isOpen={isAuditOpen}
-        onClose={() => setIsAuditOpen(false)}
-        title="Payroll & Commissions Audit Log"
-        subtitle="Audit log of commission rates and payroll payouts"
-        actionPrefix="PAYROLL_"
-        resourceFilter="/payroll"
-      />
     </div>
   );
 }
