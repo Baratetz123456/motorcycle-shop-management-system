@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCheckoutSaga } from "@/hooks/useCheckoutSaga";
 import { usePosStore } from "@/lib/store/pos-store";
 import { CreditCard, Banknote, Loader2, CheckCircle2, XCircle, X, ArrowRight, ShieldCheck } from "lucide-react";
@@ -22,6 +23,11 @@ export function CheckoutModal({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const { cart, getTotals, clearCart } = usePosStore();
   const { total } = getTotals();
@@ -103,7 +109,7 @@ export function CheckoutModal({
         <span>₱{total.toFixed(2)}</span>
       </button>
 
-      {isOpen && (
+      {isOpen && mounted && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
           <div 
             className="fixed inset-0" 
@@ -273,7 +279,8 @@ export function CheckoutModal({
             </div>
             
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

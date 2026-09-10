@@ -31,6 +31,7 @@ import { recordUserAuditLog } from "@/lib/audit";
 import { ContextualAuditDrawer } from "@/components/audit/ContextualAuditDrawer";
 import { fetchStaffCompensationFromDB } from "@/lib/compensation";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 
 interface CommissionRecord {
   id: string;
@@ -83,6 +84,12 @@ export default function PayrollPage() {
   const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false);
   const [expandedMechanic, setExpandedMechanic] = useState<string | null>(null);
   const [disbursing, setDisbursing] = useState<boolean>(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const activeFilterCount = (selectedPeriod !== "MONTHLY" ? 1 : 0);
+  const handleResetAllFilters = () => {
+    setSelectedPeriod("MONTHLY");
+  };
 
   useEffect(() => {
     // 1. Role verification: Restricted to admin and manager
@@ -306,7 +313,7 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto w-full">
+    <div className="min-h-full bg-zinc-950 p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto w-full">
       
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -345,14 +352,14 @@ export default function PayrollPage() {
         </div>
       </div>
 
-      {/* Period Filter Bar & Settlement Selector */}
-      <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-3 px-5 mb-8 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Period Filter Bar & Settlement Selector (Hidden on Mobile) */}
+      <div className="hidden md:flex bg-zinc-900/60 border border-white/10 rounded-2xl p-3 px-5 mb-8 backdrop-blur-xl flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
           <CalendarDays className="w-4 h-4 text-cyan-400" />
           <span>Settlement Time Period:</span>
         </div>
 
-        <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs">
+        <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs overflow-x-auto no-scrollbar overscroll-x-contain max-w-full">
           {[
             { key: "WEEKLY", label: "Weekly View (7d)" },
             { key: "MONTHLY", label: "Monthly View (30d)" },
@@ -363,7 +370,7 @@ export default function PayrollPage() {
               key={item.key}
               onClick={() => setSelectedPeriod(item.key as PeriodOption)}
               className={clsx(
-                "px-3.5 py-1.5 rounded-lg font-semibold transition-all",
+                "px-3.5 py-1.5 rounded-lg font-semibold transition-all whitespace-nowrap shrink-0",
                 selectedPeriod === item.key
                   ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
                   : "text-zinc-400 hover:text-white"
@@ -424,31 +431,31 @@ export default function PayrollPage() {
 
       {/* Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
+        <div className="grid grid-cols-2 gap-1.5 bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-full md:w-fit">
           <button
             onClick={() => setActiveTab("MECHANICS")}
             className={clsx(
-              "px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2",
+              "px-3 sm:px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-center",
               activeTab === "MECHANICS"
                 ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <Wrench className="w-4 h-4" />
-            <span>Mechanic Commissions ({mechanicList.length})</span>
+            <Wrench className="w-4 h-4 shrink-0" />
+            <span className="truncate">Mechanics ({mechanicList.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("CASHIERS")}
             className={clsx(
-              "px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2",
+              "px-3 sm:px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-center",
               activeTab === "CASHIERS"
                 ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <UserCheck className="w-4 h-4" />
-            <span>Cashier Payroll ({filteredCashiers.length})</span>
+            <UserCheck className="w-4 h-4 shrink-0" />
+            <span className="truncate">Cashiers ({filteredCashiers.length})</span>
           </button>
         </div>
 
@@ -792,6 +799,81 @@ export default function PayrollPage() {
           </>
         )}
       </Modal>
+
+      {/* Floating Filter FAB (Mobile Only) */}
+      <FloatingFilterButton
+        onClick={() => setIsMobileFilterOpen(true)}
+        activeCount={activeFilterCount}
+      />
+
+      {/* Mobile Slide-Up Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        title="Filter Payroll & Settlements"
+        activeCount={activeFilterCount}
+        onReset={handleResetAllFilters}
+      >
+        {/* Settlement Period */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Settlement Time Period</label>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { key: "WEEKLY", label: "Weekly View (7d)" },
+              { key: "MONTHLY", label: "Monthly View (30d)" },
+              { key: "YEARLY", label: "Yearly View (365d)" },
+              { key: "ALL", label: "All Records" },
+            ].map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setSelectedPeriod(item.key as PeriodOption)}
+                className={clsx(
+                  "px-3 py-2.5 rounded-xl text-xs font-semibold text-center transition-all",
+                  selectedPeriod === item.key
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Staff Role Switcher */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Payroll Category</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("MECHANICS")}
+              className={clsx(
+                "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 text-center",
+                activeTab === "MECHANICS"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+              )}
+            >
+              <Wrench className="w-4 h-4 shrink-0" />
+              <span>Mechanics</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("CASHIERS")}
+              className={clsx(
+                "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 text-center",
+                activeTab === "CASHIERS"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+              )}
+            >
+              <UserCheck className="w-4 h-4 shrink-0" />
+              <span>Cashiers</span>
+            </button>
+          </div>
+        </div>
+      </MobileFilterSheet>
 
       {/* Contextual Audit Drawer */}
       <ContextualAuditDrawer

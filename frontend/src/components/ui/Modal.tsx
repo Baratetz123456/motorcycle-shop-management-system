@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, AlertTriangle, AlertCircle, Info } from "lucide-react";
 import clsx from "clsx";
 
@@ -64,6 +65,12 @@ export function Modal({
 }: ModalProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -76,9 +83,9 @@ export function Modal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const content = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
       onClick={(e) => {
@@ -109,6 +116,8 @@ export function Modal({
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
 
 export interface ModalHeaderProps {

@@ -39,6 +39,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 import { 
   getSystemSettings, 
   saveSystemSettings, 
@@ -140,6 +141,13 @@ function SettingsContent() {
   const [staffSearch, setStaffSearch] = useState("");
   const [staffRoleFilter, setStaffRoleFilter] = useState("ALL");
   const [staffError, setStaffError] = useState<string | null>(null);
+  const [isStaffFilterOpen, setIsStaffFilterOpen] = useState(false);
+
+  const staffActiveFilterCount = (staffSearch.trim() ? 1 : 0) + (staffRoleFilter !== "ALL" ? 1 : 0);
+  const handleResetStaffFilters = () => {
+    setStaffSearch("");
+    setStaffRoleFilter("ALL");
+  };
 
   // Tab 4: Profile State (All users)
   const [currentUserId, setCurrentUserId] = useState<string>("");
@@ -866,7 +874,7 @@ function SettingsContent() {
   };
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-hidden">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-visible md:overflow-hidden">
       {/* Change Password Modal */}
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
@@ -874,7 +882,7 @@ function SettingsContent() {
       />
 
       {/* Top Header & Navigation Tabs */}
-      <div className="px-6 pt-6 pb-2 shrink-0">
+      <div className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-2 shrink-0">
         {/* Page Header */}
         <div className="pb-3 border-b border-white/10">
           <div>
@@ -892,12 +900,31 @@ function SettingsContent() {
 
         {/* Segmented Navigation Tabs (Rendered for Admin Only) */}
         {isAdmin && (
-          <div className="overflow-x-auto no-scrollbar touch-pan-x -mx-6 px-6 sm:mx-0 sm:px-0 mt-3 pb-1">
-            <div className="inline-flex sm:flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner gap-1.5 min-w-max sm:min-w-0">
+          <>
+            {/* Mobile Tab Select Dropdown (Zero Horizontal Scroll) */}
+            <div className="md:hidden mt-3">
+              <label className="text-[11px] font-semibold text-zinc-400 mb-1.5 block uppercase tracking-wider">
+                Settings Tab:
+              </label>
+              <select
+                value={activeTab}
+                onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
+              >
+                <option value="general">🌐 General Preferences</option>
+                <option value="roles">🎛️ Role Access Matrix</option>
+                <option value="users">👥 Staff & Users</option>
+                <option value="profile">👤 My Profile & Theme</option>
+                <option value="logs">📜 System Audit Log</option>
+              </select>
+            </div>
+
+            {/* Desktop Segmented Navigation Tabs */}
+            <div className="hidden md:flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner gap-1.5 mt-3">
               <button
                 onClick={() => handleTabChange("general")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "general"
                     ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
@@ -910,7 +937,7 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("roles")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "roles"
                     ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
@@ -923,7 +950,7 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("users")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "users"
                     ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
@@ -936,7 +963,7 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("profile")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "profile"
                     ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
@@ -949,7 +976,7 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("logs")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 shrink-0 sm:flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "logs"
                     ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
@@ -959,16 +986,16 @@ function SettingsContent() {
                 <span>Audit Log</span>
               </button>
             </div>
-          </div>
+          </>
         )}
       </div>
 
-      <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="w-full md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
         {/* TAB 1: GENERAL APP CONFIGURATION (Admin Only) */}
         {isAdmin && activeTab === "general" && (
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <form onSubmit={handleSaveGeneral} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-6">
+          <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
+            <form onSubmit={handleSaveGeneral} className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
+              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-6">
                 {/* Store Preferences Card */}
                 <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
@@ -1356,8 +1383,8 @@ function SettingsContent() {
 
         {/* TAB 2: ROLE ACCESSIBILITY MATRIX (Admin Only) */}
         {isAdmin && activeTab === "roles" && (
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-6">
+          <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
+            <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-6">
               <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
                   <div>
@@ -1632,7 +1659,7 @@ function SettingsContent() {
 
         {/* TAB 3: STAFF & USER MANAGEMENT (Admin Only) */}
         {isAdmin && activeTab === "users" && (
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden px-6 pb-6 animate-in fade-in">
+          <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden px-3 sm:px-4 md:px-6 pb-6 animate-in fade-in">
             {/* Top Action Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
               <div>
@@ -1661,8 +1688,8 @@ function SettingsContent() {
               </div>
             )}
 
-            {/* Search and Role Filter Pills Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-4 shrink-0">
+            {/* Search and Role Filter Pills Bar (Hidden on Mobile) */}
+            <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-4 shrink-0">
               {/* Search */}
               <div className="relative w-full md:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -1676,7 +1703,7 @@ function SettingsContent() {
               </div>
 
               {/* Role Filter Pills */}
-              <div className="overflow-x-auto no-scrollbar -mx-1 px-1 py-0.5">
+              <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
                 <div className="inline-flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-white/10 min-w-max">
                   <Filter className="w-3.5 h-3.5 text-zinc-500 ml-1.5 mr-0.5 hidden sm:block shrink-0" />
                   {STAFF_ROLE_OPTIONS.map((option) => (
@@ -1699,8 +1726,8 @@ function SettingsContent() {
             </div>
 
             {/* Staff Users Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
-            <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-              <div className="overflow-auto flex-1 min-h-0">
+            <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+              <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
                 {/* Mobile View: Adaptive Staff Account Cards */}
                 <div className="block md:hidden p-3 space-y-3">
                   {staffLoading ? (
@@ -1892,14 +1919,66 @@ function SettingsContent() {
                 </div>
               </div>
             </div>
+
+            {/* Floating Filter FAB (Mobile Only for Staff Users) */}
+            <FloatingFilterButton
+              onClick={() => setIsStaffFilterOpen(true)}
+              activeCount={staffActiveFilterCount}
+            />
+
+            {/* Mobile Slide-Up Filter Sheet */}
+            <MobileFilterSheet
+              isOpen={isStaffFilterOpen}
+              onClose={() => setIsStaffFilterOpen(false)}
+              title="Filter Staff Accounts"
+              activeCount={staffActiveFilterCount}
+              onReset={handleResetStaffFilters}
+            >
+              {/* Search */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-300">Search Staff</label>
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Search name or email..."
+                    value={staffSearch}
+                    onChange={(e) => setStaffSearch(e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+                  />
+                </div>
+              </div>
+
+              {/* Staff Role */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-zinc-300">Staff Role</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {STAFF_ROLE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setStaffRoleFilter(opt.value)}
+                      className={clsx(
+                        "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                        staffRoleFilter === opt.value
+                          ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                          : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </MobileFilterSheet>
           </div>
         )}
 
         {/* TAB 4: PROFILE & SECURITY (All Roles) */}
         {activeTab === "profile" && (
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <form onSubmit={handleUpdateProfile} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-6">
+          <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
+            <form onSubmit={handleUpdateProfile} className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
+              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-6">
                 <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
                     <div className="flex items-center gap-4">
@@ -2237,7 +2316,7 @@ function SettingsContent() {
 
         {/* TAB 5: SYSTEM LOGS SNAPSHOT (Admin Only) */}
         {isAdmin && activeTab === "logs" && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 pb-6 space-y-6 animate-in fade-in">
+          <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 pb-6 space-y-6 animate-in fade-in">
             <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
                 <div>

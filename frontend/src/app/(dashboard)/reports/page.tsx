@@ -175,7 +175,7 @@ export default function DashboardReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-8 text-zinc-50 font-sans overflow-y-auto w-full">
+    <div className="min-h-full bg-zinc-950 p-3 sm:p-4 md:p-6 lg:p-8 text-zinc-50 font-sans overflow-y-auto w-full">
       
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

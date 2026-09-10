@@ -25,6 +25,7 @@ import { Modal, ModalBody, ModalFooter } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 
 export interface CatalogItem {
   id: string;
@@ -66,9 +67,19 @@ function InventoryContent() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [deletedNotice, setDeletedNotice] = useState<string | null>(null);
+
+  const activeFilterCount = useMemo(() => {
+    return (search.trim() ? 1 : 0) + (selectedCategory !== "ALL" ? 1 : 0);
+  }, [search, selectedCategory]);
+
+  const handleResetAllFilters = () => {
+    setSearch("");
+    setSelectedCategory("ALL");
+  };
 
   // Role-based access control
   const [userRole, setUserRole] = useState<string>("admin");
@@ -350,7 +361,7 @@ function InventoryContent() {
   };
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col overflow-hidden font-sans">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
@@ -391,40 +402,39 @@ function InventoryContent() {
           <span>{deletedNotice}</span>
         </div>
       )}
-
       {/* Main Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
         {/* Strictly 2 Main Filter Tabs */}
-        <div className="flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-fit">
+        <div className="grid grid-cols-2 gap-1.5 bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-full sm:w-fit">
           <button
             onClick={() => handleTabSwitch("PRODUCT")}
             className={clsx(
-              "px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
+              "px-3 sm:px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center",
               activeTab === "PRODUCT"
-                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30"
+                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30 font-bold"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <Package className="w-4 h-4" />
-            <span>Parts & Products ({productCount})</span>
+            <Package className="w-4 h-4 shrink-0" />
+            <span className="truncate">Parts ({productCount})</span>
           </button>
 
           <button
             onClick={() => handleTabSwitch("SERVICE")}
             className={clsx(
-              "px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
+              "px-3 sm:px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center",
               activeTab === "SERVICE"
-                ? "bg-purple-500/20 text-purple-300 shadow-md border border-purple-500/30"
+                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30 font-bold"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <Wrench className="w-4 h-4" />
-            <span>Labor & Services ({serviceCount})</span>
+            <Wrench className="w-4 h-4 shrink-0" />
+            <span className="truncate">Services ({serviceCount})</span>
           </button>
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full sm:w-80">
+        {/* Search Input (Hidden on Mobile) */}
+        <div className="hidden md:block relative w-full sm:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
@@ -436,8 +446,8 @@ function InventoryContent() {
         </div>
       </div>
 
-      {/* Category Sub-Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-none shrink-0 touch-pan-x overscroll-contain">
+      {/* Category Sub-Filter Pills (Hidden on Mobile) */}
+      <div className="hidden md:flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-4 scrollbar-none shrink-0 overscroll-x-contain">
         <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-bold shrink-0 mr-1 flex items-center gap-1">
           <Filter className="w-3 h-3" /> Category:
         </span>
@@ -448,9 +458,9 @@ function InventoryContent() {
             "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 border",
             selectedCategory === "ALL"
               ? activeTab === "PRODUCT"
-                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm"
-                : "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm"
-              : "bg-zinc-900/60 text-zinc-400 border-white/5 hover:text-zinc-200 hover:bg-zinc-800"
+                ? "bg-cyan-500 text-zinc-950 border-cyan-500 font-bold shadow-md shadow-cyan-500/20"
+                : "bg-purple-500 text-white border-purple-500 font-bold shadow-md shadow-purple-500/20"
+              : "bg-zinc-900/80 text-zinc-400 border-white/10 hover:text-white hover:bg-zinc-800"
           )}
         >
           All Categories
@@ -478,9 +488,106 @@ function InventoryContent() {
       </div>
 
       {/* Streamlined Catalog Table */}
-      <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-auto flex-1 min-h-0 touch-pan-x overscroll-contain">
-          <table className="w-full text-left text-sm text-zinc-300 whitespace-nowrap">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+          {/* Mobile View: Adaptive Catalog Cards */}
+          <div className="block md:hidden p-3 space-y-3">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, rIdx) => (
+                <div key={rIdx} className="p-4 rounded-2xl bg-zinc-950/60 border border-white/5 space-y-2.5">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-4 w-32 rounded" />
+                      <Skeleton className="h-3 w-24 rounded" />
+                    </div>
+                    <Skeleton className="h-5 w-16 rounded" />
+                  </div>
+                </div>
+              ))
+            ) : filteredItems.length === 0 ? (
+              <div className="py-16 text-center text-zinc-500 text-sm">
+                No matching {activeTab === "PRODUCT" ? "products" : "services"} found.
+              </div>
+            ) : (
+              filteredItems.map((item) => {
+                const isProduct = item.item_type === "PRODUCT";
+                const isOutOfStock = isProduct && item.current_stock === 0;
+                const isLowStock = isProduct && item.current_stock <= item.reorder_level;
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => router.push(`/inventory/${item.id}`)}
+                    className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer space-y-3 active:scale-[0.99] group shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={clsx(
+                          "p-2.5 rounded-xl border shrink-0 transition-colors",
+                          isProduct
+                            ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 group-hover:border-cyan-500/50"
+                            : "bg-purple-500/10 border-purple-500/20 text-purple-400 group-hover:border-purple-500/50"
+                        )}>
+                          {isProduct ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-white group-hover:text-cyan-400 transition-colors text-sm truncate">
+                            {item.name}
+                          </div>
+                          <div className="text-xs text-zinc-400 font-mono mt-0.5">{item.sku}</div>
+                        </div>
+                      </div>
+
+                      <span className="font-mono font-bold text-white text-base shrink-0">
+                        ₱{Number(item.selling_price).toFixed(2)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {item.brand && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                            {item.brand}
+                          </span>
+                        )}
+                        <span className="bg-zinc-900 px-2 py-0.5 rounded-md text-[10px] font-medium border border-white/5 text-zinc-400">
+                          {item.category}
+                        </span>
+                        {isProduct ? (
+                          isOutOfStock ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" /> Out of Stock
+                            </span>
+                          ) : isLowStock ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" /> Low ({item.current_stock})
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              Stock: <span className="font-bold text-zinc-200">{item.current_stock}</span>
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-purple-300 text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                            Labor Service
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1 text-[11px] font-semibold text-cyan-400 shrink-0 ml-2">
+                        <span>Details</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop View: Full Data Table */}
+          <table className="hidden md:table w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
               <tr>
                 <th className="px-6 py-4 font-semibold">SKU / Item Name</th>
@@ -848,6 +955,103 @@ function InventoryContent() {
           </ModalFooter>
         </form>
       </Modal>
+
+      {/* Floating Filter FAB (Mobile Only) */}
+      <FloatingFilterButton
+        onClick={() => setIsMobileFilterOpen(true)}
+        activeCount={activeFilterCount}
+      />
+
+      {/* Mobile Slide-Up Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        title="Filter Parts & Services"
+        activeCount={activeFilterCount}
+        onReset={handleResetAllFilters}
+      >
+        {/* Search */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-zinc-300">Search Catalog</label>
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              placeholder={`Search ${activeTab === "PRODUCT" ? "parts, SKU, brand..." : "services, code, title..."}`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+            />
+          </div>
+        </div>
+
+        {/* Catalog Type Switcher */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Catalog Section</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("PRODUCT")}
+              className={clsx(
+                "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
+                activeTab === "PRODUCT"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+              )}
+            >
+              <Package className="w-4 h-4" />
+              <span>Parts & Products</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("SERVICE")}
+              className={clsx(
+                "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
+                activeTab === "SERVICE"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+              )}
+            >
+              <Wrench className="w-4 h-4" />
+              <span>Labor & Services</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Category Filter */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Category</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("ALL")}
+              className={clsx(
+                "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                selectedCategory === "ALL"
+                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+              )}
+            >
+              All Categories
+            </button>
+            {categoryPills.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={clsx(
+                  "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                  selectedCategory === cat
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      </MobileFilterSheet>
 
       {/* Contextual Audit Drawer */}
       <ContextualAuditDrawer

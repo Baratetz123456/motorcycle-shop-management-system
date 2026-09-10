@@ -35,6 +35,7 @@ import { apiClient } from "@/lib/api-client";
 import { recordUserAuditLog } from "@/lib/audit";
 import { fetchStaffCompensationFromDB, extractInvoiceLaborAndCommission } from "@/lib/compensation";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 
 interface SalesTransaction {
   id: string;
@@ -78,6 +79,13 @@ export default function FinancialAndSalesExtractPage() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const activeFilterCount = (reportType !== "MONTHLY" ? 1 : 0);
+  const handleResetAllFilters = () => {
+    setReportType("MONTHLY");
+    setSelectedMonth(new Date().toISOString().slice(0, 7));
+  };
 
   // Data
   const [transactions, setTransactions] = useState<SalesTransaction[]>([]);
@@ -340,7 +348,7 @@ export default function FinancialAndSalesExtractPage() {
     `Fiscal Annual Statement for Year ${selectedYear}`;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans p-8 overflow-y-auto w-full">
+    <div className="min-h-full bg-zinc-950 text-zinc-100 font-sans p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto w-full">
       
       {/* Global Print Styles for Clean Vector PDF Download */}
       <style jsx global>{`
@@ -429,18 +437,18 @@ export default function FinancialAndSalesExtractPage() {
 
       {/* Timeframe & Date Picker Controls (Hidden when printing) */}
       <div className="no-print bg-zinc-900/60 border border-white/10 rounded-2xl p-4 mb-8 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Report Interval Tabs */}
-        <div className="flex bg-zinc-950 p-1.5 rounded-xl border border-white/10 text-xs w-full md:w-auto">
+        {/* Report Interval Tabs (33% / 33% / 33% full width grid on mobile) */}
+        <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1.5 rounded-xl border border-white/10 text-xs w-full md:w-auto">
           {[
-            { key: "DAILY", label: "Daily Report" },
-            { key: "MONTHLY", label: "Monthly Report" },
-            { key: "YEARLY", label: "Yearly Report" }
+            { key: "DAILY", label: "Daily" },
+            { key: "MONTHLY", label: "Monthly" },
+            { key: "YEARLY", label: "Yearly" }
           ].map((item) => (
             <button
               key={item.key}
               onClick={() => setReportType(item.key as any)}
               className={clsx(
-                "flex-1 md:flex-none px-5 py-2 rounded-lg font-bold transition-all",
+                "px-2 sm:px-5 py-2 rounded-lg font-bold transition-all text-center truncate",
                 reportType === item.key
                   ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
                   : "text-zinc-400 hover:text-white"
@@ -998,6 +1006,80 @@ export default function FinancialAndSalesExtractPage() {
         </form>
       </Modal>
 
+      {/* Floating Filter FAB (Mobile Only) */}
+      <FloatingFilterButton
+        onClick={() => setIsMobileFilterOpen(true)}
+        activeCount={activeFilterCount}
+      />
+
+      {/* Mobile Slide-Up Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        title="Filter Reports Extract"
+        activeCount={activeFilterCount}
+        onReset={handleResetAllFilters}
+      >
+        {/* Report Interval */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Report Interval</label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { key: "DAILY", label: "Daily" },
+              { key: "MONTHLY", label: "Monthly" },
+              { key: "YEARLY", label: "Yearly" },
+            ].map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setReportType(item.key as any)}
+                className={clsx(
+                  "px-3 py-2.5 rounded-xl text-xs font-semibold text-center transition-all",
+                  reportType === item.key
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Dynamic Period Date Controls */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Target Period</label>
+          {reportType === "DAILY" && (
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500 [color-scheme:dark]"
+            />
+          )}
+
+          {reportType === "MONTHLY" && (
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500 [color-scheme:dark]"
+            />
+          )}
+
+          {reportType === "YEARLY" && (
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500 cursor-pointer"
+            >
+              {[2024, 2025, 2026, 2027].map((yr) => (
+                <option key={yr} value={yr}>Fiscal Year {yr}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      </MobileFilterSheet>
     </div>
   );
 }

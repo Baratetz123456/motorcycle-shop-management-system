@@ -430,7 +430,7 @@ export default function POSPage() {
     });
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-50 font-sans w-full">
+    <div className="flex flex-col min-h-full bg-zinc-950 text-zinc-50 font-sans w-full max-w-full overflow-x-hidden">
       
       {/* Top Main Navigation Header */}
       <header className="sticky top-0 z-30 bg-zinc-950/90 border-b border-white/10 backdrop-blur-xl px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
@@ -741,7 +741,7 @@ export default function POSPage() {
             </div>
 
             {/* Sub-Filter Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1 touch-pan-x overscroll-contain">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 scrollbar-none pt-1 overscroll-x-contain">
               {(activeFilter === "SERVICE" ? SERVICES_SUB_FILTERS : PARTS_SUB_FILTERS).map((pill) => {
                 const isSelected = activeSubFilter === pill.id;
                 return (
@@ -1076,7 +1076,7 @@ export default function POSPage() {
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto touch-pan-x overscroll-contain">
+              <div className="overflow-x-auto touch-pan-y overscroll-contain">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-white/5">
                     <tr>

@@ -23,6 +23,7 @@ import { apiClient } from "@/lib/api-client";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 
 export interface MotorcycleProfile {
   id: string;
@@ -67,6 +68,23 @@ export default function MotorcycleProfilesPage() {
   const [selectedBrand, setSelectedBrand] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState<"FREQ_DESC" | "FREQ_ASC" | "YEAR_DESC" | "BRAND_ASC">("FREQ_DESC");
   const [userRole, setUserRole] = useState<string>("");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const activeFilterCount = useMemo(() => {
+    return (
+      (search.trim() ? 1 : 0) +
+      (selectedBrand !== "ALL" ? 1 : 0) +
+      (selectedCategory !== "ALL" ? 1 : 0) +
+      (sortBy !== "FREQ_DESC" ? 1 : 0)
+    );
+  }, [search, selectedBrand, selectedCategory, sortBy]);
+
+  const handleResetAllFilters = () => {
+    setSearch("");
+    setSelectedBrand("ALL");
+    setSelectedCategory("ALL");
+    setSortBy("FREQ_DESC");
+  };
 
   // Modals
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -289,7 +307,7 @@ export default function MotorcycleProfilesPage() {
   const isAdmin = userRole === "admin";
 
   return (
-    <div className="w-full h-screen bg-zinc-950 p-8 flex flex-col overflow-hidden font-sans">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
       
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 flex-shrink-0">
@@ -347,8 +365,8 @@ export default function MotorcycleProfilesPage() {
         </div>
       )}
 
-      {/* Search & Filter Controls Bar */}
-      <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-4 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 flex-shrink-0 backdrop-blur-md">
+      {/* Search & Filter Controls Bar (Hidden on Mobile) */}
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 mb-6 bg-zinc-900/60 border border-white/10 rounded-2xl flex-shrink-0 backdrop-blur-md">
         {/* Search */}
         <div className="relative w-full lg:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -420,7 +438,7 @@ export default function MotorcycleProfilesPage() {
       </div>
 
       {/* Main Grid: Motorcycle Profile Cards */}
-      <div className="flex-1 overflow-y-auto pr-1">
+      <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 pr-0 md:pr-1 touch-pan-y overscroll-contain">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((idx) => (
@@ -767,6 +785,80 @@ export default function MotorcycleProfilesPage() {
         }
       />
 
+      {/* Floating Filter FAB (Mobile Only) */}
+      <FloatingFilterButton
+        onClick={() => setIsMobileFilterOpen(true)}
+        activeCount={activeFilterCount}
+      />
+
+      {/* Mobile Slide-Up Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        title="Filter Bike Models"
+        activeCount={activeFilterCount}
+        onReset={handleResetAllFilters}
+      >
+        {/* Search */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-zinc-300">Search Brand or Model</label>
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Search Brand or Model..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+            />
+          </div>
+        </div>
+
+        {/* Brand */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-zinc-300">Brand</label>
+          <select
+            value={selectedBrand}
+            onChange={(e) => setSelectedBrand(e.target.value)}
+            className="w-full bg-zinc-900 border border-white/10 text-zinc-200 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
+          >
+            <option value="ALL">All Brands</option>
+            {availableBrands.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Category */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-zinc-300">Category</label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full bg-zinc-900 border border-white/10 text-zinc-200 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
+          >
+            <option value="ALL">All Categories</option>
+            {availableCategories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Sort */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-zinc-300">Sort By</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="w-full bg-zinc-900 border border-cyan-500/30 text-cyan-300 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer font-medium"
+          >
+            <option value="FREQ_DESC">Service Frequency: Highest First</option>
+            <option value="FREQ_ASC">Service Frequency: Lowest First</option>
+            <option value="YEAR_DESC">Year: Newest First</option>
+            <option value="BRAND_ASC">Brand (A-Z)</option>
+          </select>
+        </div>
+      </MobileFilterSheet>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { 
   ShieldCheck, 
   X, 
@@ -50,6 +51,11 @@ export function ContextualAuditDrawer({
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -132,7 +138,9 @@ export function ContextualAuditDrawer({
     return "bg-purple-500/10 text-purple-400 border-purple-500/20";
   };
 
-  return (
+  if (!isOpen || !mounted) return null;
+
+  const content = (
     <div className="fixed inset-0 z-50 overflow-hidden animate-in fade-in duration-200">
       {/* Backdrop */}
       <div 
@@ -269,11 +277,17 @@ export function ContextualAuditDrawer({
             )}
           </div>
 
-          {/* Drawer Footer */}
-          <div className="p-4 border-t border-white/10 bg-zinc-950/90 flex items-center justify-between text-xs text-zinc-400">
+          {/* Drawer Footer - Sticky at bottom */}
+          <div 
+            style={{
+              paddingBottom: "max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))",
+            }}
+            className="p-4 border-t border-white/10 bg-zinc-950 shrink-0 sticky bottom-0 z-20 flex items-center justify-between text-xs text-zinc-400"
+          >
             <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
               <ShieldCheck className="w-4 h-4" />
-              Cryptographic Audit Stream Active
+              <span className="hidden sm:inline">Cryptographic Audit Stream Active</span>
+              <span className="sm:hidden">Audit Stream</span>
             </span>
             <button
               onClick={onClose}
@@ -287,4 +301,6 @@ export function ContextualAuditDrawer({
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }

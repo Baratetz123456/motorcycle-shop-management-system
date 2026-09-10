@@ -61,12 +61,12 @@ export default function DashboardLayout({
 
   return (
     <ProtectedRoute>
-      <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative">
+      <div className="flex h-[100dvh] max-h-[100dvh] w-full max-w-full bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative">
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 w-full overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-hidden">
           {/* Dedicated Slim Top Bar when Sidebar is Hidden */}
           {isCollapsed && (
-            <header className="h-14 border-b border-white/10 bg-zinc-950/95 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0 z-30 shadow-md">
+            <header className="sticky top-0 z-30 h-14 border-b border-white/10 bg-zinc-950/95 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-md">
               <div className="flex items-center gap-3">
                 <button
                   onClick={openSidebar}
@@ -93,8 +93,8 @@ export default function DashboardLayout({
             </header>
           )}
 
-          <main className="flex-1 min-h-0 overflow-y-auto bg-zinc-950 flex flex-col min-w-0 w-full touch-pan-y overscroll-contain">
-            <div key={pathname} className="flex-1 min-h-0 flex flex-col min-w-0 w-full animate-page-enter">
+          <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-zinc-950 flex flex-col min-w-0 w-full max-w-full touch-pan-y overscroll-y-contain">
+            <div key={pathname} className="flex-1 min-h-0 flex flex-col min-w-0 w-full max-w-full animate-page-enter">
               {children}
             </div>
           </main>

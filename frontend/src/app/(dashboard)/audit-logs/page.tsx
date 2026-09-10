@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import clsx from "clsx";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 
 export interface AuditLogItem {
   id: string;
@@ -355,6 +356,24 @@ export default function SystemLogsPage() {
     setEndDate("");
   };
 
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const activeFilterCount = useMemo(() => {
+    return (
+      (search.trim() ? 1 : 0) +
+      (selectedPage !== "ALL" ? 1 : 0) +
+      (roleFilter !== "ALL" ? 1 : 0) +
+      (datePreset !== "ALL" || startDate || endDate ? 1 : 0)
+    );
+  }, [search, selectedPage, roleFilter, datePreset, startDate, endDate]);
+
+  const handleResetAllFilters = () => {
+    setSearch("");
+    setSelectedPage("ALL");
+    setRoleFilter("ALL");
+    handleClearDateFilter();
+  };
+
   const fetchAuditLogs = async () => {
     setIsLoading(true);
     let fetchedList: AuditLogItem[] = [];
@@ -517,7 +536,7 @@ export default function SystemLogsPage() {
   };
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col overflow-hidden font-sans text-zinc-100">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-zinc-100">
       {/* Top Navigation & Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 shrink-0">
         <div className="flex items-center gap-4">
@@ -540,11 +559,6 @@ export default function SystemLogsPage() {
         </div>
 
         <div className="flex items-center gap-3 self-start md:self-auto">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 bg-zinc-900/80 border border-white/10 px-3 py-1.5 rounded-xl">
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span>Admin Oversight</span>
-          </div>
-
           <button
             onClick={handleExport}
             disabled={isExporting || filteredLogs.length === 0}
@@ -563,7 +577,7 @@ export default function SystemLogsPage() {
       </div>
 
       {/* Filter & Control Bar */}
-      <div className="p-3.5 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-4 shrink-0 space-y-3">
+      <div className="hidden md:block p-3.5 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-4 shrink-0 space-y-3">
         {/* Row 1: Search + Module Pills */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Search Box */}
@@ -578,55 +592,58 @@ export default function SystemLogsPage() {
             />
           </div>
 
-          {/* 6 Monitored Module Filter Pills */}
-          <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs shadow-inner flex-wrap gap-1 items-center">
-            {PAGE_FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setSelectedPage(f.value)}
-                className={clsx(
-                  "px-2.5 py-1 rounded-lg font-semibold transition-all text-xs flex items-center gap-1",
-                  selectedPage === f.value
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                    : "text-zinc-400 hover:text-white"
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
+          {/* 6 Monitored Module Filter Pills (Horizontal Scrollable Rail) */}
+          <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
+            <div className="inline-flex bg-zinc-950 p-1 rounded-xl border border-white/10 text-xs shadow-inner gap-1 items-center min-w-max">
+              {PAGE_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setSelectedPage(f.value)}
+                  className={clsx(
+                    "px-2.5 py-1 rounded-lg font-semibold transition-all text-xs flex items-center gap-1 whitespace-nowrap shrink-0",
+                    selectedPage === f.value
+                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                      : "text-zinc-400 hover:text-white"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Row 2: Date Range Filter + Role Filter + Record Counter */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-white/5 text-xs">
           {/* Date Range Filter Controls */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-zinc-950/70 p-1 rounded-xl border border-white/10">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-cyan-400 ml-1.5 mr-0.5" />
-              {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
-                const labels = {
-                  ALL: "All Time",
-                  TODAY: "Today",
-                  WEEK: "This Week",
-                  MONTH: "This Month",
-                };
-                const isSelected = datePreset === preset;
-                return (
-                  <button
-                    key={preset}
-                    onClick={() => handleSelectPreset(preset)}
-                    className={clsx(
-                      "px-2 py-0.5 rounded-lg text-xs font-semibold transition-all",
-                      isSelected
-                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
-                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 border border-transparent"
-                    )}
-                  >
-                    {labels[preset]}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
+            <div className="inline-flex items-center gap-1.5 bg-zinc-950/70 p-1 rounded-xl border border-white/10 min-w-max">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-cyan-400 ml-1.5 mr-0.5 shrink-0" />
+                {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
+                  const labels = {
+                    ALL: "All Time",
+                    TODAY: "Today",
+                    WEEK: "This Week",
+                    MONTH: "This Month",
+                  };
+                  const isSelected = datePreset === preset;
+                  return (
+                    <button
+                      key={preset}
+                      onClick={() => handleSelectPreset(preset)}
+                      className={clsx(
+                        "px-2 py-0.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0",
+                        isSelected
+                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                          : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 border border-transparent"
+                      )}
+                    >
+                      {labels[preset]}
+                    </button>
+                  );
+                })}
+              </div>
 
             <div className="h-3.5 w-px bg-white/10 hidden sm:block" />
 
@@ -658,6 +675,7 @@ export default function SystemLogsPage() {
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
+            </div>
           </div>
 
           {/* Role Filter & Counter */}
@@ -685,9 +703,90 @@ export default function SystemLogsPage() {
       </div>
 
       {/* Main Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
-      <div className="flex-1 min-h-0 overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
-        <div className="overflow-auto flex-1 min-h-0 touch-pan-x overscroll-contain">
-          <table className="w-full text-left text-sm text-zinc-300">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+          {/* Mobile View: Adaptive Event Cards */}
+          <div className="block md:hidden p-3 space-y-3">
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-zinc-950/60 border border-white/5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-28 rounded" />
+                    <Skeleton className="h-3 w-20 rounded" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                    <Skeleton className="h-5 w-24 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-full rounded" />
+                </div>
+              ))
+            ) : paginatedLogs.length === 0 ? (
+              <div className="py-16 text-center text-zinc-500 text-sm">
+                No database change history found matching selected filters.
+              </div>
+            ) : (
+              paginatedLogs.map((log) => {
+                const actionInfo = formatFriendlyAction(log.action);
+                const pageName = mapLogToPage(log.resource, log.action);
+                const changesText = formatChangesSummary(log);
+                const isExpanded = expandedId === log.id;
+
+                return (
+                  <div
+                    key={log.id}
+                    className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer space-y-2.5 active:scale-[0.99] shadow-sm"
+                    onClick={() => setExpandedId(isExpanded ? null : log.id)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-bold text-white text-xs truncate">
+                          {log.user_name || "System User"}
+                        </span>
+                        <span className={clsx("px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider border shrink-0", getRoleBadgeStyle(log.user_role))}>
+                          {log.user_role || "ADMIN"}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                        {log.timestamp ? new Date(log.timestamp).toLocaleDateString() : ""} {log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-zinc-900 border border-white/5 text-zinc-200">
+                        {pageName}
+                      </span>
+                      <span className={clsx("px-2 py-0.5 rounded-lg text-[11px] font-bold border inline-block", actionInfo.color)}>
+                        {actionInfo.label}
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-zinc-300 leading-relaxed pt-1 border-t border-white/5">
+                      {changesText}
+                    </div>
+
+                    {isExpanded && log.details && (
+                      <div className="mt-2 p-3 rounded-xl bg-zinc-950/90 border border-white/10 font-mono text-[11px] text-cyan-300 overflow-x-auto space-y-1 shadow-inner">
+                        <div className="text-[10px] uppercase text-zinc-500 font-bold flex items-center gap-1 mb-1">
+                          <Code2 className="w-3 h-3" /> Technical Event Payload
+                        </div>
+                        <pre className="whitespace-pre-wrap">
+                          {JSON.stringify(log.details, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end text-[10px] text-cyan-400 font-semibold pt-1">
+                      <span>{isExpanded ? "Collapse Payload" : "Tap for Technical Payload"}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop View: Full Data Table */}
+          <table className="hidden md:table w-full text-left text-sm text-zinc-300">
             <thead className="bg-zinc-950/90 border-b border-white/10 text-zinc-400 font-semibold text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
               <tr>
                 <th className="py-3 px-5">Staff User</th>
@@ -775,64 +874,186 @@ export default function SystemLogsPage() {
                       <td className="py-3.5 px-5 max-w-md">
                         <div className="text-xs text-zinc-200 leading-relaxed">
                           {changesText}
+                    </div>
+                    {isExpanded && log.details && (
+                      <div className="mt-2.5 p-3 rounded-xl bg-zinc-950/90 border border-white/10 font-mono text-[11px] text-cyan-300 overflow-x-auto space-y-1 shadow-inner">
+                        <div className="text-[10px] uppercase text-zinc-500 font-bold flex items-center gap-1 mb-1">
+                          <Code2 className="w-3 h-3" /> Technical Event Payload
                         </div>
-                        {isExpanded && log.details && (
-                          <div className="mt-2.5 p-3 rounded-xl bg-zinc-950/90 border border-white/10 font-mono text-[11px] text-cyan-300 overflow-x-auto space-y-1 shadow-inner">
-                            <div className="text-[10px] uppercase text-zinc-500 font-bold flex items-center gap-1 mb-1">
-                              <Code2 className="w-3 h-3" /> Technical Event Payload
-                            </div>
-                            <pre className="whitespace-pre-wrap">
-                              {JSON.stringify(log.details, null, 2)}
-                            </pre>
-                          </div>
-                        )}
-                      </td>
+                        <pre className="whitespace-pre-wrap">
+                          {JSON.stringify(log.details, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+                  </td>
 
-                      {/* Timestamp */}
-                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                        <div className="text-xs font-semibold text-zinc-200">
-                          {log.timestamp ? new Date(log.timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—"}
-                        </div>
-                        <div className="text-[11px] text-zinc-500 font-mono mt-0.5">
-                          {log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  {/* Timestamp */}
+                  <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                    <div className="font-mono text-xs text-zinc-300">
+                      {log.timestamp ? new Date(log.timestamp).toLocaleDateString() : ""}
+                    </div>
+                    <div className="font-mono text-[11px] text-zinc-500">
+                      {log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
 
-        {/* Pinned Bottom Pagination Footer */}
-        <div className="p-3.5 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400 shrink-0">
-          <div>
-            Showing <span className="font-semibold text-zinc-200">{paginatedLogs.length}</span> of{" "}
-            <span className="font-semibold text-zinc-200">{filteredLogs.length}</span> events (Page{" "}
-            <span className="font-semibold text-zinc-200">{page}</span> of{" "}
-            <span className="font-semibold text-zinc-200">{totalPages}</span>)
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 hover:bg-zinc-800 disabled:opacity-40 transition-colors"
-              title="Previous Page"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
-              className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 hover:bg-zinc-800 disabled:opacity-40 transition-colors"
-              title="Next Page"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+    {/* Pinned Bottom Pagination Footer */}
+    <div className="p-3.5 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
+      <div className="text-center sm:text-left">
+        Showing <span className="font-semibold text-zinc-200">{paginatedLogs.length}</span> of{" "}
+        <span className="font-semibold text-zinc-200">{filteredLogs.length}</span> events (Page{" "}
+        <span className="font-semibold text-zinc-200">{page}</span> of{" "}
+        <span className="font-semibold text-zinc-200">{totalPages}</span>)
       </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => handlePageChange(page - 1)}
+          disabled={page === 1}
+          className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+          title="Previous Page"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => handlePageChange(page + 1)}
+          disabled={page === totalPages}
+          className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+          title="Next Page"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Floating Filter FAB (Mobile Only) */}
+  <FloatingFilterButton
+    onClick={() => setIsMobileFilterOpen(true)}
+    activeCount={activeFilterCount}
+  />
+
+  {/* Mobile Slide-Up Filter Sheet */}
+  <MobileFilterSheet
+    isOpen={isMobileFilterOpen}
+    onClose={() => setIsMobileFilterOpen(false)}
+    title="Filter Audit Logs"
+    activeCount={activeFilterCount}
+    onReset={handleResetAllFilters}
+  >
+        {/* Search */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-zinc-300">Search Records</label>
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Search staff, action, changes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+            />
+          </div>
+        </div>
+
+        {/* Monitored Module */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Monitored Module</label>
+          <div className="grid grid-cols-2 gap-2">
+            {PAGE_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setSelectedPage(f.value)}
+                className={clsx(
+                  "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                  selectedPage === f.value
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Staff Role */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Staff Role</label>
+          <div className="grid grid-cols-3 gap-2">
+            {["ALL", "admin", "manager", "cashier", "mechanic"].map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRoleFilter(r)}
+                className={clsx(
+                  "px-2.5 py-2 rounded-xl text-xs font-semibold capitalize text-center transition-all",
+                  roleFilter === r
+                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                )}
+              >
+                {r === "ALL" ? "All Roles" : r}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Date Presets & Custom */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Date Range</label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((p) => {
+              const labels = { ALL: "All Time", TODAY: "Today", WEEK: "This Week", MONTH: "This Month" };
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => handleSelectPreset(p)}
+                  className={clsx(
+                    "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                    datePreset === p
+                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                      : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  )}
+                >
+                  {labels[p]}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <label className="text-[11px] text-zinc-500 mb-1 block">From</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-zinc-500 mb-1 block">To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+              />
+            </div>
+          </div>
+        </div>
+      </MobileFilterSheet>
     </div>
   );
 }
+
+

@@ -29,6 +29,17 @@ function LoginForm() {
 
     // Check if user already has an active session cookie on mount
     const checkActiveSession = async () => {
+      // If user arrived with inactivity or expired flag, session is terminated - do not attempt refresh
+      if (searchParams.get("inactivity") === "1" || searchParams.get("expired") === "1") {
+        return;
+      }
+
+      // If user has no active user_role indicator in localStorage, they are logged out - do not trigger 401
+      const existingRole = localStorage.getItem("user_role");
+      if (!existingRole) {
+        return;
+      }
+
       try {
         const { data } = await apiClient.post("/auth/refresh");
         if (data.access_token && data.role) {
@@ -42,7 +53,14 @@ function LoginForm() {
           }
         }
       } catch (_) {
-        // No active session cookie found - stay on login page
+        // Active session cookie expired or invalid - clear local state cleanly
+        tokenStore.clearToken();
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_role");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("user_name");
+        localStorage.removeItem("user_avatar");
       }
     };
 

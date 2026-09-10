@@ -150,7 +150,7 @@ export default function RegisterUserPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans p-8 overflow-y-auto w-full">
+    <div className="min-h-full bg-zinc-950 text-zinc-100 flex flex-col font-sans p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto w-full">
       {/* Top Action & Navigation Bar */}
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <Link

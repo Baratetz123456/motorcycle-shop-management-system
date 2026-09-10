@@ -908,7 +908,7 @@ export default function RepairBoardPage() {
   }
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 bg-zinc-950 p-6 flex flex-col font-sans overflow-hidden">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col font-sans overflow-visible md:overflow-hidden">
       
       {/* Top Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
@@ -970,7 +970,7 @@ export default function RepairBoardPage() {
       )}
 
       {/* Kanban Board Columns Grid */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-hidden">
+      <div className="overflow-visible md:overflow-hidden md:flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {columns.map((col) => {
           let colJobs = jobs.filter((j) => j.status === col.status);
 
@@ -1008,7 +1008,7 @@ export default function RepairBoardPage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
               className={clsx(
-                "border rounded-3xl p-5 flex flex-col backdrop-blur-xl overflow-hidden shadow-2xl transition-colors duration-150 min-h-0",
+                "border rounded-3xl p-4 sm:p-5 flex flex-col backdrop-blur-xl overflow-visible md:overflow-hidden shadow-2xl transition-colors duration-150 md:min-h-0",
                 isOver && isUnpaidAndTargetReleased
                   ? "bg-red-950/20 border-red-500/60 ring-2 ring-red-500/40"
                   : isOver
@@ -1044,7 +1044,7 @@ export default function RepairBoardPage() {
               </div>
 
               {/* Job Order Cards Column Body */}
-              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 touch-pan-y overscroll-contain scrollbar-compact">
+              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto space-y-4 pr-0 md:pr-1 touch-pan-y overscroll-contain scrollbar-compact">
                 {colJobs.length === 0 ? (
                   <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-white/5 rounded-2xl p-4">
                     No job cards in this stage.
