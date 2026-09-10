@@ -79,13 +79,13 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- 4. Seed repairs.motorcycles
-INSERT INTO repairs.motorcycles (id, plate_number, brand, model, year, color, customer_name, customer_contact, notes)
+INSERT INTO repairs.motorcycles (id, plate_number, brand, model, year, color, customer_name, customer_contact, notes, created_at, updated_at)
 VALUES
-  ('40000000-0000-0000-0000-000000000001', 'ABC-1234', 'Yamaha', 'MT-07', 2023, 'Cyan Storm', 'John Doe', '+1 (555) 234-5678', 'Front brake pads & synthetic oil change service scheduled.'),
-  ('40000000-0000-0000-0000-000000000002', 'XYZ-9876', 'Honda', 'Click 125i', 2022, 'Matte Black', 'Jane Roe', '+1 (555) 876-5432', 'CVT system inspection and drive belt maintenance.'),
-  ('40000000-0000-0000-0000-000000000003', 'KAW-4001', 'Kawasaki', 'Ninja 400', 2023, 'Lime Green', 'Bob Lee', '+1 (555) 432-1098', 'Chain lubrication and valve clearance checkup.'),
-  ('40000000-0000-0000-0000-000000000004', 'DUC-9988', 'Ducati', 'Panigale V4', 2023, 'Rosso Corsa', 'Carlos Mendoza', '+1 (555) 321-7654', 'Desmoservice valve check and Iridium spark plugs.'),
-  ('40000000-0000-0000-0000-000000000005', 'SUZ-1502', 'Suzuki', 'Raider R150', 2024, 'Metallic Blue', 'Marcus Vance', '+1 (555) 654-9870', 'Carb/FI system tune-up and brake bleeding.')
+  ('40000000-0000-0000-0000-000000000001', 'ABC-1234', 'Yamaha', 'MT-07', 2023, 'Cyan Storm', 'John Doe', '+1 (555) 234-5678', 'Front brake pads & synthetic oil change service scheduled.', NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days'),
+  ('40000000-0000-0000-0000-000000000002', 'XYZ-9876', 'Honda', 'Click 125i', 2022, 'Matte Black', 'Jane Roe', '+1 (555) 876-5432', 'CVT system inspection and drive belt maintenance.', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+  ('40000000-0000-0000-0000-000000000003', 'KAW-4001', 'Kawasaki', 'Ninja 400', 2023, 'Lime Green', 'Bob Lee', '+1 (555) 432-1098', 'Chain lubrication and valve clearance checkup.', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+  ('40000000-0000-0000-0000-000000000004', 'DUC-9988', 'Ducati', 'Panigale V4', 2023, 'Rosso Corsa', 'Carlos Mendoza', '+1 (555) 321-7654', 'Desmoservice valve check and Iridium spark plugs.', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
+  ('40000000-0000-0000-0000-000000000005', 'SUZ-1502', 'Suzuki', 'Raider R150', 2024, 'Metallic Blue', 'Marcus Vance', '+1 (555) 654-9870', 'Carb/FI system tune-up and brake bleeding.', NOW() - INTERVAL '5 hours', NOW() - INTERVAL '5 hours')
 ON CONFLICT (plate_number) DO UPDATE SET
   customer_name = EXCLUDED.customer_name,
   customer_contact = EXCLUDED.customer_contact,
@@ -109,15 +109,15 @@ ON CONFLICT (jo_number) DO UPDATE SET
   payment_status = EXCLUDED.payment_status;
 
 -- 6. Seed repairs.repair_cart_items
-INSERT INTO repairs.repair_cart_items (id, job_order_id, item_name, item_type, qty, unit_price, total_price)
+INSERT INTO repairs.repair_cart_items (id, job_order_id, item_name, item_type, qty, unit_price, total_price, created_at)
 VALUES
-  ('60000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001', 'Synthetic Motor Oil 10W-40', 'PRODUCT', 1, 15.99, 15.99),
-  ('60000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000001', 'Front Brake Pads', 'PRODUCT', 1, 34.00, 34.00),
-  ('60000000-0000-0000-0000-000000000003', '50000000-0000-0000-0000-000000000002', 'CVT Drive Belt 125cc', 'PRODUCT', 1, 25.00, 25.00),
-  ('60000000-0000-0000-0000-000000000004', '50000000-0000-0000-0000-000000000003', 'Chain Lube Spray 400ml', 'PRODUCT', 1, 12.00, 12.00),
-  ('60000000-0000-0000-0000-000000000005', '50000000-0000-0000-0000-000000000004', 'Iridium Spark Plug CR9EIX', 'PRODUCT', 4, 18.25, 73.00),
-  ('60000000-0000-0000-0000-000000000006', '50000000-0000-0000-0000-000000000005', 'Premium Oil Filter', 'PRODUCT', 1, 8.50, 8.50),
-  ('60000000-0000-0000-0000-000000000007', '50000000-0000-0000-0000-000000000005', 'Synthetic Motor Oil 10W-40', 'PRODUCT', 1, 15.99, 15.99)
+  ('60000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001', 'Synthetic Motor Oil 10W-40', 'PRODUCT', 1, 15.99, 15.99, NOW() - INTERVAL '3 days'),
+  ('60000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000001', 'Front Brake Pads', 'PRODUCT', 1, 34.00, 34.00, NOW() - INTERVAL '3 days'),
+  ('60000000-0000-0000-0000-000000000003', '50000000-0000-0000-0000-000000000002', 'CVT Drive Belt 125cc', 'PRODUCT', 1, 25.00, 25.00, NOW() - INTERVAL '4 hours'),
+  ('60000000-0000-0000-0000-000000000004', '50000000-0000-0000-0000-000000000003', 'Chain Lube Spray 400ml', 'PRODUCT', 1, 12.00, 12.00, NOW() - INTERVAL '2 hours'),
+  ('60000000-0000-0000-0000-000000000005', '50000000-0000-0000-0000-000000000004', 'Iridium Spark Plug CR9EIX', 'PRODUCT', 4, 18.25, 73.00, NOW() - INTERVAL '1 day'),
+  ('60000000-0000-0000-0000-000000000006', '50000000-0000-0000-0000-000000000005', 'Premium Oil Filter', 'PRODUCT', 1, 8.50, 8.50, NOW() - INTERVAL '5 hours'),
+  ('60000000-0000-0000-0000-000000000007', '50000000-0000-0000-0000-000000000005', 'Synthetic Motor Oil 10W-40', 'PRODUCT', 1, 15.99, 15.99, NOW() - INTERVAL '5 hours')
 ON CONFLICT (id) DO NOTHING;
 
 -- 7. Seed repairs.commissions

@@ -42,8 +42,8 @@ class Motorcycle(Base):
     customer_name = Column(String(255), nullable=False, index=True)
     customer_contact = Column(String(50))
     notes = Column(String)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
 class JobOrder(Base):
     __tablename__ = "job_orders"
@@ -76,7 +76,7 @@ class RepairCartItem(Base):
     qty = Column(Integer, default=1, nullable=False)
     unit_price = Column(Numeric(10, 2), nullable=False)
     total_price = Column(Numeric(10, 2), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
 class Commission(Base):
     __tablename__ = "commissions"

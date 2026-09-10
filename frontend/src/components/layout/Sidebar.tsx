@@ -342,6 +342,17 @@ export function Sidebar() {
             <LogOut className="w-4 h-4" />
             <span>Sign Out</span>
           </button>
+
+          {/* Legal Compliance Links */}
+          <div className="flex items-center justify-center gap-3 pt-1 text-[10px] text-zinc-500 font-medium">
+            <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <span className="text-zinc-700">•</span>
+            <Link href="/terms" className="hover:text-cyan-400 transition-colors">
+              Terms of Service
+            </Link>
+          </div>
         </div>
       </aside>
     </>

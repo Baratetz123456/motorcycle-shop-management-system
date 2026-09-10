@@ -1,6 +1,9 @@
 export interface SystemSettings {
   appName: string;
   shopDescription: string;
+  shopAddress?: string;
+  contactEmail?: string;
+  contactPhone?: string;
   timezone: string;
   country: string;
   currency: string;
@@ -47,6 +50,9 @@ export const COUNTRY_OPTIONS = [
 export const DEFAULT_SETTINGS: SystemSettings = {
   appName: "Versiklo",
   shopDescription: "Shop Floor",
+  shopAddress: "Metro Manila, Philippines",
+  contactEmail: "compliance@versiklo.ph",
+  contactPhone: "+63 (02) 8123-4567",
   timezone: "Asia/Manila",
   country: "Philippines",
   currency: "PHP",

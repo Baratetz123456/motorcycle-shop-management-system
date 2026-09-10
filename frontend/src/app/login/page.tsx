@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
 import { tokenStore } from "@/lib/auth-token";
 import { recordUserAuditLog } from "@/lib/audit";
@@ -266,6 +267,17 @@ function LoginForm() {
                 <div className="font-semibold text-purple-400">Manager</div>
                 <div className="text-[10px] text-zinc-400 font-mono">manager@motoshop.com</div>
               </button>
+            </div>
+
+            {/* Public Legal Compliance Footer */}
+            <div className="pt-4 border-t border-white/5 flex items-center justify-center gap-3 text-[11px] text-zinc-500 font-medium">
+              <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+                Privacy Policy
+              </Link>
+              <span className="text-zinc-700">•</span>
+              <Link href="/terms" className="hover:text-cyan-400 transition-colors">
+                Terms of Service
+              </Link>
             </div>
           </div>
         </div>

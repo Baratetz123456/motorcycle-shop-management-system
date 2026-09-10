@@ -41,7 +41,7 @@ class RepairCartItemCreate(RepairCartItemBase):
 class RepairCartItemResponse(RepairCartItemBase):
     id: UUID
     job_order_id: UUID
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -88,8 +88,8 @@ class MotorcycleUpdate(BaseModel):
 
 class MotorcycleResponse(MotorcycleBase):
     id: UUID
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -149,7 +149,7 @@ class JobOrderResponse(BaseModel):
     status: JobStatus
     is_paid: bool = False
     payment_status: Optional[str] = "UNPAID"
-    created_at: datetime
+    created_at: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)
 

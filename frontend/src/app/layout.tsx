@@ -34,6 +34,22 @@ export default function RootLayout({
                   var t = localStorage.getItem('motoshop_app_theme') || 'cyan';
                   document.documentElement.setAttribute('data-theme', t);
                 } catch(e) {}
+
+                // Suppress upstream Chromium DevTools injected soft-navigation bug (Chromium Issue 543499029)
+                if (typeof window !== 'undefined') {
+                  window.addEventListener('error', function(event) {
+                    if (
+                      event &&
+                      event.message &&
+                      event.message.indexOf("Cannot read properties of undefined (reading 'startTime')") !== -1 &&
+                      (!event.filename || event.filename.indexOf('VM') !== -1 || event.filename === '')
+                    ) {
+                      event.preventDefault();
+                      event.stopImmediatePropagation();
+                      return true;
+                    }
+                  }, true);
+                }
               })();
             `,
           }}
