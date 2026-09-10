@@ -6,7 +6,7 @@ import uuid
 import aio_pika
 from fastapi import FastAPI, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, cast, String
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
@@ -90,11 +90,18 @@ async def get_transactions(
 
 @app.get("/transactions/{transaction_id}", response_model=schemas.TransactionResponse)
 async def get_transaction(
-    transaction_id: UUID,
+    transaction_id: str,
     current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.Transaction).where(models.Transaction.id == transaction_id)
+    try:
+        parsed_uuid = UUID(transaction_id)
+        stmt = select(models.Transaction).where(models.Transaction.id == parsed_uuid)
+    except (ValueError, AttributeError):
+        stmt = select(models.Transaction).where(
+            (models.Transaction.invoice_no == transaction_id) |
+            (cast(models.Transaction.id, String) == transaction_id)
+        )
     result = await session.execute(stmt)
     db_tx = result.scalar_one_or_none()
     if not db_tx:
@@ -105,11 +112,18 @@ async def get_transaction(
 @idempotent
 async def void_transaction(
     request: Request,
-    transaction_id: UUID,
+    transaction_id: str,
     current_user: dict = Depends(require_roles(["admin", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.Transaction).where(models.Transaction.id == transaction_id)
+    try:
+        parsed_uuid = UUID(transaction_id)
+        stmt = select(models.Transaction).where(models.Transaction.id == parsed_uuid)
+    except (ValueError, AttributeError):
+        stmt = select(models.Transaction).where(
+            (models.Transaction.invoice_no == transaction_id) |
+            (cast(models.Transaction.id, String) == transaction_id)
+        )
     result = await session.execute(stmt)
     db_tx = result.scalar_one_or_none()
     if not db_tx:

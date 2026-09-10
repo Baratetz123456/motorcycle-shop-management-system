@@ -75,8 +75,22 @@ function SalesReceiptContent() {
     setLoading(true);
     let matchedTx: TransactionRecord | null = null;
 
-    // 1. Check direct API lookup if txId is present
-    if (txId) {
+    // 1. If txId is a client-local fallback ID (e.g. starts with 'tx-'), check localStorage sales logs first
+    if (txId && txId.startsWith("tx-")) {
+      const stored = localStorage.getItem("motoshop_sales_logs");
+      if (stored) {
+        try {
+          const list: TransactionRecord[] = JSON.parse(stored);
+          const found = list.find((t) => t.id === txId || t.invoice_no === txId);
+          if (found) matchedTx = found;
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
+    // 2. Check direct API lookup if txId is present and not already found locally
+    if (txId && !matchedTx) {
       try {
         const res = await apiClient.get<TransactionRecord>(`/sales/transactions/${txId}`);
         if (res.data && res.data.invoice_no) {

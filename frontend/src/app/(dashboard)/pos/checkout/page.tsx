@@ -28,6 +28,7 @@ import {
   Printer
 } from "lucide-react";
 import clsx from "clsx";
+import { v4 as uuidv4 } from "uuid";
 
 interface ReceiptSummary {
   invoiceNo: string;
@@ -144,7 +145,7 @@ function POSCheckoutContent() {
 
       // 1. Record completed transaction in sales logs for /sales, /dashboard & /reports
       const newTxLog = {
-        id: result?.id || `tx-${Date.now()}`,
+        id: result?.id || uuidv4(),
         invoice_no: generatedInvoice,
         job_order_id: jobId || undefined,
         created_at: new Date().toISOString(),

@@ -2,6 +2,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { usePosStore } from '@/lib/store/pos-store';
 import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface TransactionResult {
   id: string;
@@ -27,7 +28,7 @@ export const useCheckoutSaga = () => {
       } catch (e) {
         // Smooth fallback mode when running offline or without microservice saga events
         const fallbackTx: TransactionResult = {
-          id: `tx-${Date.now()}`,
+          id: uuidv4(),
           invoice_no: `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
           status: "COMPLETED",
           total: Number(payload.amount_paid || 0),
@@ -59,7 +60,7 @@ export const useCheckoutSaga = () => {
       } catch (e) {
         // Return fallback if transaction not found
         return completedTx || {
-          id: transactionId || `tx-${Date.now()}`,
+          id: transactionId || uuidv4(),
           invoice_no: `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
           status: "COMPLETED" as const,
           total: 0,

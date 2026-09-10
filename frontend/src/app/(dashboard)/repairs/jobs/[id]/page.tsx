@@ -103,6 +103,9 @@ export default function JobCardProfilePage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Mobile Tab Navigation State
+  const [mobileTab, setMobileTab] = useState<"overview" | "diagnosis" | "parts" | "history">("overview");
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const r = localStorage.getItem("user_role") || "mechanic";
@@ -583,8 +586,412 @@ export default function JobCardProfilePage() {
           </div>
         </div>
 
-        {/* ============ STAGE STEPPER (read-only) ============ */}
-        <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-md">
+        {/* ============ MOBILE CARD-FREE TABBED CANVAS (< md) ============ */}
+        <div className="block md:hidden space-y-5">
+          {/* Edge-to-Edge Sticky Tab Navigation Bar */}
+          <div className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur-md -mx-4 px-4 py-2 border-b border-white/10 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {[
+              { id: "overview", label: "Overview", icon: User },
+              { id: "diagnosis", label: "Diagnosis", icon: FileText, count: diagnosisLog.length },
+              { id: "parts", label: "Parts & Services", icon: Wrench, count: cartItems.length },
+              { id: "history", label: "History", icon: History, count: pastHistory.length },
+            ].map((tab) => {
+              const isActive = mobileTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setMobileTab(tab.id as any)}
+                  className={clsx(
+                    "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0",
+                    isActive
+                      ? "bg-cyan-500 text-zinc-950 shadow-md shadow-cyan-500/20"
+                      : "text-zinc-400 hover:text-white bg-zinc-900/60"
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      className={clsx(
+                        "px-1.5 py-0.2 rounded-full text-[10px] font-mono",
+                        isActive ? "bg-zinc-950 text-cyan-300 font-extrabold" : "bg-zinc-800 text-zinc-400"
+                      )}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* TAB 1: OVERVIEW */}
+          {mobileTab === "overview" && (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              {/* Stage Stepper Banner (Card-free / Edge-to-edge canvas) */}
+              <div className="py-2 border-b border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    Stage Progression
+                  </span>
+                  <span className="font-mono text-[11px] text-cyan-400 font-bold">
+                    Step {currentStageIndex + 1} of {STAGES.length}
+                  </span>
+                </div>
+
+                {/* Progress bar track */}
+                <div className="w-full bg-zinc-900 rounded-full h-2 overflow-hidden border border-white/5">
+                  <div
+                    className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full transition-all duration-300"
+                    style={{ width: `${((currentStageIndex + 1) / STAGES.length) * 100}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] font-medium text-zinc-400 pt-1">
+                  <span>Current Stage:</span>
+                  <span className="font-bold text-white bg-zinc-900 px-2.5 py-1 rounded-lg border border-white/10">
+                    {STAGES[currentStageIndex]?.label || job.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Edge-to-edge Key-Value List Rows */}
+              <div className="space-y-1">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                  Customer & Service Details
+                </h3>
+
+                {/* Row: Customer */}
+                <div className="flex items-center justify-between py-3 border-b border-white/5">
+                  <span className="text-xs text-zinc-400 flex items-center gap-2">
+                    <User className="w-4 h-4 text-cyan-400" />
+                    Customer
+                  </span>
+                  <span className="text-sm font-bold text-white text-right">{job.customer}</span>
+                </div>
+
+                {/* Row: Motorcycle */}
+                <div className="flex items-center justify-between py-3 border-b border-white/5">
+                  <span className="text-xs text-zinc-400 flex items-center gap-2">
+                    <Bike className="w-4 h-4 text-cyan-400" />
+                    Motorcycle Unit
+                  </span>
+                  <span className="text-sm font-bold text-white text-right">{job.motorcycle}</span>
+                </div>
+
+                {/* Row: Intake Date */}
+                <div className="flex items-center justify-between py-3 border-b border-white/5">
+                  <span className="text-xs text-zinc-400 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-zinc-400" />
+                    Intake Date
+                  </span>
+                  <span className="text-xs font-mono text-zinc-200 text-right">
+                    {new Date(job.created_at).toLocaleString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                {/* Row: Lead Mechanic */}
+                <div className="flex items-center justify-between py-3 border-b border-white/5">
+                  <span className="text-xs text-zinc-400 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-purple-400" />
+                    Lead Mechanic
+                  </span>
+                  <span className="text-sm font-bold text-purple-300 text-right">{job.mechanic}</span>
+                </div>
+              </div>
+
+              {/* Inline Mechanic Reassignment */}
+              <div className="pt-2 space-y-3">
+                <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-purple-400" />
+                  Reassign Mechanic
+                </label>
+                <form onSubmit={handleSaveMechanic} className="space-y-3">
+                  <select
+                    value={assignedMechanic}
+                    onChange={(e) => setAssignedMechanic(e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-3 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  >
+                    {mechanicsList.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center justify-between">
+                    {mechanicSaveSuccess ? (
+                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5" /> Saved successfully!
+                      </span>
+                    ) : <span />}
+                    <button
+                      type="submit"
+                      disabled={isSavingMechanic}
+                      className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors ml-auto"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{isSavingMechanic ? "Saving..." : "Save Mechanic"}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: DIAGNOSIS */}
+          {mobileTab === "diagnosis" && (
+            <div className="space-y-5 animate-in fade-in duration-150">
+              {/* Add Note Form */}
+              <div className="space-y-2.5 pb-4 border-b border-white/10">
+                <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                  <Plus className="w-3.5 h-3.5 text-cyan-400" />
+                  Add Diagnosis Note
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Type an observation, diagnosis finding, or service note..."
+                  value={newDiagnosisText}
+                  onChange={(e) => setNewDiagnosisText(e.target.value)}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 placeholder:text-zinc-600 resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddDiagnosis}
+                  disabled={!newDiagnosisText.trim()}
+                  className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Submit Diagnosis Note</span>
+                </button>
+              </div>
+
+              {/* Diagnosis Entries List */}
+              {diagnosisLog.length === 0 ? (
+                <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
+                  <FileText className="w-8 h-8 text-zinc-600 mx-auto" />
+                  <p className="text-zinc-400 text-xs font-medium">No diagnosis notes recorded yet.</p>
+                  <p className="text-zinc-600 text-[11px]">Use the input above to document symptoms and findings.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {diagnosisLog.map((entry) => {
+                    const isEditing = editingEntryId === entry.id;
+                    const isOwnEntry = entry.author === userName;
+                    return (
+                      <div
+                        key={entry.id}
+                        className="p-3.5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="font-bold text-cyan-300">{entry.author}</span>
+                            <span className="text-zinc-600">•</span>
+                            <span className="font-mono text-[10px] text-zinc-500">
+                              {new Date(entry.timestamp).toLocaleString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+
+                          {isOwnEntry && !isEditing && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingEntryId(entry.id);
+                                  setEditingText(entry.text);
+                                }}
+                                className="p-1 rounded-lg text-zinc-400 hover:text-cyan-400"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteDiagnosis(entry.id)}
+                                className="p-1 rounded-lg text-zinc-400 hover:text-red-400"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <textarea
+                              rows={3}
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              className="w-full bg-zinc-950 border border-cyan-500/30 rounded-xl p-2.5 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none"
+                            />
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingEntryId(null);
+                                  setEditingText("");
+                                }}
+                                className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleEditDiagnosis(entry.id)}
+                                disabled={!editingText.trim()}
+                                className="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-zinc-200 whitespace-pre-wrap leading-relaxed">
+                            {entry.text}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: PARTS & SERVICES */}
+          {mobileTab === "parts" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                  <Wrench className="w-3.5 h-3.5 text-cyan-400" />
+                  Parts & Services Used
+                </span>
+                <span className="font-mono text-xs text-zinc-400">
+                  {cartItems.length} {cartItems.length === 1 ? "Item" : "Items"}
+                </span>
+              </div>
+
+              {cartItems.length === 0 ? (
+                <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
+                  <Wrench className="w-8 h-8 text-zinc-600 mx-auto" />
+                  <p className="text-zinc-400 text-xs font-medium">No items attached yet.</p>
+                  <p className="text-zinc-600 text-[11px]">Parts and labor added in the POS checkout will appear here.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {cartItems.map((item, idx) => (
+                    <div
+                      key={item.id || idx}
+                      className="flex items-center justify-between py-3 border-b border-white/5"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={clsx(
+                            "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0",
+                            item.type === "service"
+                              ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                              : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                          )}
+                        >
+                          {item.type === "service" ? "Service" : "Part"}
+                        </span>
+                        <span className="text-xs font-bold text-white truncate">{item.name}</span>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-white/10 font-mono text-xs font-bold text-zinc-300 shrink-0 ml-2">
+                        Qty: {item.qty}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: HISTORY */}
+          {mobileTab === "history" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5 text-amber-400" />
+                  Prior Service History
+                </span>
+                <span className="font-mono text-xs text-amber-400">
+                  {pastHistory.length} {pastHistory.length === 1 ? "Session" : "Sessions"}
+                </span>
+              </div>
+
+              {pastHistory.length === 0 ? (
+                <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
+                  <History className="w-8 h-8 text-zinc-600 mx-auto" />
+                  <p className="text-zinc-400 text-xs font-medium">No previous repair history found.</p>
+                  <p className="text-zinc-600 text-[11px]">This appears to be the customer&apos;s first service session on this motorcycle.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pastHistory.map((pj, idx) => (
+                    <div
+                      key={pj.job_id || idx}
+                      className="p-3.5 rounded-2xl bg-zinc-900/40 border border-white/5 space-y-2"
+                    >
+                      <div className="flex items-center justify-between flex-wrap gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-xs text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                            {pj.jo_number}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                            {pj.status}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-zinc-500">
+                          {pj.date_repaired ? new Date(pj.date_repaired).toLocaleDateString(undefined, {
+                            month: "short", day: "numeric", year: "numeric"
+                          }) : "—"}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-zinc-400">
+                        <span className="text-purple-300 font-medium">Technician: {pj.mechanic_name}</span>
+                      </div>
+
+                      {pj.mechanic_notes && (
+                        <div className="p-2.5 bg-zinc-950/70 rounded-xl border border-white/5">
+                          <p className="text-xs text-zinc-300 italic line-clamp-2">"{pj.mechanic_notes}"</p>
+                        </div>
+                      )}
+
+                      {pj.items_used && pj.items_used.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {pj.items_used.map((item, iIdx) => (
+                            <span key={iIdx} className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-zinc-900 text-zinc-400 border border-white/5">
+                              {item.name} ×{item.qty}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ============ DESKTOP CARD-BASED LAYOUT (>= md) ============ */}
+        <div className="hidden md:block space-y-8">
+          {/* ============ STAGE STEPPER (read-only) ============ */}
+          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-md">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
               <Clock className="w-4 h-4 text-cyan-400" />
@@ -1011,6 +1418,7 @@ export default function JobCardProfilePage() {
             </div>
           )}
         </div>
+      </div>
 
       </div>
 

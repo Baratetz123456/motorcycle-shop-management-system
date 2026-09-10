@@ -23,8 +23,14 @@ import {
   Lock,
   GripVertical,
   AlertCircle,
-  MousePointerClick
+  MousePointerClick,
+  MoreVertical,
+  Filter,
+  Check,
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
+import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -104,6 +110,31 @@ export default function RepairBoardPage() {
     title: string;
     message: string;
   } | null>(null);
+
+  // Mobile View States
+  const [mobileSearch, setMobileSearch] = useState("");
+  const [activeMobileTab, setActiveMobileTab] = useState<RepairStatus>("PENDING");
+  const [selectedMechanic, setSelectedMechanic] = useState("ALL");
+  const [selectedPayment, setSelectedPayment] = useState<"ALL" | "PAID" | "UNPAID">("ALL");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [menuOpenJobId, setMenuOpenJobId] = useState<string | null>(null);
+  const [statusPickerJob, setStatusPickerJob] = useState<RepairJob | null>(null);
+  const [confirmMoveJob, setConfirmMoveJob] = useState<{
+    job: RepairJob;
+    targetStatus: RepairStatus;
+    label: string;
+    direction: "forward" | "backward";
+  } | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuOpenJobId && !(e.target as HTMLElement).closest("[data-job-menu]")) {
+        setMenuOpenJobId(null);
+      }
+    };
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, [menuOpenJobId]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -901,6 +932,63 @@ export default function RepairBoardPage() {
     { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
   ];
 
+  const getStageCount = (status: RepairStatus) => {
+    return jobs.filter((j) => {
+      if (j.status !== status) return false;
+      if (status === "RELEASED" && settings.boardRetentionDays && settings.boardRetentionDays !== "all") {
+        const retentionDays = parseInt(settings.boardRetentionDays, 10);
+        if (!isNaN(retentionDays) && retentionDays > 0) {
+          const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+          const jobTime = new Date(j.created_at).getTime();
+          if (!isNaN(jobTime) && jobTime < cutoffTime) return false;
+        }
+      }
+      return true;
+    }).length;
+  };
+
+  const activeFilterCount =
+    (selectedMechanic !== "ALL" ? 1 : 0) +
+    (selectedPayment !== "ALL" ? 1 : 0) +
+    (mobileSearch.trim() ? 1 : 0);
+
+  const filteredMobileJobs = jobs.filter((j) => {
+    if (j.status !== activeMobileTab) return false;
+
+    if (j.status === "RELEASED" && settings.boardRetentionDays && settings.boardRetentionDays !== "all") {
+      const retentionDays = parseInt(settings.boardRetentionDays, 10);
+      if (!isNaN(retentionDays) && retentionDays > 0) {
+        const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+        const jobTime = new Date(j.created_at).getTime();
+        if (!isNaN(jobTime) && jobTime < cutoffTime) return false;
+      }
+    }
+
+    if (mobileSearch.trim()) {
+      const q = mobileSearch.toLowerCase();
+      const matchJo = j.jo_number?.toLowerCase().includes(q);
+      const matchCust = j.customer?.toLowerCase().includes(q);
+      const matchMoto = j.motorcycle?.toLowerCase().includes(q);
+      if (!matchJo && !matchCust && !matchMoto) return false;
+    }
+
+    if (selectedMechanic !== "ALL" && j.mechanic !== selectedMechanic) {
+      return false;
+    }
+
+    const isPaid = Boolean(
+      j.is_paid ||
+      (typeof window !== "undefined" && (
+        localStorage.getItem(`motoshop_job_paid_${j.id}`) === "true" ||
+        localStorage.getItem(`motoshop_job_paid_${j.jo_number}`) === "true"
+      ))
+    );
+    if (selectedPayment === "PAID" && !isPaid) return false;
+    if (selectedPayment === "UNPAID" && isPaid) return false;
+
+    return true;
+  });
+
   if (isLoading) {
     return <RepairBoardSkeleton />;
   }
@@ -959,8 +1047,398 @@ export default function RepairBoardPage() {
         </div>
       )}
 
-      {/* Kanban Board Columns Grid */}
-      <div className="overflow-visible md:overflow-hidden md:flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Mobile-Only Tabbed Status Repair Board (< md) */}
+      <div className="flex md:hidden flex-col flex-1 min-h-0 space-y-4">
+        {/* Scrollable Status Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 shrink-0 -mx-1 px-1">
+          {columns.map((col) => {
+            const count = getStageCount(col.status);
+            const isActive = activeMobileTab === col.status;
+            return (
+              <button
+                key={col.status}
+                type="button"
+                onClick={() => {
+                  setActiveMobileTab(col.status);
+                  setMenuOpenJobId(null);
+                }}
+                className={clsx(
+                  "flex items-center gap-2 px-3.5 py-2.5 rounded-2xl font-bold text-xs whitespace-nowrap transition-all shrink-0 border",
+                  isActive
+                    ? "bg-cyan-500 text-zinc-950 border-cyan-400 shadow-lg shadow-cyan-500/20 scale-[1.02]"
+                    : "bg-zinc-900/90 text-zinc-400 border-white/5 hover:text-white hover:border-white/10"
+                )}
+              >
+                <span>{col.title}</span>
+                <span
+                  className={clsx(
+                    "px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold",
+                    isActive
+                      ? "bg-zinc-950 text-cyan-300"
+                      : "bg-zinc-800 text-zinc-300 border border-white/5"
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Stage Job Cards List */}
+        <div className="flex-1 space-y-3 pb-24">
+          {filteredMobileJobs.length === 0 ? (
+            <div className="text-center py-12 px-4 rounded-3xl border border-dashed border-white/10 bg-zinc-900/30 flex flex-col items-center justify-center">
+              <div className="p-3.5 rounded-2xl bg-zinc-800/80 text-zinc-400 mb-3 border border-white/5">
+                <Wrench className="w-6 h-6 text-zinc-500" />
+              </div>
+              <h3 className="text-sm font-bold text-white mb-1">
+                No jobs in {columns.find((c) => c.status === activeMobileTab)?.title || activeMobileTab}
+              </h3>
+              <p className="text-xs text-zinc-400 max-w-xs mb-4">
+                {activeFilterCount > 0
+                  ? "No job cards match your active search and filter criteria."
+                  : "There are currently no job cards in this stage."}
+              </p>
+              {activeFilterCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileSearch("");
+                    setSelectedMechanic("ALL");
+                    setSelectedPayment("ALL");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-white transition-colors"
+                >
+                  Reset Filters
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-zinc-950 transition-colors flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Job Card</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            filteredMobileJobs.map((job) => {
+              const isPaid = Boolean(
+                job.is_paid ||
+                (typeof window !== "undefined" && (
+                  localStorage.getItem(`motoshop_job_paid_${job.id}`) === "true" ||
+                  localStorage.getItem(`motoshop_job_paid_${job.jo_number}`) === "true"
+                ))
+              );
+              const isMenuOpen = menuOpenJobId === job.id;
+              const canDelete = !isPaid && userRole !== "cashier";
+
+              return (
+                <div
+                  key={job.id}
+                  onClick={() => router.push(`/repairs/jobs/${job.id}`)}
+                  className={clsx(
+                    "bg-zinc-900/90 border rounded-2xl p-4 space-y-3 shadow-lg transition-all relative cursor-pointer active:scale-[0.99]",
+                    isPaid
+                      ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]"
+                      : "border-white/10 hover:border-cyan-500/40"
+                  )}
+                >
+                  {/* Header: JO# + Payment Status Tag + 3-Dots Action Menu */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-xs text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-lg border border-cyan-500/30">
+                        {job.jo_number}
+                      </span>
+                      {isPaid ? (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 uppercase tracking-wider">
+                          <CheckCircle className="w-3 h-3 text-emerald-400" />
+                          PAID
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                          Unpaid Cart
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 3-Dots Action Menu */}
+                    <div className="relative" data-job-menu="true">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpenJobId(isMenuOpen ? null : job.id);
+                        }}
+                        className="p-1.5 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                        aria-label="More options"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      {isMenuOpen && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-8 z-30 w-52 bg-zinc-900 border border-white/10 rounded-2xl p-1.5 shadow-2xl space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMenuOpenJobId(null);
+                              router.push(`/repairs/jobs/${job.id}`);
+                            }}
+                            className="w-full px-3 py-2 rounded-xl text-left text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 font-medium"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>View Job Details</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMenuOpenJobId(null);
+                              handleOpenEditModal(job);
+                            }}
+                            className="w-full px-3 py-2 rounded-xl text-left text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 font-medium"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Edit Diagnosis</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMenuOpenJobId(null);
+                              setStatusPickerJob(job);
+                            }}
+                            className="w-full px-3 py-2 rounded-xl text-left text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 font-medium"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-purple-400" />
+                            <span>Move to Stage...</span>
+                          </button>
+                          {canDelete && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMenuOpenJobId(null);
+                                setDeleteConfirmJob(job);
+                              }}
+                              className="w-full px-3 py-2 rounded-xl text-left text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2 font-medium"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                              <span>Delete Job Card</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Customer & Motorcycle */}
+                  <div>
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-cyan-400 shrink-0" />
+                      {job.customer}
+                    </h4>
+                    <p className="text-xs text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
+                      <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                      {job.motorcycle}
+                    </p>
+                  </div>
+
+                  {/* Mechanic Diagnosis Notes (if present) */}
+                  {job.mechanic_notes && (
+                    <div className="p-2.5 bg-zinc-950/70 rounded-xl border border-white/5 space-y-0.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> Diagnosis:
+                      </span>
+                      <p className="text-xs text-zinc-300 italic line-clamp-2">
+                        "{job.mechanic_notes}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Assigned Mechanic & Quick Meta */}
+                  <div className="flex justify-between items-center text-xs pt-1 border-t border-white/5 text-zinc-400">
+                    <span className="flex items-center gap-1.5 font-semibold text-purple-300">
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                      {job.mechanic}
+                    </span>
+                    <span className="text-[11px] text-zinc-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    </span>
+                  </div>
+
+                  {/* Action Bar: Forward & Backward Movement */}
+                  <div className="pt-2 border-t border-white/5 flex items-center gap-2">
+                    {/* Stage 1: PENDING */}
+                    {job.status === "PENDING" && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmMoveJob({
+                            job,
+                            targetStatus: "ONGOING",
+                            label: "Start Repair (Move to Ongoing)",
+                            direction: "forward"
+                          });
+                        }}
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-cyan-400 text-cyan-400" />
+                        <span>Start Repair</span>
+                      </button>
+                    )}
+
+                    {/* Stage 2: ONGOING */}
+                    {job.status === "ONGOING" && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmMoveJob({
+                              job,
+                              targetStatus: "PENDING",
+                              label: "Revert to Pending Stage",
+                              direction: "backward"
+                            });
+                          }}
+                          className="py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+                          title="Revert back to Pending stage"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>Revert</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmMoveJob({
+                              job,
+                              targetStatus: "COMPLETED",
+                              label: "Complete Repair (Move to Completed)",
+                              direction: "forward"
+                            });
+                          }}
+                          className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Complete Repair</span>
+                        </button>
+                      </>
+                    )}
+
+                    {/* Stage 3: COMPLETED */}
+                    {job.status === "COMPLETED" && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmMoveJob({
+                              job,
+                              targetStatus: "ONGOING",
+                              label: "Revert to Ongoing Repair",
+                              direction: "backward"
+                            });
+                          }}
+                          className="py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+                          title="Revert back to Ongoing stage"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>Revert</span>
+                        </button>
+                        {isPaid ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "RELEASED",
+                                label: "Release & Handover to Customer",
+                                direction: "forward"
+                              });
+                            }}
+                            className="flex-1 py-2.5 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                            <span>Release & Handover</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/pos/checkout?job_id=${job.id}&jo_number=${encodeURIComponent(job.jo_number)}`);
+                            }}
+                            className="flex-1 py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                          >
+                            <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Bill at POS</span>
+                          </button>
+                        )}
+                      </>
+                    )}
+
+                    {/* Stage 4: RELEASED */}
+                    {job.status === "RELEASED" && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmMoveJob({
+                              job,
+                              targetStatus: "COMPLETED",
+                              label: "Revert Invoiced Job to Completed",
+                              direction: "backward"
+                            });
+                          }}
+                          className="py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+                          title="Revert back to Completed stage"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>Revert</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/repairs/jobs/${job.id}`);
+                          }}
+                          className="flex-1 py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 border border-white/10 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-zinc-400" />
+                          <span>View Details</span>
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/repairs/jobs/${job.id}`);
+                      }}
+                      className="py-2.5 px-3 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/5 text-xs font-semibold flex items-center gap-1 transition-colors"
+                    >
+                      <span>Details</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Desktop-Only Kanban Board Columns Grid (>= md) */}
+      <div className="hidden md:grid md:overflow-hidden md:flex-1 md:min-h-0 grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {columns.map((col) => {
           let colJobs = jobs.filter((j) => j.status === col.status);
 
@@ -1414,6 +1892,173 @@ export default function RepairBoardPage() {
           ) : ""
         }
       />
+
+      {/* Modal 4: Mobile Status Picker Modal */}
+      <Modal
+        isOpen={Boolean(statusPickerJob)}
+        onClose={() => setStatusPickerJob(null)}
+        size="sm"
+      >
+        <ModalHeader
+          icon={Activity}
+          iconVariant="cyan"
+          title="Move Job Order Stage"
+          subtitle={statusPickerJob ? `Select target stage for ${statusPickerJob.jo_number}` : ""}
+          onClose={() => setStatusPickerJob(null)}
+        />
+        <ModalBody>
+          <div className="space-y-2 py-2">
+            {columns.map((col) => {
+              const isCurrent = statusPickerJob?.status === col.status;
+              return (
+                <button
+                  key={col.status}
+                  type="button"
+                  disabled={isCurrent}
+                  onClick={() => {
+                    if (statusPickerJob) {
+                      const targetJob = statusPickerJob;
+                      const targetStatus = col.status;
+                      setStatusPickerJob(null);
+                      setConfirmMoveJob({
+                        job: targetJob,
+                        targetStatus,
+                        label: `Move to ${col.title}`,
+                        direction: "forward"
+                      });
+                    }
+                  }}
+                  className={clsx(
+                    "w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition-all",
+                    isCurrent
+                      ? "bg-zinc-800/40 border-white/5 opacity-50 cursor-not-allowed text-zinc-500"
+                      : "bg-zinc-900/90 border-white/10 hover:border-cyan-500/40 hover:bg-zinc-900 text-white active:scale-[0.99]"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={clsx("w-2.5 h-2.5 rounded-full", col.color.replace("text-", "bg-"))} />
+                    <span className="font-bold text-xs">{col.title}</span>
+                  </div>
+                  {isCurrent ? (
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Current Stage</span>
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-zinc-500" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </ModalBody>
+      </Modal>
+
+      {/* Modal 5: Confirm Move / Revert Job Stage Modal */}
+      <ConfirmModal
+        isOpen={Boolean(confirmMoveJob)}
+        onClose={() => setConfirmMoveJob(null)}
+        onConfirm={() => {
+          if (confirmMoveJob) {
+            const { job, targetStatus } = confirmMoveJob;
+            setConfirmMoveJob(null);
+            executeMoveJob(job.id, targetStatus);
+          }
+        }}
+        title={confirmMoveJob?.direction === "backward" ? "Revert Job Order Stage?" : "Advance Job Order Stage?"}
+        confirmText={confirmMoveJob?.direction === "backward" ? "Confirm Revert" : "Confirm Stage Move"}
+        confirmVariant={confirmMoveJob?.direction === "backward" ? "warning" : "primary"}
+        message={
+          confirmMoveJob ? (
+            <div className="space-y-3">
+              <p className="text-zinc-300 text-sm">
+                Are you sure you want to move Job Order <strong className="text-white font-mono">{confirmMoveJob.job.jo_number}</strong> ({confirmMoveJob.job.customer})?
+              </p>
+              <div className="p-3 bg-zinc-950/80 rounded-2xl border border-white/10 flex items-center justify-between text-xs">
+                <span className="text-zinc-400 font-medium">New Status:</span>
+                <span className="font-bold font-mono text-cyan-300 uppercase tracking-wider bg-cyan-950/80 px-2.5 py-1 rounded-lg border border-cyan-500/30">
+                  {confirmMoveJob.targetStatus}
+                </span>
+              </div>
+              {confirmMoveJob.direction === "backward" && (
+                <p className="text-[11px] text-amber-300/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+                  Reverting this job order will send it back to the previous workshop bench stage.
+                </p>
+              )}
+            </div>
+          ) : ""
+        }
+      />
+
+      {/* Floating Filter Button & Mobile Filter Sheet */}
+      <FloatingFilterButton
+        onClick={() => setIsMobileFilterOpen(true)}
+        activeCount={activeFilterCount}
+        label="Filters"
+      />
+
+      <MobileFilterSheet
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        title="Filter Workshop Jobs"
+        activeCount={activeFilterCount}
+        onReset={() => {
+          setMobileSearch("");
+          setSelectedMechanic("ALL");
+          setSelectedPayment("ALL");
+        }}
+      >
+        {/* Search Field */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Search Job Cards</label>
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="JO #, Customer, Motorcycle..."
+              value={mobileSearch}
+              onChange={(e) => setMobileSearch(e.target.value)}
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            />
+          </div>
+        </div>
+
+        {/* Mechanic Filter */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Assigned Mechanic</label>
+          <select
+            value={selectedMechanic}
+            onChange={(e) => setSelectedMechanic(e.target.value)}
+            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+          >
+            <option value="ALL">All Mechanics</option>
+            {mechanicsList.map((m) => (
+              <option key={m.id} value={m.name}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Payment Status Filter */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-zinc-300">Payment Status</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(["ALL", "PAID", "UNPAID"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setSelectedPayment(p)}
+                className={clsx(
+                  "py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-center",
+                  selectedPayment === p
+                    ? "bg-cyan-500/20 border-cyan-500/60 text-cyan-300"
+                    : "bg-zinc-900 border-white/10 text-zinc-400 hover:text-white"
+                )}
+              >
+                {p === "ALL" ? "All" : p === "PAID" ? "Paid" : "Unpaid"}
+              </button>
+            ))}
+          </div>
+        </div>
+      </MobileFilterSheet>
 
     </div>
   );
