@@ -6,9 +6,9 @@
 export const TYPOGRAPHY = {
   // Page Header Level
   pageTitle:
-    "text-3xl font-bold text-white flex items-center gap-3",
+    "text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3",
   pageIcon: "w-8 h-8 text-cyan-400",
-  pageSubtitle: "text-zinc-400 mt-1 text-sm",
+  pageSubtitle: "text-zinc-500 dark:text-zinc-400 mt-1 text-sm",
 
   // Action Buttons
   primaryButton:
@@ -38,10 +38,10 @@ export const TYPOGRAPHY = {
   tableCellMono: "font-mono text-xs text-zinc-400",
 
   // Cards & Modals
-  cardTitle: "text-base font-bold text-white",
-  cardSubtitle: "text-xs text-zinc-400 font-medium",
-  modalTitle: "text-xl font-bold text-white",
-  modalSubtitle: "text-xs text-zinc-400",
+  cardTitle: "text-base font-bold text-slate-900 dark:text-white",
+  cardSubtitle: "text-xs text-zinc-500 dark:text-zinc-400 font-medium",
+  modalTitle: "text-xl font-bold text-slate-900 dark:text-white",
+  modalSubtitle: "text-xs text-zinc-500 dark:text-zinc-400",
 
   // Form Controls
   formLabel: "block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5",

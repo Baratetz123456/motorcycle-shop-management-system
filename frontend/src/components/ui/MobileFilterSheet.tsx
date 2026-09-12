@@ -31,18 +31,18 @@ export function FloatingFilterButton({
       type="button"
       onClick={onClick}
       style={{
-        bottom: "max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)",
       }}
       className={clsx(
-        "fixed right-5 z-40 md:hidden flex items-center gap-2 px-4 py-3 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-full shadow-2xl shadow-cyan-500/40 active:scale-95 transition-all text-xs border border-cyan-300/40 ring-2 ring-cyan-500/20 backdrop-blur-sm",
+        "fixed right-4 z-40 md:hidden flex items-center gap-2 px-4 py-3 bg-lime-500 hover:bg-lime-400 text-zinc-950 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-lime-400 dark:border-lime-500/60 font-bold rounded-full shadow-2xl shadow-lime-500/30 active:scale-95 transition-all text-xs border border-lime-600/40 ring-2 ring-lime-500/20 backdrop-blur-md",
         className
       )}
       aria-label="Open filters drawer"
     >
-      <Filter className="w-4 h-4 text-zinc-950" />
+      <Filter className="w-4 h-4 text-zinc-950 dark:text-lime-400" />
       <span className="font-extrabold tracking-wide">{label}</span>
       {activeCount > 0 && (
-        <span className="w-5 h-5 rounded-full bg-zinc-950 text-cyan-300 text-[11px] font-bold flex items-center justify-center border border-cyan-500/50 shadow-inner">
+        <span className="w-5 h-5 rounded-full bg-zinc-950 text-lime-400 dark:bg-lime-500 dark:text-zinc-950 text-[11px] font-bold flex items-center justify-center border border-lime-500/50 shadow-inner">
           {activeCount}
         </span>
       )}

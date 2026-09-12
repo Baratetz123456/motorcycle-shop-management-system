@@ -129,7 +129,7 @@ export function BrandLogo({
       {showText && (
         <div className="flex flex-col text-left leading-none">
           <div className="flex items-center gap-1.5">
-            <span className="text-base sm:text-lg font-black tracking-tight text-zinc-950 dark:text-zinc-50 font-sans">
+            <span className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-zinc-50 font-sans">
               Versiklo
             </span>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-950 text-lime-400 font-bold uppercase tracking-wider">

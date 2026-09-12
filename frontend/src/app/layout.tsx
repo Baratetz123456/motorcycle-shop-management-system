@@ -31,8 +31,16 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  function getCookie(name) {
+                    var m = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+                    return m ? decodeURIComponent(m[3]) : null;
+                  }
                   var uid = localStorage.getItem('user_id');
-                  var mode = (uid ? localStorage.getItem('motoshop_app_mode_' + uid) : null) || localStorage.getItem('motoshop_app_mode') || localStorage.getItem('motoshop_theme_mode') || 'light';
+                  var mode = (uid ? localStorage.getItem('motoshop_app_mode_' + uid) : null) || localStorage.getItem('motoshop_app_mode') || localStorage.getItem('motoshop_theme_mode') || getCookie('motoshop_mode') || 'light';
+                  var theme = (uid ? localStorage.getItem('motoshop_app_theme_' + uid) : null) || localStorage.getItem('motoshop_app_theme') || getCookie('motoshop_theme');
+                  if (theme) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                  }
                   var resolved = mode;
                   if (mode === 'system') {
                     resolved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';

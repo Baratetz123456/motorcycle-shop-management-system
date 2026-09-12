@@ -200,16 +200,14 @@ export default function DashboardLayout({
                     <span>My Profile</span>
                   </Link>
 
-                  {(userRole === "admin" || userRole === "manager") && (
-                    <Link
-                      href="/settings"
-                      onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
-                    >
-                      <Settings className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                      <span>Shop Settings</span>
-                    </Link>
-                  )}
+                  <Link
+                    href="/settings"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                    <span>{userRole === "admin" || userRole === "manager" ? "Shop Settings" : "Appearance & Settings"}</span>
+                  </Link>
 
                   <button
                     type="button"
@@ -225,13 +223,13 @@ export default function DashboardLayout({
                 </div>
 
                 {/* Sign Out Button (High Contrast) */}
-                <div className="pt-2 border-t border-slate-100">
+                <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all shadow-xs active:scale-95"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/50 transition-all shadow-xs active:scale-95"
                   >
-                    <LogOut className="w-4 h-4 text-rose-600" />
+                    <LogOut className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                     <span>Sign Out</span>
                   </button>
                 </div>

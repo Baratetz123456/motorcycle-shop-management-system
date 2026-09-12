@@ -237,8 +237,12 @@ function SettingsContent() {
     if (adminCheck && tabParam && ["general", "roles", "users", "profile", "logs"].includes(tabParam)) {
       setActiveTab(tabParam);
     } else if (!adminCheck) {
-      // Non-admins only have access to their profile tab
-      setActiveTab("profile");
+      // Non-admins have access to appearance (general) and profile
+      if (tabParam === "profile") {
+        setActiveTab("profile");
+      } else {
+        setActiveTab("general");
+      }
     }
 
     // 1. Load User Profile (for all roles)
@@ -285,6 +289,14 @@ function SettingsContent() {
     };
     window.addEventListener("theme_updated", handleThemeSync);
     return () => window.removeEventListener("theme_updated", handleThemeSync);
+  }, []);
+
+  // Cleanly revert any uncommitted live preview when leaving settings page
+  useEffect(() => {
+    return () => {
+      applyModeToDocument(savedModeRef.current);
+      applyThemeToDocument(savedThemeRef.current);
+    };
   }, []);
 
   const loadUserProfile = async (id: string, fallbackEmail: string, currentRole: string) => {
@@ -385,6 +397,13 @@ function SettingsContent() {
       applyThemeToDocument(savedThemeRef.current);
     }
 
+    // Revert temporary unsaved mode preview back to saved state
+    if (activeMode !== savedModeRef.current) {
+      setActiveMode(savedModeRef.current);
+      setActiveThemeMode(savedModeRef.current);
+      applyModeToDocument(savedModeRef.current);
+    }
+
     // Revert temporary unsaved avatar preview back to saved state
     if (selectedAvatar !== savedAvatarRef.current) {
       setSelectedAvatar(savedAvatarRef.current);
@@ -396,24 +415,17 @@ function SettingsContent() {
     }
   };
 
-  // --- Theme Selection Handler (Temporary in-page preview until Save is clicked) ---
+  // --- Theme Selection Handler (Live preview only until Save is clicked) ---
   const handleSelectTheme = (themeId: AppTheme) => {
     setActiveTheme(themeId);
-    applyThemeToDocument(themeId); // Temporary DOM preview
+    applyThemeToDocument(themeId); // Temporary live preview
   };
 
-  // --- Appearance Mode Selection Handler (Instantly persistent & synced across terminals) ---
+  // --- Appearance Mode Selection Handler (Live preview only until Save is clicked) ---
   const handleSelectThemeMode = (mode: AppMode) => {
     setActiveMode(mode);
-    setSavedMode(mode);
-    savedModeRef.current = mode;
     setActiveThemeMode(mode);
-    saveAppMode(mode, currentUserId);
-    try {
-      if (currentUserId) {
-        apiClient.patch(`/auth/users/${currentUserId}`, { display_mode: mode }).catch(() => {});
-      }
-    } catch {}
+    applyModeToDocument(mode); // Temporary live preview
   };
 
   const handleSelectMode = handleSelectThemeMode;
@@ -446,19 +458,20 @@ function SettingsContent() {
     if (!isAdmin) return;
     saveSystemSettings(settings);
     saveAppMode(activeMode, currentUserId);
+    saveAppTheme(activeTheme, currentUserId);
     setSavedMode(activeMode);
     savedModeRef.current = activeMode;
-    try {
-      if (currentUserId) {
-        apiClient.patch(`/auth/users/${currentUserId}`, { display_mode: activeMode }).catch(() => {});
-      }
-    } catch {}
+    setSavedTheme(activeTheme);
+    savedThemeRef.current = activeTheme;
 
     recordUserAuditLog("SETTINGS_UPDATED", "/settings", {
       appName: settings.appName,
       shopDescription: settings.shopDescription,
-      currency: settings.currency,
       timezone: settings.timezone,
+      country: settings.country,
+      currency: settings.currency,
+      mode: activeMode,
+      theme: activeTheme,
       boardPendingTitle: settings.boardPendingTitle,
       boardOngoingTitle: settings.boardOngoingTitle,
       boardCompletedTitle: settings.boardCompletedTitle,
@@ -466,7 +479,25 @@ function SettingsContent() {
       boardRetentionDays: settings.boardRetentionDays,
     });
 
-    setGeneralSuccess("Store preferences, currency, and workshop boards updated successfully.");
+    setGeneralSuccess("Store preferences, currency, appearance, and workshop boards updated successfully.");
+    setTimeout(() => setGeneralSuccess(null), 4000);
+  };
+
+  const handleSaveAppearanceOnly = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    saveAppMode(activeMode, currentUserId);
+    saveAppTheme(activeTheme, currentUserId);
+    setSavedMode(activeMode);
+    savedModeRef.current = activeMode;
+    setSavedTheme(activeTheme);
+    savedThemeRef.current = activeTheme;
+
+    recordUserAuditLog("APPEARANCE_SETTINGS_UPDATED", "/settings", {
+      mode: activeMode,
+      theme: activeTheme,
+    });
+
+    setGeneralSuccess("Appearance preferences permanently saved across your session.");
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
 
@@ -637,27 +668,27 @@ function SettingsContent() {
     <div className="py-5 border-y border-zinc-800/80 space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             {activeMode === "dark" ? (
-              <Moon className="w-4 h-4 text-cyan-400" />
+              <Moon className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
             ) : (
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             )}
             <span>Display Appearance Mode</span>
           </h3>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Switch between high-contrast dark mode and clean daylight canvas.
           </p>
         </div>
         {isModeDirty ? (
-          <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+          <span className="text-xs text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
             Unsaved Mode Preview (Click Save to apply)
           </span>
         ) : null}
       </div>
 
-      <div className="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-xl border border-white/10 w-fit">
+      <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-900/90 p-1 rounded-xl border border-slate-200 dark:border-white/10 w-fit">
         <button
           type="button"
           onClick={() => handleSelectMode("dark")}
@@ -665,7 +696,7 @@ function SettingsContent() {
             "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
             activeMode === "dark"
               ? "bg-cyan-500 text-zinc-950 shadow-sm"
-              : "text-zinc-400 hover:text-white"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           )}
         >
           <Moon className="w-3.5 h-3.5" />
@@ -679,7 +710,7 @@ function SettingsContent() {
             "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
             activeMode === "light"
               ? "bg-amber-400 text-zinc-950 shadow-sm"
-              : "text-zinc-400 hover:text-white"
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           )}
         >
           <Sun className="w-3.5 h-3.5" />
@@ -694,22 +725,22 @@ function SettingsContent() {
     const currentThemes = getThemesForMode(activeMode);
 
     return (
-      <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-4">
+      <div className="bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Palette className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Palette className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
               App Theme & Visual Identity ({activeMode === "light" ? "Daylight Themes" : "Neon Dark Themes"})
             </h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               {activeMode === "light"
                 ? "Choose from 4 high-contrast daylight palettes tailored for crisp daytime clarity."
                 : "Choose from 4 vibrant electric palettes tailored for deep dark mode aesthetics."}
             </p>
           </div>
           {isThemeDirty ? (
-            <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <span className="text-xs text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
               Unsaved Theme Preview (Click Save to apply)
             </span>
           ) : themeSuccess ? (
@@ -800,110 +831,114 @@ function SettingsContent() {
       {/* Top Header & Navigation Tabs */}
       <div className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-2 shrink-0">
         {/* Page Header */}
-        <div className="pb-3 border-b border-white/10">
+        <div className="pb-3 border-b border-slate-200 dark:border-white/10">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-2.5">
-              <Settings className="w-7 h-7 text-cyan-400" />
-              {isAdmin ? "Shop Settings" : "My Profile"}
+            <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <Settings className="w-7 h-7 text-cyan-500 dark:text-cyan-400" />
+              {isAdmin ? "Shop Settings" : "Appearance & Settings"}
             </h1>
-            <p className="text-zinc-400 mt-0.5 text-xs">
+            <p className="text-zinc-500 dark:text-zinc-400 mt-0.5 text-xs">
               {isAdmin 
                 ? "Configure store currency, timezone, staff access, and appearance."
-                : "Manage your staff account details, appearance theme, and password."}
+                : "Manage your workshop appearance mode, theme palette, and user profile."}
             </p>
           </div>
         </div>
 
-        {/* Segmented Navigation Tabs (Rendered for Admin Only) */}
-        {isAdmin && (
-          <>
-            {/* Mobile Tab Select Dropdown (Zero Horizontal Scroll) */}
-            <div className="md:hidden mt-3">
-              <label className="text-[11px] font-semibold text-zinc-400 mb-1.5 block uppercase tracking-wider">
-                Settings Tab:
-              </label>
-              <select
-                value={activeTab}
-                onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
-              >
-                <option value="general">🌐 General Preferences</option>
-                <option value="roles">🎛️ Role Access Matrix</option>
-                <option value="users">👥 Staff & Users</option>
-                <option value="profile">👤 My Profile & Theme</option>
-                <option value="logs">📜 System Audit Log</option>
-              </select>
-            </div>
+        {/* Segmented Navigation Tabs (Accessible to all roles) */}
+        <>
+          {/* Mobile Tab Select Dropdown (Zero Horizontal Scroll) */}
+          <div className="md:hidden mt-3">
+            <label className="text-[11px] font-semibold text-zinc-400 mb-1.5 block uppercase tracking-wider">
+              Settings Tab:
+            </label>
+            <select
+              value={activeTab}
+              onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-lime-500/50 cursor-pointer"
+            >
+              <option value="general">{isAdmin ? "🌐 General Preferences" : "🎨 Appearance & Theme"}</option>
+              {isAdmin && <option value="roles">🎛️ Role Access Matrix</option>}
+              {isAdmin && <option value="users">👥 Staff & Users</option>}
+              <option value="profile">👤 My Profile</option>
+              {isAdmin && <option value="logs">📜 System Audit Log</option>}
+            </select>
+          </div>
 
-            {/* Desktop Segmented Navigation Tabs */}
-            <div className="hidden md:flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 gap-1.5 mt-3">
-              <button
-                onClick={() => handleTabChange("general")}
-                className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
-                  activeTab === "general"
-                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
-                )}
-              >
-                <Globe className="w-4 h-4 shrink-0" />
-                <span>General</span>
-              </button>
+          {/* Desktop Segmented Navigation Tabs */}
+          <div className="hidden md:flex bg-slate-100 dark:bg-zinc-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-700 gap-1.5 mt-3">
+            <button
+              onClick={() => handleTabChange("general")}
+              className={clsx(
+                "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                activeTab === "general"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                  : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+              )}
+            >
+              {isAdmin ? <Globe className="w-4 h-4 shrink-0" /> : <Palette className="w-4 h-4 shrink-0" />}
+              <span>{isAdmin ? "General & Appearance" : "Appearance & Theme"}</span>
+            </button>
 
+            {isAdmin && (
               <button
                 onClick={() => handleTabChange("roles")}
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "roles"
                     ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
                 )}
               >
                 <Sliders className="w-4 h-4 shrink-0" />
                 <span>Role Access</span>
               </button>
+            )}
 
+            {isAdmin && (
               <button
                 onClick={() => handleTabChange("users")}
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "users"
                     ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
                 )}
               >
                 <Users className="w-4 h-4 shrink-0" />
                 <span>Staff & Users</span>
               </button>
+            )}
 
-              <button
-                onClick={() => handleTabChange("profile")}
-                className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
-                  activeTab === "profile"
-                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
-                )}
-              >
-                <User className="w-4 h-4 shrink-0" />
-                <span>My Profile</span>
-              </button>
+            <button
+              onClick={() => handleTabChange("profile")}
+              className={clsx(
+                "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                activeTab === "profile"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                  : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+              )}
+            >
+              <User className="w-4 h-4 shrink-0" />
+              <span>My Profile</span>
+            </button>
 
+            {isAdmin && (
               <button
                 onClick={() => handleTabChange("logs")}
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "logs"
                     ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
                 )}
               >
                 <FileText className="w-4 h-4 shrink-0" />
                 <span>Audit Log</span>
               </button>
-            </div>
-          </>
-        )}
+            )}
+          </div>
+        </>
       </div>
 
       <div className="w-full md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
@@ -916,11 +951,11 @@ function SettingsContent() {
                 <div className="pb-8 border-b border-zinc-800/80 space-y-6 animate-in fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div>
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Building className="w-5 h-5 text-cyan-400" />
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Building className="w-5 h-5 text-cyan-500 dark:text-cyan-400" />
                         Store Preferences
                       </h2>
-                      <p className="text-xs text-zinc-400 mt-1">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                         Shop branding, timezone, currency, and appearance.
                       </p>
                     </div>
@@ -1067,7 +1102,7 @@ function SettingsContent() {
                           onClick={() => handleSelectThemeMode("light")}
                           className={clsx(
                             "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                            activeThemeMode === "light"
+                            activeMode === "light"
                               ? "bg-white text-zinc-950 border-lime-500 ring-2 ring-lime-500/40 shadow-md"
                               : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
                           )}
@@ -1076,7 +1111,7 @@ function SettingsContent() {
                             <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400">
                               <Sun className="w-5 h-5" />
                             </div>
-                            {activeThemeMode === "light" && (
+                            {activeMode === "light" && (
                               <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
                                 <Check className="w-3 h-3 stroke-[3]" />
                                 ACTIVE
@@ -1100,7 +1135,7 @@ function SettingsContent() {
                           onClick={() => handleSelectThemeMode("dark")}
                           className={clsx(
                             "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                            activeThemeMode === "dark"
+                            activeMode === "dark"
                               ? "bg-zinc-900 text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
                               : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
                           )}
@@ -1109,7 +1144,7 @@ function SettingsContent() {
                             <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-400">
                               <Moon className="w-5 h-5" />
                             </div>
-                            {activeThemeMode === "dark" && (
+                            {activeMode === "dark" && (
                               <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
                                 <Check className="w-3 h-3 stroke-[3]" />
                                 ACTIVE
@@ -1133,7 +1168,7 @@ function SettingsContent() {
                           onClick={() => handleSelectThemeMode("system")}
                           className={clsx(
                             "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                            activeThemeMode === "system"
+                            activeMode === "system"
                               ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
                               : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
                           )}
@@ -1142,7 +1177,7 @@ function SettingsContent() {
                             <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-600 dark:text-lime-400">
                               <Sparkles className="w-5 h-5" />
                             </div>
-                            {activeThemeMode === "system" && (
+                            {activeMode === "system" && (
                               <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
                                 <Check className="w-3 h-3 stroke-[3]" />
                                 ACTIVE
@@ -1167,7 +1202,7 @@ function SettingsContent() {
                 <div className="pb-8 border-b border-zinc-800/80 space-y-6 animate-in fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div>
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <Wrench className="w-5 h-5 text-cyan-400" />
                         Workshop & Repair Boards
                       </h2>
@@ -1196,7 +1231,7 @@ function SettingsContent() {
                   <div className="space-y-6">
                     {/* Board Stage Names */}
                     <div>
-                      <h3 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                         <span>Board Stage Display Names</span>
                         <span className="text-[10px] text-zinc-400 font-normal">(4 standard workshop stages)</span>
                       </h3>
@@ -1302,7 +1337,7 @@ function SettingsContent() {
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                           Legal & Regulatory Compliance
                         </h2>
                         <p className="text-xs text-zinc-400 mt-0.5">
@@ -1408,6 +1443,169 @@ function SettingsContent() {
           </div>
         )}
 
+        {/* TAB 1: APPEARANCE & THEME (For Cashiers & Non-Admin Staff) */}
+        {!isAdmin && activeTab === "general" && (
+          <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
+            <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-8">
+              <div className="pb-8 border-b border-zinc-800/80 space-y-6 animate-in fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Palette className="w-5 h-5 text-lime-400" />
+                      Appearance & Theme
+                    </h2>
+                    <p className="text-xs text-zinc-400 mt-1">
+                      Configure your workshop display appearance mode and color scheme.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Appearance Mode Cards */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                      Display Mode
+                    </label>
+                    <p className="text-xs text-slate-500 dark:text-zinc-500">
+                      Select light mode, dark mode, or follow your operating system default.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Light Mode Card */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelectThemeMode("light")}
+                      className={clsx(
+                        "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
+                        activeMode === "light"
+                          ? "bg-white text-zinc-950 border-lime-500 ring-2 ring-lime-500/40 shadow-md"
+                          : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400">
+                          <Sun className="w-5 h-5" />
+                        </div>
+                        {activeMode === "light" && (
+                          <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                            ACTIVE
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Light Mode</div>
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
+                        Clean white canvas with hairline slate borders and electric lime accents.
+                      </div>
+                      <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-white border border-slate-300 shadow-xs" />
+                        <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
+                        <span className="w-4 h-4 rounded-full bg-zinc-950 shadow-xs" />
+                      </div>
+                    </button>
+
+                    {/* Dark Mode Card */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelectThemeMode("dark")}
+                      className={clsx(
+                        "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
+                        activeMode === "dark"
+                          ? "bg-zinc-900 text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
+                          : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-400">
+                          <Moon className="w-5 h-5" />
+                        </div>
+                        {activeMode === "dark" && (
+                          <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                            ACTIVE
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Dark Mode</div>
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
+                        Deep carbon black (#09090b) surfaces with vibrant Kawasaki Lime highlights.
+                      </div>
+                      <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-zinc-950 border border-zinc-700 shadow-xs" />
+                        <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
+                        <span className="w-4 h-4 rounded-full bg-zinc-100 shadow-xs" />
+                      </div>
+                    </button>
+
+                    {/* System Default Card */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelectThemeMode("system")}
+                      className={clsx(
+                        "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
+                        activeMode === "system"
+                          ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
+                          : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-600 dark:text-lime-400">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        {activeMode === "system" && (
+                          <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                            ACTIVE
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">System Default</div>
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
+                        Automatically matches your operating system's light or dark mode setting.
+                      </div>
+                      <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-gradient-to-r from-white to-zinc-950 border border-slate-300 shadow-xs" />
+                        <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Theme Palette Options */}
+                {renderThemeSelector()}
+              </div>
+            </div>
+
+            {/* Sticky Save Footer for Non-Admins */}
+            <div className="shrink-0 px-6 py-3.5 bg-zinc-950/95 border-t border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 z-30 shadow-2xl">
+              <div className="flex items-center gap-3">
+                {generalSuccess ? (
+                  <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium animate-in fade-in">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {generalSuccess}
+                  </span>
+                ) : (
+                  <span className="text-xs text-zinc-400">
+                    {isModeDirty || isThemeDirty
+                      ? "Unsaved appearance preview (click Save to commit)"
+                      : "Appearance preferences are saved"}
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveAppearanceOnly}
+                className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-lime-500 hover:bg-lime-400 text-zinc-950 shadow-sm"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Appearance Preferences</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* TAB 2: ROLE ACCESSIBILITY MATRIX (Admin Only) */}
         {isAdmin && activeTab === "roles" && (
           <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
@@ -1415,7 +1613,7 @@ function SettingsContent() {
               <div className="space-y-6 animate-in fade-in pb-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
                   <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                       <Sliders className="w-5 h-5 text-cyan-400" />
                       Role Access Matrix
                     </h2>
@@ -1690,7 +1888,7 @@ function SettingsContent() {
             {/* Top Action Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Users className="w-5 h-5 text-cyan-400" />
                   Staff Accounts
                 </h2>
@@ -2070,7 +2268,7 @@ function SettingsContent() {
 
                       <div>
                         <div className="flex items-center gap-2">
-                          <h2 className="text-xl font-bold text-white">
+                          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                             {[profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Staff Member Profile"}
                           </h2>
                           <span className={clsx("px-2.5 py-0.5 text-[10px] font-bold border rounded-md uppercase tracking-wider", getRoleBadgeStyle(profile.role))}>
@@ -2177,7 +2375,7 @@ function SettingsContent() {
                   {/* Password Authentication Section */}
                   <div className="py-5 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-0.5">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <KeyRound className="w-4 h-4 text-cyan-400" />
                         <span>Account Authentication Password</span>
                       </h3>
@@ -2251,7 +2449,7 @@ function SettingsContent() {
             <div className="space-y-6 pb-8">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
                 <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Activity className="w-5 h-5 text-cyan-400" />
                     Audit Log Snapshot
                   </h2>
@@ -2272,7 +2470,7 @@ function SettingsContent() {
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                     Dedicated History Logs Page
                   </span>
-                  <h3 className="text-lg md:text-xl font-black text-white">
+                  <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-white">
                     Access Dedicated Audit Logs
                   </h3>
                   <p className="text-xs md:text-sm text-zinc-400 max-w-2xl">

@@ -220,14 +220,14 @@ export function CheckoutModal({
                 /* Normal Active Checkout Form */
                 <>
                   <div>
-                    <div className="text-center mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block mb-1">Total Amount Due</span>
-                      <div className="text-4xl font-black text-slate-900">₱{total.toFixed(2)}</div>
+                    <div className="text-center mb-6 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl border border-slate-200 dark:border-zinc-700">
+                      <span className="text-xs text-slate-500 dark:text-zinc-400 font-semibold uppercase tracking-wider block mb-1">Total Amount Due</span>
+                      <div className="text-4xl font-black text-slate-900 dark:text-white">₱{total.toFixed(2)}</div>
                     </div>
 
                     {/* Select Payment Method */}
                     <div className="mb-6">
-                      <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
                         Select Payment Method
                       </label>
 
@@ -238,8 +238,8 @@ export function CheckoutModal({
                           className={clsx(
                             "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all",
                             paymentMethod === "CASH" 
-                              ? "border-lime-500 bg-lime-50 text-lime-900 shadow-sm font-bold" 
-                              : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100"
+                              ? "border-lime-500 bg-lime-50 dark:bg-lime-950/40 text-lime-900 dark:text-lime-300 shadow-sm font-bold" 
+                              : "border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-slate-100 dark:hover:bg-zinc-800"
                           )}
                         >
                           <Banknote className="w-6 h-6" />
@@ -252,8 +252,8 @@ export function CheckoutModal({
                           className={clsx(
                             "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all",
                             paymentMethod === "CARD" 
-                              ? "border-lime-500 bg-lime-50 text-lime-900 shadow-sm font-bold" 
-                              : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100"
+                              ? "border-lime-500 bg-lime-50 dark:bg-lime-950/40 text-lime-900 dark:text-lime-300 shadow-sm font-bold" 
+                              : "border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/60 text-slate-600 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-slate-100 dark:hover:bg-zinc-800"
                           )}
                         >
                           <CreditCard className="w-6 h-6" />
@@ -268,7 +268,7 @@ export function CheckoutModal({
                     type="button"
                     onClick={handleCheckout}
                     disabled={isPolling}
-                    className="w-full py-4 bg-lime-500 hover:bg-lime-400 text-zinc-950 text-base font-bold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+                    className="w-full py-4 bg-lime-500 hover:bg-lime-400 text-zinc-950 text-base font-bold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:bg-slate-100 dark:disabled:bg-zinc-800 disabled:border-slate-200 dark:disabled:border-zinc-700 disabled:text-slate-400 dark:disabled:text-zinc-500 disabled:cursor-not-allowed"
                   >
                     <span>Confirm & Complete Payment (₱{total.toFixed(2)})</span>
                     <ArrowRight className="w-5 h-5" />

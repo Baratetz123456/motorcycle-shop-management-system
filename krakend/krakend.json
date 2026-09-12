@@ -164,6 +164,21 @@
     },
     {
       "endpoint": "/api/v1/auth/users/{id}",
+      "method": "PATCH",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/users/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "PATCH",
+          "host": ["http://auth_service:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/users/{id}",
       "method": "DELETE",
       "output_encoding": "no-op",
       "input_headers": ["Authorization"],

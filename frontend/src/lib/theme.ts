@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { apiClient } from "./api-client";
+import { tokenStore } from "./auth-token";
 
 export type DarkAppTheme = "cyan" | "emerald" | "violet" | "amber";
 export type LightAppTheme = "cobalt" | "emerald-alpine" | "amethyst" | "crimson";
@@ -147,6 +149,18 @@ export function isValidTheme(theme: any): theme is AppTheme {
   return typeof theme === "string" && ALL_VALID_THEMES.includes(theme as AppTheme);
 }
 
+function setClientCookie(name: string, value: string, days: number = 365) {
+  if (typeof document === "undefined") return;
+  const maxAge = days * 24 * 60 * 60;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+function getClientCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+  return match ? decodeURIComponent(match[3]) : null;
+}
+
 export function getAppTheme(userId?: string | null): AppTheme {
   if (typeof window === "undefined") return "cyan";
   try {
@@ -154,6 +168,9 @@ export function getAppTheme(userId?: string | null): AppTheme {
     let stored = localStorage.getItem(userKey) as AppTheme;
     if (!stored && userKey !== THEME_STORAGE_KEY) {
       stored = localStorage.getItem(THEME_STORAGE_KEY) as AppTheme;
+    }
+    if (!stored) {
+      stored = getClientCookie("motoshop_theme") as AppTheme;
     }
     if (stored && ALL_VALID_THEMES.includes(stored)) {
       return stored;
@@ -171,8 +188,15 @@ export function saveAppTheme(theme: AppTheme, userId?: string | null): void {
     const userKey = getUserThemeKey(userId);
     localStorage.setItem(userKey, theme);
     localStorage.setItem(THEME_STORAGE_KEY, theme);
+    setClientCookie("motoshop_theme", theme);
     applyThemeToDocument(theme);
     window.dispatchEvent(new CustomEvent("theme_updated", { detail: { theme, userId } }));
+
+    const uid = userId || localStorage.getItem("user_id");
+    const hasToken = typeof window !== "undefined" && (Boolean(tokenStore.getToken()) || Boolean(localStorage.getItem("access_token")));
+    if (uid && hasToken) {
+      apiClient.patch(`/auth/users/${uid}`, { theme }).catch(() => {});
+    }
   } catch (e) {
     console.error("Failed to save theme:", e);
   }
@@ -200,6 +224,9 @@ export function getAppMode(userId?: string | null): AppMode {
     let stored = localStorage.getItem(userKey) as AppMode;
     if (!stored && userKey !== MODE_STORAGE_KEY) {
       stored = localStorage.getItem(MODE_STORAGE_KEY) as AppMode;
+    }
+    if (!stored) {
+      stored = getClientCookie("motoshop_mode") as AppMode;
     }
     if (stored && ["dark", "light", "system"].includes(stored)) {
       return stored;
@@ -231,12 +258,28 @@ export function saveAppMode(mode: AppMode, userId?: string | null): void {
     localStorage.setItem(userKey, mode);
     localStorage.setItem(MODE_STORAGE_KEY, mode);
     localStorage.setItem("motoshop_theme_mode", mode);
+    setClientCookie("motoshop_mode", mode);
     applyModeToDocument(mode);
     window.dispatchEvent(new CustomEvent("mode_updated", { detail: { mode, userId } }));
     window.dispatchEvent(new CustomEvent("motoshop_theme_changed", { detail: { mode, resolved: resolveEffectiveMode(mode) } }));
+
+    const uid = userId || localStorage.getItem("user_id");
+    const hasToken = typeof window !== "undefined" && (Boolean(tokenStore.getToken()) || Boolean(localStorage.getItem("access_token")));
+    if (uid && hasToken) {
+      apiClient.patch(`/auth/users/${uid}`, { display_mode: mode }).catch(() => {});
+    }
   } catch (e) {
     console.error("Failed to save appearance mode:", e);
   }
+}
+
+export function revertToSavedModeAndTheme(userId?: string | null): void {
+  if (typeof window === "undefined") return;
+  const uid = userId || localStorage.getItem("user_id");
+  const savedMode = getAppMode(uid);
+  const savedTheme = getAppTheme(uid);
+  applyModeToDocument(savedMode);
+  applyThemeToDocument(savedTheme);
 }
 
 export function syncUserPreferences(theme?: string | null, mode?: string | null, userId?: string | null): void {

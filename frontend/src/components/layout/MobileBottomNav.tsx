@@ -91,7 +91,7 @@ export function MobileBottomNav() {
       {/* Sticky Bottom Bar (Icons Only - Strictly No Labels) */}
       <nav 
         aria-label="Mobile Bottom Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-3 py-1.5 flex items-center justify-around shadow-lg pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-slate-200 dark:border-zinc-800 px-3 py-1.5 flex items-center justify-around shadow-lg pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
@@ -111,12 +111,12 @@ export function MobileBottomNav() {
               className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative ${
                 isActive
                   ? "bg-lime-500 text-zinc-950 shadow-sm scale-105"
-                  : "text-slate-500 hover:text-slate-900 active:scale-95"
+                  : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-100 active:scale-95"
               }`}
             >
               <Icon className="w-5 h-5" />
               {isActive && (
-                <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-lime-600" />
+                <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-lime-600 dark:bg-lime-400" />
               )}
             </Link>
           );
@@ -131,12 +131,12 @@ export function MobileBottomNav() {
           className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative ${
             isMoreActive
               ? "bg-lime-500 text-zinc-950 shadow-sm scale-105"
-              : "text-slate-500 hover:text-slate-900 active:scale-95"
+              : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-100 active:scale-95"
           }`}
         >
           <Grid className="w-5 h-5" />
           {isMoreActive && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-lime-600" />
+            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-lime-600 dark:bg-lime-400" />
           )}
         </button>
       </nav>
@@ -152,23 +152,23 @@ export function MobileBottomNav() {
           />
 
           {/* Drawer Container */}
-          <div className="relative z-10 bg-white rounded-t-3xl border-t border-slate-200 p-5 shadow-2xl max-h-[80vh] flex flex-col space-y-4 animate-in slide-in-from-bottom duration-250">
+          <div className="relative z-10 bg-white dark:bg-zinc-900 rounded-t-3xl border-t border-slate-200 dark:border-zinc-800 p-5 shadow-2xl max-h-[80vh] flex flex-col space-y-4 animate-in slide-in-from-bottom duration-250">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-lime-500 flex items-center justify-center text-zinc-950 shadow-xs">
                   <Grid className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">All Modules</h3>
-                  <p className="text-[11px] text-slate-500">Quick access to all shop tools</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">All Modules</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">Quick access to all shop tools</p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsMoreOpen(false)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-colors"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
@@ -176,7 +176,7 @@ export function MobileBottomNav() {
             </div>
 
             {/* List of All Allowed Modules */}
-            <div className="overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100">
+            <div className="overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 dark:divide-zinc-800">
               {allowedNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.href === activeHref;
@@ -194,49 +194,49 @@ export function MobileBottomNav() {
                     }}
                     className={`flex items-center justify-between p-3 rounded-xl transition-all ${
                       isActive
-                        ? "bg-lime-50 border border-lime-200 text-lime-900 font-bold"
-                        : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-lime-50 dark:bg-lime-950/30 border border-lime-200 dark:border-lime-500/30 text-lime-900 dark:text-lime-400 font-bold"
+                        : "text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800/60"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        isActive ? "bg-lime-500 text-zinc-950 font-bold" : "bg-slate-100 text-slate-600"
+                        isActive ? "bg-lime-500 text-zinc-950 font-bold" : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300"
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900">{item.label}</div>
-                        <div className="text-[10px] text-slate-400 uppercase font-semibold">{item.group}</div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-zinc-100">{item.label}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase font-semibold">{item.group}</div>
                       </div>
                     </div>
 
-                    <ChevronRight className={`w-4 h-4 ${isActive ? "text-lime-700" : "text-slate-400"}`} />
+                    <ChevronRight className={`w-4 h-4 ${isActive ? "text-lime-700 dark:text-lime-400" : "text-slate-400 dark:text-zinc-500"}`} />
                   </Link>
                 );
               })}
             </div>
 
             {/* Footer Compliance Links */}
-            <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <div className="pt-3 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
               <div className="flex items-center gap-3 text-[11px]">
                 <Link 
                   href="/privacy" 
                   onClick={() => setIsMoreOpen(false)}
-                  className="hover:text-lime-700 font-medium"
+                  className="hover:text-lime-700 dark:hover:text-lime-400 font-medium"
                 >
-                  Privacy Policy
+                  Privacy
                 </Link>
                 <span>•</span>
                 <Link 
                   href="/terms" 
                   onClick={() => setIsMoreOpen(false)}
-                  className="hover:text-lime-700 font-medium"
+                  className="hover:text-lime-700 dark:hover:text-lime-400 font-medium"
                 >
-                  Terms of Service
+                  Terms
                 </Link>
               </div>
 
-              <span className="text-[10px] font-mono text-slate-400">MotoShop Pro</span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500">MotoShop OS v2.4</span>
             </div>
           </div>
         </div>

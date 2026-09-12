@@ -19,15 +19,29 @@ flowchart TD
     Phase4 --> BuildCheck{Build & Tests Pass?}
     BuildCheck -->|Failure / Error| Phase2
     BuildCheck -->|100% Clean| Phase5[Phase 5: Orchestrator Delivery & walkthrough.md]
+
+    subgraph Tier2_Subagents [Specialized Runtime Subagents]
+        Phase1 -.-> Sub_Schema[planner-domain-schema]
+        Phase1 -.-> Sub_UI[planner-ui-workflow]
+        Phase2 -.-> Sub_Backend[implementer-backend]
+        Phase2 -.-> Sub_Frontend[implementer-frontend]
+        Phase3 -.-> Sub_Security[reviewer-security-rbac]
+        Phase3 -.-> Sub_Arch[reviewer-architecture-parity]
+        Phase4 -.-> Sub_Build[tester-build-lint]
+        Phase4 -.-> Sub_API[tester-gateway-integration]
+        Phase4 -.-> Sub_Visual[tester-visual-browser]
+    end
 ```
 
-### 1. Phase 1: Plan & Design (`.agents/rules/agent_planner.md`)
+### 1. Phase 1: Plan & Design (`.agents/rules/agent_planner.md` & [agent-planner](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-planner/SKILL.md))
 - Analyze requirements, bounded contexts, API contracts, and schema implications.
+- Empowered to spawn `planner-domain-schema` and `planner-ui-workflow` child subagents at runtime.
 - Generate or update `implementation_plan.md` artifact.
 - Stop and wait for user approval before making any code modifications.
 
-### 2. Phase 2: Implementation (`.agents/rules/agent_implementer.md`)
+### 2. Phase 2: Implementation (`.agents/rules/agent_implementer.md` & [agent-implementer](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-implementer/SKILL.md))
 - Execute code modifications according to the approved plan.
+- Empowered to spawn concurrent `implementer-backend` and `implementer-frontend` child subagents at runtime.
 - Ensure strict compliance with `architecture.md` and `frontend_style.md`.
 - Apply session patterns:
   - Strict PostgreSQL to SQLAlchemy datatype parity (e.g. `Boolean` matches `BOOLEAN`).
@@ -53,17 +67,71 @@ flowchart TD
   - Resilient Identifier Typing: Backend route parameters for entity lookups must use str (not UUID), safely querying UUID, invoice/JO number, and string-cast ID to eliminate 422 errors. Frontend fallbacks must use uuidv4().
   - Strict Light & Dark Mode CSS Separation & Persistence: Prohibit unmount mode rollback in pages/tabs; strictly scope light text remappings under `html:not(.dark)`; enforce explicit dark form controls/tables under `html.dark`; protect BIR white canvas receipts with `:not(:where(.printable-receipt, ...))` zero-specificity exclusions.
 
-### 3. Phase 3: Review (`.agents/rules/agent_reviewer.md`)
+### 3. Phase 3: Review (`.agents/rules/agent_reviewer.md` & [agent-reviewer](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-reviewer/SKILL.md))
+- Empowered to spawn `reviewer-security-rbac` and `reviewer-architecture-parity` child subagents at runtime.
 - Verify distributed Saga compliance and Transactional Outbox usage.
 - Confirm idempotency decorators (`@idempotent`) on state-altering routes.
 - Verify RBAC permissions (Cashier vs Manager/Admin access).
 
-### 4. Phase 4: Testing & Verification (`.agents/rules/agent_tester.md`)
+### 4. Phase 4: Testing & Verification (`.agents/rules/agent_tester.md` & [agent-tester](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-tester/SKILL.md))
+- Empowered to spawn concurrent `tester-build-lint`, `tester-gateway-integration`, and `tester-visual-browser` child subagents at runtime.
 - Run `npm run build` in `frontend/` ensuring exit code 0 across all routes.
 - Verify microservice container health and inspect logs for tracebacks.
 - Test endpoints via KrakenD API Gateway (`http://localhost:8080/api/v1/...`).
 - Query PostgreSQL database directly to confirm state persistence.
 
-### 5. Phase 5: Orchestrator Delivery
+### 5. Phase 5: Orchestrator Delivery (`.agents/rules/agent_orchestrator.md` & [agent-orchestrator](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-orchestrator/SKILL.md))
 - Generate or update `walkthrough.md` with visual, code, and verification summaries.
 - Deliver a concise final report to the user.
+
+---
+
+## Runtime Subagent Delegation Protocol ([subagent-delegation](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/subagent-delegation/SKILL.md))
+
+All registered Phase Agents are explicitly authorized and instructed to spawn specialized child subagents at runtime to execute concurrent, isolated subtasks with strict precision.
+
+### 1. 2-Tier Hierarchical Delegation Model
+- **Tier 1 (Phase Agents)**: The primary Orchestrator coordinates the 5-phase lifecycle and invokes Phase Agents.
+- **Tier 2 (Specialist Subagents)**: Each Phase Agent acts as a supervisor, spawning specialized child subagents for focused subtasks:
+  - **Phase 1 (Planner)**:
+    - `planner-domain-schema`: Investigates PostgreSQL tables, SQLAlchemy models, Alembic migrations, KrakenD gateway routing, and Transactional Outbox events.
+    - `planner-ui-workflow`: Outlines component hierarchies, responsive wireframes, Zustand store states, and mobile touch interactions.
+  - **Phase 2 (Implementer)**:
+    - `implementer-backend`: Writes FastAPI services, SQLAlchemy models, database migrations, and outbox Saga publishers within `/backend` and `/krakend`.
+    - `implementer-frontend`: Writes Next.js pages, Tailwind CSS styles, Zustand client stores, and UI components within `/frontend`.
+  - **Phase 3 (Reviewer)**:
+    - `reviewer-security-rbac`: Audits access control lists, token storage invariants, cookie expiration flags, and unauthorized mutations.
+    - `reviewer-architecture-parity`: Verifies PostgreSQL-SQLAlchemy type parity, transactional outbox patterns, and state snapshots prior to `clearCart()`.
+  - **Phase 4 (Tester)**:
+    - `tester-build-lint`: Executes `npm run build` and TypeScript static typechecks in `frontend/`.
+    - `tester-gateway-integration`: Verifies microservice endpoints through KrakenD (`http://localhost:8080/api/v1/...`) and asserts PostgreSQL persistence.
+    - `tester-visual-browser`: Tests user interaction flows, mobile responsiveness, WCAG button text contrast, and white canvas receipt invariants via Playwright.
+
+### 2. Standardized Subagent Contract Protocol
+
+#### A. Subagent Input Brief (Parent $\to$ Child)
+Every subagent invocation must receive a structured brief:
+```markdown
+### Subagent Task Brief: <subagent_id>
+- **Role**: <role_name> (e.g. implementer-frontend)
+- **Objective**: Exact single-responsibility deliverable
+- **File Scope**: Explicit list of files allowed to be created or modified (strictly disjoint across concurrent subagents)
+- **Active Invariants**: Relevant architectural, styling, or session rules from AGENTS.md
+- **Reference Context**: Specific API schemas, models, or design tokens
+```
+
+#### B. Subagent Return Report (Child $\to$ Parent)
+Every subagent must return a structured completion report:
+```markdown
+### Subagent Deliverable Report: <subagent_id>
+- **Status**: SUCCESS | ESCALATE
+- **Modified Files**: List of touched files with concise diff summaries
+- **Verification Performed**: Commands run, tests executed, or linters passed
+- **Self-Correction Log**: Iterations attempted (if compile/lint errors occurred)
+- **Identified Risks / Blockers**: Any unresolved issues requiring parent coordination
+```
+
+### 3. Autonomous Self-Correction & Escalation Protocol
+- **3-Iteration Autonomous Loop**: When a subagent encounters a compile, lint, or test failure, it must autonomously analyze the error and self-correct up to **3 iterations** without failing early.
+- **Parent Escalation**: If an issue remains unresolved after 3 iterations, the subagent halts modifications and returns an `ESCALATE` status containing full error tracebacks and code diffs to its parent Phase Agent.
+- **Orchestrator Resolution**: The parent Phase Agent coordinates a targeted fix across sibling subagents or escalates to the Orchestrator for architectural re-planning.

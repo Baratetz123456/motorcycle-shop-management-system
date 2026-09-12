@@ -326,12 +326,12 @@ export default function DashboardReportsPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-white">Sales & Revenue Trajectory</h3>
-              <p className="text-xs text-zinc-400">Daily business transaction volume synchronized with POS</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Sales & Revenue Trajectory</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Daily business transaction volume synchronized with POS</p>
             </div>
             <button
               onClick={() => router.push("/sales")}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"
+              className="text-xs text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 font-semibold flex items-center gap-1"
             >
               <span>View Invoices</span>
               <ArrowRight className="w-3 h-3" />
@@ -358,8 +358,8 @@ export default function DashboardReportsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-white">Repairs Completed</h3>
-              <p className="text-xs text-zinc-400">Weekly job volume by technicians</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Repairs Completed</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Weekly job volume by technicians</p>
             </div>
             <button
               onClick={() => router.push("/repairs/board")}
@@ -393,21 +393,21 @@ export default function DashboardReportsPage() {
         
         {/* Feed 1: Recent Completed Sales Invoices */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-cyan-400" />
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800/80">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
               <span>Recent Completed Sales</span>
             </h4>
             <button
               onClick={() => router.push("/sales")}
-              className="text-xs text-cyan-400 hover:underline flex items-center gap-1"
+              className="text-xs text-cyan-500 dark:text-cyan-400 hover:underline flex items-center gap-1"
             >
               <span>All Invoices</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
 
-          <div className="divide-y divide-zinc-900 text-xs">
+          <div className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs">
             {recentSales.length === 0 ? (
               <p className="text-zinc-500 py-6 text-center">No recent transactions found.</p>
             ) : (
@@ -415,10 +415,10 @@ export default function DashboardReportsPage() {
                 <div
                   key={tx.id}
                   onClick={() => router.push(`/sales/receipt?id=${tx.id}`)}
-                  className="py-3 flex items-center justify-between cursor-pointer hover:bg-zinc-900/40 px-2 rounded-lg transition-colors group"
+                  className="py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-900/40 px-2 rounded-lg transition-colors group"
                 >
                   <div>
-                    <span className="font-mono font-bold text-white group-hover:text-cyan-400 transition-colors">
+                    <span className="font-mono font-bold text-slate-900 dark:text-white group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors">
                       {tx.invoice_no}
                     </span>
                     <span className="text-[11px] text-zinc-500 block">
@@ -426,7 +426,7 @@ export default function DashboardReportsPage() {
                     </span>
                   </div>
                   <div className="text-right font-mono">
-                    <span className="font-bold text-emerald-400 text-sm block">₱{tx.total.toFixed(2)}</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm block">₱{tx.total.toFixed(2)}</span>
                     <span className="text-[10px] text-zinc-500 uppercase">Paid</span>
                   </div>
                 </div>
@@ -438,27 +438,27 @@ export default function DashboardReportsPage() {
         {/* Feed 2: Inventory Valuation & Stock Summary */}
         <div className="space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80 mb-3">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                <Boxes className="w-4 h-4 text-purple-400" />
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800/80 mb-3">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Boxes className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                 <span>Inventory Stock & Valuation</span>
               </h4>
               <button
                 onClick={() => router.push("/inventory")}
-                className="text-xs text-purple-400 hover:underline flex items-center gap-1"
+                className="text-xs text-purple-500 dark:text-purple-400 hover:underline flex items-center gap-1"
               >
                 <span>Manage Stock</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
 
-            <div className="divide-y divide-zinc-900 text-xs mb-6">
+            <div className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs mb-6">
               <div className="py-3 flex justify-between items-center">
                 <div>
-                  <span className="text-zinc-300 block font-semibold">Total Inventory Cost Valuation</span>
+                  <span className="text-slate-700 dark:text-zinc-300 block font-semibold">Total Inventory Cost Valuation</span>
                   <span className="text-[11px] text-zinc-500">Aggregated inventory purchase value</span>
                 </div>
-                <span className="font-mono font-bold text-white text-base">₱{inventoryValue.toFixed(2)}</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white text-base">₱{inventoryValue.toFixed(2)}</span>
               </div>
 
               <div className="py-3 flex justify-between items-center">

@@ -225,13 +225,27 @@ header[class*="bg-lime-500"] * {
   color: #09090b;
 }
 
-/* Floating Action Button (FAB) Lime standard */
-.mobile-filter-fab,
-[class*="FloatingFilterButton"] {
+/* Floating Action Button (FAB) Lime standard in Light Mode */
+html:not(.dark) .mobile-filter-fab,
+html:not(.dark) [class*="FloatingFilterButton"] {
   background-color: #84cc16 !important;
   border-color: #65a30d !important;
   color: #09090b !important;
   box-shadow: 0 10px 25px -5px rgba(101, 163, 13, 0.35) !important;
+}
+
+/* Floating Action Button (FAB) in Dark Mode - High Contrast Dark Zinc with Lime Accents */
+html.dark .mobile-filter-fab,
+html.dark [class*="FloatingFilterButton"] {
+  background-color: #18181b !important;
+  border-color: rgba(132, 204, 22, 0.6) !important;
+  color: #bef264 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .mobile-filter-fab *,
+html.dark [class*="FloatingFilterButton"] * {
+  color: #bef264 !important;
 }
 
 /* Preserve pure white text on solid/gradient colored action buttons */
@@ -274,8 +288,31 @@ html:not(.dark) h6 {
   color: #0f172a !important;
 }
 
-/* Remap generic text-white on light canvas to high-contrast dark carbon slate */
-html:not(.dark) .text-white:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.printable-receipt *) {
+/* Enforce dark carbon slate typography across all standard text utilities in Light Mode */
+html:not(.dark) .text-zinc-950,
+html:not(.dark) .text-zinc-900,
+html:not(.dark) .text-zinc-850,
+html:not(.dark) .text-zinc-800,
+html:not(.dark) .text-zinc-700,
+html:not(.dark) .text-slate-950,
+html:not(.dark) .text-slate-900,
+html:not(.dark) .text-slate-800,
+html:not(.dark) .text-slate-700,
+html:not(.dark) .text-gray-950,
+html:not(.dark) .text-gray-900,
+html:not(.dark) .text-gray-800,
+html:not(.dark) .text-neutral-950,
+html:not(.dark) .text-neutral-900,
+html:not(.dark) .text-black {
+  color: #0f172a !important;
+}
+
+/* Remap generic text-white and light tokens on light canvas to high-contrast dark carbon slate */
+html:not(.dark) .text-white:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.btn-dark):not(.printable-receipt *),
+html:not(.dark) .text-zinc-50:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.btn-dark):not(.printable-receipt *),
+html:not(.dark) .text-zinc-100:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.btn-dark):not(.printable-receipt *),
+html:not(.dark) .text-slate-50:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.btn-dark):not(.printable-receipt *),
+html:not(.dark) .text-slate-100:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.btn-dark):not(.printable-receipt *) {
   color: #0f172a !important;
 }
 
@@ -564,16 +601,30 @@ html.dark .text-white {
   color: #ffffff !important;
 }
 
-/* Dark Mode Typography Remapping for Optimal Legibility */
-html.dark .text-slate-900,
-html.dark .text-slate-800,
-html.dark .text-zinc-900,
-html.dark .text-zinc-950,
-html.dark .text-black {
+/* Dark Mode Typography Remapping - Zero Black Text on Dark Canvas */
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-black,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-zinc-950,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-zinc-900,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-zinc-850,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-zinc-800,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-zinc-700,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-slate-950,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-slate-900,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-slate-800,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-slate-700,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-gray-950,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-gray-900,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-gray-800,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-neutral-950,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-neutral-900,
+html.dark:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) .text-neutral-800 {
   color: #f4f4f5 !important;
 }
 
-html.dark .text-slate-700,
+html.dark body {
+  color: #f4f4f5 !important;
+}
+
 html.dark .text-slate-600,
 html.dark .text-zinc-400,
 html.dark .text-zinc-300 {
@@ -589,70 +640,110 @@ html.dark .text-slate-400 {
   color: #71717a !important;
 }
 
-/* High-Contrast Accent Text in Dark Mode */
+/* High-Contrast Accent Text in Dark Mode (Remap all light-theme dark tones to vivid neon) */
 html.dark .text-cyan-400,
 html.dark .text-cyan-300,
 html.dark .text-lime-400,
-html.dark .text-lime-300 {
-  color: #a3e635 !important; /* Bright Electric Lime */
+html.dark .text-lime-300,
+html.dark .text-lime-500,
+html.dark .text-lime-600,
+html.dark .text-lime-700,
+html.dark .text-lime-800,
+html.dark .text-lime-900 {
+  color: #bef264 !important; /* Bright Electric Lime */
 }
 
-html.dark .text-lime-500 {
-  color: #84cc16 !important;
-}
-
+html.dark .text-emerald-300,
 html.dark .text-emerald-400,
-html.dark .text-emerald-300 {
+html.dark .text-emerald-500,
+html.dark .text-emerald-600,
+html.dark .text-emerald-700,
+html.dark .text-emerald-800,
+html.dark .text-emerald-900 {
   color: #34d399 !important; /* Bright Emerald */
 }
 
+html.dark .text-amber-300,
 html.dark .text-amber-400,
-html.dark .text-amber-300 {
+html.dark .text-amber-500,
+html.dark .text-amber-600,
+html.dark .text-amber-700,
+html.dark .text-amber-800,
+html.dark .text-amber-900 {
   color: #fbbf24 !important; /* Bright Amber */
 }
 
+html.dark .text-purple-300,
 html.dark .text-purple-400,
-html.dark .text-purple-300 {
+html.dark .text-purple-500,
+html.dark .text-purple-600,
+html.dark .text-purple-700,
+html.dark .text-purple-800,
+html.dark .text-purple-900 {
   color: #c084fc !important; /* Bright Purple */
 }
 
+html.dark .text-blue-300,
 html.dark .text-blue-400,
-html.dark .text-blue-300 {
+html.dark .text-blue-500,
+html.dark .text-blue-600,
+html.dark .text-blue-700,
+html.dark .text-blue-800,
+html.dark .text-blue-900 {
   color: #60a5fa !important; /* Bright Blue */
 }
 
+html.dark .text-red-300,
 html.dark .text-red-400,
-html.dark .text-red-300 {
-  color: #f87171 !important; /* Bright Red */
+html.dark .text-red-500,
+html.dark .text-red-600,
+html.dark .text-red-700,
+html.dark .text-red-800,
+html.dark .text-rose-300,
+html.dark .text-rose-400,
+html.dark .text-rose-500,
+html.dark .text-rose-600,
+html.dark .text-rose-700,
+html.dark .text-rose-800,
+html.dark .text-rose-900 {
+  color: #f87171 !important; /* Bright Red/Coral */
 }
 
-/* Status Badge Background Pills (Dark Mode) */
+/* Status Badge Background Pills & Pastel Tints (Dark Mode) */
 html.dark [class*="bg-cyan-500/10"],
 html.dark [class*="bg-cyan-500/20"],
 html.dark [class*="bg-lime-500/10"],
 html.dark [class*="bg-lime-500/15"],
-html.dark [class*="bg-lime-500/20"] {
+html.dark [class*="bg-lime-500/20"],
+html.dark .bg-lime-50,
+html.dark .bg-lime-100 {
   background-color: rgba(132, 204, 22, 0.15) !important;
   border-color: rgba(132, 204, 22, 0.35) !important;
   color: #bef264 !important;
 }
 
 html.dark [class*="bg-emerald-500/10"],
-html.dark [class*="bg-emerald-500/20"] {
+html.dark [class*="bg-emerald-500/20"],
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-100 {
   background-color: rgba(16, 185, 129, 0.15) !important;
   border-color: rgba(16, 185, 129, 0.35) !important;
   color: #34d399 !important;
 }
 
 html.dark [class*="bg-amber-500/10"],
-html.dark [class*="bg-amber-500/20"] {
+html.dark [class*="bg-amber-500/20"],
+html.dark .bg-amber-50,
+html.dark .bg-amber-100 {
   background-color: rgba(245, 158, 11, 0.15) !important;
   border-color: rgba(245, 158, 11, 0.35) !important;
   color: #fbbf24 !important;
 }
 
 html.dark [class*="bg-purple-500/10"],
-html.dark [class*="bg-purple-500/20"] {
+html.dark [class*="bg-purple-500/20"],
+html.dark .bg-purple-50,
+html.dark .bg-purple-100 {
   background-color: rgba(168, 85, 247, 0.15) !important;
   border-color: rgba(168, 85, 247, 0.35) !important;
   color: #c084fc !important;
@@ -661,10 +752,21 @@ html.dark [class*="bg-purple-500/20"] {
 html.dark [class*="bg-red-500/10"],
 html.dark [class*="bg-red-500/20"],
 html.dark [class*="bg-rose-500/10"],
-html.dark [class*="bg-rose-500/20"] {
+html.dark [class*="bg-rose-500/20"],
+html.dark .bg-rose-50,
+html.dark .bg-rose-100,
+html.dark .bg-red-50 {
   background-color: rgba(239, 68, 68, 0.15) !important;
   border-color: rgba(239, 68, 68, 0.35) !important;
   color: #f87171 !important;
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-blue-100,
+html.dark [class*="bg-blue-500/10"] {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+  color: #60a5fa !important;
 }
 
 /* Dark Card Surfaces, Panels & Responsive Backgrounds (Excluding Receipts) */
@@ -816,18 +918,45 @@ html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoi
   background-color: #1c1c22 !important;
 }
 
-/* Dark Secondary Buttons */
-html.dark .btn-secondary {
+/* Dark Secondary & Cancel Buttons (including modal cancel and inline buttons) */
+html.dark .btn-secondary,
+html.dark button[class*="bg-slate-100"],
+html.dark button[class*="bg-slate-50"]:not([class*="border-lime-500"]),
+html.dark a[class*="bg-slate-100"],
+html.dark a[class*="bg-slate-50"] {
   background-color: #27272a !important;
-  border: 1px solid #3f3f46 !important;
+  border-color: #3f3f46 !important;
   color: #f4f4f5 !important;
   font-weight: 600;
   transition: all 0.15s ease;
 }
 
-html.dark .btn-secondary:hover:not(:disabled) {
+html.dark .btn-secondary:hover:not(:disabled),
+html.dark button[class*="bg-slate-100"]:hover:not(:disabled),
+html.dark button[class*="bg-slate-50"]:hover:not(:disabled),
+html.dark a[class*="bg-slate-100"]:hover,
+html.dark a[class*="bg-slate-50"]:hover {
   background-color: #3f3f46 !important;
+  border-color: #52525b !important;
   color: #ffffff !important;
+}
+
+/* Modal and Alert Callout Boxes (High Contrast Borders & Text) */
+html.dark [class*="border-rose-200"],
+html.dark [class*="border-rose-300"] {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+html.dark [class*="border-amber-200"],
+html.dark [class*="border-amber-300"] {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+html.dark [class*="border-lime-200"],
+html.dark [class*="border-lime-300"] {
+  border-color: rgba(132, 204, 22, 0.4) !important;
+}
+html.dark [class*="border-emerald-200"],
+html.dark [class*="border-emerald-300"] {
+  border-color: rgba(16, 185, 129, 0.4) !important;
 }
 
 /* Dark Disabled State */
