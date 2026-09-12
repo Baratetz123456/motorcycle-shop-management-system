@@ -31,9 +31,27 @@ The Review Agent is authorized to spawn two specialized child reviewer subagents
   - **Strict Light & Dark CSS Scoping**: Ensure light mode overrides are scoped under `html:not(.dark)` and dark mode rules under `html.dark`. Verify BIR receipt white canvas exclusion selectors are intact.
 
 ## 3. Subagent Contract & Report Synthesis
-1. **Input Brief**: Parent Reviewer assigns: Target Diffs, Focus Area (Security vs Architecture), and Relevant Rule Constraints.
+1. **Input Brief**: Parent Reviewer constructs a structured brief containing:
+   - **Role**: `reviewer-security-rbac` or `reviewer-architecture-parity`
+   - **Objective**: Target review focus and audit deliverables
+   - **File Scope**: Diffs and files to inspect
+   - **Required Skills**: Listed skills from the Domain Skills Capability Matrix
+   - **Inlined Skill Instructions & Constraints**: Distilled audit checklists, security invariants, and schema rules from relevant `SKILL.md` files
+   - **Active Invariants**: Architecture, security, styling, or session rules
 2. **Return Report**: Child subagents return findings categorized by severity:
    - `CRITICAL`: Immediate blocking defect (data corruption risk, security bypass, unhandled crash).
    - `WARNING`: Sub-optimal pattern, styling leak, or missing safeguard.
    - `NOTE`: Informational observation or cleanup opportunity.
 3. **Review Synthesis**: Parent Reviewer compiles all findings into a unified review verdict. If critical issues exist, the review requests changes (`Phase 2: Implementer`). If clean, it approves the build for `Phase 4: Testing`.
+
+## 4. Domain Skills Capability Mapping & Inlining Directives
+The Review Agent must consult the following skills when preparing child subagent briefs:
+
+| Child Subagent | Relevant Domain Skills | Inlined Instructions & Constraints |
+| :--- | :--- | :--- |
+| `reviewer-security-rbac` | [`user-management`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/user-management/SKILL.md) | Extract RBAC role matrices (Cashier vs Manager/Admin), ephemeral token store rules, session expiration policies, and destructive action safeguards (`ConfirmModal`). |
+| `reviewer-architecture-parity` | [`pos-checkout-and-receipts`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/pos-checkout-and-receipts/SKILL.md)<br>[`db-migrate`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/db-migrate/SKILL.md)<br>[`frontend-design`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/frontend-design/SKILL.md) | Extract PostgreSQL-SQLAlchemy type parity checks, Transactional Outbox saga rules, cart snapshotting before `clearCart()`, and strict light/dark mode CSS separation invariants. |
+
+- **Inlining Invariant**: The Review Agent distills key checklists and invariants directly into the `- **Inlined Skill Instructions & Constraints**` section of the child brief.
+- **Hybrid Secondary Discovery**: Reviewer subagents may inspect additional `SKILL.md` files in `.agents/skills/` via `view_file` if an audit requires deeper context, and immediately escalate if an architectural defect requires re-planning.
+

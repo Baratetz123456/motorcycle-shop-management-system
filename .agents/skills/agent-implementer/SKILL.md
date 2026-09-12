@@ -46,6 +46,25 @@ When spawning `implementer-backend` and `implementer-frontend` concurrently:
 - If the error remains unresolved after 3 attempts, the subagent halts modifications and returns an `ESCALATE` report with tracebacks and diffs to the parent Implementer.
 
 ## 5. Subagent Contract & Hand-Off
-1. **Input Brief**: Parent Implementer assigns: Objective, Allowed File Paths, Invariants to Uphold, and Verification Command.
-2. **Return Report**: Child subagent returns: Status (`SUCCESS` | `ESCALATE`), Touched Files, Local Verification Result, and Residual Risks.
+1. **Input Brief**: Parent Implementer constructs a structured brief containing:
+   - **Role**: `implementer-backend` or `implementer-frontend`
+   - **Objective**: Concrete implementation deliverable
+   - **File Scope**: Strictly disjoint allowed file paths
+   - **Required Skills**: Listed skills from the Domain Skills Capability Matrix
+   - **Inlined Skill Instructions & Constraints**: Distilled steps, invariants, and checklists extracted from relevant `SKILL.md` files
+   - **Active Invariants**: Relevant architectural, styling, or session rules
+   - **Verification Command**: Local build/typecheck command (e.g. `npm run build` or pytest)
+2. **Return Report**: Child subagent returns: Status (`SUCCESS` | `ESCALATE`), Touched Files, Local Verification Result, Self-Correction Log, and Residual Risks.
 3. **Synthesis**: Parent Implementer validates that frontend client types align with backend DTOs before advancing to Phase 3: Review Agent.
+
+## 6. Domain Skills Capability Mapping & Inlining Directives
+The Implementation Agent must consult the following skills when preparing child subagent briefs:
+
+| Child Subagent | Relevant Domain Skills | Inlined Instructions & Constraints |
+| :--- | :--- | :--- |
+| `implementer-backend` | [`create-microservice`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/create-microservice/SKILL.md)<br>[`db-migrate`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/db-migrate/SKILL.md)<br>[`user-management`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/user-management/SKILL.md)<br>[`local-dev-setup`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/local-dev-setup/SKILL.md) | Extract microservice scaffolding patterns, Alembic migration commands (`alembic revision --autogenerate`), PostgreSQL enum definitions (`name`, `schema`, `inherit_schema=True`), user endpoints/RBAC roles, and Docker service configurations. |
+| `implementer-frontend` | [`frontend-design`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/frontend-design/SKILL.md)<br>[`theme-factory`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/theme-factory/SKILL.md)<br>[`pos-checkout-and-receipts`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/pos-checkout-and-receipts/SKILL.md)<br>[`user-management`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/user-management/SKILL.md) | Extract High-Octane Minimalist Light Theme design tokens, dark mode scoped styles, WCAG AAA button text contrast, state snapshotting before `clearCart()`, dedicated full-page receipt routes (`/sales/receipt`), and user settings tab components. |
+
+- **Inlining Invariant**: The Implementer Agent reads the relevant `SKILL.md` files and distills concrete instructions and invariants directly into the `- **Inlined Skill Instructions & Constraints**` section of the child brief.
+- **Hybrid Secondary Discovery Invariant**: Child subagents may view additional `SKILL.md` files in `.agents/skills/` via `view_file` if the task demands further domain context, provided all subsequent file edits remain strictly within the subagent's assigned disjoint file boundary. If an implementer subagent requires changes outside its file scope, it must halt and return an `ESCALATE` status report to the parent Implementer Agent.
+

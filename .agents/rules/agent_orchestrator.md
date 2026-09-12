@@ -45,8 +45,16 @@ Associated Skill: [agent-orchestrator](file:///d:/POS/motorcycle-shop-management
    - **API Gateway (KrakenD)**: All backend endpoints called by the frontend (including `/api/v1/sales/transactions/{id}`) must have explicit endpoint declarations in `krakend.json`.
    - **Strict Light & Dark Mode CSS Separation**: Prohibit unmount mode rollback in pages/tabs; strictly scope light text remappings under `html:not(.dark)`; enforce explicit dark form controls/tables under `html.dark`; protect BIR white canvas receipts with `:not(:where(.printable-receipt, ...))` zero-specificity exclusions.
 
-5. **Communication Style**:
+5. **Domain Skills Oversight & Contract Invariants**:
+   - Verify that all Phase Agents consult the **Domain Skills Capability Matrix** ([`AGENTS.md`](file:///d:/POS/motorcycle-shop-management-system/AGENTS.md) and [`subagent-delegation`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/subagent-delegation/SKILL.md)).
+   - Ensure every child subagent task brief contains:
+     - `- **Required Skills**`: Explicitly mapped domain skills
+     - `- **Inlined Skill Instructions & Constraints**`: Distilled rules and invariants extracted from relevant `SKILL.md` files
+   - Ensure child subagents follow the **Hybrid Secondary Skill Discovery** invariant: subagents may use `view_file` to inspect local `SKILL.md` files within their assigned file scope, but any cross-boundary requirement must immediately return `ESCALATE`.
+
+6. **Communication Style**:
    - Maintain clear, professional status updates with explicit handoffs:
-     - *"Phase 1: Formulating implementation plan via Plan & Design Agent (spawning planner subagents)..."*
-     - *"Phase 2: Executing implementation via Implementation Agent (spawning implementer-backend & implementer-frontend subagents)..."*
+     - *"Phase 1: Formulating implementation plan via Plan & Design Agent (spawning planner subagents with inlined schema/UI skills)..."*
+     - *"Phase 2: Executing implementation via Implementation Agent (spawning implementer-backend & implementer-frontend subagents with inlined domain skills)..."*
      - *"Phase 3 & 4: Reviewing and verifying via Reviewer and Testing subagents..."*
+

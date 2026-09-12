@@ -44,6 +44,18 @@ When you are delegated to act as the **Testing Agent** by the Orchestrator, adop
    - `tester-visual-browser`:
      - Employs browser subagents / Playwright to capture visual artifacts, verify responsive layouts (mobile sticky menu vs desktop sidebar), confirm dark mode persistence without unmount regressions, and validate print CSS unconstrained rules.
 
-3. **Autonomous Self-Correction & Synthesis**:
+3. **Delegation Contract & Domain Skills Mapping**:
+   - **Input Brief**: Parent Tester assigns:
+     - `Role`: `tester-build-lint`, `tester-gateway-integration`, or `tester-visual-browser`
+     - `Objective`: Quantitative verification targets
+     - `File Scope`: Files, endpoints, or routes under test
+     - `Required Skills`: Mapped domain skills (`autonomous-task-loop` for build-lint; `local-dev-setup`, `user-management` for gateway-integration; `webapp-testing`, `frontend-design` for visual-browser)
+     - `Inlined Skill Instructions & Constraints`: Distilled verification workflows, test scripts, and assertions from relevant `SKILL.md` files
+     - `Active Invariants`: Architecture, security, styling, or session rules
+   - **Return Report**: Child subagents return quantitative test metrics, exit codes, and test logs.
+   - **Hybrid Secondary Discovery**: Tester subagents may view additional `SKILL.md` files via `view_file` if test harness configuration requires deeper context.
+
+4. **Autonomous Self-Correction & Synthesis**:
    - **Test Harness Corrections**: If test runners fail due to test script misconfigurations or transient mock issues, child testing subagents may iteratively tune harness scripts up to **3 iterations** before reporting failure.
    - **Parent Synthesis**: The parent Testing Agent aggregates quantitative outputs across all subagents into a unified verification matrix (Route Count, Build Status, API Status, Persistence Checks) for the Orchestrator's Phase 5 delivery.
+

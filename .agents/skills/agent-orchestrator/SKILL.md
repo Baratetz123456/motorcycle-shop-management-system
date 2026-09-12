@@ -42,11 +42,13 @@ flowchart TD
 - **Role**: <role_name> (e.g. planner-domain-schema, implementer-backend)
 - **Objective**: Exact single-responsibility deliverable
 - **File Scope**: Explicit list of allowed file paths (strictly disjoint across concurrent subagents)
+- **Required Skills**: [skill-name-1, skill-name-2]
+- **Inlined Skill Instructions & Constraints**: Distilled steps, invariants, and checklists extracted from relevant SKILL.md by the parent agent
 - **Active Invariants**: Architecture, security, styling, or session rules
 - **Verification Targets**: Build commands, linters, or test assertions required
 ```
 
-### B. Subagent Deliverable Report (Child $\to$ Orchestrator / Parent)
+### B. Subagent Deliverable Report (Child $\to$ Parent)
 ```markdown
 ### Subagent Deliverable Report: <subagent_id>
 - **Status**: SUCCESS | ESCALATE
@@ -62,3 +64,9 @@ flowchart TD
 - **Phase 3 $\to$ Phase 4**: Code review approved, security & architecture checks pass.
 - **Phase 4 $\to$ Phase 5**: Automated build (`npm run build`), API tests, DB persistence, and visual checks pass with exit code 0.
 - **Phase 5 Delivery**: Comprehensive `walkthrough.md` generated with diff summaries and verification screenshots.
+
+## 5. Domain Skills Oversight Directives
+The Orchestrator verifies that Phase Agents consult the **Domain Skills Capability Matrix** (in [`AGENTS.md`](file:///d:/POS/motorcycle-shop-management-system/AGENTS.md) and [`subagent-delegation`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/subagent-delegation/SKILL.md)) and inline the relevant domain skill instructions into every Tier-2 child subagent brief before execution begins.
+- Relevant Orchestration Skills:
+  - [`subagent-delegation`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/subagent-delegation/SKILL.md): 2-tier subagent delegation contracts and escalation protocols.
+  - [`autonomous-task-loop`](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/autonomous-task-loop/SKILL.md): Iterative self-correction loop enforcement across subagents.

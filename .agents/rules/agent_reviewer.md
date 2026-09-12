@@ -51,6 +51,14 @@ When you are delegated to act as the **Review Agent** by the Orchestrator, adopt
      - Validates frontend invariants: state snapshotting before `clearCart()`, dedicated full-page routes for receipts, soft-deletion historical integrity, and strict light/dark mode CSS scoping under `html:not(.dark)` and `html.dark`.
 
 3. **Delegation Contract & Report Synthesis**:
-   - **Input Brief**: Parent Reviewer assigns target files, diff chunks, and specific audit focus areas to child subagents.
+   - **Input Brief**: Parent Reviewer assigns:
+     - `Role`: `reviewer-security-rbac` or `reviewer-architecture-parity`
+     - `Objective`: Target review deliverables
+     - `File Scope`: Target files and diff chunks
+     - `Required Skills`: Mapped domain skills (`user-management` for security; `pos-checkout-and-receipts`, `db-migrate`, `frontend-design` for architecture parity)
+     - `Inlined Skill Instructions & Constraints`: Distilled audit checklists, security invariants, and schema rules from relevant `SKILL.md` files
+     - `Active Invariants`: Architecture, security, styling, or session rules
    - **Return Report**: Child subagents return findings categorized by severity (`CRITICAL`, `WARNING`, `NOTE`) with exact file and line references.
+   - **Hybrid Secondary Discovery**: Reviewer subagents may inspect additional `SKILL.md` files in `.agents/skills/` via `view_file` if an audit requires deeper context.
    - **Synthesis**: The parent Review Agent consolidates findings into a single unified code review artifact, issuing either an approval or a structured change request for Phase 2: Implementation.
+

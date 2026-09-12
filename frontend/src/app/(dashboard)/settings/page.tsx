@@ -191,7 +191,6 @@ function SettingsContent() {
   const isThemeDirty = activeTheme !== savedTheme;
   const isModeDirty = activeMode !== savedMode;
   const isAvatarDirty = selectedAvatar !== savedAvatar;
-  const isGeneralAppearanceDirty = isThemeDirty || isModeDirty;
   const isProfileDirty = isAvatarDirty || isThemeDirty || isModeDirty;
 
   useEffect(() => {
@@ -457,12 +456,6 @@ function SettingsContent() {
     e.preventDefault();
     if (!isAdmin) return;
     saveSystemSettings(settings);
-    saveAppMode(activeMode, currentUserId);
-    saveAppTheme(activeTheme, currentUserId);
-    setSavedMode(activeMode);
-    savedModeRef.current = activeMode;
-    setSavedTheme(activeTheme);
-    savedThemeRef.current = activeTheme;
 
     recordUserAuditLog("SETTINGS_UPDATED", "/settings", {
       appName: settings.appName,
@@ -470,8 +463,6 @@ function SettingsContent() {
       timezone: settings.timezone,
       country: settings.country,
       currency: settings.currency,
-      mode: activeMode,
-      theme: activeTheme,
       boardPendingTitle: settings.boardPendingTitle,
       boardOngoingTitle: settings.boardOngoingTitle,
       boardCompletedTitle: settings.boardCompletedTitle,
@@ -479,7 +470,7 @@ function SettingsContent() {
       boardRetentionDays: settings.boardRetentionDays,
     });
 
-    setGeneralSuccess("Store preferences, currency, appearance, and workshop boards updated successfully.");
+    setGeneralSuccess("Store preferences, currency, and workshop boards updated successfully.");
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
 
@@ -839,7 +830,7 @@ function SettingsContent() {
             </h1>
             <p className="text-zinc-500 dark:text-zinc-400 mt-0.5 text-xs">
               {isAdmin 
-                ? "Configure store currency, timezone, staff access, and appearance."
+                ? "Configure store currency, timezone, staff access, and operational policies."
                 : "Manage your workshop appearance mode, theme palette, and user profile."}
             </p>
           </div>
@@ -877,7 +868,7 @@ function SettingsContent() {
               )}
             >
               {isAdmin ? <Globe className="w-4 h-4 shrink-0" /> : <Palette className="w-4 h-4 shrink-0" />}
-              <span>{isAdmin ? "General & Appearance" : "Appearance & Theme"}</span>
+              <span>{isAdmin ? "General Preferences" : "Appearance & Theme"}</span>
             </button>
 
             {isAdmin && (
@@ -956,7 +947,7 @@ function SettingsContent() {
                         Store Preferences
                       </h2>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                        Shop branding, timezone, currency, and appearance.
+                        Shop branding, timezone, currency, and regionalization.
                       </p>
                     </div>
 
@@ -1084,117 +1075,7 @@ function SettingsContent() {
                       </div>
                     </div>
 
-                    {/* Appearance & Theme Setting */}
-                    <div className="pt-6 border-t border-slate-200 dark:border-zinc-800/80">
-                      <div className="mb-4">
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                          Appearance & Theme Mode
-                        </label>
-                        <p className="text-xs text-slate-500 dark:text-zinc-500">
-                          Configure the workshop color scheme. Changes apply immediately across all screens and save to your preferences.
-                        </p>
-                      </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Light Mode Card */}
-                        <button
-                          type="button"
-                          onClick={() => handleSelectThemeMode("light")}
-                          className={clsx(
-                            "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                            activeMode === "light"
-                              ? "bg-white text-zinc-950 border-lime-500 ring-2 ring-lime-500/40 shadow-md"
-                              : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400">
-                              <Sun className="w-5 h-5" />
-                            </div>
-                            {activeMode === "light" && (
-                              <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                                ACTIVE
-                              </span>
-                            )}
-                          </div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Light Mode</div>
-                          <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
-                            Clean white canvas with hairline slate borders and electric lime accents.
-                          </div>
-                          <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
-                            <span className="w-4 h-4 rounded-full bg-white border border-slate-300 shadow-xs" />
-                            <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
-                            <span className="w-4 h-4 rounded-full bg-zinc-950 shadow-xs" />
-                          </div>
-                        </button>
-
-                        {/* Dark Mode Card */}
-                        <button
-                          type="button"
-                          onClick={() => handleSelectThemeMode("dark")}
-                          className={clsx(
-                            "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                            activeMode === "dark"
-                              ? "bg-zinc-900 text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
-                              : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-400">
-                              <Moon className="w-5 h-5" />
-                            </div>
-                            {activeMode === "dark" && (
-                              <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                                ACTIVE
-                              </span>
-                            )}
-                          </div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Dark Mode</div>
-                          <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
-                            Deep carbon black (#09090b) surfaces with vibrant Kawasaki Lime highlights.
-                          </div>
-                          <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
-                            <span className="w-4 h-4 rounded-full bg-zinc-950 border border-zinc-700 shadow-xs" />
-                            <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
-                            <span className="w-4 h-4 rounded-full bg-zinc-100 shadow-xs" />
-                          </div>
-                        </button>
-
-                        {/* System Default Card */}
-                        <button
-                          type="button"
-                          onClick={() => handleSelectThemeMode("system")}
-                          className={clsx(
-                            "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                            activeMode === "system"
-                              ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
-                              : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-600 dark:text-lime-400">
-                              <Sparkles className="w-5 h-5" />
-                            </div>
-                            {activeMode === "system" && (
-                              <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                                ACTIVE
-                              </span>
-                            )}
-                          </div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">System Default</div>
-                          <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
-                            Automatically matches your operating system's light or dark mode setting.
-                          </div>
-                          <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
-                            <span className="w-4 h-4 rounded-full bg-gradient-to-r from-white to-zinc-950 border border-slate-300 shadow-xs" />
-                            <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
-                          </div>
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 </div>
 

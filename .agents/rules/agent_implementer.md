@@ -120,9 +120,19 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
         - `implementer-frontend`: Constrained strictly to `/frontend/src`, `/frontend/public`, and `frontend/package.json`.
       - Concurrent subagents must never write to overlapping files to prevent git merge conflicts and corrupted intermediate states.
     - **Delegation Contract Specification**:
-      - **Input Brief**: The parent Implementer MUST provide an Input Brief specifying: Target Objective, Explicit Allowed File Paths, Invariants to Uphold, and Baseline Constraints.
-      - **Return Report**: The child subagent MUST return a structured Markdown report containing: Task Status (`SUCCESS` | `FAILURE`), List of Touched Files, Local Verification Results, and Residual Issues or Risks.
+      - **Input Brief**: The parent Implementer MUST provide an Input Brief specifying:
+        - `Role`: `implementer-backend` or `implementer-frontend`
+        - `Objective`: Target Objective
+        - `File Scope`: Explicit Allowed File Paths (strictly disjoint)
+        - `Required Skills`: Mapped domain skills (`create-microservice`, `db-migrate`, `user-management`, `local-dev-setup` for backend; `frontend-design`, `theme-factory`, `pos-checkout-and-receipts`, `user-management` for frontend)
+        - `Inlined Skill Instructions & Constraints`: Distilled steps, invariants, and checklists extracted from relevant `SKILL.md` files
+        - `Active Invariants`: Invariants to Uphold
+        - `Verification Targets`: Local verification/build command
+      - **Return Report**: The child subagent MUST return a structured Markdown report containing: Task Status (`SUCCESS` | `ESCALATE`), List of Touched Files, Local Verification Results, Self-Correction Log, and Residual Issues or Risks.
+    - **Hybrid Secondary Skill Discovery**:
+      - Child subagents may view additional `SKILL.md` files in `.agents/skills/` via `view_file` if the task demands further domain context, provided all subsequent file edits remain strictly within the subagent's assigned disjoint file boundary. If an implementer subagent requires changes outside its file scope, it must halt and return an `ESCALATE` status report to the parent Implementation Agent.
     - **Autonomous 3-Iteration Self-Correction Loop**:
       - If a child subagent encounters compilation errors, lint failures, or broken imports during its execution, it must self-diagnose and attempt up to **3 iterative corrections** autonomously before escalating failure to the parent Implementation Agent.
     - **Parent Synthesis**:
       - The parent Implementation Agent synthesizes reports from all child implementers, verifies cross-boundary contract alignment (e.g. backend DTO matching frontend API client), and hands off the integrated solution to Phase 3: Review Agent.
+
