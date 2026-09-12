@@ -6,11 +6,9 @@ import {
   FileText, 
   Download, 
   Printer, 
-  DollarSign, 
   TrendingUp, 
   TrendingDown, 
   Calendar, 
-  CalendarDays, 
   Plus, 
   Receipt, 
   Wrench, 
@@ -19,16 +17,15 @@ import {
   Building2, 
   Users, 
   Hammer, 
-  CheckCircle, 
-  AlertCircle, 
-  X, 
   ArrowLeft,
   ShieldAlert,
   Percent,
   CreditCard,
   Banknote,
   Smartphone,
-  ChevronDown
+  ShieldCheck,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -80,6 +77,7 @@ export default function FinancialAndSalesExtractPage() {
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const activeFilterCount = (reportType !== "MONTHLY" ? 1 : 0);
   const handleResetAllFilters = () => {
@@ -269,69 +267,103 @@ export default function FinancialAndSalesExtractPage() {
     setNewRef("");
   };
 
-  // CSV Export
-  const handleExportCSV = () => {
+  // Export CSV via Backend Python FastAPI Endpoint (with comprehensive client fallback)
+  const handleExportCSV = async () => {
+    setIsExporting(true);
     const periodStr = 
       reportType === "DAILY" ? selectedDate :
       reportType === "MONTHLY" ? selectedMonth : selectedYear;
 
-    let csv = `Versiklo Financial & Sales Extraction Report - ${reportType} (${periodStr})\n\n`;
-    
-    // Financial Summary
-    csv += "FINANCIAL EXECUTIVE SUMMARY\n";
-    csv += `Gross Sales Revenue,PHP ${grossRevenue.toFixed(2)}\n`;
-    csv += `Parts & Accessories Retail,PHP ${partsRevenue.toFixed(2)}\n`;
-    csv += `Gross Labor Billed,PHP ${grossLaborRevenue.toFixed(2)}\n`;
-    csv += `Mechanic Commissions Deducted,PHP -${mechanicCommissionsDeducted.toFixed(2)}\n`;
-    csv += `Net Shop Labor Retained,PHP ${netLaborRevenue.toFixed(2)}\n`;
-    csv += `Net Retained Shop Sales,PHP ${netShopRevenue.toFixed(2)}\n`;
-    csv += `Total Operating Expenses,PHP ${totalExpenses.toFixed(2)}\n`;
-    csv += `Net Operating Profit,PHP ${netIncome.toFixed(2)}\n`;
-    csv += `Operating Profit Margin,${profitMargin}%\n\n`;
+    try {
+      const params = new URLSearchParams();
+      params.set("report_type", reportType);
+      if (reportType === "DAILY") params.set("date", selectedDate);
+      if (reportType === "MONTHLY") params.set("month", selectedMonth);
+      if (reportType === "YEARLY") params.set("year", selectedYear);
 
-    // Sales Transactions
-    csv += "COMPLETED SALES TRANSACTIONS\n";
-    csv += "Invoice No,Customer,Motorcycle,Date,Payment Method,Total (PHP)\n";
-    filteredTransactions.forEach((t) => {
-      csv += `"${t.invoice_no}","${t.customer_name || "Walk-in Customer"}","${t.motorcycle_name || "N/A"}","${new Date(t.created_at).toLocaleDateString()}","${t.payment_method}",${t.total.toFixed(2)}\n`;
-    });
-    csv += "\n";
+      const res = await apiClient.get(`/sales/reports/export?${params.toString()}`, {
+        responseType: "blob"
+      });
 
-    // Shop Expenses
-    csv += "SHOP OPERATING EXPENSES\n";
-    csv += "Category,Description,Vendor,Reference No,Date,Amount (PHP)\n";
-    filteredExpenses.forEach((e) => {
-      csv += `"${e.category}","${e.description}","${e.vendor || "N/A"}","${e.reference_no || "N/A"}","${e.date}",${e.amount.toFixed(2)}\n`;
-    });
+      if (res.data) {
+        const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `versiklo_sales_report_python_${reportType.toLowerCase()}_${periodStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setIsExporting(false);
+        return;
+      }
+    } catch (err) {
+      console.warn("Python backend CSV export failed, falling back to comprehensive client CSV generator:", err);
+    }
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `versiklo_financial_report_${reportType.toLowerCase()}_${periodStr}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Comprehensive Fallback Client Generator
+    try {
+      let csv = `Versiklo Financial & Sales Extraction Report - ${reportType} (${periodStr})\n`;
+      csv += `Generated On,${new Date().toISOString()}\n`;
+      csv += `Export Engine,Comprehensive Data Ledger Engine\n\n`;
+
+      csv += "FINANCIAL EXECUTIVE SUMMARY\n";
+      csv += `Gross Sales Revenue,PHP ${grossRevenue.toFixed(2)}\n`;
+      csv += `Parts & Accessories Retail,PHP ${partsRevenue.toFixed(2)}\n`;
+      csv += `Gross Labor Billed,PHP ${grossLaborRevenue.toFixed(2)}\n`;
+      csv += `Mechanic Commissions Deducted,PHP -${mechanicCommissionsDeducted.toFixed(2)}\n`;
+      csv += `Net Shop Labor Retained,PHP ${netLaborRevenue.toFixed(2)}\n`;
+      csv += `Net Retained Shop Sales,PHP ${netShopRevenue.toFixed(2)}\n`;
+      csv += `Total Operating Expenses,PHP ${totalExpenses.toFixed(2)}\n`;
+      csv += `Net Operating Profit,PHP ${netIncome.toFixed(2)}\n`;
+      csv += `Operating Profit Margin,${profitMargin}%\n\n`;
+
+      csv += "COMPLETED SALES TRANSACTIONS\n";
+      csv += "Invoice No,Customer,Motorcycle,Date,Payment Method,Total (PHP)\n";
+      filteredTransactions.forEach((t) => {
+        csv += `"${t.invoice_no}","${t.customer_name || "Walk-in Customer"}","${t.motorcycle_name || "N/A"}","${new Date(t.created_at).toLocaleDateString()}","${t.payment_method}",${t.total.toFixed(2)}\n`;
+      });
+      csv += "\n";
+
+      csv += "SHOP OPERATING EXPENSES\n";
+      csv += "Category,Description,Vendor,Reference No,Date,Amount (PHP)\n";
+      filteredExpenses.forEach((e) => {
+        csv += `"${e.category}","${e.description}","${e.vendor || "N/A"}","${e.reference_no || "N/A"}","${e.date}",${e.amount.toFixed(2)}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `versiklo_financial_report_${reportType.toLowerCase()}_${periodStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Guard for Admin and Manager only
   if (!checkingAuth && userRole !== "admin" && userRole !== "manager") {
     return (
-      <div className="min-h-screen bg-zinc-950 p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
-        <div className="max-w-md w-full bg-zinc-900/80 border border-red-500/20 rounded-3xl p-8 backdrop-blur-xl shadow-2xl text-center space-y-5">
-          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+      <div className="min-h-screen bg-slate-50 p-8 flex flex-col items-center justify-center font-sans text-slate-900">
+        <div className="max-w-md w-full border border-rose-200 rounded-2xl p-8 bg-white text-center space-y-5 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mx-auto">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-white">Access Restricted</h2>
-            <p className="text-sm text-zinc-400 mt-2">
-              Financial extraction reports, operating expense logs, and P&L balances are strictly restricted to <span className="text-cyan-400 font-semibold">Administrators</span> and <span className="text-cyan-400 font-semibold">Managers</span>.
+            <h2 className="text-2xl font-black text-slate-900">Access Restricted</h2>
+            <p className="text-sm text-slate-600 mt-2">
+              Financial extraction reports, operating expense logs, and P&L balances are strictly restricted to <span className="text-lime-700 font-bold">Administrators</span> and <span className="text-lime-700 font-bold">Managers</span>.
             </p>
           </div>
           <div className="pt-2">
             <button
               onClick={() => router.push(userRole === "cashier" ? "/pos" : "/repairs/board")}
-              className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors flex items-center justify-center gap-2 border border-slate-300"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Return to Assigned Workspace</span>
@@ -348,97 +380,136 @@ export default function FinancialAndSalesExtractPage() {
     `Fiscal Annual Statement for Year ${selectedYear}`;
 
   return (
-    <div className="min-h-full bg-zinc-950 text-zinc-100 font-sans p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto w-full">
+    <div className="min-h-full bg-slate-50 text-slate-900 font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto w-full">
       
-      {/* Global Print Styles for Clean Vector PDF Download */}
+      {/* Complete Full-Capture Print Stylesheet */}
       <style jsx global>{`
         @media print {
-          body {
-            background-color: #ffffff !important;
-            color: #000000 !important;
+          @page {
+            size: A4 portrait;
+            margin: 12mm 10mm;
           }
-          nav, aside, button, .no-print {
+          html, body, #__next, main, .min-h-full, .overflow-y-auto {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+            background: #ffffff !important;
+            color: #09090b !important;
+          }
+          nav, aside, button, .no-print, header {
             display: none !important;
           }
           .printable-report {
             display: block !important;
-            color: #000000 !important;
+            color: #09090b !important;
             background: #ffffff !important;
             width: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
+            overflow: visible !important;
           }
           .printable-report table {
             border-collapse: collapse !important;
             width: 100% !important;
+            page-break-inside: auto !important;
           }
           .printable-report th, .printable-report td {
-            border: 1px solid #d1d5db !important;
-            padding: 8px !important;
-            color: #111827 !important;
+            border: 1px solid #e4e4e7 !important;
+            padding: 8px 10px !important;
+            color: #09090b !important;
+            font-size: 11px !important;
+            word-break: break-word !important;
+            white-space: normal !important;
           }
           .printable-report th {
-            background-color: #f3f4f6 !important;
-            font-weight: bold !important;
+            background-color: #f4f4f5 !important;
+            font-weight: 700 !important;
+            color: #09090b !important;
           }
-          .print-card {
-            border: 1px solid #e5e7eb !important;
-            background: #ffffff !important;
-            color: #000000 !important;
-            box-shadow: none !important;
+          .printable-report tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .printable-report thead {
+            display: table-header-group !important;
+          }
+          .printable-report tfoot {
+            display: table-footer-group !important;
+          }
+          .print-avoid-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .print-contrast-text {
+            color: #09090b !important;
+          }
+          .print-contrast-subtext {
+            color: #52525b !important;
+          }
+          .print-contrast-border {
+            border-color: #e4e4e7 !important;
           }
         }
       `}</style>
 
-      {/* Top Header Bar & Action Buttons (Hidden when printing) */}
-      <div className="no-print flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      {/* Top Header & Sticky Action Toolbar (Hidden in Print) */}
+      <div className="no-print pb-6 border-b border-slate-200 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black text-white flex items-center gap-3">
-              <FileText className="w-8 h-8 text-cyan-400" />
-              Sales & Financial Extraction
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
+              <FileText className="w-7 h-7 text-lime-600" />
+              Shop Financial Ledger
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              P&L Audited
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Live Audited
             </span>
           </div>
-          <p className="text-zinc-400 mt-1 text-sm">
-            Generate audited daily, monthly, and yearly sales ledgers, track operating overhead expenses, and export official PDF statements.
+          <p className="text-slate-500 mt-1 text-xs sm:text-sm">
+            Itemized revenue streams, staff labor allocations, and shop overhead operating expenses.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => setIsExpenseModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
+            className="px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 hover:text-slate-900 transition-all flex items-center gap-2 text-xs font-semibold shadow-sm"
           >
-            <Plus className="w-4 h-4 text-cyan-400" />
-            <span>Record Shop Expense</span>
+            <Plus className="w-3.5 h-3.5 text-lime-700" />
+            <span>Record Expense</span>
           </button>
 
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md"
-            title="Download Spreadsheet"
+            disabled={isExporting}
+            className="px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 hover:text-slate-900 transition-all flex items-center gap-2 text-xs font-semibold shadow-sm disabled:opacity-50"
+            title="Download formatted CSV dataset generated by Python engine"
           >
-            <Download className="w-4 h-4 text-emerald-400" />
-            <span>Export CSV</span>
+            {isExporting ? (
+              <Loader2 className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5 text-emerald-600" />
+            )}
+            <span>Export CSV (Python)</span>
           </button>
 
           <button
             onClick={() => window.print()}
-            className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2"
+            className="px-4 py-2 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all flex items-center gap-2 shadow-sm active:scale-95"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-3.5 h-3.5" />
             <span>Download / Print PDF</span>
           </button>
         </div>
       </div>
 
-      {/* Timeframe & Date Picker Controls (Hidden when printing) */}
-      <div className="no-print bg-zinc-900/60 border border-white/10 rounded-2xl p-4 mb-8 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Report Interval Tabs (33% / 33% / 33% full width grid on mobile) */}
-        <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1.5 rounded-xl border border-white/10 text-xs w-full md:w-auto">
+      {/* Filter Toolbar (Segmented Controls directly on canvas, No Card Box) */}
+      <div className="no-print pb-6 border-b border-slate-200 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Interval Selector */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit">
           {[
             { key: "DAILY", label: "Daily" },
             { key: "MONTHLY", label: "Monthly" },
@@ -448,10 +519,10 @@ export default function FinancialAndSalesExtractPage() {
               key={item.key}
               onClick={() => setReportType(item.key as any)}
               className={clsx(
-                "px-2 sm:px-5 py-2 rounded-lg font-bold transition-all text-center truncate",
+                "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
                 reportType === item.key
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                  : "text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
               )}
             >
               {item.label}
@@ -459,10 +530,10 @@ export default function FinancialAndSalesExtractPage() {
           ))}
         </div>
 
-        {/* Dynamic Period Date Controls */}
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <Calendar className="w-4 h-4 text-cyan-400" />
+        {/* Date Selector */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-slate-600">
+            <Calendar className="w-3.5 h-3.5 text-lime-700" />
             <span className="font-semibold">Target Period:</span>
           </div>
 
@@ -471,7 +542,7 @@ export default function FinancialAndSalesExtractPage() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-zinc-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500"
+              className="bg-white border border-slate-300 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-lime-500"
             />
           )}
 
@@ -480,7 +551,7 @@ export default function FinancialAndSalesExtractPage() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-zinc-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500"
+              className="bg-white border border-slate-300 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-lime-500"
             />
           )}
 
@@ -488,7 +559,7 @@ export default function FinancialAndSalesExtractPage() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="bg-zinc-950 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500"
+              className="bg-white border border-slate-300 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-lime-500 cursor-pointer"
             >
               {[2024, 2025, 2026, 2027].map((yr) => (
                 <option key={yr} value={yr}>Fiscal Year {yr}</option>
@@ -498,201 +569,203 @@ export default function FinancialAndSalesExtractPage() {
         </div>
       </div>
 
-      {/* PRINTABLE CONTAINER (Rendered on screen and styled for PDF print) */}
+      {/* PRINTABLE CONTAINER (Canvas and Print-Friendly Vector Document) */}
       <div className="printable-report space-y-8">
         
-        {/* Official Printable Header (Visible in print or screen) */}
-        <div className="border-b border-white/10 pb-6">
+        {/* Official Printable Header */}
+        <div className="pb-6 border-b border-slate-200 print:border-zinc-300 print-contrast-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500 flex items-center justify-center text-black font-black text-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-lime-500 flex items-center justify-center text-zinc-950 font-black text-xs">
                   VK
                 </div>
-                <h2 className="text-2xl font-black tracking-tight text-white">Versiklo Enterprises</h2>
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 print:text-black">
+                  Versiklo Motorcycle Parts & Repair Shop
+                </h2>
               </div>
-              <p className="text-xs text-zinc-400 mt-1">Official Sales Ledger & Operating Expense P&L Statement</p>
+              <p className="text-xs text-slate-500 print:text-zinc-600 mt-1">
+                Official Sales Extraction Ledger & Operating Profit/Loss Statement
+              </p>
             </div>
 
             <div className="sm:text-right">
-              <span className="text-xs font-mono font-bold text-cyan-400 block">{periodDisplay}</span>
-              <span className="text-[11px] text-zinc-500">Extracted on: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</span>
+              <span className="text-xs font-mono font-bold text-lime-700 print:text-black block">
+                {periodDisplay}
+              </span>
+              <span className="text-[11px] text-slate-400 print:text-zinc-500 block">
+                Extracted: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* 4 Core Financial Summary Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Gross Revenue */}
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2 print-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Gross Sales Revenue</span>
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <Receipt className="w-4 h-4" />
-              </div>
+        {/* CARD-FREE KPI FINANCIAL RIBBON (Open Canvas Strip with Vertical Dividers) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 py-5 border-y border-slate-200 print:border-zinc-300 print-avoid-break divide-y lg:divide-y-0 lg:divide-x divide-slate-200 print:divide-zinc-300">
+          
+          {/* Metric 1: Gross Sales */}
+          <div className="px-4 py-3 sm:py-0 first:pl-0">
+            <span className="text-[11px] font-bold text-slate-500 print:text-zinc-600 uppercase tracking-wider block mb-1">
+              Gross Sales Billed
+            </span>
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 print:text-black font-mono">
+              ₱{grossRevenue.toFixed(2)}
             </div>
-            <div className="text-3xl font-black text-white font-mono">₱{grossRevenue.toFixed(2)}</div>
-            <div className="text-[11px] text-zinc-500 flex justify-between">
-              <span>{filteredTransactions.length} completed transactions</span>
-            </div>
+            <span className="text-[11px] text-slate-500 print:text-zinc-600 mt-0.5 block">
+              {filteredTransactions.length} completed transactions
+            </span>
           </div>
 
-          {/* Operating Expenses */}
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2 print-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Shop Overhead Expenses</span>
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <TrendingDown className="w-4 h-4" />
-              </div>
+          {/* Metric 2: Operating Overhead */}
+          <div className="px-4 py-3 sm:py-0">
+            <span className="text-[11px] font-bold text-slate-500 print:text-zinc-600 uppercase tracking-wider block mb-1">
+              Overhead Expenses
+            </span>
+            <div className="text-2xl sm:text-3xl font-black text-amber-700 print:text-black font-mono">
+              ₱{totalExpenses.toFixed(2)}
             </div>
-            <div className="text-3xl font-black text-amber-400 font-mono">₱{totalExpenses.toFixed(2)}</div>
-            <div className="text-[11px] text-zinc-500 flex justify-between">
-              <span>{filteredExpenses.length} expense items logged</span>
-            </div>
+            <span className="text-[11px] text-slate-500 print:text-zinc-600 mt-0.5 block">
+              {filteredExpenses.length} expense items logged
+            </span>
           </div>
 
-          {/* Net Operating Profit */}
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2 print-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Net Operating Income</span>
-              <div className={clsx(
-                "w-8 h-8 rounded-xl flex items-center justify-center",
-                netIncome >= 0
-                  ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
-                  : "bg-red-500/10 border border-red-500/20 text-red-400"
-              )}>
-                {netIncome >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-              </div>
-            </div>
+          {/* Metric 3: Net Operating Income */}
+          <div className="px-4 py-3 sm:py-0">
+            <span className="text-[11px] font-bold text-slate-500 print:text-zinc-600 uppercase tracking-wider block mb-1">
+              Net Operating Profit
+            </span>
             <div className={clsx(
-              "text-3xl font-black font-mono",
-              netIncome >= 0 ? "text-emerald-400" : "text-red-400"
+              "text-2xl sm:text-3xl font-black font-mono print:text-black",
+              netIncome >= 0 ? "text-emerald-700" : "text-rose-700"
             )}>
               ₱{netIncome.toFixed(2)}
             </div>
-            <p className="text-[11px] text-zinc-500">Gross revenue minus shop expenses</p>
+            <span className="text-[11px] text-slate-500 print:text-zinc-600 mt-0.5 block">
+              Net retained sales minus shop expenses
+            </span>
           </div>
 
-          {/* Profit Margin */}
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden space-y-2 print-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Net Profit Margin</span>
-              <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                <Percent className="w-4 h-4" />
-              </div>
+          {/* Metric 4: Net Margin */}
+          <div className="px-4 py-3 sm:py-0 last:pr-0">
+            <span className="text-[11px] font-bold text-slate-500 print:text-zinc-600 uppercase tracking-wider block mb-1">
+              Profit Yield Margin
+            </span>
+            <div className="text-2xl sm:text-3xl font-black text-lime-700 print:text-black font-mono">
+              {profitMargin}%
             </div>
-            <div className="text-3xl font-black text-purple-400 font-mono">{profitMargin}%</div>
-            <p className="text-[11px] text-zinc-500">Operational efficiency yield</p>
+            <span className="text-[11px] text-slate-500 print:text-zinc-600 mt-0.5 block">
+              Operational net margin yield
+            </span>
           </div>
         </div>
 
-        {/* Section: Revenue Breakdown & Payment Methods */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Categories */}
-          <div className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl print-card space-y-4">
-            <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
-              <Receipt className="w-4 h-4 text-cyan-400" />
-              <span>Revenue Channels Breakdown</span>
-            </h3>
-            
-            <div className="space-y-3 text-xs">
-              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/60 border border-white/5">
-                <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-blue-400" />
-                  <div>
-                    <span className="font-semibold text-white block">Parts & Accessories Retail</span>
-                    <span className="text-[11px] text-zinc-400">Inventory merchandise sales</span>
-                  </div>
+        {/* SECTION: Revenue Channels & Settlement Channels (Borderless Dual Ledger) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print-avoid-break">
+          
+          {/* Channel 1: Revenue Streams */}
+          <div className="space-y-3">
+            <div className="pb-2 border-b border-slate-200 print:border-zinc-300 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 print:text-black flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-lime-700 print:text-black" />
+                <span>Revenue Allocation Streams</span>
+              </h3>
+              <span className="text-[11px] text-slate-500 font-mono">Channel breakdown</span>
+            </div>
+
+            <div className="divide-y divide-slate-100 print:divide-zinc-200 text-xs">
+              <div className="py-2.5 flex justify-between items-center">
+                <div>
+                  <span className="font-bold text-slate-900 print:text-black block">Parts & Accessories Retail</span>
+                  <span className="text-[11px] text-slate-500">Inventory merchandise sales</span>
                 </div>
-                <span className="font-mono text-base font-bold text-white">₱{partsRevenue.toFixed(2)}</span>
+                <span className="font-mono text-sm font-bold text-slate-900 print:text-black">₱{partsRevenue.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/60 border border-white/5">
-                <div className="flex items-center gap-2">
-                  <Wrench className="w-4 h-4 text-cyan-400" />
-                  <div>
-                    <span className="font-semibold text-white block">Gross Labor Charged (Customer Invoices)</span>
-                    <span className="text-[11px] text-zinc-400">Total repair and service billings</span>
-                  </div>
+              <div className="py-2.5 flex justify-between items-center">
+                <div>
+                  <span className="font-bold text-slate-900 print:text-black block">Gross Labor Charged</span>
+                  <span className="text-[11px] text-slate-500">Total repair and technician billings</span>
                 </div>
-                <span className="font-mono text-base font-bold text-cyan-400">₱{grossLaborRevenue.toFixed(2)}</span>
+                <span className="font-mono text-sm font-bold text-lime-700 print:text-black">₱{grossLaborRevenue.toFixed(2)}</span>
               </div>
 
               {mechanicCommissionsDeducted > 0 && (
-                <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                  <div className="flex items-center gap-2">
-                    <Percent className="w-4 h-4 text-amber-400" />
-                    <div>
-                      <span className="font-semibold text-amber-300 block">Mechanic Commissions (Deducted per Invoice)</span>
-                      <span className="text-[11px] text-zinc-400">Assigned per-mechanic rates saved in database</span>
-                    </div>
+                <div className="py-2.5 flex justify-between items-center text-amber-700 print:text-black">
+                  <div>
+                    <span className="font-bold block">Mechanic Commissions Paid</span>
+                    <span className="text-[11px] text-slate-500">Per-mechanic labor rates deducted</span>
                   </div>
-                  <span className="font-mono text-base font-bold text-amber-400">-₱{mechanicCommissionsDeducted.toFixed(2)}</span>
+                  <span className="font-mono text-sm font-bold">-₱{mechanicCommissionsDeducted.toFixed(2)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/80 border border-white/10">
+              <div className="py-2.5 flex justify-between items-center">
                 <div>
-                  <span className="font-semibold text-zinc-200 block">Net Shop Labor Retained</span>
-                  <span className="text-[11px] text-zinc-500">Gross labor minus mechanic commission deductions</span>
+                  <span className="font-bold text-slate-900 print:text-black block">Net Shop Labor Retained</span>
+                  <span className="text-[11px] text-slate-500">Gross labor less staff commissions</span>
                 </div>
-                <span className="font-mono text-base font-bold text-white">₱{netLaborRevenue.toFixed(2)}</span>
+                <span className="font-mono text-sm font-bold text-slate-900 print:text-black">₱{netLaborRevenue.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/90 border border-cyan-500/30">
+              <div className="py-3 flex justify-between items-center border-t border-slate-200 print:border-zinc-300">
                 <div>
-                  <span className="font-bold text-zinc-100 block">Net Retained Shop Sales</span>
-                  <span className="text-[10px] text-zinc-400 font-mono">Gross revenue minus mechanic labor commissions</span>
+                  <span className="font-black text-slate-900 print:text-black block">Net Retained Shop Sales</span>
+                  <span className="text-[10px] text-slate-500 font-mono">Parts revenue + net shop labor</span>
                 </div>
-                <span className="font-mono text-lg font-black text-emerald-400">₱{netShopRevenue.toFixed(2)}</span>
+                <span className="font-mono text-base font-black text-emerald-700 print:text-black">
+                  ₱{netShopRevenue.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Payment Method Distribution */}
-          <div className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl print-card space-y-4">
-            <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
-              <Banknote className="w-4 h-4 text-emerald-400" />
-              <span>Payment Settlement Channels</span>
-            </h3>
+          {/* Channel 2: Payment Settlement */}
+          <div className="space-y-3">
+            <div className="pb-2 border-b border-slate-200 print:border-zinc-300 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 print:text-black flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-emerald-700 print:text-black" />
+                <span>Payment Settlement Channels</span>
+              </h3>
+              <span className="text-[11px] text-slate-500 font-mono">Tender types</span>
+            </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                  <Banknote className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Cash Payments</span>
+            <div className="grid grid-cols-2 gap-3 text-xs pt-1">
+              <div className="p-3 border border-slate-200 bg-white shadow-sm print:border-zinc-300 rounded-xl space-y-1">
+                <div className="flex items-center gap-1.5 text-slate-500 print:text-zinc-600 text-[11px]">
+                  <Banknote className="w-3.5 h-3.5 text-emerald-600 print:text-black" />
+                  <span className="font-semibold">Cash Drawer</span>
                 </div>
-                <div className="font-mono text-lg font-bold text-white">
+                <div className="font-mono text-base font-bold text-slate-900 print:text-black">
                   ₱{(paymentMethodsSummary["CASH"] || 0).toFixed(2)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                  <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>GCash / E-Wallet</span>
+              <div className="p-3 border border-slate-200 bg-white shadow-sm print:border-zinc-300 rounded-xl space-y-1">
+                <div className="flex items-center gap-1.5 text-slate-500 print:text-zinc-600 text-[11px]">
+                  <Smartphone className="w-3.5 h-3.5 text-blue-600 print:text-black" />
+                  <span className="font-semibold">GCash / E-Wallet</span>
                 </div>
-                <div className="font-mono text-lg font-bold text-white">
+                <div className="font-mono text-base font-bold text-slate-900 print:text-black">
                   ₱{(paymentMethodsSummary["GCASH"] || 0).toFixed(2)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                  <CreditCard className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Credit / Debit Card</span>
+              <div className="p-3 border border-slate-200 bg-white shadow-sm print:border-zinc-300 rounded-xl space-y-1">
+                <div className="flex items-center gap-1.5 text-slate-500 print:text-zinc-600 text-[11px]">
+                  <CreditCard className="w-3.5 h-3.5 text-purple-600 print:text-black" />
+                  <span className="font-semibold">Card Payments</span>
                 </div>
-                <div className="font-mono text-lg font-bold text-white">
+                <div className="font-mono text-base font-bold text-slate-900 print:text-black">
                   ₱{(paymentMethodsSummary["CARD"] || 0).toFixed(2)}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                  <Building2 className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Bank Transfer</span>
+              <div className="p-3 border border-slate-200 bg-white shadow-sm print:border-zinc-300 rounded-xl space-y-1">
+                <div className="flex items-center gap-1.5 text-slate-500 print:text-zinc-600 text-[11px]">
+                  <Building2 className="w-3.5 h-3.5 text-amber-600 print:text-black" />
+                  <span className="font-semibold">Bank Transfer</span>
                 </div>
-                <div className="font-mono text-lg font-bold text-white">
+                <div className="font-mono text-base font-bold text-slate-900 print:text-black">
                   ₱{(paymentMethodsSummary["BANK_TRANSFER"] || 0).toFixed(2)}
                 </div>
               </div>
@@ -700,105 +773,76 @@ export default function FinancialAndSalesExtractPage() {
           </div>
         </div>
 
-        {/* Section: Shop Operating Expenses Breakdown (User Requested) */}
-        <div className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl print-card space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        {/* SECTION: Shop Operating Expenses Ledger (Borderless Open Table) */}
+        <div className="space-y-4 pt-4 border-t border-slate-200 print:border-zinc-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-amber-400" />
-                <span>Shop Overhead & Operating Expenses Ledger</span>
+              <h3 className="text-base font-bold text-slate-900 print:text-black flex items-center gap-2">
+                <TrendingDown className="w-4 h-4 text-amber-700 print:text-black" />
+                <span>Operating Expenses Ledger ({filteredExpenses.length})</span>
               </h3>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Itemized electricity, rent, staff compensation, consumable fluids, and tool purchases.
+              <p className="text-xs text-slate-500 print:text-zinc-600 mt-0.5">
+                Utilities, facility rent, wages, consumable shop supplies, and equipment.
               </p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Total Period Expenses</span>
-              <span className="font-mono text-xl font-black text-amber-400">₱{totalExpenses.toFixed(2)}</span>
+              <span className="text-[10px] text-slate-500 print:text-zinc-600 uppercase tracking-wider font-bold block">Total Period Overhead</span>
+              <span className="font-mono text-lg font-black text-amber-700 print:text-black">₱{totalExpenses.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Quick Category Totals Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-            <div className="p-3 rounded-2xl bg-zinc-950/70 border border-white/5">
-              <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                <Zap className="w-3 h-3 text-amber-400" /> Electricity & Utilities
-              </span>
-              <span className="font-mono font-bold text-white block mt-1">
-                ₱{(expenseByCategory["ELECTRICITY_UTILITIES"] || 0).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-zinc-950/70 border border-white/5">
-              <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                <Building2 className="w-3 h-3 text-blue-400" /> Facility Rent
-              </span>
-              <span className="font-mono font-bold text-white block mt-1">
-                ₱{(expenseByCategory["RENT"] || 0).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-zinc-950/70 border border-white/5">
-              <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                <Users className="w-3 h-3 text-purple-400" /> Staff Wages
-              </span>
-              <span className="font-mono font-bold text-white block mt-1">
-                ₱{(expenseByCategory["STAFF_WAGES"] || 0).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-zinc-950/70 border border-white/5">
-              <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                <Package className="w-3 h-3 text-emerald-400" /> Consumable Parts
-              </span>
-              <span className="font-mono font-bold text-white block mt-1">
-                ₱{(expenseByCategory["CONSUMABLE_PARTS"] || 0).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-zinc-950/70 border border-white/5">
-              <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                <Hammer className="w-3 h-3 text-cyan-400" /> Tools & Equipment
-              </span>
-              <span className="font-mono font-bold text-white block mt-1">
-                ₱{(expenseByCategory["TOOLS_EQUIPMENT"] || 0).toFixed(2)}
-              </span>
-            </div>
+          {/* Quick Expense Category Strip */}
+          <div className="flex flex-wrap gap-2 text-[11px]">
+            {[
+              { cat: "ELECTRICITY_UTILITIES", label: "Utilities", icon: Zap, color: "text-amber-700" },
+              { cat: "RENT", label: "Rent", icon: Building2, color: "text-blue-700" },
+              { cat: "STAFF_WAGES", label: "Wages", icon: Users, color: "text-purple-700" },
+              { cat: "CONSUMABLE_PARTS", label: "Supplies", icon: Package, color: "text-emerald-700" },
+              { cat: "TOOLS_EQUIPMENT", label: "Tools", icon: Hammer, color: "text-cyan-700" },
+            ].map(({ cat, label, icon: Icon, color }) => (
+              <div key={cat} className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white shadow-sm print:border-zinc-300 print:bg-white flex items-center gap-1.5">
+                <Icon className={clsx("w-3 h-3 print:text-black", color)} />
+                <span className="text-slate-600 print:text-zinc-600 font-medium">{label}:</span>
+                <span className="font-mono font-bold text-slate-900 print:text-black">
+                  ₱{(expenseByCategory[cat] || 0).toFixed(2)}
+                </span>
+              </div>
+            ))}
           </div>
 
           {/* Itemized Expenses Table */}
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm print:border-zinc-300">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-zinc-950/70 text-zinc-400 uppercase text-[10px]">
-                  <th className="p-3.5">Category</th>
-                  <th className="p-3.5">Description</th>
-                  <th className="p-3.5">Vendor / Payee</th>
-                  <th className="p-3.5">Ref #</th>
-                  <th className="p-3.5">Date</th>
-                  <th className="p-3.5 text-right">Amount (PHP)</th>
+                <tr className="border-b border-slate-200 bg-slate-50 print:border-zinc-300 print:bg-zinc-100 text-slate-600 print:text-zinc-700 uppercase text-[10px] font-bold">
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Description</th>
+                  <th className="p-3">Vendor / Payee</th>
+                  <th className="p-3">Ref #</th>
+                  <th className="p-3">Date</th>
+                  <th className="p-3 text-right">Amount (PHP)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-zinc-300">
+              <tbody className="divide-y divide-slate-200 print:divide-zinc-200 text-slate-700 print:text-black">
                 {filteredExpenses.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-6 text-center text-zinc-500">
-                      No expenses logged for this period.
+                    <td colSpan={6} className="p-5 text-center text-slate-500 print:text-zinc-600">
+                      No operating overhead expenses recorded for this timeframe.
                     </td>
                   </tr>
                 ) : (
                   filteredExpenses.map((exp) => (
-                    <tr key={exp.id} className="hover:bg-zinc-900/40 transition-colors">
-                      <td className="p-3.5">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-zinc-800 text-zinc-300 font-mono">
+                    <tr key={exp.id} className="hover:bg-slate-50/60 print:hover:bg-transparent transition-colors">
+                      <td className="p-3 font-mono text-[11px]">
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 print:border-zinc-300 print:bg-transparent text-slate-700 print:text-black font-bold text-[10px]">
                           {exp.category.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="p-3.5 font-semibold text-white">{exp.description}</td>
-                      <td className="p-3.5 text-zinc-400">{exp.vendor || "N/A"}</td>
-                      <td className="p-3.5 font-mono text-zinc-400 text-[11px]">{exp.reference_no || "N/A"}</td>
-                      <td className="p-3.5 font-mono text-zinc-400 text-[11px]">{exp.date}</td>
-                      <td className="p-3.5 text-right font-mono font-bold text-amber-400">
+                      <td className="p-3 font-bold text-slate-900 print:text-black">{exp.description}</td>
+                      <td className="p-3 text-slate-600 print:text-zinc-600">{exp.vendor || "N/A"}</td>
+                      <td className="p-3 font-mono text-slate-500 print:text-zinc-600 text-[11px]">{exp.reference_no || "N/A"}</td>
+                      <td className="p-3 font-mono text-slate-500 print:text-zinc-600 text-[11px]">{exp.date}</td>
+                      <td className="p-3 text-right font-mono font-bold text-amber-700 print:text-black">
                         ₱{exp.amount.toFixed(2)}
                       </td>
                     </tr>
@@ -809,63 +853,63 @@ export default function FinancialAndSalesExtractPage() {
           </div>
         </div>
 
-        {/* Section: Completed Sales Transactions Ledger */}
-        <div className="bg-zinc-900/50 border border-white/10 rounded-3xl p-6 backdrop-blur-xl print-card space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        {/* SECTION: Completed Sales Orders Ledger (Borderless Open Table) */}
+        <div className="space-y-4 pt-4 border-t border-slate-200 print:border-zinc-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-cyan-400" />
-                <span>Extracted Completed Sales Orders ({filteredTransactions.length})</span>
+              <h3 className="text-base font-bold text-slate-900 print:text-black flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-lime-700 print:text-black" />
+                <span>Completed Sales Orders ({filteredTransactions.length})</span>
               </h3>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Itemized transaction records for the active billing period.
+              <p className="text-xs text-slate-500 print:text-zinc-600 mt-0.5">
+                Itemized transaction records for the active billing timeframe.
               </p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Gross Sales Total</span>
-              <span className="font-mono text-xl font-black text-cyan-400">₱{grossRevenue.toFixed(2)}</span>
+              <span className="text-[10px] text-slate-500 print:text-zinc-600 uppercase tracking-wider font-bold block">Gross Sales Total</span>
+              <span className="font-mono text-lg font-black text-lime-700 print:text-black">₱{grossRevenue.toFixed(2)}</span>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm print:border-zinc-300">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-zinc-950/70 text-zinc-400 uppercase text-[10px]">
-                  <th className="p-3.5">Invoice #</th>
-                  <th className="p-3.5">Customer & Motorcycle</th>
-                  <th className="p-3.5">Date & Time</th>
-                  <th className="p-3.5">Payment Method</th>
-                  <th className="p-3.5">Line Items Summary</th>
-                  <th className="p-3.5 text-right">Total (PHP)</th>
+                <tr className="border-b border-slate-200 bg-slate-50 print:border-zinc-300 print:bg-zinc-100 text-slate-600 print:text-zinc-700 uppercase text-[10px] font-bold">
+                  <th className="p-3">Invoice #</th>
+                  <th className="p-3">Customer & Motorcycle</th>
+                  <th className="p-3">Date & Time</th>
+                  <th className="p-3">Payment Method</th>
+                  <th className="p-3">Line Items Summary</th>
+                  <th className="p-3 text-right">Total (PHP)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-zinc-300">
+              <tbody className="divide-y divide-slate-200 print:divide-zinc-200 text-slate-700 print:text-black">
                 {filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-6 text-center text-zinc-500">
+                    <td colSpan={6} className="p-6 text-center text-slate-500 print:text-zinc-600">
                       No sales records match the selected timeframe.
                     </td>
                   </tr>
                 ) : (
                   filteredTransactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-zinc-900/40 transition-colors">
-                      <td className="p-3.5 font-mono font-bold text-cyan-400">{tx.invoice_no}</td>
-                      <td className="p-3.5">
-                        <span className="font-semibold text-white block">{tx.customer_name || "Walk-in Customer"}</span>
-                        <span className="text-[10px] text-zinc-500 font-mono">{tx.motorcycle_name || "Standard Bike"}</span>
+                    <tr key={tx.id} className="hover:bg-slate-50/60 print:hover:bg-transparent transition-colors">
+                      <td className="p-3 font-mono font-bold text-lime-700 print:text-black">{tx.invoice_no}</td>
+                      <td className="p-3">
+                        <span className="font-bold text-slate-900 print:text-black block">{tx.customer_name || "Walk-in Customer"}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">{tx.motorcycle_name || "Standard Bike"}</span>
                       </td>
-                      <td className="p-3.5 font-mono text-zinc-400 text-[11px]">
+                      <td className="p-3 font-mono text-slate-500 print:text-zinc-600 text-[11px]">
                         {new Date(tx.created_at).toLocaleDateString()} {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
-                      <td className="p-3.5">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-zinc-800 text-zinc-300 font-mono">
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 border border-slate-200 print:border-zinc-300 print:bg-transparent text-slate-700 print:text-black font-mono">
                           {tx.payment_method}
                         </span>
                       </td>
-                      <td className="p-3.5 text-zinc-400 text-[11px]">
+                      <td className="p-3 text-slate-600 print:text-zinc-600 text-[11px]">
                         {tx.items ? tx.items.map((i) => `${i.qty}x ${i.name}`).join(", ") : "Standard Repair Order"}
                       </td>
-                      <td className="p-3.5 text-right font-mono font-bold text-emerald-400 text-sm">
+                      <td className="p-3 text-right font-mono font-bold text-emerald-700 print:text-black text-sm">
                         ₱{tx.total.toFixed(2)}
                       </td>
                     </tr>
@@ -876,17 +920,16 @@ export default function FinancialAndSalesExtractPage() {
           </div>
         </div>
 
-        {/* Printable Official Signatory Certification (Visible in Print & PDF) */}
-        <div className="pt-8 border-t border-white/10 mt-8 grid grid-cols-2 gap-8 text-xs text-zinc-400">
-          <div>
-            <span className="block text-[10px] uppercase font-bold text-zinc-500 mb-6">Prepared by Accounting / Cashier</span>
-            <div className="border-b border-zinc-700 w-48 mb-1"></div>
-            <span className="text-zinc-300 font-mono">{localStorage.getItem("user_email") || "admin@versiklo.com"}</span>
+        {/* Minimal Report Verification Timestamp & Metadata Footer (Replaced Signature Design) */}
+        <div className="pt-8 border-t border-slate-200 print:border-zinc-300 mt-10 text-xs text-slate-500 print:text-zinc-600 flex flex-col sm:flex-row items-center justify-between gap-4 print-avoid-break">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-lime-600 print:text-black" />
+            <span className="font-mono text-[11px] font-semibold">
+              Certified Financial Audit Record • MotoShop Management System
+            </span>
           </div>
-          <div className="text-right">
-            <span className="block text-[10px] uppercase font-bold text-zinc-500 mb-6">Certified & Approved by Management</span>
-            <div className="border-b border-zinc-700 w-48 ml-auto mb-1"></div>
-            <span className="text-zinc-300 font-mono">Versiklo Operations Manager</span>
+          <div className="text-right font-mono text-[11px] text-slate-400 print:text-zinc-600">
+            Report Generated: {new Date().toLocaleString()} by {localStorage.getItem("user_email") || "admin@motoshop.com"}
           </div>
         </div>
 
@@ -900,7 +943,7 @@ export default function FinancialAndSalesExtractPage() {
       >
         <ModalHeader
           icon={Plus}
-          iconVariant="cyan"
+          iconVariant="lime"
           title="Record Shop Expense"
           subtitle="Add an operating expense or shop disbursement record"
           onClose={() => setIsExpenseModalOpen(false)}
@@ -909,11 +952,11 @@ export default function FinancialAndSalesExtractPage() {
         <form onSubmit={handleAddExpense}>
           <ModalBody className="space-y-4 text-xs">
             <div>
-              <label className="block text-zinc-400 font-semibold mb-1.5">Expense Category *</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Expense Category *</label>
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value as ExpenseCategory)}
-                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-all"
               >
                 <option value="ELECTRICITY_UTILITIES">Electricity & Utilities (Power, Water, Internet)</option>
                 <option value="RENT">Facility Rent & Bay Space Lease</option>
@@ -925,20 +968,20 @@ export default function FinancialAndSalesExtractPage() {
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-semibold mb-1.5">Description *</label>
+              <label className="block text-slate-700 font-bold mb-1.5">Description *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Meralco Electric Power - Main Service Bay"
+                placeholder="e.g. Electric Power - Main Service Bay"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
-                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-all"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Amount (PHP) *</label>
+                <label className="block text-slate-700 font-bold mb-1.5">Amount (PHP) *</label>
                 <input
                   type="number"
                   step="0.01"
@@ -947,42 +990,42 @@ export default function FinancialAndSalesExtractPage() {
                   placeholder="0.00"
                   value={newAmount}
                   onChange={(e) => setNewAmount(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Date Logged *</label>
+                <label className="block text-slate-700 font-bold mb-1.5">Date Logged *</label>
                 <input
                   type="date"
                   required
                   value={expenseDate}
                   onChange={(e) => setExpenseDate(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-all"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Vendor / Payee</label>
+                <label className="block text-slate-700 font-bold mb-1.5">Vendor / Payee</label>
                 <input
                   type="text"
                   placeholder="e.g. Hardware Store / Meralco"
                   value={newVendor}
                   onChange={(e) => setNewVendor(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-zinc-400 font-semibold mb-1.5">Receipt / Invoice Ref #</label>
+                <label className="block text-slate-700 font-bold mb-1.5">Receipt / Invoice Ref #</label>
                 <input
                   type="text"
                   placeholder="e.g. OR-5491"
                   value={newRef}
                   onChange={(e) => setNewRef(e.target.value)}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-zinc-100 text-sm font-mono placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-all"
                 />
               </div>
             </div>
@@ -992,13 +1035,13 @@ export default function FinancialAndSalesExtractPage() {
             <button
               type="button"
               onClick={() => setIsExpenseModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+              className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-200 bg-slate-100 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-colors flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-colors flex items-center gap-2 shadow-sm"
             >
               Save Expense
             </button>
@@ -1016,13 +1059,12 @@ export default function FinancialAndSalesExtractPage() {
       <MobileFilterSheet
         isOpen={isMobileFilterOpen}
         onClose={() => setIsMobileFilterOpen(false)}
-        title="Filter Reports Extract"
+        title="Filter Financial Ledger"
         activeCount={activeFilterCount}
         onReset={handleResetAllFilters}
       >
-        {/* Report Interval */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-300">Report Interval</label>
+          <label className="text-xs font-bold text-slate-700">Report Interval</label>
           <div className="grid grid-cols-3 gap-2">
             {[
               { key: "DAILY", label: "Daily" },
@@ -1034,10 +1076,10 @@ export default function FinancialAndSalesExtractPage() {
                 type="button"
                 onClick={() => setReportType(item.key as any)}
                 className={clsx(
-                  "px-3 py-2.5 rounded-xl text-xs font-semibold text-center transition-all",
+                  "px-3 py-2.5 rounded-xl text-xs font-bold text-center transition-all",
                   reportType === item.key
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                    ? "bg-lime-500 text-zinc-950 shadow-sm"
+                    : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
                 )}
               >
                 {item.label}
@@ -1046,15 +1088,14 @@ export default function FinancialAndSalesExtractPage() {
           </div>
         </div>
 
-        {/* Dynamic Period Date Controls */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-300">Target Period</label>
+          <label className="text-xs font-bold text-slate-700">Target Period</label>
           {reportType === "DAILY" && (
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-zinc-900 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500 [color-scheme:dark]"
+              className="w-full bg-white border border-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-lime-500"
             />
           )}
 
@@ -1063,7 +1104,7 @@ export default function FinancialAndSalesExtractPage() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full bg-zinc-900 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500 [color-scheme:dark]"
+              className="w-full bg-white border border-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-lime-500"
             />
           )}
 
@@ -1071,7 +1112,7 @@ export default function FinancialAndSalesExtractPage() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full bg-zinc-900 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-cyan-500 cursor-pointer"
+              className="w-full bg-white border border-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-lime-500 cursor-pointer"
             >
               {[2024, 2025, 2026, 2027].map((yr) => (
                 <option key={yr} value={yr}>Fiscal Year {yr}</option>

@@ -159,13 +159,13 @@ function CustomerRepairHistoryLogsContent() {
 
   if (!customer) {
     return (
-      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
-        <AlertCircle className="w-12 h-12 text-red-400 mb-3" />
-        <h2 className="text-xl font-bold mb-1">Customer Record Not Found</h2>
-        <p className="text-xs text-zinc-400 mb-6">Could not find repair logs matching the requested customer identifier.</p>
+      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-slate-800 bg-slate-50">
+        <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
+        <h2 className="text-xl font-bold text-slate-900 mb-1">Customer Record Not Found</h2>
+        <p className="text-xs text-slate-500 mb-6">Could not find repair logs matching the requested customer identifier.</p>
         <button
           onClick={() => router.push("/repairs/history")}
-          className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
+          className="px-5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Repair History</span>
@@ -177,13 +177,13 @@ function CustomerRepairHistoryLogsContent() {
   const isActive = customer.active_status === "ACTIVE_REPAIR";
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 touch-pan-y">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 touch-pan-y bg-slate-50">
       <div className="w-full space-y-8 animate-profile-enter">
         {/* Top Action & Navigation Bar */}
         <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
           <button
             onClick={() => router.push("/repairs/history")}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900/90 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-md"
+            className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Repair History</span>
@@ -192,16 +192,16 @@ function CustomerRepairHistoryLogsContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.print()}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 transition-colors flex items-center gap-2 text-xs font-bold shadow-md"
+              className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 text-xs font-bold shadow-sm"
             >
-              <Printer className="w-4 h-4 text-cyan-400" />
+              <Printer className="w-4 h-4 text-lime-600" />
               <span>Print Service Record</span>
             </button>
 
             {isActive ? (
               <button
                 disabled
-                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed opacity-60"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-400 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
               >
                 <Lock className="w-4 h-4" />
                 <span>Active in Repair</span>
@@ -209,9 +209,9 @@ function CustomerRepairHistoryLogsContent() {
             ) : (
               <button
                 onClick={() => handleResumeRepair(customer)}
-                className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2 shadow-sm active:scale-[0.98]"
               >
-                <Play className="w-4 h-4" />
+                <Play className="w-4 h-4 fill-current" />
                 <span>Start Job</span>
               </button>
             )}
@@ -219,208 +219,208 @@ function CustomerRepairHistoryLogsContent() {
         </div>
 
         {/* Main Profile & Detailed Service Record View */}
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-6 pb-20">
           
-          {/* Customer Profile Banner Card */}
-          <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
+          {/* Customer Profile Banner (Card-Free Canvas on Mobile, Card on Desktop) */}
+          <div className="bg-transparent md:bg-white border-0 md:border md:border-slate-200 rounded-none md:rounded-3xl p-0 md:p-8 md:shadow-sm space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
               <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-cyan-400 font-bold text-2xl">
-                {customer.customer_name.split(" ").map((n) => n[0]).join("")}
-              </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl md:text-3xl font-black text-white">{customer.customer_name}</h1>
-                  {isActive ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                      <Wrench className="w-3.5 h-3.5" /> Active in Repair
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      <CheckCircle className="w-3.5 h-3.5" /> Ready for Service
-                    </span>
-                  )}
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-lime-50 border border-lime-200 flex items-center justify-center text-lime-700 font-black text-xl md:text-2xl shrink-0">
+                  {customer.customer_name.split(" ").map((n) => n[0]).join("")}
                 </div>
-                <p className="text-xs text-zinc-400 mt-1 flex items-center gap-3">
-                  <span className="flex items-center gap-1 font-mono text-zinc-300">
-                    <Bike className="w-3.5 h-3.5 text-cyan-400" />
-                    {customer.motorcycle_model}
-                  </span>
-                  <span className="text-zinc-600">•</span>
-                  <span className="flex items-center gap-1 font-mono text-zinc-400">
-                    <Phone className="w-3.5 h-3.5 text-zinc-500" />
-                    {customer.contact_number}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex sm:items-center gap-6 bg-zinc-950/80 p-4 px-6 rounded-2xl border border-white/5">
-              <div>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">Total Sessions</span>
-                <span className="font-mono text-2xl font-black text-cyan-400">{customer.total_repair_sessions}</span>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">Last Serviced</span>
-                <span className="font-mono text-xs font-bold text-zinc-200">{new Date(customer.last_service_date).toLocaleDateString()}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-xs text-zinc-400">
-            <span className="flex items-center gap-2">
-              <History className="w-4 h-4 text-cyan-400" />
-              <span>Chronological Service Records ({customer.past_jobs.length} completed logs)</span>
-            </span>
-            <span className="text-zinc-500 text-[11px] font-mono">Customer ID: {customer.customer_id}</span>
-          </div>
-        </div>
-
-        {/* Detailed Itemized Job Order Logs */}
-        <div className="space-y-6">
-          {customer.past_jobs.map((job) => {
-            const totalCost = job.total_billed !== undefined 
-              ? job.total_billed 
-              : (job.labor_charge + job.parts_charge);
-
-            return (
-              <div
-                key={job.job_id}
-                className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-xl space-y-6 relative overflow-hidden"
-              >
-                {/* Job Order Top Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-cyan-400 font-bold bg-cyan-950/80 px-3 py-1.5 rounded-xl border border-cyan-500/30 text-sm">
-                      {job.jo_number}
-                    </span>
-                    <span className="text-xs text-zinc-400 flex items-center gap-1.5 font-medium">
-                      <Calendar className="w-3.5 h-3.5 text-zinc-500" />
-                      Repaired on {new Date(job.date_repaired).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-zinc-400">
-                      Mechanic: <span className="font-semibold text-purple-300">{job.mechanic_name}</span>
-                    </span>
-                    <span className={clsx(
-                      "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                      job.status === "COMPLETED" || job.status === "RELEASED"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                    )}>
-                      {job.status}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Mechanic Diagnostic & Inspection Notes */}
-                {job.mechanic_notes && (
-                  <div className="p-4 bg-zinc-950/80 rounded-2xl border border-white/5 space-y-1.5">
-                    <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                      Diagnostic Notes & Service Summary
-                    </span>
-                    <p className="text-xs text-zinc-200 leading-relaxed italic">
-                      "{job.mechanic_notes}"
-                    </p>
-                  </div>
-                )}
-
-                {/* Itemized Parts & Labor Products Applied */}
-                {job.items_used && job.items_used.length > 0 && (
-                  <div className="space-y-2">
-                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-zinc-500" />
-                      Itemized Products & Services Availed ({job.items_used.length})
-                    </span>
-                    <div className="rounded-2xl border border-white/5 overflow-hidden">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-zinc-950 text-zinc-400 text-xs font-semibold uppercase tracking-wider">
-                          <tr>
-                            <th className="p-3.5 px-4">Item / Service Description</th>
-                            <th className="p-3.5 px-4 text-center">Type</th>
-                            <th className="p-3.5 px-4 text-center">Qty</th>
-                            <th className="p-3.5 px-4 text-right">Unit Price</th>
-                            <th className="p-3.5 px-4 text-right">Subtotal</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 bg-zinc-900/40">
-                          {job.items_used.map((it, i) => {
-                            const nameLower = (it.name || "").toLowerCase();
-                            const isService =
-                              nameLower.includes("labor") ||
-                              nameLower.includes("service") ||
-                              nameLower.includes("repair") ||
-                              nameLower.includes("overhaul") ||
-                              nameLower.includes("tune-up") ||
-                              nameLower.includes("inspection") ||
-                              nameLower.includes("cleaning") ||
-                              nameLower.includes("checkup") ||
-                              nameLower.includes("wiring");
-
-                            return (
-                              <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                                <td className="p-3.5 px-4 font-bold text-zinc-100">{it.name}</td>
-                                <td className="p-3.5 px-4 text-center">
-                                  <span className={clsx(
-                                    "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                    isService ? "bg-purple-500/10 text-purple-300 border border-purple-500/20" : "bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
-                                  )}>
-                                    {isService ? "Labor Service" : "Part Product"}
-                                  </span>
-                                </td>
-                                <td className="p-3.5 px-4 text-center text-xs font-mono text-zinc-400">{it.qty}</td>
-                                <td className="p-3.5 px-4 text-right text-xs font-mono text-zinc-400">₱{it.price.toFixed(2)}</td>
-                                <td className="p-3.5 px-4 text-right font-mono font-bold text-white text-sm">
-                                  ₱{(it.qty * it.price).toFixed(2)}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* Financial Charges Settlement Bar */}
-                <div className="p-4 bg-zinc-950/80 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                  <div className="flex flex-wrap items-center gap-6">
-                    <div>
-                      <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Service Labor Charge</span>
-                      <span className="font-mono text-cyan-300 font-bold text-sm">₱{job.labor_charge.toFixed(2)}</span>
-                    </div>
-                    <div className="w-px h-6 bg-white/10 hidden sm:block" />
-                    <div>
-                      <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Parts & Materials</span>
-                      <span className="font-mono text-zinc-200 font-bold text-sm">₱{job.parts_charge.toFixed(2)}</span>
-                    </div>
-                    {job.invoice_no && (
-                      <>
-                        <div className="w-px h-6 bg-white/10 hidden sm:block" />
-                        <div>
-                          <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Invoice Synced</span>
-                          <span className="font-mono text-purple-300 font-bold text-xs">{job.invoice_no}</span>
-                        </div>
-                      </>
+                <div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h1 className="text-xl md:text-3xl font-black text-slate-900">{customer.customer_name}</h1>
+                    {isActive ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-lime-100 text-lime-800 border border-lime-300">
+                        <Wrench className="w-3.5 h-3.5" /> Active in Repair
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <CheckCircle className="w-3.5 h-3.5 text-slate-500" /> Ready for Service
+                      </span>
                     )}
                   </div>
-
-                  <div className="text-right border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
-                    <span className="text-zinc-400 block text-[10px] uppercase font-bold">Total Service Billed</span>
-                    <span className="font-mono text-emerald-400 font-black text-lg">₱{totalCost.toFixed(2)}</span>
-                  </div>
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
+                    <span className="flex items-center gap-1 font-semibold text-slate-700">
+                      <Bike className="w-3.5 h-3.5 text-lime-600" />
+                      {customer.motorcycle_model}
+                    </span>
+                    <span className="text-slate-300 hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1 font-mono text-slate-500">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      {customer.contact_number}
+                    </span>
+                  </p>
                 </div>
-
               </div>
-            );
-          })}
-        </div>
 
-      </div>
+              <div className="flex sm:items-center gap-6 bg-slate-50 p-3.5 px-4 sm:px-6 rounded-xl md:rounded-2xl border border-slate-200">
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Total Sessions</span>
+                  <span className="font-mono text-xl sm:text-2xl font-black text-slate-900">{customer.total_repair_sessions}</span>
+                </div>
+                <div className="w-px h-8 bg-slate-200" />
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Last Serviced</span>
+                  <span className="font-mono text-xs font-bold text-slate-800">{new Date(customer.last_service_date).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span className="flex items-center gap-2">
+                <History className="w-4 h-4 text-lime-600" />
+                <span>Chronological Service Records ({customer.past_jobs.length} completed logs)</span>
+              </span>
+              <span className="text-slate-400 text-[11px] font-mono">Customer ID: {customer.customer_id}</span>
+            </div>
+          </div>
+
+          {/* Detailed Itemized Job Order Logs */}
+          <div className="space-y-6">
+            {customer.past_jobs.map((job) => {
+              const totalCost = job.total_billed !== undefined 
+                ? job.total_billed 
+                : (job.labor_charge + job.parts_charge);
+
+              return (
+                <div
+                  key={job.job_id}
+                  className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-sm space-y-5 relative overflow-hidden"
+                >
+                  {/* Job Order Top Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-lime-800 font-bold bg-lime-100 px-3 py-1.5 rounded-xl border border-lime-300 text-sm">
+                        {job.jo_number}
+                      </span>
+                      <span className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        Repaired on {new Date(job.date_repaired).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-600">
+                        Mechanic: <span className="font-bold text-slate-900">{job.mechanic_name}</span>
+                      </span>
+                      <span className={clsx(
+                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                        job.status === "COMPLETED" || job.status === "RELEASED"
+                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                          : "bg-amber-100 text-amber-800 border-amber-300"
+                      )}>
+                        {job.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Mechanic Diagnostic & Inspection Notes */}
+                  {job.mechanic_notes && (
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+                      <span className="text-[10px] font-bold text-lime-700 uppercase tracking-wider block flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-lime-600" />
+                        Diagnostic Notes & Service Summary
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed italic">
+                        "{job.mechanic_notes}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Itemized Parts & Labor Products Applied */}
+                  {job.items_used && job.items_used.length > 0 && (
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-slate-400" />
+                        Itemized Products & Services Availed ({job.items_used.length})
+                      </span>
+                      <div className="rounded-2xl border border-slate-200 overflow-hidden">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                              <th className="p-3.5 px-4 font-bold">Item / Service Description</th>
+                              <th className="p-3.5 px-4 text-center font-bold">Type</th>
+                              <th className="p-3.5 px-4 text-center font-bold">Qty</th>
+                              <th className="p-3.5 px-4 text-right font-bold">Unit Price</th>
+                              <th className="p-3.5 px-4 text-right font-bold">Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 bg-white">
+                            {job.items_used.map((it, i) => {
+                              const nameLower = (it.name || "").toLowerCase();
+                              const isService =
+                                nameLower.includes("labor") ||
+                                nameLower.includes("service") ||
+                                nameLower.includes("repair") ||
+                                nameLower.includes("overhaul") ||
+                                nameLower.includes("tune-up") ||
+                                nameLower.includes("inspection") ||
+                                nameLower.includes("cleaning") ||
+                                nameLower.includes("checkup") ||
+                                nameLower.includes("wiring");
+
+                              return (
+                                <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                                  <td className="p-3.5 px-4 font-bold text-slate-900">{it.name}</td>
+                                  <td className="p-3.5 px-4 text-center">
+                                    <span className={clsx(
+                                      "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                      isService ? "bg-indigo-50 text-indigo-700 border border-indigo-200" : "bg-lime-50 text-lime-800 border border-lime-200"
+                                    )}>
+                                      {isService ? "Labor Service" : "Part Product"}
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5 px-4 text-center text-xs font-mono text-slate-600">{it.qty}</td>
+                                  <td className="p-3.5 px-4 text-right text-xs font-mono text-slate-600">₱{it.price.toFixed(2)}</td>
+                                  <td className="p-3.5 px-4 text-right font-mono font-bold text-slate-900 text-sm">
+                                    ₱{(it.qty * it.price).toFixed(2)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Financial Charges Settlement Bar */}
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+                    <div className="flex flex-wrap items-center gap-6">
+                      <div>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">Service Labor Charge</span>
+                        <span className="font-mono text-slate-900 font-bold text-sm">₱{job.labor_charge.toFixed(2)}</span>
+                      </div>
+                      <div className="w-px h-6 bg-slate-200 hidden sm:block" />
+                      <div>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">Parts & Materials</span>
+                        <span className="font-mono text-slate-900 font-bold text-sm">₱{job.parts_charge.toFixed(2)}</span>
+                      </div>
+                      {job.invoice_no && (
+                        <>
+                          <div className="w-px h-6 bg-slate-200 hidden sm:block" />
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase font-semibold">Invoice Synced</span>
+                            <span className="font-mono text-indigo-700 font-bold text-xs">{job.invoice_no}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="text-right border-t sm:border-t-0 border-slate-200 pt-2 sm:pt-0">
+                      <span className="text-slate-500 block text-[10px] uppercase font-bold">Total Service Billed</span>
+                      <span className="font-mono text-lime-700 font-black text-lg">₱{totalCost.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
       </div>
     </div>
   );

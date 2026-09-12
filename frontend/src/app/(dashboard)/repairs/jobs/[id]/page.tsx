@@ -500,17 +500,17 @@ export default function JobCardProfilePage() {
 
   if (error || !job) {
     return (
-      <div className="max-w-xl mx-auto my-16 p-8 bg-zinc-900/90 border border-white/10 rounded-3xl text-center space-y-6">
-        <div className="w-14 h-14 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center mx-auto border border-red-500/30">
+      <div className="max-w-xl mx-auto my-16 p-8 bg-white border border-slate-200 rounded-3xl text-center space-y-6 shadow-sm">
+        <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border border-rose-200">
           <AlertCircle className="w-7 h-7" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-white">Job Card Not Found</h2>
-          <p className="text-sm text-zinc-400">{error || "The requested repair job order does not exist."}</p>
+          <h2 className="text-xl font-bold text-slate-900">Job Card Not Found</h2>
+          <p className="text-sm text-slate-500">{error || "The requested repair job order does not exist."}</p>
         </div>
         <button
           onClick={() => router.push("/repairs/board")}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-colors shadow-lg shadow-cyan-500/20"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-sm transition-colors shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Workshop Board
@@ -522,14 +522,14 @@ export default function JobCardProfilePage() {
   const currentStageIndex = STAGES.findIndex((s) => s.status === job.status);
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 bg-slate-50 text-slate-900">
       <div className="w-full space-y-8 animate-profile-enter">
 
         {/* ============ TOP NAVIGATION & ACTION BAR ============ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             onClick={() => router.push("/repairs/board")}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-zinc-100 transition-colors bg-zinc-900 border border-white/10 px-4 py-2.5 rounded-xl hover:bg-zinc-800 self-start shadow-sm group"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-slate-900 transition-colors bg-white border border-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-100 self-start shadow-xs group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Back to Workshop Board</span>
@@ -538,7 +538,7 @@ export default function JobCardProfilePage() {
           {canDelete && (
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-400 hover:text-red-300 border border-red-500/30 text-xs font-bold transition-all self-start sm:self-auto shadow-md"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 border border-rose-200 text-xs font-bold transition-all self-start sm:self-auto shadow-xs"
               title="Cancel or remove this job card"
             >
               <Trash2 className="w-4 h-4" />
@@ -548,39 +548,39 @@ export default function JobCardProfilePage() {
         </div>
 
         {/* ============ MAIN HEADER BANNER ============ */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-3">
-                <Wrench className="w-8 h-8 text-cyan-400 shrink-0" />
-                <span className="font-mono text-cyan-400">{job.jo_number}</span>
+              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <Wrench className="w-8 h-8 text-lime-600 shrink-0" />
+                <span className="font-mono text-lime-700">{job.jo_number}</span>
               </h1>
 
               {/* Status Badges (read-only) */}
               <div className="flex items-center gap-2">
                 <span className={clsx(
                   "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border",
-                  job.status === "PENDING" && "bg-amber-500/10 text-amber-400 border-amber-500/30",
-                  job.status === "ONGOING" && "bg-blue-500/10 text-blue-400 border-blue-500/30",
-                  job.status === "COMPLETED" && "bg-purple-500/10 text-purple-400 border-purple-500/30",
-                  job.status === "RELEASED" && "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                  job.status === "PENDING" && "bg-amber-50 text-amber-800 border-amber-200",
+                  job.status === "ONGOING" && "bg-blue-50 text-blue-800 border-blue-200",
+                  job.status === "COMPLETED" && "bg-purple-50 text-purple-800 border-purple-200",
+                  job.status === "RELEASED" && "bg-emerald-50 text-emerald-800 border-emerald-200"
                 )}>
                   {job.status}
                 </span>
 
                 {isPaid ? (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 uppercase tracking-wider">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 uppercase tracking-wider">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
                     PAID
                   </span>
                 ) : (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wider">
                     Unpaid Cart
                   </span>
                 )}
               </div>
             </div>
-            <p className="text-zinc-400 text-xs sm:text-sm mt-1.5">
+            <p className="text-slate-500 text-xs sm:text-sm mt-1.5">
               Workshop Job Order profile • Detailed diagnostics, mechanic notes, and bike service history
             </p>
           </div>
@@ -589,7 +589,7 @@ export default function JobCardProfilePage() {
         {/* ============ MOBILE CARD-FREE TABBED CANVAS (< md) ============ */}
         <div className="block md:hidden space-y-5">
           {/* Edge-to-Edge Sticky Tab Navigation Bar */}
-          <div className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur-md -mx-4 px-4 py-2 border-b border-white/10 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md -mx-4 px-4 py-2 border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-xs">
             {[
               { id: "overview", label: "Overview", icon: User },
               { id: "diagnosis", label: "Diagnosis", icon: FileText, count: diagnosisLog.length },
@@ -606,8 +606,8 @@ export default function JobCardProfilePage() {
                   className={clsx(
                     "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0",
                     isActive
-                      ? "bg-cyan-500 text-zinc-950 shadow-md shadow-cyan-500/20"
-                      : "text-zinc-400 hover:text-white bg-zinc-900/60"
+                      ? "bg-lime-500 text-zinc-950 shadow-xs font-bold"
+                      : "text-slate-600 hover:text-slate-950 bg-slate-100 border border-slate-200"
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -616,7 +616,7 @@ export default function JobCardProfilePage() {
                     <span
                       className={clsx(
                         "px-1.5 py-0.2 rounded-full text-[10px] font-mono",
-                        isActive ? "bg-zinc-950 text-cyan-300 font-extrabold" : "bg-zinc-800 text-zinc-400"
+                        isActive ? "bg-zinc-950 text-lime-400 font-extrabold" : "bg-slate-200 text-slate-700"
                       )}
                     >
                       {tab.count}
@@ -631,28 +631,28 @@ export default function JobCardProfilePage() {
           {mobileTab === "overview" && (
             <div className="space-y-6 animate-in fade-in duration-150">
               {/* Stage Stepper Banner (Card-free / Edge-to-edge canvas) */}
-              <div className="py-2 border-b border-white/10 space-y-3">
+              <div className="py-2 border-b border-slate-200 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-lime-600" />
                     Stage Progression
                   </span>
-                  <span className="font-mono text-[11px] text-cyan-400 font-bold">
+                  <span className="font-mono text-[11px] text-lime-700 font-bold">
                     Step {currentStageIndex + 1} of {STAGES.length}
                   </span>
                 </div>
 
                 {/* Progress bar track */}
-                <div className="w-full bg-zinc-900 rounded-full h-2 overflow-hidden border border-white/5">
+                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden border border-slate-300">
                   <div
-                    className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full transition-all duration-300"
+                    className="bg-lime-500 h-full transition-all duration-300"
                     style={{ width: `${((currentStageIndex + 1) / STAGES.length) * 100}%` }}
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] font-medium text-zinc-400 pt-1">
+                <div className="flex items-center justify-between text-[11px] font-medium text-slate-600 pt-1">
                   <span>Current Stage:</span>
-                  <span className="font-bold text-white bg-zinc-900 px-2.5 py-1 rounded-lg border border-white/10">
+                  <span className="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                     {STAGES[currentStageIndex]?.label || job.status}
                   </span>
                 </div>
@@ -660,35 +660,35 @@ export default function JobCardProfilePage() {
 
               {/* Edge-to-edge Key-Value List Rows */}
               <div className="space-y-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                   Customer & Service Details
                 </h3>
 
                 {/* Row: Customer */}
-                <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-xs text-zinc-400 flex items-center gap-2">
-                    <User className="w-4 h-4 text-cyan-400" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 flex items-center gap-2">
+                    <User className="w-4 h-4 text-lime-600" />
                     Customer
                   </span>
-                  <span className="text-sm font-bold text-white text-right">{job.customer}</span>
+                  <span className="text-sm font-bold text-slate-900 text-right">{job.customer}</span>
                 </div>
 
                 {/* Row: Motorcycle */}
-                <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-xs text-zinc-400 flex items-center gap-2">
-                    <Bike className="w-4 h-4 text-cyan-400" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 flex items-center gap-2">
+                    <Bike className="w-4 h-4 text-lime-600" />
                     Motorcycle Unit
                   </span>
-                  <span className="text-sm font-bold text-white text-right">{job.motorcycle}</span>
+                  <span className="text-sm font-bold text-slate-900 text-right">{job.motorcycle}</span>
                 </div>
 
                 {/* Row: Intake Date */}
-                <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-xs text-zinc-400 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-zinc-400" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-400" />
                     Intake Date
                   </span>
-                  <span className="text-xs font-mono text-zinc-200 text-right">
+                  <span className="text-xs font-mono text-slate-700 text-right">
                     {new Date(job.created_at).toLocaleString(undefined, {
                       month: "short",
                       day: "numeric",
@@ -700,26 +700,26 @@ export default function JobCardProfilePage() {
                 </div>
 
                 {/* Row: Lead Mechanic */}
-                <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-xs text-zinc-400 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-purple-400" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-purple-600" />
                     Lead Mechanic
                   </span>
-                  <span className="text-sm font-bold text-purple-300 text-right">{job.mechanic}</span>
+                  <span className="text-sm font-bold text-purple-800 text-right">{job.mechanic}</span>
                 </div>
               </div>
 
               {/* Inline Mechanic Reassignment */}
               <div className="pt-2 space-y-3">
-                <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-purple-400" />
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-purple-600" />
                   Reassign Mechanic
                 </label>
                 <form onSubmit={handleSaveMechanic} className="space-y-3">
                   <select
                     value={assignedMechanic}
                     onChange={(e) => setAssignedMechanic(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-3 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-lime-500/50 shadow-xs"
                   >
                     {mechanicsList.map((m) => (
                       <option key={m.id} value={m.name}>
@@ -729,14 +729,14 @@ export default function JobCardProfilePage() {
                   </select>
                   <div className="flex items-center justify-between">
                     {mechanicSaveSuccess ? (
-                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> Saved successfully!
+                      <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Saved successfully!
                       </span>
                     ) : <span />}
                     <button
                       type="submit"
                       disabled={isSavingMechanic}
-                      className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors ml-auto"
+                      className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors ml-auto shadow-xs"
                     >
                       <Save className="w-3.5 h-3.5" />
                       <span>{isSavingMechanic ? "Saving..." : "Save Mechanic"}</span>
@@ -751,9 +751,9 @@ export default function JobCardProfilePage() {
           {mobileTab === "diagnosis" && (
             <div className="space-y-5 animate-in fade-in duration-150">
               {/* Add Note Form */}
-              <div className="space-y-2.5 pb-4 border-b border-white/10">
-                <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-                  <Plus className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="space-y-2.5 pb-4 border-b border-slate-200">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Plus className="w-3.5 h-3.5 text-lime-600" />
                   Add Diagnosis Note
                 </label>
                 <textarea
@@ -761,13 +761,13 @@ export default function JobCardProfilePage() {
                   placeholder="Type an observation, diagnosis finding, or service note..."
                   value={newDiagnosisText}
                   onChange={(e) => setNewDiagnosisText(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 placeholder:text-zinc-600 resize-none"
+                  className="w-full bg-white border border-slate-200 rounded-2xl p-3 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-lime-500/50 placeholder:text-slate-400 resize-none shadow-xs"
                 />
                 <button
                   type="button"
                   onClick={handleAddDiagnosis}
                   disabled={!newDiagnosisText.trim()}
-                  className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 disabled:opacity-30 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Submit Diagnosis Note</span>
@@ -776,10 +776,10 @@ export default function JobCardProfilePage() {
 
               {/* Diagnosis Entries List */}
               {diagnosisLog.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
-                  <FileText className="w-8 h-8 text-zinc-600 mx-auto" />
-                  <p className="text-zinc-400 text-xs font-medium">No diagnosis notes recorded yet.</p>
-                  <p className="text-zinc-600 text-[11px]">Use the input above to document symptoms and findings.</p>
+                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl space-y-2">
+                  <FileText className="w-8 h-8 text-slate-400 mx-auto" />
+                  <p className="text-slate-600 text-xs font-medium">No diagnosis notes recorded yet.</p>
+                  <p className="text-slate-400 text-[11px]">Use the input above to document symptoms and findings.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -789,13 +789,13 @@ export default function JobCardProfilePage() {
                     return (
                       <div
                         key={entry.id}
-                        className="p-3.5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-2"
+                        className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-xs">
-                            <span className="font-bold text-cyan-300">{entry.author}</span>
-                            <span className="text-zinc-600">•</span>
-                            <span className="font-mono text-[10px] text-zinc-500">
+                            <span className="font-bold text-lime-800">{entry.author}</span>
+                            <span className="text-slate-300">•</span>
+                            <span className="font-mono text-[10px] text-slate-500">
                               {new Date(entry.timestamp).toLocaleString(undefined, {
                                 month: "short",
                                 day: "numeric",
@@ -813,14 +813,14 @@ export default function JobCardProfilePage() {
                                   setEditingEntryId(entry.id);
                                   setEditingText(entry.text);
                                 }}
-                                className="p-1 rounded-lg text-zinc-400 hover:text-cyan-400"
+                                className="p-1 rounded-lg text-slate-500 hover:text-lime-700"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteDiagnosis(entry.id)}
-                                className="p-1 rounded-lg text-zinc-400 hover:text-red-400"
+                                className="p-1 rounded-lg text-slate-500 hover:text-rose-600"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -834,7 +834,7 @@ export default function JobCardProfilePage() {
                               rows={3}
                               value={editingText}
                               onChange={(e) => setEditingText(e.target.value)}
-                              className="w-full bg-zinc-950 border border-cyan-500/30 rounded-xl p-2.5 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none"
+                              className="w-full bg-slate-50 border border-lime-300 rounded-xl p-2.5 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-lime-500/50 resize-none"
                             />
                             <div className="flex items-center justify-end gap-2">
                               <button
@@ -843,7 +843,7 @@ export default function JobCardProfilePage() {
                                   setEditingEntryId(null);
                                   setEditingText("");
                                 }}
-                                className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white"
+                                className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800"
                               >
                                 Cancel
                               </button>
@@ -851,14 +851,14 @@ export default function JobCardProfilePage() {
                                 type="button"
                                 onClick={() => handleEditDiagnosis(entry.id)}
                                 disabled={!editingText.trim()}
-                                className="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold"
+                                className="px-3.5 py-1.5 rounded-lg bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold shadow-xs"
                               >
                                 Save
                               </button>
                             </div>
                           </div>
                         ) : (
-                          <p className="text-xs text-zinc-200 whitespace-pre-wrap leading-relaxed">
+                          <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">
                             {entry.text}
                           </p>
                         )}
@@ -873,43 +873,43 @@ export default function JobCardProfilePage() {
           {/* TAB 3: PARTS & SERVICES */}
           {mobileTab === "parts" && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                  <Wrench className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                  <Wrench className="w-3.5 h-3.5 text-lime-600" />
                   Parts & Services Used
                 </span>
-                <span className="font-mono text-xs text-zinc-400">
+                <span className="font-mono text-xs text-slate-500">
                   {cartItems.length} {cartItems.length === 1 ? "Item" : "Items"}
                 </span>
               </div>
 
               {cartItems.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
-                  <Wrench className="w-8 h-8 text-zinc-600 mx-auto" />
-                  <p className="text-zinc-400 text-xs font-medium">No items attached yet.</p>
-                  <p className="text-zinc-600 text-[11px]">Parts and labor added in the POS checkout will appear here.</p>
+                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl space-y-2">
+                  <Wrench className="w-8 h-8 text-slate-400 mx-auto" />
+                  <p className="text-slate-600 text-xs font-medium">No items attached yet.</p>
+                  <p className="text-slate-400 text-[11px]">Parts and labor added in the POS checkout will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {cartItems.map((item, idx) => (
                     <div
                       key={item.id || idx}
-                      className="flex items-center justify-between py-3 border-b border-white/5"
+                      className="flex items-center justify-between py-3 border-b border-slate-100"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span
                           className={clsx(
                             "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0",
                             item.type === "service"
-                              ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                              : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                              ? "bg-purple-50 text-purple-700 border border-purple-200"
+                              : "bg-lime-50 text-lime-800 border border-lime-200"
                           )}
                         >
                           {item.type === "service" ? "Service" : "Part"}
                         </span>
-                        <span className="text-xs font-bold text-white truncate">{item.name}</span>
+                        <span className="text-xs font-bold text-slate-900 truncate">{item.name}</span>
                       </div>
-                      <span className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-white/10 font-mono text-xs font-bold text-zinc-300 shrink-0 ml-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 font-mono text-xs font-bold text-slate-700 shrink-0 ml-2">
                         Qty: {item.qty}
                       </span>
                     </div>
@@ -922,59 +922,59 @@ export default function JobCardProfilePage() {
           {/* TAB 4: HISTORY */}
           {mobileTab === "history" && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                  <History className="w-3.5 h-3.5 text-amber-400" />
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5 text-amber-600" />
                   Prior Service History
                 </span>
-                <span className="font-mono text-xs text-amber-400">
+                <span className="font-mono text-xs text-amber-800 font-bold">
                   {pastHistory.length} {pastHistory.length === 1 ? "Session" : "Sessions"}
                 </span>
               </div>
 
               {pastHistory.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
-                  <History className="w-8 h-8 text-zinc-600 mx-auto" />
-                  <p className="text-zinc-400 text-xs font-medium">No previous repair history found.</p>
-                  <p className="text-zinc-600 text-[11px]">This appears to be the customer&apos;s first service session on this motorcycle.</p>
+                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl space-y-2">
+                  <History className="w-8 h-8 text-slate-400 mx-auto" />
+                  <p className="text-slate-600 text-xs font-medium">No previous repair history found.</p>
+                  <p className="text-slate-400 text-[11px]">This appears to be the customer&apos;s first service session on this motorcycle.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {pastHistory.map((pj, idx) => (
                     <div
                       key={pj.job_id || idx}
-                      className="p-3.5 rounded-2xl bg-zinc-900/40 border border-white/5 space-y-2"
+                      className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs"
                     >
                       <div className="flex items-center justify-between flex-wrap gap-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-xs text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                          <span className="font-mono font-bold text-xs text-amber-900 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
                             {pj.jo_number}
                           </span>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                             {pj.status}
                           </span>
                         </div>
-                        <span className="text-[10px] font-mono text-zinc-500">
+                        <span className="text-[10px] font-mono text-slate-500">
                           {pj.date_repaired ? new Date(pj.date_repaired).toLocaleDateString(undefined, {
                             month: "short", day: "numeric", year: "numeric"
                           }) : "—"}
                         </span>
                       </div>
 
-                      <div className="text-xs text-zinc-400">
-                        <span className="text-purple-300 font-medium">Technician: {pj.mechanic_name}</span>
+                      <div className="text-xs text-slate-600">
+                        <span className="text-purple-800 font-medium">Technician: {pj.mechanic_name}</span>
                       </div>
 
                       {pj.mechanic_notes && (
-                        <div className="p-2.5 bg-zinc-950/70 rounded-xl border border-white/5">
-                          <p className="text-xs text-zinc-300 italic line-clamp-2">"{pj.mechanic_notes}"</p>
+                        <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                          <p className="text-xs text-slate-700 italic line-clamp-2">"{pj.mechanic_notes}"</p>
                         </div>
                       )}
 
                       {pj.items_used && pj.items_used.length > 0 && (
                         <div className="flex flex-wrap gap-1 pt-1">
                           {pj.items_used.map((item, iIdx) => (
-                            <span key={iIdx} className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-zinc-900 text-zinc-400 border border-white/5">
+                            <span key={iIdx} className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                               {item.name} ×{item.qty}
                             </span>
                           ))}
@@ -991,13 +991,13 @@ export default function JobCardProfilePage() {
         {/* ============ DESKTOP CARD-BASED LAYOUT (>= md) ============ */}
         <div className="hidden md:block space-y-8">
           {/* ============ STAGE STEPPER (read-only) ============ */}
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 backdrop-blur-md">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-lime-600" />
               Workshop Stage Progression
             </h3>
-            <span className="text-[11px] font-medium text-zinc-500 italic">
+            <span className="text-[11px] font-medium text-slate-400 italic">
               Stage changes are controlled on the Workshop Board via drag &amp; drop
             </span>
           </div>
@@ -1011,26 +1011,26 @@ export default function JobCardProfilePage() {
                   key={s.status}
                   className={clsx(
                     "p-4 rounded-2xl border transition-all duration-300 flex items-center gap-3.5 min-h-[72px]",
-                    isCurrent && "bg-cyan-950/40 border-cyan-500/60 shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-500/40",
-                    isCompleted && "bg-zinc-950/60 border-emerald-500/30 text-zinc-300",
-                    !isCurrent && !isCompleted && "bg-zinc-950/40 border-white/5 text-zinc-500 opacity-60"
+                    isCurrent && "bg-lime-50 border-lime-400 shadow-sm ring-1 ring-lime-400/40",
+                    isCompleted && "bg-emerald-50 border-emerald-200 text-emerald-900",
+                    !isCurrent && !isCompleted && "bg-slate-50 border-slate-200 text-slate-500 opacity-80"
                   )}
                 >
                   <div
                     className={clsx(
                       "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0",
-                      isCurrent && "bg-cyan-500 text-zinc-950 shadow-md shadow-cyan-500/30",
-                      isCompleted && "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40",
-                      !isCurrent && !isCompleted && "bg-zinc-800 text-zinc-500"
+                      isCurrent && "bg-lime-500 text-zinc-950 font-bold shadow-xs",
+                      isCompleted && "bg-emerald-500 text-white font-bold",
+                      !isCurrent && !isCompleted && "bg-slate-200 text-slate-600"
                     )}
                   >
-                    {isCompleted ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : s.step}
+                    {isCompleted ? <CheckCircle className="w-4 h-4 text-white" /> : s.step}
                   </div>
                   <div className="min-w-0">
-                    <p className={clsx("text-xs font-bold truncate", isCurrent ? "text-cyan-300" : "text-white")}>
+                    <p className={clsx("text-xs font-bold truncate", isCurrent ? "text-lime-950" : isCompleted ? "text-emerald-950" : "text-slate-800")}>
                       {s.label}
                     </p>
-                    <p className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">
                       {isCurrent ? "Current Stage" : isCompleted ? "Completed" : "Upcoming"}
                     </p>
                   </div>
@@ -1041,72 +1041,72 @@ export default function JobCardProfilePage() {
         </div>
 
         {/* ============ CUSTOMER & BIKE DETAILS ============ */}
-        <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
-          <div className="border-b border-white/5 pb-4">
-            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-              <User className="w-5 h-5 text-cyan-400" />
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <User className="w-5 h-5 text-lime-600" />
               Customer &amp; Motorcycle Details
             </h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Service registration, motorcycle specification, and workshop personnel attribution.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-4 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-cyan-400" /> Customer
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-lime-600" /> Customer
               </span>
-              <p className="text-base font-bold text-white truncate" title={job.customer}>
+              <p className="text-base font-bold text-slate-900 truncate" title={job.customer}>
                 {job.customer}
               </p>
-              <span className="text-[10px] text-zinc-500 font-mono">Registered Customer</span>
+              <span className="text-[10px] text-slate-400 font-mono">Registered Customer</span>
             </div>
 
-            <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-4 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Bike className="w-3.5 h-3.5 text-cyan-400" /> Motorcycle
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Bike className="w-3.5 h-3.5 text-lime-600" /> Motorcycle
               </span>
-              <p className="text-base font-bold text-white truncate" title={job.motorcycle}>
+              <p className="text-base font-bold text-slate-900 truncate" title={job.motorcycle}>
                 {job.motorcycle}
               </p>
-              <span className="text-[10px] text-zinc-500 font-mono">Active Service Unit</span>
+              <span className="text-[10px] text-slate-400 font-mono">Active Service Unit</span>
             </div>
 
-            <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-4 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-zinc-400" /> Created Date
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" /> Created Date
               </span>
-              <p className="text-sm font-mono text-zinc-200 truncate">
+              <p className="text-sm font-mono text-slate-800 truncate">
                 {new Date(job.created_at).toLocaleString(undefined, {
                   month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
                 })}
               </p>
-              <span className="text-[10px] text-zinc-500 font-mono">Workshop Intake</span>
+              <span className="text-[10px] text-slate-400 font-mono">Workshop Intake</span>
             </div>
 
-            <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-4 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" /> Assigned Mechanic
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-600" /> Assigned Mechanic
               </span>
-              <p className="text-base font-bold text-purple-300 truncate" title={job.mechanic}>
+              <p className="text-base font-bold text-purple-900 truncate" title={job.mechanic}>
                 {job.mechanic}
               </p>
-              <span className="text-[10px] text-purple-400/70 font-mono">Lead Technician</span>
+              <span className="text-[10px] text-purple-600 font-mono">Lead Technician</span>
             </div>
           </div>
 
           {/* Mechanic Reassignment Bar */}
-          <form onSubmit={handleSaveMechanic} className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <form onSubmit={handleSaveMechanic} className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-              <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5 whitespace-nowrap">
-                <ShieldCheck className="w-4 h-4 text-purple-400" />
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 whitespace-nowrap">
+                <ShieldCheck className="w-4 h-4 text-purple-600" />
                 Change Assigned Mechanic:
               </label>
               <select
                 value={assignedMechanic}
                 onChange={(e) => setAssignedMechanic(e.target.value)}
-                className="bg-zinc-950 border border-white/10 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 max-w-xs"
+                className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-lime-500/50 max-w-xs shadow-xs"
               >
                 {mechanicsList.map((m) => (
                   <option key={m.id} value={m.name}>{m.name}</option>
@@ -1116,14 +1116,14 @@ export default function JobCardProfilePage() {
 
             <div className="flex items-center gap-3 self-end sm:self-auto">
               {mechanicSaveSuccess && (
-                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in">
-                  <CheckCircle className="w-3.5 h-3.5" /> Saved!
+                <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1 animate-in fade-in">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Saved!
                 </span>
               )}
               <button
                 type="submit"
                 disabled={isSavingMechanic}
-                className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors whitespace-nowrap"
+                className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors whitespace-nowrap shadow-xs"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{isSavingMechanic ? "Saving..." : "Save Mechanic"}</span>
@@ -1133,26 +1133,26 @@ export default function JobCardProfilePage() {
         </div>
 
         {/* ============ DIAGNOSIS LOG (Add / Edit / Delete) ============ */}
-        <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-cyan-400" />
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-lime-600" />
                 Technician Diagnosis Log
               </h3>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Record observations, repair findings, and service notes. Each entry is timestamped and attributed.
               </p>
             </div>
-            <span className="bg-zinc-950 px-3 py-1 rounded-full text-xs font-mono font-bold text-cyan-400 border border-cyan-500/20">
+            <span className="bg-lime-50 px-3 py-1 rounded-full text-xs font-mono font-bold text-lime-800 border border-lime-200">
               {diagnosisLog.length} {diagnosisLog.length === 1 ? "Entry" : "Entries"}
             </span>
           </div>
 
           {/* Add New Entry Form */}
-          <div className="space-y-3 bg-zinc-950/60 p-4 sm:p-5 rounded-2xl border border-white/5">
-            <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-              <Plus className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="space-y-3 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <Plus className="w-3.5 h-3.5 text-lime-600" />
               Add New Diagnosis or Observation
             </label>
             <div className="space-y-3">
@@ -1167,17 +1167,17 @@ export default function JobCardProfilePage() {
                     handleAddDiagnosis();
                   }
                 }}
-                className="w-full bg-zinc-900/90 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 placeholder:text-zinc-600 transition-all resize-none"
+                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500/50 placeholder:text-slate-400 transition-all resize-none shadow-xs"
               />
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-zinc-500 hidden sm:inline">
-                  Attributed as <strong className="text-zinc-300">{userName}</strong>
+                <span className="text-[11px] text-slate-500 hidden sm:inline">
+                  Attributed as <strong className="text-slate-800">{userName}</strong>
                 </span>
                 <button
                   type="button"
                   onClick={handleAddDiagnosis}
                   disabled={!newDiagnosisText.trim()}
-                  className="ml-auto px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors"
+                  className="ml-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 disabled:opacity-30 disabled:cursor-not-allowed text-zinc-950 font-bold text-xs flex items-center gap-2 transition-colors shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Diagnosis Note</span>
@@ -1188,10 +1188,10 @@ export default function JobCardProfilePage() {
 
           {/* Diagnosis Entries List */}
           {diagnosisLog.length === 0 ? (
-            <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
-              <FileText className="w-8 h-8 text-zinc-600 mx-auto" />
-              <p className="text-zinc-400 text-xs font-medium">No diagnosis notes recorded yet.</p>
-              <p className="text-zinc-600 text-[11px]">Use the input above to document motorcycle symptoms and bench findings.</p>
+            <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl space-y-2">
+              <FileText className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className="text-slate-600 text-xs font-medium">No diagnosis notes recorded yet.</p>
+              <p className="text-slate-400 text-[11px]">Use the input above to document motorcycle symptoms and bench findings.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1205,19 +1205,19 @@ export default function JobCardProfilePage() {
                     className={clsx(
                       "p-4 sm:p-5 rounded-2xl border transition-all",
                       isEditing
-                        ? "bg-cyan-950/30 border-cyan-500/40"
-                        : "bg-zinc-950/60 border-white/5 hover:border-white/10"
+                        ? "bg-lime-50/50 border-lime-400 shadow-sm"
+                        : "bg-slate-50/70 border-slate-200 hover:bg-white"
                     )}
                   >
                     {/* Entry Header */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="font-bold text-cyan-300 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-cyan-400" />
+                        <span className="font-bold text-lime-800 flex items-center gap-1.5">
+                          <User className="w-3.5 h-3.5 text-lime-600" />
                           {entry.author}
                         </span>
-                        <span className="text-zinc-600">•</span>
-                        <span className="font-mono text-[11px] text-zinc-400">
+                        <span className="text-slate-300">•</span>
+                        <span className="font-mono text-[11px] text-slate-500">
                           {new Date(entry.timestamp).toLocaleString(undefined, {
                             month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
                           })}
@@ -1229,7 +1229,7 @@ export default function JobCardProfilePage() {
                           <button
                             type="button"
                             onClick={() => { setEditingEntryId(entry.id); setEditingText(entry.text); }}
-                            className="p-1.5 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-cyan-400 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-slate-200/60 text-slate-500 hover:text-lime-700 transition-colors"
                             title="Edit this note"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -1237,7 +1237,7 @@ export default function JobCardProfilePage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteDiagnosis(entry.id)}
-                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors"
                             title="Delete this note"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1253,14 +1253,14 @@ export default function JobCardProfilePage() {
                           rows={3}
                           value={editingText}
                           onChange={(e) => setEditingText(e.target.value)}
-                          className="w-full bg-zinc-950 border border-cyan-500/30 rounded-xl p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none"
+                          className="w-full bg-white border border-lime-300 rounded-xl p-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500/50 resize-none shadow-xs"
                           autoFocus
                         />
                         <div className="flex items-center gap-2 justify-end">
                           <button
                             type="button"
                             onClick={() => { setEditingEntryId(null); setEditingText(""); }}
-                            className="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white text-xs font-semibold transition-colors"
+                            className="px-3.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 text-xs font-semibold transition-colors"
                           >
                             Cancel
                           </button>
@@ -1268,7 +1268,7 @@ export default function JobCardProfilePage() {
                             type="button"
                             onClick={() => handleEditDiagnosis(entry.id)}
                             disabled={!editingText.trim()}
-                            className="px-4 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-30 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+                            className="px-4 py-1.5 rounded-lg bg-lime-500 hover:bg-lime-400 disabled:opacity-30 text-zinc-950 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
                           >
                             <Save className="w-3 h-3" />
                             <span>Save Edit</span>
@@ -1276,7 +1276,7 @@ export default function JobCardProfilePage() {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed">{entry.text}</p>
+                      <p className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">{entry.text}</p>
                     )}
                   </div>
                 );
@@ -1287,18 +1287,18 @@ export default function JobCardProfilePage() {
 
         {/* ============ PAST CUSTOMER HISTORY (read-only) ============ */}
         {pastHistory.length > 0 && (
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                  <History className="w-5 h-5 text-amber-400" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <History className="w-5 h-5 text-amber-600" />
                   Previous Service History
                 </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  Past repair records for <strong className="text-zinc-200">{job.customer}</strong> on <strong className="text-zinc-200">{job.motorcycle}</strong>. These records are read-only.
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Past repair records for <strong className="text-slate-800">{job.customer}</strong> on <strong className="text-slate-800">{job.motorcycle}</strong>. These records are read-only.
                 </p>
               </div>
-              <span className="bg-amber-950/40 px-3 py-1 rounded-full text-xs font-mono font-bold text-amber-400 border border-amber-500/20">
+              <span className="bg-amber-50 px-3 py-1 rounded-full text-xs font-mono font-bold text-amber-800 border border-amber-200">
                 {pastHistory.length} Past {pastHistory.length === 1 ? "Session" : "Sessions"}
               </span>
             </div>
@@ -1307,50 +1307,50 @@ export default function JobCardProfilePage() {
               {pastHistory.map((pj, idx) => (
                 <div
                   key={pj.job_id || idx}
-                  className="p-5 rounded-2xl bg-zinc-950/40 border border-white/5 space-y-3 opacity-90"
+                  className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3"
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono font-bold text-xs text-amber-400 bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                      <span className="font-mono font-bold text-xs text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
                         {pj.jo_number}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 border border-white/5">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
                         Past Record
                       </span>
                       <span className={clsx(
                         "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider",
-                        pj.status === "RELEASED" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-zinc-800 text-zinc-400 border border-white/5"
+                        pj.status === "RELEASED" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-slate-100 text-slate-600 border border-slate-200"
                       )}>
                         {pj.status}
                       </span>
                     </div>
-                    <span className="text-[11px] font-mono text-zinc-400">
+                    <span className="text-[11px] font-mono text-slate-500">
                       {pj.date_repaired ? new Date(pj.date_repaired).toLocaleDateString(undefined, {
                         month: "short", day: "numeric", year: "numeric"
                       }) : "—"}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs text-zinc-400">
-                    <span className="flex items-center gap-1.5 font-semibold text-purple-300">
-                      <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="flex items-center gap-4 text-xs text-slate-600">
+                    <span className="flex items-center gap-1.5 font-semibold text-purple-800">
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
                       Technician: {pj.mechanic_name}
                     </span>
                   </div>
 
                   {pj.mechanic_notes && (
-                    <div className="p-3.5 bg-zinc-900/60 rounded-xl border border-white/5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1 mb-1">
-                        <FileText className="w-3 h-3" /> Historical Diagnosis Notes
+                    <div className="p-3.5 bg-white rounded-xl border border-slate-200">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1 mb-1">
+                        <FileText className="w-3 h-3 text-amber-600" /> Historical Diagnosis Notes
                       </span>
-                      <p className="text-xs text-zinc-300 italic line-clamp-3">"{pj.mechanic_notes}"</p>
+                      <p className="text-xs text-slate-700 italic line-clamp-3">"{pj.mechanic_notes}"</p>
                     </div>
                   )}
 
                   {pj.items_used && pj.items_used.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {pj.items_used.map((item, iIdx) => (
-                        <span key={iIdx} className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-zinc-900 text-zinc-300 border border-white/5">
+                        <span key={iIdx} className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-white text-slate-700 border border-slate-200">
                           {item.name} ×{item.qty}
                         </span>
                       ))}
@@ -1363,54 +1363,54 @@ export default function JobCardProfilePage() {
         )}
 
         {/* ============ PARTS & SERVICES USED (no prices) ============ */}
-        <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <Layers className="w-5 h-5 text-cyan-400" />
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-lime-600" />
                 Parts &amp; Services Applied
               </h3>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Items and labor services logged to this motorcycle session.
               </p>
             </div>
-            <span className="bg-zinc-950 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-white/10">
+            <span className="bg-slate-100 px-3 py-1 rounded-full text-xs font-mono font-bold text-slate-700 border border-slate-200">
               {cartItems.length} {cartItems.length === 1 ? "Item" : "Items"}
             </span>
           </div>
 
           {cartItems.length === 0 ? (
-            <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
-              <Layers className="w-8 h-8 text-zinc-600 mx-auto" />
-              <p className="text-zinc-400 text-xs font-medium">
+            <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl space-y-2">
+              <Layers className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className="text-slate-600 text-xs font-medium">
                 No parts or labor services have been added to this job card yet.
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-white/5">
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-950/80 text-zinc-400 font-semibold border-b border-white/10">
+                <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                   <tr>
                     <th className="p-3.5 w-28">Type</th>
                     <th className="p-3.5">Description</th>
                     <th className="p-3.5 text-center w-24">Quantity</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 font-medium bg-zinc-950/40">
+                <tbody className="divide-y divide-slate-100 font-medium bg-white">
                   {cartItems.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                       <td className="p-3.5">
                         <span className={clsx(
                           "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block",
                           item.type === "service"
-                            ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                            : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                            ? "bg-purple-50 text-purple-700 border border-purple-200"
+                            : "bg-lime-50 text-lime-800 border border-lime-200"
                         )}>
                           {item.type === "service" ? "Service" : "Part"}
                         </span>
                       </td>
-                      <td className="p-3.5 text-white font-semibold">{item.name}</td>
-                      <td className="p-3.5 text-center font-mono text-zinc-200 font-bold">{item.qty}</td>
+                      <td className="p-3.5 text-slate-900 font-semibold">{item.name}</td>
+                      <td className="p-3.5 text-center font-mono text-slate-900 font-bold">{item.qty}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1433,15 +1433,15 @@ export default function JobCardProfilePage() {
         confirmText="Confirm & Delete"
         message={
           <div className="space-y-3">
-            <p className="text-zinc-300">
-              Are you sure you want to permanently remove <strong className="text-white">{job.customer}</strong> ({job.jo_number}) from the workshop system?
+            <p className="text-slate-700">
+              Are you sure you want to permanently remove <strong className="text-slate-900">{job.customer}</strong> ({job.jo_number}) from the workshop system?
             </p>
             {deleteError && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl">
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl">
                 {deleteError}
               </div>
             )}
-            <p className="text-xs text-amber-300 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-left">
+            <p className="text-xs text-amber-800 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
               <strong>Warning:</strong> This will delete all diagnosis records, remove the customer&apos;s active repair cart, and clear the workshop card.
             </p>
           </div>

@@ -68,7 +68,8 @@ import {
   applyModeToDocument,
   AppMode,
   getThemesForMode,
-  getDefaultThemeForMode
+  getDefaultThemeForMode,
+  useTheme
 } from "@/lib/theme";
 import { AVATAR_PRESETS, UserAvatar } from "@/lib/avatars";
 import { recordUserAuditLog } from "@/lib/audit";
@@ -127,6 +128,7 @@ function SettingsContent() {
   // Tab 1: General Preferences State (Admin only)
   const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [generalSuccess, setGeneralSuccess] = useState<string | null>(null);
+  const { theme: activeThemeMode, setTheme: setActiveThemeMode } = useTheme();
 
   // Tab 2: Role Accessibility State (Admin only)
   const [modulePermissions, setModulePermissions] = useState<Record<string, UserRole[]>>({});
@@ -183,6 +185,7 @@ function SettingsContent() {
   const [selectedAvatar, setSelectedAvatar] = useState<string>("avatar-1");
   const [savedAvatar, setSavedAvatar] = useState<string>("avatar-1");
   const savedAvatarRef = useRef<string>("avatar-1");
+  const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState<boolean>(false);
 
   // Dirty Flags
   const isThemeDirty = activeTheme !== savedTheme;
@@ -202,14 +205,6 @@ function SettingsContent() {
   useEffect(() => {
     savedAvatarRef.current = savedAvatar;
   }, [savedAvatar]);
-
-  // Cleanup on unmount: if leaving the settings page with an unsaved theme or mode preview, revert to saved states!
-  useEffect(() => {
-    return () => {
-      applyThemeToDocument(savedThemeRef.current);
-      applyModeToDocument(savedModeRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     const role = (localStorage.getItem("user_role") || "").toLowerCase();
@@ -319,10 +314,12 @@ function SettingsContent() {
           saveAppTheme(res.data.theme as AppTheme, id);
         }
         if (res.data.display_mode) {
-          setActiveMode(res.data.display_mode as AppMode);
-          setSavedMode(res.data.display_mode as AppMode);
-          savedModeRef.current = res.data.display_mode as AppMode;
-          saveAppMode(res.data.display_mode as AppMode, id);
+          const localMode = localStorage.getItem("motoshop_app_mode") as AppMode;
+          const effectiveMode = localMode || (res.data.display_mode as AppMode);
+          setActiveMode(effectiveMode);
+          setSavedMode(effectiveMode);
+          savedModeRef.current = effectiveMode;
+          saveAppMode(effectiveMode, id);
         }
       }
     } catch (e) {
@@ -378,7 +375,7 @@ function SettingsContent() {
     }
   };
 
-  // Switch settings tab and revert unsaved changes if discarding
+  // Switch settings tab and retain active selections
   const handleTabChange = (newTab: SettingsTab) => {
     if (activeTab === newTab) return;
 
@@ -386,12 +383,6 @@ function SettingsContent() {
     if (activeTheme !== savedThemeRef.current) {
       setActiveTheme(savedThemeRef.current);
       applyThemeToDocument(savedThemeRef.current);
-    }
-
-    // Revert temporary unsaved mode preview back to saved state
-    if (activeMode !== savedModeRef.current) {
-      setActiveMode(savedModeRef.current);
-      applyModeToDocument(savedModeRef.current);
     }
 
     // Revert temporary unsaved avatar preview back to saved state
@@ -411,20 +402,21 @@ function SettingsContent() {
     applyThemeToDocument(themeId); // Temporary DOM preview
   };
 
-  // --- Appearance Mode Selection Handler (Temporary in-page preview until Save is clicked) ---
-  const handleSelectMode = (mode: AppMode) => {
+  // --- Appearance Mode Selection Handler (Instantly persistent & synced across terminals) ---
+  const handleSelectThemeMode = (mode: AppMode) => {
     setActiveMode(mode);
-    applyModeToDocument(mode); // Temporary DOM preview
-
-    // If current theme is not in the newly selected mode's palette, select default for that mode
-    const availableThemes = getThemesForMode(mode);
-    const isThemeValid = availableThemes.some((t) => t.id === activeTheme);
-    if (!isThemeValid) {
-      const fallbackTheme = getDefaultThemeForMode(mode);
-      setActiveTheme(fallbackTheme);
-      applyThemeToDocument(fallbackTheme);
-    }
+    setSavedMode(mode);
+    savedModeRef.current = mode;
+    setActiveThemeMode(mode);
+    saveAppMode(mode, currentUserId);
+    try {
+      if (currentUserId) {
+        apiClient.patch(`/auth/users/${currentUserId}`, { display_mode: mode }).catch(() => {});
+      }
+    } catch {}
   };
+
+  const handleSelectMode = handleSelectThemeMode;
 
   // --- Avatar Selection Handler (In-page preview until Save is clicked) ---
   const handleSelectAvatar = (avatarId: string) => {
@@ -453,6 +445,14 @@ function SettingsContent() {
     e.preventDefault();
     if (!isAdmin) return;
     saveSystemSettings(settings);
+    saveAppMode(activeMode, currentUserId);
+    setSavedMode(activeMode);
+    savedModeRef.current = activeMode;
+    try {
+      if (currentUserId) {
+        apiClient.patch(`/auth/users/${currentUserId}`, { display_mode: activeMode }).catch(() => {});
+      }
+    } catch {}
 
     recordUserAuditLog("SETTINGS_UPDATED", "/settings", {
       appName: settings.appName,
@@ -634,7 +634,7 @@ function SettingsContent() {
 
   // Reusable Appearance Mode Selector (Dark vs Light)
   const renderModeSelector = () => (
-    <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-4">
+    <div className="py-5 border-y border-zinc-800/80 space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -643,10 +643,10 @@ function SettingsContent() {
             ) : (
               <Sun className="w-4 h-4 text-amber-400" />
             )}
-            Display Appearance Mode
+            <span>Display Appearance Mode</span>
           </h3>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Switch between deep high-contrast dark mode and crisp modern light slate canvas.
+            Switch between high-contrast dark mode and clean daylight canvas.
           </p>
         </div>
         {isModeDirty ? (
@@ -657,117 +657,33 @@ function SettingsContent() {
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-        {/* Dark Mode Card */}
+      <div className="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-xl border border-white/10 w-fit">
         <button
           type="button"
           onClick={() => handleSelectMode("dark")}
           className={clsx(
-            "p-5 rounded-2xl border text-left transition-all relative overflow-hidden group flex flex-col justify-between h-32",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
             activeMode === "dark"
-              ? isModeDirty
-                ? "bg-zinc-900 border-amber-500/50 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/40"
-                : "bg-zinc-900 border-white/30 shadow-xl shadow-cyan-500/10 ring-2 ring-cyan-500/40"
-              : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
+              ? "bg-cyan-500 text-zinc-950 shadow-sm"
+              : "text-zinc-400 hover:text-white"
           )}
         >
-          <div className="flex items-start justify-between w-full">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-white/10 flex items-center justify-center text-cyan-400 shadow-md">
-                <Moon className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="font-bold text-sm text-white flex items-center gap-1.5">
-                  Dark Mode
-                </div>
-                <div className="text-[11px] text-zinc-400 mt-0.5">
-                  Deep charcoal canvas with vibrant neon contrast
-                </div>
-              </div>
-            </div>
-            {activeMode === "dark" && (
-              <div className={clsx(
-                "w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-md",
-                isModeDirty ? "bg-amber-400 text-zinc-950" : "bg-cyan-500 text-zinc-950"
-              )}>
-                {isModeDirty ? (
-                  <Sparkles className="w-3 h-3 stroke-[2.5]" />
-                ) : (
-                  <Check className="w-3 h-3 stroke-[3]" />
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between pt-3 border-t border-white/5">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-zinc-950 border border-zinc-700 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-zinc-900 border border-zinc-700 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-cyan-500 inline-block" />
-              <span className="text-[11px] text-zinc-400 ml-1 font-mono">Zinc 950 Base</span>
-            </div>
-            {savedMode === "dark" && (
-              <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                Active Default
-              </span>
-            )}
-          </div>
+          <Moon className="w-3.5 h-3.5" />
+          <span>Dark Mode</span>
         </button>
 
-        {/* Light Mode Card */}
         <button
           type="button"
           onClick={() => handleSelectMode("light")}
           className={clsx(
-            "p-5 rounded-2xl border text-left transition-all relative overflow-hidden group flex flex-col justify-between h-32",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
             activeMode === "light"
-              ? isModeDirty
-                ? "bg-zinc-900 border-amber-500/50 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/40"
-                : "bg-zinc-900 border-white/30 shadow-xl shadow-cyan-500/10 ring-2 ring-cyan-500/40"
-              : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
+              ? "bg-amber-400 text-zinc-950 shadow-sm"
+              : "text-zinc-400 hover:text-white"
           )}
         >
-          <div className="flex items-start justify-between w-full">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-md">
-                <Sun className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="font-bold text-sm text-white flex items-center gap-1.5">
-                  Light Mode
-                </div>
-                <div className="text-[11px] text-zinc-400 mt-0.5">
-                  Crisp white canvas with high-contrast slate text
-                </div>
-              </div>
-            </div>
-            {activeMode === "light" && (
-              <div className={clsx(
-                "w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-md",
-                isModeDirty ? "bg-amber-400 text-zinc-950" : "bg-cyan-500 text-zinc-950"
-              )}>
-                {isModeDirty ? (
-                  <Sparkles className="w-3 h-3 stroke-[2.5]" />
-                ) : (
-                  <Check className="w-3 h-3 stroke-[3]" />
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between pt-3 border-t border-white/5">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-white border border-zinc-300 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-zinc-200 border border-zinc-300 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-cyan-500 inline-block" />
-              <span className="text-[11px] text-zinc-400 ml-1 font-mono">Clean Slate Base</span>
-            </div>
-            {savedMode === "light" && (
-              <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                Active Default
-              </span>
-            )}
-          </div>
+          <Sun className="w-3.5 h-3.5" />
+          <span>Light Mode</span>
         </button>
       </div>
     </div>
@@ -920,14 +836,14 @@ function SettingsContent() {
             </div>
 
             {/* Desktop Segmented Navigation Tabs */}
-            <div className="hidden md:flex bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 shadow-inner gap-1.5 mt-3">
+            <div className="hidden md:flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 gap-1.5 mt-3">
               <button
                 onClick={() => handleTabChange("general")}
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "general"
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
                 )}
               >
                 <Globe className="w-4 h-4 shrink-0" />
@@ -939,8 +855,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "roles"
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
                 )}
               >
                 <Sliders className="w-4 h-4 shrink-0" />
@@ -952,8 +868,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "users"
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
                 )}
               >
                 <Users className="w-4 h-4 shrink-0" />
@@ -965,8 +881,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "profile"
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
                 )}
               >
                 <User className="w-4 h-4 shrink-0" />
@@ -978,8 +894,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "logs"
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
                 )}
               >
                 <FileText className="w-4 h-4 shrink-0" />
@@ -995,10 +911,10 @@ function SettingsContent() {
         {isAdmin && activeTab === "general" && (
           <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
             <form onSubmit={handleSaveGeneral} className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
-              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-6">
-                {/* Store Preferences Card */}
-                <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
+              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-8">
+                {/* Store Preferences Section */}
+                <div className="pb-8 border-b border-zinc-800/80 space-y-6 animate-in fade-in">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div>
                       <h2 className="text-xl font-bold text-white flex items-center gap-2">
                         <Building className="w-5 h-5 text-cyan-400" />
@@ -1020,7 +936,7 @@ function SettingsContent() {
                     </button>
                   </div>
 
-                  <div className="space-y-6 relative z-10">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Application Name */}
                       <div>
@@ -1112,7 +1028,7 @@ function SettingsContent() {
                       </div>
 
                       {/* Currency Symbol Display */}
-                      <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+                      <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-4 flex flex-col justify-between">
                         <div>
                           <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                             Active Currency Symbol & Code
@@ -1133,12 +1049,123 @@ function SettingsContent() {
                       </div>
                     </div>
 
+                    {/* Appearance & Theme Setting */}
+                    <div className="pt-6 border-t border-slate-200 dark:border-zinc-800/80">
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                          Appearance & Theme Mode
+                        </label>
+                        <p className="text-xs text-slate-500 dark:text-zinc-500">
+                          Configure the workshop color scheme. Changes apply immediately across all screens and save to your preferences.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Light Mode Card */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectThemeMode("light")}
+                          className={clsx(
+                            "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
+                            activeThemeMode === "light"
+                              ? "bg-white text-zinc-950 border-lime-500 ring-2 ring-lime-500/40 shadow-md"
+                              : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
+                          )}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400">
+                              <Sun className="w-5 h-5" />
+                            </div>
+                            {activeThemeMode === "light" && (
+                              <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                                ACTIVE
+                              </span>
+                            )}
+                          </div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Light Mode</div>
+                          <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
+                            Clean white canvas with hairline slate borders and electric lime accents.
+                          </div>
+                          <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                            <span className="w-4 h-4 rounded-full bg-white border border-slate-300 shadow-xs" />
+                            <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
+                            <span className="w-4 h-4 rounded-full bg-zinc-950 shadow-xs" />
+                          </div>
+                        </button>
+
+                        {/* Dark Mode Card */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectThemeMode("dark")}
+                          className={clsx(
+                            "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
+                            activeThemeMode === "dark"
+                              ? "bg-zinc-900 text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
+                              : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
+                          )}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-400">
+                              <Moon className="w-5 h-5" />
+                            </div>
+                            {activeThemeMode === "dark" && (
+                              <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                                ACTIVE
+                              </span>
+                            )}
+                          </div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Dark Mode</div>
+                          <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
+                            Deep carbon black (#09090b) surfaces with vibrant Kawasaki Lime highlights.
+                          </div>
+                          <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                            <span className="w-4 h-4 rounded-full bg-zinc-950 border border-zinc-700 shadow-xs" />
+                            <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
+                            <span className="w-4 h-4 rounded-full bg-zinc-100 shadow-xs" />
+                          </div>
+                        </button>
+
+                        {/* System Default Card */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectThemeMode("system")}
+                          className={clsx(
+                            "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
+                            activeThemeMode === "system"
+                              ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
+                              : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
+                          )}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-600 dark:text-lime-400">
+                              <Sparkles className="w-5 h-5" />
+                            </div>
+                            {activeThemeMode === "system" && (
+                              <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                                ACTIVE
+                              </span>
+                            )}
+                          </div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">System Default</div>
+                          <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
+                            Automatically matches your operating system's light or dark mode setting.
+                          </div>
+                          <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                            <span className="w-4 h-4 rounded-full bg-gradient-to-r from-white to-zinc-950 border border-slate-300 shadow-xs" />
+                            <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Workshop & Repair Boards Configuration */}
-                <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
+                <div className="pb-8 border-b border-zinc-800/80 space-y-6 animate-in fade-in">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div>
                       <h2 className="text-xl font-bold text-white flex items-center gap-2">
                         <Wrench className="w-5 h-5 text-cyan-400" />
@@ -1166,7 +1193,7 @@ function SettingsContent() {
                     </div>
                   </div>
 
-                  <div className="space-y-6 relative z-10">
+                  <div className="space-y-6">
                     {/* Board Stage Names */}
                     <div>
                       <h3 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
@@ -1240,7 +1267,7 @@ function SettingsContent() {
                     </div>
 
                     {/* Record Retention for Released Jobs */}
-                    <div className="pt-4 border-t border-white/10">
+                    <div className="pt-4 border-t border-zinc-800/60">
                       <div className="max-w-md">
                         <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                           Invoiced / Released Card Retention on Board
@@ -1267,9 +1294,9 @@ function SettingsContent() {
                   </div>
                 </div>
 
-                {/* Legal & Regulatory Compliance Card */}
-                <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                {/* Legal & Regulatory Compliance Section */}
+                <div className="pb-8 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
                         <ShieldCheck className="w-5 h-5" />
@@ -1287,7 +1314,7 @@ function SettingsContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Privacy Policy Card */}
-                    <div className="p-5 rounded-2xl bg-zinc-950/60 border border-white/5 hover:border-cyan-500/30 transition-all flex flex-col justify-between group">
+                    <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-cyan-500/30 transition-all flex flex-col justify-between group">
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-semibold text-cyan-400 flex items-center gap-1.5 uppercase tracking-wider">
@@ -1316,7 +1343,7 @@ function SettingsContent() {
                     </div>
 
                     {/* Terms & Conditions Card */}
-                    <div className="p-5 rounded-2xl bg-zinc-950/60 border border-white/5 hover:border-blue-500/30 transition-all flex flex-col justify-between group">
+                    <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-blue-500/30 transition-all flex flex-col justify-between group">
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-semibold text-blue-400 flex items-center gap-1.5 uppercase tracking-wider">
@@ -1345,7 +1372,7 @@ function SettingsContent() {
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-zinc-500 flex items-center gap-2 pt-2 border-t border-white/5">
+                  <div className="text-[11px] text-zinc-500 flex items-center gap-2 pt-2 border-t border-zinc-800/60">
                     <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                     <span>
                       Policies automatically reflect your configured Store Name (<strong>{settings.appName || "MotoShop"}</strong>) and contact credentials. Both documents are permanently reachable by clients and staff at the login screen and application footer.
@@ -1385,8 +1412,8 @@ function SettingsContent() {
         {isAdmin && activeTab === "roles" && (
           <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
             <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-6">
-              <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
+              <div className="space-y-6 animate-in fade-in pb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
                   <div>
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
                       <Sliders className="w-5 h-5 text-cyan-400" />
@@ -1399,7 +1426,7 @@ function SettingsContent() {
                 </div>
 
                 {/* Mobile View: Adaptive Role Access Module Cards */}
-                <div className="block md:hidden space-y-3 relative z-10">
+                <div className="block md:hidden space-y-3">
                   {CONFIGURABLE_MODULES.map((mod) => {
                     const currentRoles = modulePermissions[mod.id] || ["admin"];
                     const isManager = currentRoles.includes("manager");
@@ -1488,9 +1515,9 @@ function SettingsContent() {
                 </div>
 
                 {/* Desktop View: Full Matrix Table */}
-                <div className="hidden md:block relative z-10 overflow-x-auto rounded-2xl border border-white/10 bg-zinc-950/60 shadow-xl">
+                <div className="hidden md:block overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30">
                   <table className="w-full text-left text-sm text-zinc-300">
-                    <thead className="bg-zinc-950 border-b border-white/10 text-xs uppercase text-zinc-400 font-semibold tracking-wider">
+                    <thead className="bg-zinc-900/80 border-b border-zinc-800/80 text-xs uppercase text-zinc-400 font-semibold tracking-wider">
                       <tr>
                         <th className="py-4 px-6">Store Operational Module</th>
                         <th className="py-4 px-4 text-center">
@@ -1689,7 +1716,7 @@ function SettingsContent() {
             )}
 
             {/* Search and Role Filter Pills Bar (Hidden on Mobile) */}
-            <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 bg-zinc-900/60 border border-white/10 rounded-2xl backdrop-blur-xl mb-4 shrink-0">
+            <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-zinc-800/80 mb-4 shrink-0">
               {/* Search */}
               <div className="relative w-full md:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -1698,13 +1725,13 @@ function SettingsContent() {
                   placeholder="Search staff name or email..."
                   value={staffSearch}
                   onChange={(e) => setStaffSearch(e.target.value)}
-                  className="w-full bg-zinc-950/80 border border-white/10 rounded-xl py-1.5 pl-9 pr-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+                  className="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl py-1.5 pl-9 pr-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
                 />
               </div>
 
               {/* Role Filter Pills */}
               <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
-                <div className="inline-flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-white/10 min-w-max">
+                <div className="inline-flex items-center gap-1.5 bg-zinc-900/60 p-1 rounded-xl border border-zinc-800 min-w-max">
                   <Filter className="w-3.5 h-3.5 text-zinc-500 ml-1.5 mr-0.5 hidden sm:block shrink-0" />
                   {STAFF_ROLE_OPTIONS.map((option) => (
                     <button
@@ -1726,7 +1753,7 @@ function SettingsContent() {
             </div>
 
             {/* Staff Users Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
-            <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+            <div className="md:flex-1 md:min-h-0 md:overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/30 flex flex-col">
               <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
                 {/* Mobile View: Adaptive Staff Account Cards */}
                 <div className="block md:hidden p-3 space-y-3">
@@ -1891,10 +1918,10 @@ function SettingsContent() {
               {/* Pinned Pagination Controls */}
               <div className="p-3.5 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
                 <div className="text-center sm:text-left">
-                  Showing <span className="font-bold text-white">{staffUsers.length}</span> of{" "}
-                  <span className="font-bold text-white">{staffTotal}</span> registered staff members (Page{" "}
-                  <span className="font-bold text-white">{staffPage}</span> of{" "}
-                  <span className="font-bold text-white">{staffTotalPages || 1}</span>)
+                  Showing <span className="font-bold text-slate-900">{staffUsers.length}</span> of{" "}
+                  <span className="font-bold text-slate-900">{staffTotal}</span> registered staff members (Page{" "}
+                  <span className="font-bold text-slate-900">{staffPage}</span> of{" "}
+                  <span className="font-bold text-slate-900">{staffTotalPages || 1}</span>)
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1902,7 +1929,7 @@ function SettingsContent() {
                     type="button"
                     onClick={() => handleStaffPageChange(staffPage - 1)}
                     disabled={staffPage <= 1 || staffLoading}
-                    className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all"
                     title="Previous Page"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -1911,7 +1938,7 @@ function SettingsContent() {
                     type="button"
                     onClick={() => handleStaffPageChange(staffPage + 1)}
                     disabled={staffPage >= staffTotalPages || staffLoading}
-                    className="p-1.5 rounded-lg bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all"
                     title="Next Page"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1978,30 +2005,101 @@ function SettingsContent() {
         {activeTab === "profile" && (
           <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
             <form onSubmit={handleUpdateProfile} className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
-              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-6">
-                <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6 animate-in fade-in">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
+              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4">
+                <div className="space-y-6 animate-in fade-in pb-8">
+                  {/* Staff Header & Minimalist Popover Avatar Picker */}
+                  <div className="relative pb-6 border-b border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xl shadow-inner">
-                        {profile.first_name ? profile.first_name[0] : "U"}
+                      {/* Minimalist Avatar Trigger Circle */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsAvatarPopoverOpen(!isAvatarPopoverOpen)}
+                          className="relative group p-0.5 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-cyan-400 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          title="Click to select staff avatar"
+                        >
+                          <div className="w-16 h-16 rounded-full bg-zinc-950 flex items-center justify-center p-1 overflow-hidden">
+                            {(AVATAR_PRESETS.find((p) => p.id === selectedAvatar) || AVATAR_PRESETS[0]).renderFace()}
+                          </div>
+                          <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                            Change
+                          </div>
+                        </button>
+
+                        {/* Minimalist Popover Dropdown (12 Avatar Circles, Zero Text Context) */}
+                        {isAvatarPopoverOpen && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-30" 
+                              onClick={() => setIsAvatarPopoverOpen(false)} 
+                            />
+                            <div className="absolute left-0 top-full mt-2 z-40 p-3 bg-zinc-950 border border-white/10 rounded-2xl shadow-2xl w-64 animate-in fade-in zoom-in-95 duration-150">
+                              <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80 mb-3">
+                                <span className="text-[11px] font-bold text-zinc-300">Choose Avatar</span>
+                                <span className="text-[10px] text-zinc-500 font-mono">12 styles</span>
+                              </div>
+                              <div className="grid grid-cols-4 gap-2">
+                                {AVATAR_PRESETS.map((preset) => {
+                                  const isSelected = selectedAvatar === preset.id;
+                                  return (
+                                    <button
+                                      key={preset.id}
+                                      type="button"
+                                      onClick={() => {
+                                        handleSelectAvatar(preset.id);
+                                        setIsAvatarPopoverOpen(false);
+                                      }}
+                                      className={clsx(
+                                        "w-12 h-12 rounded-full p-0.5 border transition-all flex items-center justify-center relative group hover:scale-105",
+                                        isSelected
+                                          ? "border-cyan-400 bg-cyan-500/10 ring-2 ring-cyan-500/40"
+                                          : "border-zinc-800 hover:border-zinc-600 bg-zinc-900/60"
+                                      )}
+                                    >
+                                      <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center overflow-hidden p-0.5">
+                                        {preset.renderFace()}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
+
                       <div>
-                        <h2 className="text-xl font-bold text-white">Staff Member Profile</h2>
-                        <p className="text-xs text-zinc-400 mt-0.5">
-                          Configure your display identity, avatar persona, and login credentials.
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-xl font-bold text-white">
+                            {[profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Staff Member Profile"}
+                          </h2>
+                          <span className={clsx("px-2.5 py-0.5 text-[10px] font-bold border rounded-md uppercase tracking-wider", getRoleBadgeStyle(profile.role))}>
+                            {profile.role}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                          {profile.email || "staff@motoshop.com"}
                         </p>
                       </div>
                     </div>
+
+                    {isProfileDirty && (
+                      <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 self-start sm:self-auto">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                        Unsaved profile changes
+                      </span>
+                    )}
                   </div>
 
                   {profileError && (
-                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2.5 relative z-10">
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2.5">
                       <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                       <div>{profileError}</div>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                  {/* Profile Form Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* First Name */}
                     <div>
                       <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
@@ -2073,181 +2171,15 @@ function SettingsContent() {
                     </div>
                   </div>
 
-                  {/* Personal Appearance Mode & Theme Selectors */}
+                  {/* Display Appearance Mode (Compact Toggle) */}
                   {renderModeSelector()}
-                  {renderThemeSelector()}
 
-                  {/* Profile Face Avatar Presets & Live Persona Identity Preview */}
-                  <div className="bg-zinc-950/60 border border-white/5 rounded-2xl p-6 space-y-6 shadow-xl backdrop-blur-sm relative z-10">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/5">
-                      <div>
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-cyan-400" />
-                          Workshop Staff Avatar & Flat Identity
-                        </h3>
-                        <p className="text-xs text-zinc-400 mt-0.5">
-                          Choose from 12 flat vector workshop personas. Selected avatars sync live across the sidebar, customer receipts, and store activity logs.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 self-start sm:self-auto">
-                        <span className="text-[11px] font-mono text-zinc-400 px-2.5 py-1 rounded-lg bg-zinc-900 border border-white/5">
-                          12 Personas Available
-                        </span>
-                        <span className={clsx(
-                          "text-xs font-mono font-bold px-2.5 py-1 rounded-lg border transition-all",
-                          isAvatarDirty
-                            ? "text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-sm"
-                            : "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
-                        )}>
-                          {isAvatarDirty ? "Previewing: " : "Active: "}
-                          {AVATAR_PRESETS.find((p) => p.id === selectedAvatar)?.name || "Alex"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                      {/* Left Column: Live Profile & Sidebar Preview Card */}
-                      {(() => {
-                        const activePreset = AVATAR_PRESETS.find((p) => p.id === selectedAvatar) || AVATAR_PRESETS[0];
-                        const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Staff Member";
-
-                        return (
-                          <div className="lg:col-span-4 xl:col-span-4 space-y-4">
-                            {/* Live Persona Card */}
-                            <div className={clsx(
-                              "p-5 rounded-2xl bg-zinc-900/90 border shadow-lg relative overflow-hidden group transition-all",
-                              isAvatarDirty ? "border-amber-500/40 ring-1 ring-amber-500/20" : "border-white/10"
-                            )}>
-                              <div className="flex items-center justify-between mb-4">
-                                <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-zinc-400 flex items-center gap-1.5">
-                                  <User className="w-3.5 h-3.5 text-cyan-400" />
-                                  Live Identity Card
-                                </span>
-                                {isAvatarDirty ? (
-                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1 animate-pulse">
-                                    <Sparkles className="w-3 h-3" />
-                                    Unsaved Preview
-                                  </span>
-                                ) : (
-                                  <span className={clsx("text-[10px] font-bold px-2 py-0.5 rounded-full", activePreset.badgeColor)}>
-                                    {activePreset.department}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="flex flex-col items-center text-center p-2">
-                                {/* Large 80px Avatar */}
-                                <div className="relative mb-3">
-                                  <div className="w-20 h-20 rounded-full p-1 bg-zinc-800 border border-zinc-700 transition-all duration-300 shadow-xl">
-                                    <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-1 overflow-hidden">
-                                      {activePreset.renderFace()}
-                                    </div>
-                                  </div>
-                                  {isAvatarDirty ? (
-                                    <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-amber-400 border-2 border-zinc-950 flex items-center justify-center text-[8px] font-bold text-zinc-950 shadow-md animate-pulse" title="Previewing (Click Save below to commit)">
-                                      Preview
-                                    </span>
-                                  ) : (
-                                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-zinc-950 flex items-center justify-center text-zinc-950 shadow-md" title="Active Saved Avatar">
-                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                    </span>
-                                  )}
-                                </div>
-
-                                <h4 className="text-base font-bold text-white tracking-tight">{fullName}</h4>
-                                <p className="text-xs text-zinc-400 truncate max-w-full font-mono mt-0.5">{profile.email || "staff@motoshop.com"}</p>
-
-                                <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
-                                  <span className={clsx("px-2.5 py-0.5 text-[10px] font-bold border rounded-md uppercase tracking-wider", getRoleBadgeStyle(profile.role))}>
-                                    {profile.role}
-                                  </span>
-                                  <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
-                                    Persona: {activePreset.name} ({activePreset.roleHint})
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      {/* Right Column: 12 Vector Personas Grid */}
-                      <div className="lg:col-span-8 xl:col-span-8">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {AVATAR_PRESETS.map((preset) => {
-                            const isSelected = selectedAvatar === preset.id;
-                            const isCurrentSaved = savedAvatar === preset.id;
-
-                            return (
-                              <button
-                                key={preset.id}
-                                type="button"
-                                onClick={() => handleSelectAvatar(preset.id)}
-                                className={clsx(
-                                  "p-3 rounded-2xl border text-left transition-all relative overflow-hidden group flex flex-col items-center gap-2.5",
-                                  isSelected
-                                    ? isAvatarDirty
-                                      ? "bg-zinc-900 border-amber-500/60 shadow-lg shadow-amber-500/10 ring-2 ring-amber-500/30"
-                                      : "bg-zinc-900 border-white/30 shadow-lg shadow-cyan-500/10 ring-2 ring-cyan-500/30"
-                                    : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
-                                )}
-                              >
-                                {isSelected && (
-                                  <div className="absolute top-2 right-2">
-                                    <div className={clsx(
-                                      "w-4 h-4 rounded-full flex items-center justify-center shadow-md",
-                                      isAvatarDirty ? "bg-amber-400 text-zinc-950" : "bg-cyan-500 text-zinc-950"
-                                    )}>
-                                      <Check className="w-2.5 h-2.5 stroke-[3]" />
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Flat Avatar Graphic */}
-                                <div className="w-14 h-14 rounded-full p-0.5 bg-zinc-800 border border-zinc-700 transition-transform group-hover:scale-105 shrink-0 mt-0.5">
-                                  <div className="w-full h-full bg-zinc-950 rounded-full flex items-center justify-center p-0.5 overflow-hidden">
-                                    {preset.renderFace()}
-                                  </div>
-                                </div>
-
-                                {/* Persona Metadata */}
-                                <div className="w-full text-center min-w-0">
-                                  <span className={clsx(
-                                    "block text-xs font-bold truncate transition-colors",
-                                    isSelected 
-                                      ? isSelected ? (isAvatarDirty ? "text-amber-300" : "text-cyan-300") : "text-zinc-200"
-                                      : "text-zinc-200 group-hover:text-white"
-                                  )}>
-                                    {preset.name}
-                                  </span>
-                                  <span className="block text-[10px] text-zinc-400 font-medium truncate mt-0.5">
-                                    {preset.roleHint}
-                                  </span>
-                                  <div className="flex items-center justify-center gap-1 mt-1">
-                                    {isCurrentSaved && (
-                                      <span className="text-[8px] uppercase tracking-wider text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20">
-                                        Saved
-                                      </span>
-                                    )}
-                                    <span className="inline-block text-[9px] text-zinc-500 font-mono truncate px-1.5 py-0.5 rounded bg-white/5">
-                                      {preset.department.split(" ")[0]}
-                                    </span>
-                                  </div>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Password Change Card */}
-                  <div className="p-6 rounded-2xl bg-zinc-950/60 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-                    <div className="space-y-1">
+                  {/* Password Authentication Section */}
+                  <div className="py-5 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-0.5">
                       <h3 className="text-sm font-bold text-white flex items-center gap-2">
                         <KeyRound className="w-4 h-4 text-cyan-400" />
-                        Account Authentication Password
+                        <span>Account Authentication Password</span>
                       </h3>
                       <p className="text-xs text-zinc-400">
                         Keep your account secure with regular password updates.
@@ -2275,7 +2207,6 @@ function SettingsContent() {
                       Unsaved changes ({[
                         isAvatarDirty ? "Avatar" : null,
                         isModeDirty ? "Appearance Mode" : null,
-                        isThemeDirty ? "Theme Palette" : null,
                       ].filter(Boolean).join(" & ")}). Click Save to persist.
                     </span>
                   ) : profileSuccess ? (
@@ -2294,10 +2225,10 @@ function SettingsContent() {
                   type="submit"
                   disabled={isUpdatingProfile}
                   className={clsx(
-                    "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 disabled:opacity-50",
+                    "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed",
                     isProfileDirty
-                      ? "bg-amber-400 hover:bg-amber-300 text-zinc-950 ring-2 ring-amber-400/50 scale-105"
-                      : "bg-cyan-500 hover:bg-cyan-400 text-zinc-950"
+                      ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 ring-2 ring-amber-400/50 scale-105"
+                      : "bg-lime-500 hover:bg-lime-400 text-zinc-950"
                   )}
                 >
                   {isUpdatingProfile ? (
@@ -2317,8 +2248,8 @@ function SettingsContent() {
         {/* TAB 5: SYSTEM LOGS SNAPSHOT (Admin Only) */}
         {isAdmin && activeTab === "logs" && (
           <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 pb-6 space-y-6 animate-in fade-in">
-            <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
+            <div className="space-y-6 pb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
                 <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <Activity className="w-5 h-5 text-cyan-400" />
@@ -2336,7 +2267,7 @@ function SettingsContent() {
               </div>
 
               {/* Dedicated Page Hero Banner */}
-              <div className="relative z-10 p-6 md:p-8 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+              <div className="p-6 md:p-8 rounded-xl bg-zinc-900/60 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                     Dedicated History Logs Page
@@ -2359,7 +2290,7 @@ function SettingsContent() {
               </div>
 
               {/* Recent 5 Logs Preview */}
-              <div className="space-y-3 relative z-10">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                     Recent 5 Database Changes
@@ -2373,9 +2304,9 @@ function SettingsContent() {
                   </Link>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-white/10 bg-zinc-950/60">
+                <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30">
                   <table className="w-full text-left text-xs text-zinc-300">
-                    <thead className="bg-zinc-950 border-b border-white/10 text-zinc-400 font-semibold uppercase tracking-wider">
+                    <thead className="bg-zinc-900/80 border-b border-zinc-800/80 text-zinc-400 font-semibold uppercase tracking-wider">
                       <tr>
                         <th className="py-3 px-4">Timestamp</th>
                         <th className="py-3 px-4">Staff Member</th>

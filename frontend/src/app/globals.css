@@ -3,7 +3,97 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #18181b;
+
+  /* ==========================================================================
+     High-Octane Minimalist Light Palette (Kawasaki Racing Lime Green Engine)
+     Pure white canvas (#ffffff) paired with metallic hairline borders (#e2e8f0),
+     carbon fiber deep-slate typography (#18181b), and electric racing lime green.
+     ========================================================================== */
+
+  /* Surface & Canvas Scale (Remapped from dark zinc to pure white architecture) */
+  --color-zinc-950: #ffffff !important; /* Pure White Canvas */
+  --color-zinc-900: #ffffff !important; /* Pure White Panel & Card Surfaces */
+  --color-zinc-850: #f8fafc !important; /* Subtle Off-Canvas Tint */
+  --color-zinc-800: #f1f5f9 !important; /* Slate-100 Input & Action Surfaces */
+  --color-zinc-700: #e2e8f0 !important; /* Slate-200 Hairline Metallic Borders */
+  --color-zinc-600: #64748b !important; /* Slate-500 Secondary Metadata */
+  --color-zinc-500: #475569 !important; /* Slate-600 Muted Captions */
+  --color-zinc-400: #334155 !important; /* Slate-700 Standard Body Text */
+  --color-zinc-300: #1e293b !important; /* Slate-800 Emphasized Body */
+  --color-zinc-200: #0f172a !important; /* Slate-900 Section Headings */
+  --color-zinc-100: #020617 !important; /* Slate-950 Bold Titles */
+  --color-zinc-50: #000000 !important;  /* Pure Carbon Black */
+
+  /* Electric Kawasaki Racing Lime Green Scale */
+  --color-lime-200: #d9f99d !important;
+  --color-lime-300: #bef264 !important;
+  --color-lime-400: #84cc16 !important;
+  --color-lime-500: #65a30d !important;
+  --color-lime-600: #4d7c0f !important;
+  --color-lime-700: #3f6212 !important;
+  --color-lime-950: #14532d !important;
+
+  /* Remap primary cyan-* utility tokens to Electric Lime Green */
+  --color-cyan-200: #d9f99d !important;
+  --color-cyan-300: #bef264 !important;
+  --color-cyan-400: #84cc16 !important;
+  --color-cyan-500: #65a30d !important;
+  --color-cyan-600: #4d7c0f !important;
+  --color-cyan-950: #14532d !important;
+
+  /* Remap blue-* tokens */
+  --color-blue-400: #84cc16 !important;
+  --color-blue-500: #65a30d !important;
+  --color-blue-600: #4d7c0f !important;
+  --color-blue-950: #14532d !important;
+
+  /* Remap indigo-* tokens */
+  --color-indigo-400: #84cc16 !important;
+  --color-indigo-500: #65a30d !important;
+  --color-indigo-600: #4d7c0f !important;
+
+  color-scheme: light;
+}
+
+html.dark,
+:root.dark,
+[data-mode="dark"] {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+
+  /* Surface & Canvas Scale (Restored to deep carbon & dark zinc architecture) */
+  --color-zinc-950: #09090b !important; /* Deep Canvas */
+  --color-zinc-900: #121215 !important; /* Panel & Card Surfaces */
+  --color-zinc-850: #18181b !important; /* Elevated Surfaces */
+  --color-zinc-800: #27272a !important; /* Input & Action Surfaces */
+  --color-zinc-700: #3f3f46 !important; /* Hairline Metallic Borders */
+  --color-zinc-600: #71717a !important; /* Secondary Metadata */
+  --color-zinc-500: #a1a1aa !important; /* Muted Captions */
+  --color-zinc-400: #d4d4d8 !important; /* Standard Body Text */
+  --color-zinc-300: #e4e4e7 !important; /* Emphasized Body */
+  --color-zinc-200: #f4f4f5 !important; /* Section Headings */
+  --color-zinc-100: #fafafa !important; /* Bold Titles */
+  --color-zinc-50: #ffffff !important;  /* Pure White */
+
+  /* Electric Kawasaki Racing Lime Green Scale */
+  --color-lime-200: #d9f99d !important;
+  --color-lime-300: #bef264 !important;
+  --color-lime-400: #a3e635 !important;
+  --color-lime-500: #84cc16 !important;
+  --color-lime-600: #65a30d !important;
+  --color-lime-700: #4d7c0f !important;
+  --color-lime-950: #14532d !important;
+
+  /* Remap primary cyan-* utility tokens to Electric Lime Green */
+  --color-cyan-200: #d9f99d !important;
+  --color-cyan-300: #bef264 !important;
+  --color-cyan-400: #a3e635 !important;
+  --color-cyan-500: #84cc16 !important;
+  --color-cyan-600: #65a30d !important;
+  --color-cyan-950: #14532d !important;
+
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -13,13 +103,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ==========================================================================
+   Global Base & Typography
+   ========================================================================== */
 html {
   max-width: 100vw;
   overflow-x: hidden;
@@ -27,99 +113,32 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
   max-width: 100vw;
   overflow-x: hidden;
 }
 
-/* ==========================================================================
-   Versiklo Theme Engine: 4 Color Schemes
-   Overriding base color variables so all existing Tailwind utility classes
-   (text-cyan-*, bg-cyan-*, border-cyan-*, gradients, rings) reflect the theme.
-   ========================================================================== */
-
-/* 1. Cyan Drift (Flat Electric Cyan on Dark Zinc) */
-:root,
-html[data-theme="cyan"],
-[data-theme="cyan"] {
-  --color-cyan-200: #a5f3fc !important;
-  --color-cyan-300: #67e8f9 !important;
-  --color-cyan-400: #22d3ee !important;
-  --color-cyan-500: #06b6d4 !important;
-  --color-cyan-600: #0891b2 !important;
-  --color-cyan-950: #083344 !important;
-
-  --color-blue-400: #22d3ee !important;
-  --color-blue-500: #06b6d4 !important;
-  --color-blue-600: #0891b2 !important;
-  --color-blue-950: #083344 !important;
-
-  --color-indigo-400: #22d3ee !important;
-  --color-indigo-500: #06b6d4 !important;
-  --color-indigo-600: #0891b2 !important;
+/* Base Light Mode Background & Body */
+html:not(.dark) {
+  background-color: #ffffff;
+  color: #18181b;
 }
 
-/* 2. Emerald Speed (Flat Neon Emerald on Dark Zinc) */
-html[data-theme="emerald"],
-[data-theme="emerald"] {
-  --color-cyan-200: #a7f3d0 !important;
-  --color-cyan-300: #6ee7b7 !important;
-  --color-cyan-400: #34d399 !important;
-  --color-cyan-500: #10b981 !important;
-  --color-cyan-600: #059669 !important;
-  --color-cyan-950: #022c22 !important;
-
-  --color-blue-400: #34d399 !important;
-  --color-blue-500: #10b981 !important;
-  --color-blue-600: #059669 !important;
-  --color-blue-950: #022c22 !important;
-
-  --color-indigo-400: #34d399 !important;
-  --color-indigo-500: #10b981 !important;
-  --color-indigo-600: #059669 !important;
+html:not(.dark) body {
+  background-color: #ffffff !important;
+  color: #18181b !important;
 }
 
-/* 3. Violet Hyperdrive (Flat Electric Violet on Dark Zinc) */
-html[data-theme="violet"],
-[data-theme="violet"] {
-  --color-cyan-200: #e9d5ff !important;
-  --color-cyan-300: #d8b4fe !important;
-  --color-cyan-400: #c084fc !important;
-  --color-cyan-500: #a855f7 !important;
-  --color-cyan-600: #9333ea !important;
-  --color-cyan-950: #3b0764 !important;
-
-  --color-blue-400: #c084fc !important;
-  --color-blue-500: #a855f7 !important;
-  --color-blue-600: #9333ea !important;
-  --color-blue-950: #3b0764 !important;
-
-  --color-indigo-400: #c084fc !important;
-  --color-indigo-500: #a855f7 !important;
-  --color-indigo-600: #9333ea !important;
+/* Base Dark Mode Background & Body */
+html.dark {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
 }
 
-/* 4. Amber Forge (Flat Sunset Amber on Dark Zinc) */
-html[data-theme="amber"],
-[data-theme="amber"] {
-  --color-cyan-200: #fde68a !important;
-  --color-cyan-300: #fcd34d !important;
-  --color-cyan-400: #fbbf24 !important;
-  --color-cyan-500: #f59e0b !important;
-  --color-cyan-600: #d97706 !important;
-  --color-cyan-950: #451a03 !important;
-
-  --color-blue-400: #fbbf24 !important;
-  --color-blue-500: #f59e0b !important;
-  --color-blue-600: #d97706 !important;
-  --color-blue-950: #451a03 !important;
-
-  --color-indigo-400: #fbbf24 !important;
-  --color-indigo-500: #f59e0b !important;
-  --color-indigo-600: #d97706 !important;
+html.dark body {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
 }
 
 /* ==========================================================================
@@ -157,262 +176,853 @@ html[data-theme="amber"],
 }
 
 /* ==========================================================================
-   Versiklo Appearance Mode Engine: High-Contrast Light Mode
-   Dual-tone cool slate canvas (#f8fafc) paired with crisp white cards (#ffffff),
-   WCAG AAA jewel-tone accents, sharp slate typography, and clean dark mode reversibility.
+   High-Contrast Lime Action Button Standard (WCAG AAA Invariant: Both Modes)
+   Solid lime buttons MUST use carbon black text (#09090b) for > 12:1 contrast.
    ========================================================================== */
-html[data-mode="light"],
-[data-mode="light"] {
-  /* Dual-Tone Canvas & Surface Scale */
-  --color-zinc-950: #f8fafc !important; /* Cool Slate Canvas */
-  --color-zinc-900: #ffffff !important; /* Solid Crisp White Cards */
-  --color-zinc-850: #f8fafc !important;
-  --color-zinc-800: #f1f5f9 !important; /* Slate-100 Input & Action Surfaces */
-  --color-zinc-700: #e2e8f0 !important; /* Slate-200 Dividers & Card Outlines */
-  --color-zinc-600: #64748b !important; /* Slate-500 Secondary Metadata */
-  --color-zinc-500: #475569 !important; /* Slate-600 Muted Captions */
-  --color-zinc-400: #334155 !important; /* Slate-700 Standard Body Text */
-  --color-zinc-300: #1e293b !important; /* Slate-800 Emphasized Body */
-  --color-zinc-200: #0f172a !important; /* Slate-900 Section Headings */
-  --color-zinc-100: #020617 !important; /* Slate-950 Bold Titles */
-  --color-zinc-50: #000000 !important;
-
-  /* Base Light Mode Fallback Accents (High-Contrast Jewel Tones) */
-  --color-cyan-400: #0284c7 !important; /* Sky 600 */
-  --color-cyan-300: #0369a1 !important; /* Sky 700 */
-
-  color-scheme: light;
+button[class*="bg-cyan-500"],
+button[class*="bg-cyan-400"],
+button[class*="bg-lime-500"],
+button[class*="bg-lime-400"],
+a[class*="bg-cyan-500"],
+a[class*="bg-cyan-400"],
+a[class*="bg-lime-500"],
+a[class*="bg-lime-400"],
+.btn-primary {
+  background-color: #84cc16 !important;
+  color: #09090b !important;
+  font-weight: 700 !important;
 }
 
-html[data-mode="light"] body {
-  background-color: #f8fafc;
-  color: #0f172a;
+button[class*="bg-cyan-500"] *,
+button[class*="bg-cyan-400"] *,
+button[class*="bg-lime-500"] *,
+button[class*="bg-lime-400"] *,
+a[class*="bg-cyan-500"] *,
+a[class*="bg-cyan-400"] *,
+a[class*="bg-lime-500"] *,
+a[class*="bg-lime-400"] *,
+.btn-primary * {
+  color: #09090b !important;
 }
 
-/* Headings in Light Mode */
-html[data-mode="light"] h1,
-html[data-mode="light"] h2,
-html[data-mode="light"] h3,
-html[data-mode="light"] h4,
-html[data-mode="light"] h5,
-html[data-mode="light"] h6 {
-  color: #0f172a;
+button[class*="bg-cyan-500"]:hover,
+button[class*="bg-cyan-400"]:hover,
+button[class*="bg-lime-500"]:hover,
+button[class*="bg-lime-400"]:hover,
+.btn-primary:hover:not(:disabled) {
+  background-color: #65a30d !important;
 }
 
-/* Default text-white remapping to high-contrast dark slate */
-html[data-mode="light"] .text-white {
-  color: #0f172a !important;
+/* Top colored header navbar invariant */
+header.bg-lime-500,
+header[class*="bg-lime-500"] {
+  background-color: #84cc16 !important;
+  border-bottom: 1px solid rgba(101, 163, 13, 0.4) !important;
 }
 
-/* Strictly preserve pure white text on solid/gradient colored action buttons */
-html[data-mode="light"] button[class*="bg-gradient"],
-html[data-mode="light"] button[class*="bg-cyan-600"],
-html[data-mode="light"] button[class*="bg-cyan-500"],
-html[data-mode="light"] button[class*="bg-blue-600"],
-html[data-mode="light"] button[class*="bg-blue-500"],
-html[data-mode="light"] button[class*="bg-red-600"],
-html[data-mode="light"] button[class*="bg-red-500"],
-html[data-mode="light"] button[class*="bg-emerald-600"],
-html[data-mode="light"] button[class*="bg-emerald-500"],
-html[data-mode="light"] button[class*="bg-purple-600"],
-html[data-mode="light"] button[class*="bg-purple-500"],
-html[data-mode="light"] a[class*="bg-gradient"],
-html[data-mode="light"] a[class*="bg-cyan-600"],
-html[data-mode="light"] a[class*="bg-blue-600"],
-html[data-mode="light"] [class*="bg-gradient"] .text-white,
-html[data-mode="light"] [class*="bg-cyan-600"] .text-white,
-html[data-mode="light"] [class*="bg-blue-600"] .text-white,
-html[data-mode="light"] [class*="bg-red-600"] .text-white,
-html[data-mode="light"] [class*="bg-emerald-600"] .text-white,
-html[data-mode="light"] [class*="bg-purple-600"] .text-white {
+header.bg-lime-500 *,
+header[class*="bg-lime-500"] * {
+  color: #09090b;
+}
+
+/* Floating Action Button (FAB) Lime standard */
+.mobile-filter-fab,
+[class*="FloatingFilterButton"] {
+  background-color: #84cc16 !important;
+  border-color: #65a30d !important;
+  color: #09090b !important;
+  box-shadow: 0 10px 25px -5px rgba(101, 163, 13, 0.35) !important;
+}
+
+/* Preserve pure white text on solid/gradient colored action buttons */
+button[class*="bg-gradient"],
+button[class*="bg-red-600"],
+button[class*="bg-red-500"],
+button[class*="bg-emerald-600"],
+button[class*="bg-purple-600"],
+a[class*="bg-gradient"],
+[class*="bg-gradient"] .text-white,
+[class*="bg-red-600"] .text-white,
+[class*="bg-emerald-600"] .text-white,
+[class*="bg-purple-600"] .text-white {
   color: #ffffff !important;
 }
 
-/* High-Contrast Jewel Accent Text Remapping in Light Mode */
-html[data-mode="light"] .text-cyan-400,
-html[data-mode="light"] .text-cyan-300 {
-  color: #0369a1 !important;
+/* Dark Slate Button Utility */
+.btn-dark {
+  background-color: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+.btn-dark:hover:not(:disabled) {
+  background-color: #1e293b !important;
 }
 
-html[data-mode="light"] .text-emerald-400,
-html[data-mode="light"] .text-emerald-300 {
+/* ==========================================================================
+   LIGHT MODE RULES (Strictly Scoped to html:not(.dark))
+   ========================================================================== */
+
+/* Headings in Light Mode */
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6 {
+  color: #0f172a !important;
+}
+
+/* Remap generic text-white on light canvas to high-contrast dark carbon slate */
+html:not(.dark) .text-white:not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-rose"]):not([class*="bg-gradient"]):not(.printable-receipt *) {
+  color: #0f172a !important;
+}
+
+/* High-Contrast Accent Text Remapping (Light Mode) */
+html:not(.dark) .text-cyan-400,
+html:not(.dark) .text-cyan-300,
+html:not(.dark) .text-lime-400,
+html:not(.dark) .text-lime-500 {
+  color: #4d7c0f !important; /* Deep lime (WCAG AAA) */
+}
+
+html:not(.dark) .text-emerald-400,
+html:not(.dark) .text-emerald-300 {
   color: #047857 !important;
 }
 
-html[data-mode="light"] .text-amber-400,
-html[data-mode="light"] .text-amber-300 {
+html:not(.dark) .text-amber-400,
+html:not(.dark) .text-amber-300 {
   color: #b45309 !important;
 }
 
-html[data-mode="light"] .text-purple-400,
-html[data-mode="light"] .text-purple-300 {
+html:not(.dark) .text-purple-400,
+html:not(.dark) .text-purple-300 {
   color: #6d28d9 !important;
 }
 
-html[data-mode="light"] .text-blue-400,
-html[data-mode="light"] .text-blue-300 {
-  color: #1d4ed8 !important;
+html:not(.dark) .text-blue-400,
+html:not(.dark) .text-blue-300 {
+  color: #4d7c0f !important;
 }
 
-html[data-mode="light"] .text-red-400,
-html[data-mode="light"] .text-red-300 {
+html:not(.dark) .text-red-400,
+html:not(.dark) .text-red-300 {
   color: #b91c1c !important;
 }
 
-/* High-Contrast Status Badge Background Pills in Light Mode */
-html[data-mode="light"] [class*="bg-cyan-500/10"],
-html[data-mode="light"] [class*="bg-cyan-500/20"] {
-  background-color: #e0f2fe !important;
-  border-color: #7dd3fc !important;
-  color: #0369a1 !important;
+/* Status Badge Pills (Light Mode) */
+html:not(.dark) [class*="bg-cyan-500/10"],
+html:not(.dark) [class*="bg-cyan-500/20"],
+html:not(.dark) [class*="bg-lime-500/10"],
+html:not(.dark) [class*="bg-lime-500/15"],
+html:not(.dark) [class*="bg-lime-500/20"] {
+  background-color: #ecfccb !important;
+  border-color: #bef264 !important;
+  color: #365314 !important;
 }
 
-html[data-mode="light"] [class*="bg-emerald-500/10"],
-html[data-mode="light"] [class*="bg-emerald-500/20"] {
+html:not(.dark) [class*="bg-emerald-500/10"],
+html:not(.dark) [class*="bg-emerald-500/20"] {
   background-color: #d1fae5 !important;
   border-color: #6ee7b7 !important;
   color: #047857 !important;
 }
 
-html[data-mode="light"] [class*="bg-amber-500/10"],
-html[data-mode="light"] [class*="bg-amber-500/20"] {
+html:not(.dark) [class*="bg-amber-500/10"],
+html:not(.dark) [class*="bg-amber-500/20"] {
   background-color: #fef3c7 !important;
   border-color: #fcd34d !important;
   color: #b45309 !important;
 }
 
-html[data-mode="light"] [class*="bg-purple-500/10"],
-html[data-mode="light"] [class*="bg-purple-500/20"] {
+html:not(.dark) [class*="bg-purple-500/10"],
+html:not(.dark) [class*="bg-purple-500/20"] {
   background-color: #ede9fe !important;
   border-color: #c4b5fd !important;
   color: #6d28d9 !important;
 }
 
-html[data-mode="light"] [class*="bg-red-500/10"],
-html[data-mode="light"] [class*="bg-red-500/20"],
-html[data-mode="light"] [class*="bg-rose-500/10"],
-html[data-mode="light"] [class*="bg-rose-500/20"] {
+html:not(.dark) [class*="bg-red-500/10"],
+html:not(.dark) [class*="bg-red-500/20"],
+html:not(.dark) [class*="bg-rose-500/10"],
+html:not(.dark) [class*="bg-rose-500/20"] {
   background-color: #fee2e2 !important;
   border-color: #fca5a5 !important;
   color: #b91c1c !important;
 }
 
-html[data-mode="light"] [class*="bg-blue-500/10"],
-html[data-mode="light"] [class*="bg-blue-600/10"] {
-  background-color: #dbeafe !important;
-  border-color: #93c5fd !important;
-  color: #1d4ed8 !important;
+html:not(.dark) [class*="bg-blue-500/10"],
+html:not(.dark) [class*="bg-blue-600/10"] {
+  background-color: #ecfccb !important;
+  border-color: #bef264 !important;
+  color: #365314 !important;
 }
 
-/* Card Surfaces & Glassmorphism Replacement in Light Mode */
-html[data-mode="light"] [class*="bg-zinc-900/60"],
-html[data-mode="light"] [class*="bg-zinc-900/40"],
-html[data-mode="light"] [class*="bg-zinc-900/80"],
-html[data-mode="light"] [class*="bg-zinc-950/60"],
-html[data-mode="light"] [class*="bg-zinc-950/80"] {
+/* Card Surfaces & Panels (Light Mode) */
+html:not(.dark) [class*="bg-zinc-900"],
+html:not(.dark) [class*="bg-zinc-950"] {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.02) !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02) !important;
 }
 
-/* Borders in Light Mode */
-html[data-mode="light"] [class*="border-white/5"],
-html[data-mode="light"] [class*="border-white/10"],
-html[data-mode="light"] [class*="border-white/20"],
-html[data-mode="light"] [class*="border-white/30"] {
+/* Hairline Metallic Borders (Light Mode) */
+html:not(.dark) [class*="border-white/5"],
+html:not(.dark) [class*="border-white/10"],
+html:not(.dark) [class*="border-white/20"],
+html:not(.dark) [class*="border-white/30"],
+html:not(.dark) .border-zinc-800,
+html:not(.dark) .border-zinc-700 {
   border-color: #e2e8f0 !important;
 }
 
-/* Subtle transparent white fills */
-html[data-mode="light"] [class*="bg-white/5"],
-html[data-mode="light"] [class*="bg-white/[0.02]"] {
+/* Subtle transparent fills (Light Mode) */
+html:not(.dark) [class*="bg-white/5"],
+html:not(.dark) [class*="bg-white/[0.02]"] {
   background-color: rgba(15, 23, 42, 0.03) !important;
 }
 
-/* Sidebar & Sticky Footer & Header In Light Mode */
-html[data-mode="light"] aside {
+/* Sidebar Navigation (Light Mode) */
+html:not(.dark) aside {
   background-color: #ffffff !important;
-  border-right-color: #e2e8f0 !important;
+  border-right: 1px solid #e2e8f0 !important;
 }
 
-/* Sidebar Active Link & Jewel Indicator in Light Mode */
-html[data-mode="light"] aside a.nav-active-item,
-html[data-mode="light"] aside a[data-active="true"] {
-  background: #e0f2fe !important;
-  border-color: #7dd3fc !important;
-  color: #0f172a !important;
-  box-shadow: 0 2px 8px -1px rgba(2, 132, 199, 0.12) !important;
+html:not(.dark) aside a.nav-active-item,
+html:not(.dark) aside a[data-active="true"] {
+  background-color: #ecfccb !important;
+  border-color: #bef264 !important;
+  color: #1a2e05 !important;
+  box-shadow: 0 1px 3px 0 rgba(132, 204, 22, 0.15) !important;
+  font-weight: 700 !important;
 }
 
-html[data-mode="light"] aside a.nav-active-item .nav-active-bar,
-html[data-mode="light"] aside a[data-active="true"] .nav-active-bar {
-  background-color: #0284c7 !important;
+html:not(.dark) aside a.nav-active-item .nav-active-bar,
+html:not(.dark) aside a[data-active="true"] .nav-active-bar {
+  background-color: #65a30d !important;
 }
 
-html[data-mode="light"] aside a.nav-active-item svg,
-html[data-mode="light"] aside a[data-active="true"] svg {
-  color: #0369a1 !important;
+html:not(.dark) aside a.nav-active-item svg,
+html:not(.dark) aside a[data-active="true"] svg {
+  color: #4d7c0f !important;
 }
 
-html[data-mode="light"] aside a:not([data-active="true"]):hover {
+html:not(.dark) aside a:not([data-active="true"]):hover {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
-html[data-mode="light"] aside a:not([data-active="true"]):hover svg {
+html:not(.dark) aside a:not([data-active="true"]):hover svg {
   color: #334155 !important;
 }
 
-html[data-mode="light"] header {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom-color: #e2e8f0 !important;
-}
-
-
-html[data-mode="light"] [class*="bg-zinc-950/95"] {
-  background-color: rgba(255, 255, 255, 0.97) !important;
-  border-top-color: #e2e8f0 !important;
-}
-
-/* High-Contrast Sign Out Button in Light Mode */
-html[data-mode="light"] aside button[title="Sign Out"] {
+html:not(.dark) aside button[title="Sign Out"] {
   background-color: #fee2e2 !important;
   border-color: #fca5a5 !important;
   color: #991b1b !important;
   box-shadow: 0 1px 2px 0 rgba(185, 28, 28, 0.05) !important;
 }
 
-html[data-mode="light"] aside button[title="Sign Out"]:hover {
+html:not(.dark) aside button[title="Sign Out"]:hover {
   background-color: #fecaca !important;
   border-color: #f87171 !important;
   color: #7f1d1d !important;
 }
 
-html[data-mode="light"] aside button[title="Sign Out"] svg {
+html:not(.dark) aside button[title="Sign Out"] svg {
   color: #991b1b !important;
 }
 
-/* High-Contrast Disabled Buttons in Light Mode */
-html[data-mode="light"] button:disabled,
-html[data-mode="light"] button[disabled] {
+/* Header (Light Mode) */
+html:not(.dark) header:not([class*="bg-lime-500"]) {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Mobile Bottom Bar & Sticky Navigation (Light Mode) */
+html:not(.dark) [class*="bg-zinc-950/95"],
+html:not(.dark) nav[aria-label="Mobile Bottom Navigation"] {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Form Inputs & Selects (Light Mode) */
+html:not(.dark) input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) input:focus,
+html:not(.dark) select:focus,
+html:not(.dark) textarea:focus {
+  border-color: #84cc16 !important;
+  box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.25) !important;
+  outline: none !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #64748b !important;
+}
+
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Tables (Light Mode) */
+html:not(.dark) table th {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html:not(.dark) table td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) table tr:hover {
+  background-color: rgba(132, 204, 22, 0.04) !important;
+}
+
+/* Secondary Button Utility (Light Mode) */
+html:not(.dark) .btn-secondary {
   background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #475569 !important;
-  opacity: 0.85 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+html:not(.dark) .btn-secondary:hover:not(:disabled) {
+  background-color: #e2e8f0 !important;
+  color: #020617 !important;
+}
+
+/* Disabled State (Light Mode) */
+html:not(.dark) button:disabled,
+html:not(.dark) button[disabled],
+html:not(.dark) input:disabled,
+html:not(.dark) select:disabled {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  opacity: 1 !important;
   cursor: not-allowed !important;
+  box-shadow: none !important;
 }
 
-html[data-mode="light"] button:disabled svg,
-html[data-mode="light"] button[disabled] svg,
-html[data-mode="light"] button:disabled span,
-html[data-mode="light"] button[disabled] span {
+html:not(.dark) button:disabled svg,
+html:not(.dark) button[disabled] svg,
+html:not(.dark) button:disabled span,
+html:not(.dark) button[disabled] span {
+  color: #94a3b8 !important;
+}
+
+/* Light Mode Scrollbars */
+html:not(.dark) * {
+  scrollbar-color: #cbd5e1 transparent;
+}
+html:not(.dark) *::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+}
+html:not(.dark) *::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+html:not(.dark) .scrollbar-compact::-webkit-scrollbar-thumb,
+html:not(.dark) .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+}
+html:not(.dark) .scrollbar-compact::-webkit-scrollbar-thumb:hover,
+html:not(.dark) .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+
+/* ==========================================================================
+   DARK MODE RULES (Strictly Scoped to html.dark)
+   ========================================================================== */
+
+/* Headings in Dark Mode */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #fafafa !important;
+}
+
+/* High-Contrast White Text Preservation in Dark Mode */
+html.dark .text-white {
+  color: #ffffff !important;
+}
+
+/* Dark Mode Typography Remapping for Optimal Legibility */
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-zinc-900,
+html.dark .text-zinc-950,
+html.dark .text-black {
+  color: #f4f4f5 !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600,
+html.dark .text-zinc-400,
+html.dark .text-zinc-300 {
+  color: #d4d4d8 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-zinc-500 {
+  color: #a1a1aa !important;
+}
+
+html.dark .text-slate-400 {
+  color: #71717a !important;
+}
+
+/* High-Contrast Accent Text in Dark Mode */
+html.dark .text-cyan-400,
+html.dark .text-cyan-300,
+html.dark .text-lime-400,
+html.dark .text-lime-300 {
+  color: #a3e635 !important; /* Bright Electric Lime */
+}
+
+html.dark .text-lime-500 {
+  color: #84cc16 !important;
+}
+
+html.dark .text-emerald-400,
+html.dark .text-emerald-300 {
+  color: #34d399 !important; /* Bright Emerald */
+}
+
+html.dark .text-amber-400,
+html.dark .text-amber-300 {
+  color: #fbbf24 !important; /* Bright Amber */
+}
+
+html.dark .text-purple-400,
+html.dark .text-purple-300 {
+  color: #c084fc !important; /* Bright Purple */
+}
+
+html.dark .text-blue-400,
+html.dark .text-blue-300 {
+  color: #60a5fa !important; /* Bright Blue */
+}
+
+html.dark .text-red-400,
+html.dark .text-red-300 {
+  color: #f87171 !important; /* Bright Red */
+}
+
+/* Status Badge Background Pills (Dark Mode) */
+html.dark [class*="bg-cyan-500/10"],
+html.dark [class*="bg-cyan-500/20"],
+html.dark [class*="bg-lime-500/10"],
+html.dark [class*="bg-lime-500/15"],
+html.dark [class*="bg-lime-500/20"] {
+  background-color: rgba(132, 204, 22, 0.15) !important;
+  border-color: rgba(132, 204, 22, 0.35) !important;
+  color: #bef264 !important;
+}
+
+html.dark [class*="bg-emerald-500/10"],
+html.dark [class*="bg-emerald-500/20"] {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #34d399 !important;
+}
+
+html.dark [class*="bg-amber-500/10"],
+html.dark [class*="bg-amber-500/20"] {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #fbbf24 !important;
+}
+
+html.dark [class*="bg-purple-500/10"],
+html.dark [class*="bg-purple-500/20"] {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+  color: #c084fc !important;
+}
+
+html.dark [class*="bg-red-500/10"],
+html.dark [class*="bg-red-500/20"],
+html.dark [class*="bg-rose-500/10"],
+html.dark [class*="bg-rose-500/20"] {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+
+/* Dark Card Surfaces, Panels & Responsive Backgrounds (Excluding Receipts) */
+html.dark [class*="bg-white"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark [class*="bg-slate-50"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark [class*="bg-slate-100"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark [class*="bg-zinc-900"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark [class*="bg-zinc-950"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) {
+  background-color: #121215 !important;
+  border-color: #27272a !important;
+  color: #f4f4f5;
+}
+
+html.dark .bg-zinc-850,
+html.dark .bg-zinc-800 {
+  background-color: #18181b !important;
+  border-color: #3f3f46 !important;
+}
+
+html.dark [class*="border-slate-"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark [class*="border-zinc-800"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark [class*="border-zinc-700"]:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) {
+  border-color: #27272a !important;
+}
+
+html.dark [class*="divide-slate-"] > *:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) {
+  border-color: #27272a !important;
+}
+
+/* Dark Main Container */
+html.dark main {
+  background-color: #09090b !important;
+}
+
+/* Dark Sidebar */
+html.dark aside {
+  background-color: #121215 !important;
+  border-right: 1px solid #27272a !important;
+}
+
+html.dark aside a.nav-active-item,
+html.dark aside a[data-active="true"] {
+  background-color: rgba(132, 204, 22, 0.15) !important;
+  border-color: rgba(132, 204, 22, 0.35) !important;
+  color: #bef264 !important;
+  font-weight: 700 !important;
+}
+
+html.dark aside a.nav-active-item .nav-active-bar,
+html.dark aside a[data-active="true"] .nav-active-bar {
+  background-color: #84cc16 !important;
+}
+
+html.dark aside a.nav-active-item svg,
+html.dark aside a[data-active="true"] svg {
+  color: #84cc16 !important;
+}
+
+html.dark aside a:not([data-active="true"]) {
+  color: #a1a1aa !important;
+}
+
+html.dark aside a:not([data-active="true"]):hover {
+  background-color: #18181b !important;
+  color: #fafafa !important;
+}
+
+html.dark aside a:not([data-active="true"]):hover svg {
+  color: #d4d4d8 !important;
+}
+
+html.dark aside button[title="Sign Out"] {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
+html.dark aside button[title="Sign Out"]:hover {
+  background-color: rgba(239, 68, 68, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark aside button[title="Sign Out"] svg {
+  color: #f87171 !important;
+}
+
+/* Dark Mobile Bottom Nav */
+html.dark [class*="bg-zinc-950/95"],
+html.dark nav[aria-label="Mobile Bottom Navigation"] {
+  background-color: rgba(18, 18, 21, 0.96) !important;
+  border-top: 1px solid #27272a !important;
+}
+
+/* Dark Header (non-lime) */
+html.dark header:not([class*="bg-lime-500"]) {
+  background-color: rgba(18, 18, 21, 0.96) !important;
+  border-bottom: 1px solid #27272a !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Dark Form Inputs, Selects & Textareas */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),
+html.dark select,
+html.dark textarea {
+  background-color: #18181b !important;
+  border: 1px solid #3f3f46 !important;
+  color: #ffffff !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #84cc16 !important;
+  box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.35) !important;
+  outline: none !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #71717a !important;
+}
+
+html.dark select option {
+  background-color: #18181b !important;
+  color: #ffffff !important;
+}
+
+/* Dark Tables */
+html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark tbody:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
+html.dark tr:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)):not(:hover) {
+  background-color: #121215 !important;
+}
+
+html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) th {
+  background-color: #18181b !important;
+  color: #d4d4d8 !important;
+  border-bottom: 1px solid #27272a !important;
+}
+
+html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) td {
+  background-color: #121215 !important;
+  border-bottom: 1px solid #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) tr:hover td {
+  background-color: #1c1c22 !important;
+}
+
+/* Dark Secondary Buttons */
+html.dark .btn-secondary {
+  background-color: #27272a !important;
+  border: 1px solid #3f3f46 !important;
+  color: #f4f4f5 !important;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+html.dark .btn-secondary:hover:not(:disabled) {
+  background-color: #3f3f46 !important;
+  color: #ffffff !important;
+}
+
+/* Dark Disabled State */
+html.dark button:disabled,
+html.dark button[disabled],
+html.dark input:disabled,
+html.dark select:disabled {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+  color: #52525b !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+html.dark button:disabled svg,
+html.dark button[disabled] svg,
+html.dark button:disabled span,
+html.dark button[disabled] span {
+  color: #52525b !important;
+}
+
+/* Dark Scrollbars */
+html.dark * {
+  scrollbar-color: #3f3f46 transparent;
+}
+html.dark *::-webkit-scrollbar-thumb {
+  background: #3f3f46 !important;
+}
+html.dark *::-webkit-scrollbar-thumb:hover {
+  background: #52525b !important;
+}
+html.dark .scrollbar-compact::-webkit-scrollbar-thumb,
+html.dark .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  background: #3f3f46 !important;
+}
+html.dark .scrollbar-compact::-webkit-scrollbar-thumb:hover,
+html.dark .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: #52525b !important;
+}
+
+
+/* ==========================================================================
+   OFFICIAL COMMERCIAL RECEIPT WHITE CANVAS INVARIANT
+   Must strictly remain 100% pure white canvas with high-contrast dark text
+   in BOTH light mode and dark mode (screen preview and printed paper).
+   Placed AFTER dark mode rules to ensure absolute override priority.
+   ========================================================================== */
+html.dark .printable-receipt,
+html.dark .printable-receipt *,
+html.dark [data-invoice-canvas="true"],
+html.dark [data-invoice-canvas="true"] *,
+.printable-receipt,
+.printable-receipt *,
+[data-invoice-canvas="true"],
+[data-invoice-canvas="true"] * {
+  color-scheme: light !important;
+}
+
+html.dark .printable-receipt,
+html.dark [data-invoice-canvas="true"],
+.printable-receipt,
+[data-invoice-canvas="true"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #09090b !important;
+}
+
+html.dark .printable-receipt [class*="bg-white"],
+html.dark [data-invoice-canvas="true"] [class*="bg-white"],
+.printable-receipt [class*="bg-white"],
+[data-invoice-canvas="true"] [class*="bg-white"] {
+  background-color: #ffffff !important;
+}
+
+html.dark .printable-receipt [class*="bg-slate-50"],
+html.dark [data-invoice-canvas="true"] [class*="bg-slate-50"],
+.printable-receipt [class*="bg-slate-50"],
+[data-invoice-canvas="true"] [class*="bg-slate-50"] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.dark .printable-receipt [class*="border-slate-"],
+html.dark [data-invoice-canvas="true"] [class*="border-slate-"],
+.printable-receipt [class*="border-slate-"],
+[data-invoice-canvas="true"] [class*="border-slate-"] {
+  border-color: #e2e8f0 !important;
+}
+
+html.dark .printable-receipt [class*="divide-slate-"] > *,
+html.dark [data-invoice-canvas="true"] [class*="divide-slate-"] > *,
+.printable-receipt [class*="divide-slate-"] > *,
+[data-invoice-canvas="true"] [class*="divide-slate-"] > * {
+  border-color: #f1f5f9 !important;
+}
+
+html.dark .printable-receipt .text-slate-900,
+html.dark .printable-receipt [class*="text-slate-900"],
+html.dark [data-invoice-canvas="true"] .text-slate-900,
+html.dark [data-invoice-canvas="true"] [class*="text-slate-900"],
+.printable-receipt .text-slate-900,
+.printable-receipt [class*="text-slate-900"],
+[data-invoice-canvas="true"] .text-slate-900,
+[data-invoice-canvas="true"] [class*="text-slate-900"] {
+  color: #0f172a !important;
+}
+
+html.dark .printable-receipt .text-slate-700,
+html.dark .printable-receipt [class*="text-slate-700"],
+html.dark [data-invoice-canvas="true"] .text-slate-700,
+html.dark [data-invoice-canvas="true"] [class*="text-slate-700"],
+.printable-receipt .text-slate-700,
+.printable-receipt [class*="text-slate-700"],
+[data-invoice-canvas="true"] .text-slate-700,
+[data-invoice-canvas="true"] [class*="text-slate-700"] {
+  color: #334155 !important;
+}
+
+html.dark .printable-receipt .text-slate-600,
+html.dark .printable-receipt [class*="text-slate-600"],
+html.dark [data-invoice-canvas="true"] .text-slate-600,
+html.dark [data-invoice-canvas="true"] [class*="text-slate-600"],
+.printable-receipt .text-slate-600,
+.printable-receipt [class*="text-slate-600"],
+[data-invoice-canvas="true"] .text-slate-600,
+[data-invoice-canvas="true"] [class*="text-slate-600"] {
   color: #475569 !important;
 }
 
-/* Universal Theme-Adaptive Draggable Scrollbars */
+html.dark .printable-receipt .text-slate-500,
+html.dark .printable-receipt [class*="text-slate-500"],
+html.dark [data-invoice-canvas="true"] .text-slate-500,
+html.dark [data-invoice-canvas="true"] [class*="text-slate-500"],
+.printable-receipt .text-slate-500,
+.printable-receipt [class*="text-slate-500"],
+[data-invoice-canvas="true"] .text-slate-500,
+[data-invoice-canvas="true"] [class*="text-slate-500"] {
+  color: #64748b !important;
+}
+
+html.dark .printable-receipt .text-slate-400,
+html.dark .printable-receipt [class*="text-slate-400"],
+html.dark [data-invoice-canvas="true"] .text-slate-400,
+html.dark [data-invoice-canvas="true"] [class*="text-slate-400"],
+.printable-receipt .text-slate-400,
+.printable-receipt [class*="text-slate-400"],
+[data-invoice-canvas="true"] .text-slate-400,
+[data-invoice-canvas="true"] [class*="text-slate-400"] {
+  color: #94a3b8 !important;
+}
+
+html.dark .printable-receipt table,
+html.dark .printable-receipt tbody,
+html.dark .printable-receipt tr,
+html.dark .printable-receipt td,
+html.dark [data-invoice-canvas="true"] table,
+html.dark [data-invoice-canvas="true"] tbody,
+html.dark [data-invoice-canvas="true"] tr,
+html.dark [data-invoice-canvas="true"] td,
+.printable-receipt table,
+.printable-receipt tbody,
+.printable-receipt tr,
+.printable-receipt td,
+[data-invoice-canvas="true"] table,
+[data-invoice-canvas="true"] tbody,
+[data-invoice-canvas="true"] tr,
+[data-invoice-canvas="true"] td {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #f1f5f9 !important;
+}
+
+html.dark .printable-receipt table th,
+html.dark [data-invoice-canvas="true"] table th,
+.printable-receipt table th,
+[data-invoice-canvas="true"] table th {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html.dark .printable-receipt table tr:hover td,
+html.dark [data-invoice-canvas="true"] table tr:hover td,
+.printable-receipt table tr:hover td,
+[data-invoice-canvas="true"] table tr:hover td {
+  background-color: #f8fafc !important;
+}
+
+
+/* ==========================================================================
+   Universal Utilities, Shadows & Touch Scroll
+   ========================================================================== */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -425,33 +1035,13 @@ html[data-mode="light"] button[disabled] span {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
   border-radius: 9999px;
   cursor: grab;
 }
 
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.38);
-}
-
-/* Light Mode Universal Scrollbar */
-html[data-mode="light"] * {
-  scrollbar-color: #cbd5e1 transparent;
-}
-
-html[data-mode="light"] *::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
-}
-
-html[data-mode="light"] *::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8 !important;
-}
-
-/* Compact 4px Scrollbar for Modals, Dropdowns & Side Panels */
 .scrollbar-compact,
 .sidebar-nav-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .scrollbar-compact::-webkit-scrollbar,
@@ -462,32 +1052,10 @@ html[data-mode="light"] *::-webkit-scrollbar-thumb:hover {
 
 .scrollbar-compact::-webkit-scrollbar-thumb,
 .sidebar-nav-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
   cursor: grab;
 }
 
-.scrollbar-compact::-webkit-scrollbar-thumb:hover,
-.sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-html[data-mode="light"] .scrollbar-compact,
-html[data-mode="light"] .sidebar-nav-scroll {
-  scrollbar-color: #cbd5e1 transparent;
-}
-
-html[data-mode="light"] .scrollbar-compact::-webkit-scrollbar-thumb,
-html[data-mode="light"] .sidebar-nav-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
-}
-
-html[data-mode="light"] .scrollbar-compact::-webkit-scrollbar-thumb:hover,
-html[data-mode="light"] .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8 !important;
-}
-
-/* Universal Touch Momentum & Scroll Containment Utilities */
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -514,130 +1082,17 @@ html[data-mode="light"] .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
   overscroll-behavior: contain;
 }
 
-/* Base smooth touch momentum across all scrollable elements */
 main, [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-auto"] {
   -webkit-overflow-scrolling: touch;
 }
 
-
-/* Form Inputs & Selects in Light Mode */
-html[data-mode="light"] input,
-html[data-mode="light"] select,
-html[data-mode="light"] textarea {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+.shadow-2xl {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.03) !important;
 }
 
-html[data-mode="light"] input:focus,
-html[data-mode="light"] select:focus,
-html[data-mode="light"] textarea:focus {
-  border-color: #0284c7 !important;
-  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
-}
-
-html[data-mode="light"] input::placeholder,
-html[data-mode="light"] textarea::placeholder {
-  color: #64748b !important;
-}
-
-html[data-mode="light"] select option {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-}
-
-html[data-mode="light"] .shadow-2xl {
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
-}
-
-/* ==========================================================================
-   Versiklo Daylight Themes (Active under Light Mode)
-   ========================================================================== */
-
-/* 1. Cobalt Horizon (Deep Sapphire Blue & Royal Indigo) */
-html[data-mode="light"][data-theme="cobalt"],
-html[data-mode="light"] [data-theme="cobalt"] {
-  --color-cyan-200: #bfdbfe !important;
-  --color-cyan-300: #93c5fd !important;
-  --color-cyan-400: #2563eb !important;
-  --color-cyan-500: #1d4ed8 !important;
-  --color-cyan-600: #1e40af !important;
-  --color-cyan-950: #eff6ff !important;
-
-  --color-blue-400: #4f46e5 !important;
-  --color-blue-500: #4338ca !important;
-  --color-blue-600: #3730a3 !important;
-  --color-blue-950: #e0e7ff !important;
-
-  --color-indigo-400: #0891b2 !important;
-  --color-indigo-500: #0e7490 !important;
-  --color-indigo-600: #155e75 !important;
-}
-
-/* 2. Emerald Alpine (Deep Forest Pine & Mountain Teal) */
-html[data-mode="light"][data-theme="emerald-alpine"],
-html[data-mode="light"] [data-theme="emerald-alpine"] {
-  --color-cyan-200: #a7f3d0 !important;
-  --color-cyan-300: #6ee7b7 !important;
-  --color-cyan-400: #059669 !important;
-  --color-cyan-500: #047857 !important;
-  --color-cyan-600: #065f46 !important;
-  --color-cyan-950: #ecfdf5 !important;
-
-  --color-blue-400: #0d9488 !important;
-  --color-blue-500: #0f766e !important;
-  --color-blue-600: #115e59 !important;
-  --color-blue-950: #f0fdfa !important;
-
-  --color-indigo-400: #0e7490 !important;
-  --color-indigo-500: #155e75 !important;
-  --color-indigo-600: #164e63 !important;
-}
-
-/* 3. Amethyst Royal (Deep Velvet Violet & Rich Mulberry) */
-html[data-mode="light"][data-theme="amethyst"],
-html[data-mode="light"] [data-theme="amethyst"] {
-  --color-cyan-200: #ddd6fe !important;
-  --color-cyan-300: #c4b5fd !important;
-  --color-cyan-400: #7c3aed !important;
-  --color-cyan-500: #6d28d9 !important;
-  --color-cyan-600: #5b21b6 !important;
-  --color-cyan-950: #f5f3ff !important;
-
-  --color-blue-400: #9333ea !important;
-  --color-blue-500: #7e22ce !important;
-  --color-blue-600: #6b21a8 !important;
-  --color-blue-950: #faf5ff !important;
-
-  --color-indigo-400: #4f46e5 !important;
-  --color-indigo-500: #4338ca !important;
-  --color-indigo-600: #3730a3 !important;
-}
-
-/* 4. Crimson Sunset (Vibrant Ruby Coral & Deep Flame) */
-html[data-mode="light"][data-theme="crimson"],
-html[data-mode="light"] [data-theme="crimson"] {
-  --color-cyan-200: #fecdd3 !important;
-  --color-cyan-300: #fda4af !important;
-  --color-cyan-400: #e11d48 !important;
-  --color-cyan-500: #be123c !important;
-  --color-cyan-600: #9f1239 !important;
-  --color-cyan-950: #fff1f2 !important;
-
-  --color-blue-400: #ea580c !important;
-  --color-blue-500: #c2410c !important;
-  --color-blue-600: #9a3412 !important;
-  --color-blue-950: #fff7ed !important;
-
-  --color-indigo-400: #d97706 !important;
-  --color-indigo-500: #b45309 !important;
-  --color-indigo-600: #92400e !important;
-}
 /* ==========================================================================
    Skeleton UI Shimmer Animation
-   Smooth GPU-accelerated gradient wave for dark and light theme surfaces
    ========================================================================== */
-
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
@@ -663,22 +1118,11 @@ html[data-mode="light"] [data-theme="crimson"] {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.12) 50%,
-    rgba(255, 255, 255, 0.04) 75%,
-    transparent 100%
-  );
-  animation: shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-html[data-mode="light"] .animate-shimmer::after {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
     rgba(0, 0, 0, 0.03) 25%,
     rgba(0, 0, 0, 0.08) 50%,
     rgba(0, 0, 0, 0.03) 75%,
     transparent 100%
   );
+  animation: shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }

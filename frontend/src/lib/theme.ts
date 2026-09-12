@@ -1,6 +1,13 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+
 export type DarkAppTheme = "cyan" | "emerald" | "violet" | "amber";
 export type LightAppTheme = "cobalt" | "emerald-alpine" | "amethyst" | "crimson";
 export type AppTheme = DarkAppTheme | LightAppTheme;
+
+export type AppMode = "dark" | "light" | "system";
+export type ThemeMode = AppMode;
 
 export interface ThemeOption {
   id: AppTheme;
@@ -118,10 +125,8 @@ export function getDefaultThemeForMode(mode: AppMode): AppTheme {
   return mode === "light" ? "cobalt" : "cyan";
 }
 
-export type AppMode = "dark" | "light";
-
-const THEME_STORAGE_KEY = "motoshop_app_theme";
-const MODE_STORAGE_KEY = "motoshop_app_mode";
+export const THEME_STORAGE_KEY = "motoshop_app_theme";
+export const MODE_STORAGE_KEY = "motoshop_app_mode";
 
 const ALL_VALID_THEMES: AppTheme[] = [
   "cyan", "emerald", "violet", "amber",
@@ -155,7 +160,7 @@ export function getAppTheme(userId?: string | null): AppTheme {
     }
     const mode = getAppMode(userId);
     return getDefaultThemeForMode(mode);
-  } catch (e) {
+  } catch {
     return "cyan";
   }
 }
@@ -165,7 +170,6 @@ export function saveAppTheme(theme: AppTheme, userId?: string | null): void {
   try {
     const userKey = getUserThemeKey(userId);
     localStorage.setItem(userKey, theme);
-    // Also update current session global fallback
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     applyThemeToDocument(theme);
     window.dispatchEvent(new CustomEvent("theme_updated", { detail: { theme, userId } }));
@@ -179,41 +183,39 @@ export function applyThemeToDocument(theme: AppTheme): void {
   document.documentElement.setAttribute("data-theme", theme);
 }
 
+export function resolveEffectiveMode(mode: AppMode): "dark" | "light" {
+  if (mode === "system") {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "light";
+  }
+  return mode;
+}
+
 export function getAppMode(userId?: string | null): AppMode {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   try {
     const userKey = getUserModeKey(userId);
     let stored = localStorage.getItem(userKey) as AppMode;
     if (!stored && userKey !== MODE_STORAGE_KEY) {
       stored = localStorage.getItem(MODE_STORAGE_KEY) as AppMode;
     }
-    if (stored && ["dark", "light"].includes(stored)) {
+    if (stored && ["dark", "light", "system"].includes(stored)) {
       return stored;
     }
-    return "dark";
-  } catch (e) {
-    return "dark";
-  }
-}
-
-export function saveAppMode(mode: AppMode, userId?: string | null): void {
-  if (typeof window === "undefined") return;
-  try {
-    const userKey = getUserModeKey(userId);
-    localStorage.setItem(userKey, mode);
-    // Also update current session global fallback
-    localStorage.setItem(MODE_STORAGE_KEY, mode);
-    applyModeToDocument(mode);
-    window.dispatchEvent(new CustomEvent("mode_updated", { detail: { mode, userId } }));
-  } catch (e) {
-    console.error("Failed to save appearance mode:", e);
+    return "light";
+  } catch {
+    return "light";
   }
 }
 
 export function applyModeToDocument(mode: AppMode): void {
   if (typeof document === "undefined") return;
-  document.documentElement.setAttribute("data-mode", mode);
-  if (mode === "light") {
+  const effective = resolveEffectiveMode(mode);
+  document.documentElement.setAttribute("data-mode", effective);
+  document.documentElement.setAttribute("data-theme-mode", mode);
+  if (effective === "light") {
     document.documentElement.classList.remove("dark");
     document.documentElement.classList.add("light");
   } else {
@@ -222,10 +224,25 @@ export function applyModeToDocument(mode: AppMode): void {
   }
 }
 
+export function saveAppMode(mode: AppMode, userId?: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    const userKey = getUserModeKey(userId);
+    localStorage.setItem(userKey, mode);
+    localStorage.setItem(MODE_STORAGE_KEY, mode);
+    localStorage.setItem("motoshop_theme_mode", mode);
+    applyModeToDocument(mode);
+    window.dispatchEvent(new CustomEvent("mode_updated", { detail: { mode, userId } }));
+    window.dispatchEvent(new CustomEvent("motoshop_theme_changed", { detail: { mode, resolved: resolveEffectiveMode(mode) } }));
+  } catch (e) {
+    console.error("Failed to save appearance mode:", e);
+  }
+}
+
 export function syncUserPreferences(theme?: string | null, mode?: string | null, userId?: string | null): void {
   if (typeof window === "undefined") return;
   const uid = userId || localStorage.getItem("user_id");
-  const targetMode = (mode && ["dark", "light"].includes(mode)) 
+  const targetMode = (mode && ["dark", "light", "system"].includes(mode)) 
     ? (mode as AppMode) 
     : getAppMode(uid);
   const targetTheme = (theme && isValidTheme(theme)) 
@@ -236,3 +253,73 @@ export function syncUserPreferences(theme?: string | null, mode?: string | null,
   saveAppTheme(targetTheme, uid);
 }
 
+// Convenience alias helpers
+export const getStoredTheme = getAppMode;
+export const setStoredTheme = saveAppMode;
+export const applyTheme = applyModeToDocument;
+
+export function useTheme() {
+  const [themeMode, setThemeModeState] = useState<AppMode>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const current = getAppMode();
+    setThemeModeState(current);
+    setResolvedTheme(resolveEffectiveMode(current));
+    applyModeToDocument(current);
+
+    const handleModeUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ mode: AppMode }>;
+      if (customEvent.detail) {
+        setThemeModeState(customEvent.detail.mode);
+        setResolvedTheme(resolveEffectiveMode(customEvent.detail.mode));
+      }
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === MODE_STORAGE_KEY) {
+        const newMode = (e.newValue as AppMode) || "light";
+        setThemeModeState(newMode);
+        setResolvedTheme(resolveEffectiveMode(newMode));
+        applyModeToDocument(newMode);
+      }
+    };
+
+    let mediaQuery: MediaQueryList | null = null;
+    const handleMediaChange = () => {
+      if (getAppMode() === "system") {
+        const eff = resolveEffectiveMode("system");
+        setResolvedTheme(eff);
+        applyModeToDocument("system");
+      }
+    };
+
+    if (window.matchMedia) {
+      mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      mediaQuery.addEventListener("change", handleMediaChange);
+    }
+
+    window.addEventListener("mode_updated", handleModeUpdate);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("mode_updated", handleModeUpdate);
+      window.removeEventListener("storage", handleStorage);
+      if (mediaQuery) {
+        mediaQuery.removeEventListener("change", handleMediaChange);
+      }
+    };
+  }, []);
+
+  const setTheme = useCallback((newMode: AppMode) => {
+    setThemeModeState(newMode);
+    setResolvedTheme(resolveEffectiveMode(newMode));
+    saveAppMode(newMode);
+  }, []);
+
+  return {
+    theme: themeMode,
+    resolvedTheme,
+    setTheme,
+  };
+}

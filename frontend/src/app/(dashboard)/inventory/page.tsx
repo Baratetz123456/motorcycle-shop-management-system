@@ -359,25 +359,24 @@ function InventoryContent() {
   };
 
   return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <Boxes className="w-8 h-8 text-cyan-400" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-3">
+            <Boxes className="w-8 h-8 text-lime-600" />
             Parts & Stock Catalog
           </h1>
-          <p className="text-zinc-400 mt-1 text-sm">
+          <p className="text-slate-500 mt-1 text-sm">
             Monitor inventory quantities, reorder thresholds, and showroom service pricing.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-
           {canManage && (
             <button
               onClick={() => handleOpenModal(activeTab)}
-              className="bg-cyan-500 hover:bg-cyan-400 text-zinc-950 px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-xs"
+              className="bg-lime-500 hover:bg-lime-400 text-zinc-950 px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-xs shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>+ Add Item</span>
@@ -388,104 +387,98 @@ function InventoryContent() {
 
       {/* Deleted Item Notification Banner */}
       {deletedNotice && (
-        <div className="mb-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2.5 animate-in fade-in shrink-0">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2.5 animate-in fade-in shrink-0">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
           <span>{deletedNotice}</span>
         </div>
       )}
-      {/* Main Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
-        {/* Strictly 2 Main Filter Tabs */}
-        <div className="grid grid-cols-2 gap-1.5 bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-full sm:w-fit">
-          <button
-            onClick={() => handleTabSwitch("PRODUCT")}
-            className={clsx(
-              "px-3 sm:px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center",
-              activeTab === "PRODUCT"
-                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30 font-bold"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <Package className="w-4 h-4 shrink-0" />
-            <span className="truncate">Parts ({productCount})</span>
-          </button>
+      {/* Desktop Filter & Search Bar */}
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm shrink-0">
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar overscroll-x-contain pb-1 sm:pb-0 flex-1 min-w-0">
+          {/* Main Tabs (Parts vs Services) */}
+          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shrink-0">
+            <button
+              onClick={() => handleTabSwitch("PRODUCT")}
+              className={clsx(
+                "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
+                activeTab === "PRODUCT"
+                  ? "bg-lime-500 text-zinc-950 shadow-sm font-bold"
+                  : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+              )}
+            >
+              <Package className="w-3.5 h-3.5 shrink-0" />
+              <span>Parts ({productCount})</span>
+            </button>
+            <button
+              onClick={() => handleTabSwitch("SERVICE")}
+              className={clsx(
+                "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
+                activeTab === "SERVICE"
+                  ? "bg-lime-500 text-zinc-950 shadow-sm font-bold"
+                  : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+              )}
+            >
+              <Wrench className="w-3.5 h-3.5 shrink-0" />
+              <span>Services ({serviceCount})</span>
+            </button>
+          </div>
 
-          <button
-            onClick={() => handleTabSwitch("SERVICE")}
-            className={clsx(
-              "px-3 sm:px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center",
-              activeTab === "SERVICE"
-                ? "bg-cyan-500/20 text-cyan-300 shadow-md border border-cyan-500/30 font-bold"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <Wrench className="w-4 h-4 shrink-0" />
-            <span className="truncate">Services ({serviceCount})</span>
-          </button>
+          <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0" />
+
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none shrink-0 py-0.5">
+            <button
+              onClick={() => setSelectedCategory("ALL")}
+              className={clsx(
+                "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0",
+                selectedCategory === "ALL"
+                  ? "bg-lime-50 text-lime-900 border border-lime-300 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-950 hover:bg-slate-100 border border-transparent"
+              )}
+            >
+              All Categories
+            </button>
+            {categoryPills.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={clsx(
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0",
+                    isSelected
+                      ? "bg-lime-50 text-lime-900 border border-lime-300 shadow-xs font-bold"
+                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-100 border border-transparent"
+                  )}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Search Input (Hidden on Mobile) */}
-        <div className="hidden md:block relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        {/* Search Input */}
+        <div className="relative w-full lg:w-72 shrink-0">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder={`Search ${activeTab === "PRODUCT" ? "parts, SKU, brand..." : "services, code, title..."}`}
+            placeholder={`Search ${activeTab === "PRODUCT" ? "parts, SKU, brand..." : "services, code..."}`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 placeholder-zinc-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-lime-500/50 placeholder-slate-400"
           />
         </div>
       </div>
 
-      {/* Category Sub-Filter Pills (Hidden on Mobile) */}
-      <div className="hidden md:flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-4 scrollbar-none shrink-0 overscroll-x-contain">
-        <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-bold shrink-0 mr-1 flex items-center gap-1">
-          <Filter className="w-3 h-3" /> Category:
-        </span>
-
-        <button
-          onClick={() => setSelectedCategory("ALL")}
-          className={clsx(
-            "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 border",
-            selectedCategory === "ALL"
-              ? activeTab === "PRODUCT"
-                ? "bg-cyan-500 text-zinc-950 border-cyan-500 font-bold shadow-md shadow-cyan-500/20"
-                : "bg-purple-500 text-white border-purple-500 font-bold shadow-md shadow-purple-500/20"
-              : "bg-zinc-900/80 text-zinc-400 border-white/10 hover:text-white hover:bg-zinc-800"
-          )}
-        >
-          All Categories
-        </button>
-
-        {categoryPills.map((cat) => {
-          const isSelected = selectedCategory === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={clsx(
-                "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 border",
-                isSelected
-                  ? activeTab === "PRODUCT"
-                    ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm font-semibold"
-                    : "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm font-semibold"
-                  : "bg-zinc-900/60 text-zinc-400 border-white/5 hover:text-zinc-200 hover:bg-zinc-800"
-              )}
-            >
-              {cat}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Streamlined Catalog Table */}
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+      {/* Streamlined Catalog Table & Mobile List */}
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-white border-0 md:border md:border-slate-200 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
         <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
-          {/* Mobile View: Adaptive Catalog Cards */}
-          <div className="block md:hidden p-3 space-y-3">
+          {/* Mobile View: Borderless Edge-to-Edge Catalog Rows */}
+          <div className="block md:hidden px-1 divide-y divide-slate-100 pb-24">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, rIdx) => (
-                <div key={rIdx} className="p-4 rounded-2xl bg-zinc-950/60 border border-white/5 space-y-2.5">
+                <div key={rIdx} className="py-3.5 px-2 space-y-2">
                   <div className="flex items-center gap-3">
                     <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
                     <div className="space-y-1.5 flex-1">
@@ -497,7 +490,7 @@ function InventoryContent() {
                 </div>
               ))
             ) : filteredItems.length === 0 ? (
-              <div className="py-16 text-center text-zinc-500 text-sm">
+              <div className="py-16 text-center text-slate-500 text-sm">
                 No matching {activeTab === "PRODUCT" ? "products" : "services"} found.
               </div>
             ) : (
@@ -510,63 +503,63 @@ function InventoryContent() {
                   <div
                     key={item.id}
                     onClick={() => router.push(`/inventory/${item.id}`)}
-                    className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer space-y-3 active:scale-[0.99] group shadow-sm"
+                    className="py-3.5 px-2 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer space-y-2 group"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={clsx(
-                          "p-2.5 rounded-xl border shrink-0 transition-colors",
+                          "p-2 rounded-xl border shrink-0 transition-colors",
                           isProduct
-                            ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 group-hover:border-cyan-500/50"
-                            : "bg-purple-500/10 border-purple-500/20 text-purple-400 group-hover:border-purple-500/50"
+                            ? "bg-lime-50 border-lime-200 text-lime-700 group-hover:border-lime-400"
+                            : "bg-purple-50 border-purple-200 text-purple-700 group-hover:border-purple-400"
                         )}>
-                          {isProduct ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
+                          {isProduct ? <Package className="w-4 h-4" /> : <Wrench className="w-4 h-4" />}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-bold text-white group-hover:text-cyan-400 transition-colors text-sm truncate">
+                          <div className="font-bold text-slate-900 group-hover:text-lime-700 transition-colors text-sm truncate">
                             {item.name}
                           </div>
-                          <div className="text-xs text-zinc-400 font-mono mt-0.5">{item.sku}</div>
+                          <div className="text-xs text-slate-500 font-mono mt-0.5">{item.sku}</div>
                         </div>
                       </div>
 
-                      <span className="font-mono font-bold text-white text-base shrink-0">
+                      <span className="font-mono font-bold text-slate-900 text-base shrink-0">
                         ₱{Number(item.selling_price).toFixed(2)}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                    <div className="flex items-center justify-between pt-1 text-xs text-slate-600">
                       <div className="flex items-center gap-2 flex-wrap">
                         {item.brand && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                             {item.brand}
                           </span>
                         )}
-                        <span className="bg-zinc-900 px-2 py-0.5 rounded-md text-[10px] font-medium border border-white/5 text-zinc-400">
+                        <span className="bg-slate-100 px-2 py-0.5 rounded-md text-[10px] font-medium border border-slate-200 text-slate-600">
                           {item.category}
                         </span>
                         {isProduct ? (
                           isOutOfStock ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" /> Out of Stock
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-rose-600" /> Out of Stock
                             </span>
                           ) : isLowStock ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" /> Low ({item.current_stock})
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-600" /> Low ({item.current_stock})
                             </span>
                           ) : (
-                            <span className="text-[10px] text-zinc-400 font-mono">
-                              Stock: <span className="font-bold text-zinc-200">{item.current_stock}</span>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              Stock: <span className="font-bold text-slate-900">{item.current_stock}</span>
                             </span>
                           )
                         ) : (
-                          <span className="text-purple-300 text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                          <span className="text-purple-700 text-[10px] px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 font-medium">
                             Labor Service
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[11px] font-semibold text-cyan-400 shrink-0 ml-2">
+                      <div className="flex items-center gap-1 text-[11px] font-semibold text-lime-700 shrink-0 ml-2">
                         <span>Details</span>
                         <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </div>
@@ -578,8 +571,8 @@ function InventoryContent() {
           </div>
 
           {/* Desktop View: Full Data Table */}
-          <table className="hidden md:table w-full text-left text-sm text-zinc-300 whitespace-nowrap">
-            <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
+          <table className="hidden md:table w-full text-left text-sm text-slate-700 whitespace-nowrap">
+            <thead className="text-xs uppercase bg-slate-50 text-slate-600 border-b border-slate-200 sticky top-0 z-10 font-bold">
               <tr>
                 <th className="px-6 py-4 font-semibold">SKU / Item Name</th>
                 <th className="px-6 py-4 font-semibold">Brand</th>
@@ -591,10 +584,10 @@ function InventoryContent() {
                 <th className="px-6 py-4 font-semibold text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 Array.from({ length: 7 }).map((_, rIdx) => (
-                  <tr key={rIdx} className="hover:bg-white/[0.01]">
+                  <tr key={rIdx} className="hover:bg-slate-50/50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
@@ -613,8 +606,8 @@ function InventoryContent() {
                 ))
               ) : filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-zinc-500">
-                    <Boxes className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
+                  <td colSpan={6} className="text-center py-16 text-slate-500">
+                    <Boxes className="w-10 h-10 mx-auto text-slate-400 mb-2" />
                     No matching {activeTab === "PRODUCT" ? "products" : "services"} found.
                   </td>
                 </tr>
@@ -628,7 +621,7 @@ function InventoryContent() {
                     <tr 
                       key={item.id} 
                       onClick={() => router.push(`/inventory/${item.id}`)}
-                      className="hover:bg-white/[0.04] transition-all cursor-pointer group"
+                      className="hover:bg-slate-50/80 transition-all cursor-pointer group"
                     >
                       {/* 1. SKU / Item Name */}
                       <td className="px-6 py-4">
@@ -636,16 +629,16 @@ function InventoryContent() {
                           <div className={clsx(
                             "p-2.5 rounded-xl border transition-all group-hover:scale-105",
                             isProduct 
-                              ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 group-hover:border-cyan-500/50" 
-                              : "bg-purple-500/10 border-purple-500/20 text-purple-400 group-hover:border-purple-500/50"
+                              ? "bg-lime-50 border-lime-200 text-lime-700 group-hover:border-lime-400" 
+                              : "bg-purple-50 border-purple-200 text-purple-700 group-hover:border-purple-400"
                           )}>
                             {isProduct ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
                           </div>
                           <div>
-                            <div className="font-bold text-zinc-100 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                            <div className="font-bold text-slate-900 group-hover:text-lime-700 transition-colors flex items-center gap-2">
                               {item.name}
                             </div>
-                            <div className="text-xs text-zinc-400 font-mono mt-0.5">{item.sku}</div>
+                            <div className="text-xs text-slate-500 font-mono mt-0.5">{item.sku}</div>
                           </div>
                         </div>
                       </td>
@@ -653,23 +646,23 @@ function InventoryContent() {
                       {/* 2. Brand */}
                       <td className="px-6 py-4">
                         {item.brand ? (
-                          <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
                             {item.brand}
                           </span>
                         ) : (
-                          <span className="text-zinc-600 text-xs italic">—</span>
+                          <span className="text-slate-400 text-xs italic">—</span>
                         )}
                       </td>
 
                       {/* 3. Category */}
                       <td className="px-6 py-4">
-                        <span className="bg-zinc-800/80 px-2.5 py-1 rounded-md text-xs font-medium border border-white/5 text-zinc-300">
+                        <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 text-slate-700">
                           {item.category}
                         </span>
                       </td>
 
                       {/* 4. Selling Price */}
-                      <td className="px-6 py-4 text-right font-mono font-bold text-white text-base">
+                      <td className="px-6 py-4 text-right font-mono font-bold text-slate-900 text-base">
                         ₱{Number(item.selling_price).toFixed(2)}
                       </td>
 
@@ -680,27 +673,27 @@ function InventoryContent() {
                             <div>
                               <span className={clsx(
                                 "font-bold text-base", 
-                                isOutOfStock ? "text-red-400" : isLowStock ? "text-amber-400" : "text-zinc-100"
+                                isOutOfStock ? "text-rose-700" : isLowStock ? "text-amber-700" : "text-slate-900"
                               )}>
                                 {item.current_stock}
                               </span>
-                              <span className="text-zinc-500 text-xs ml-1">/ {item.reorder_level}</span>
+                              <span className="text-slate-500 text-xs ml-1">/ {item.reorder_level}</span>
                             </div>
 
                             {isOutOfStock ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3 text-rose-600" />
                                 Out of Stock
                               </span>
                             ) : isLowStock ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3 text-amber-600" />
                                 Low Stock
                               </span>
                             ) : null}
                           </div>
                         ) : (
-                          <span className="text-zinc-400 text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-sans">
+                          <span className="text-purple-700 text-xs px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 font-sans font-medium">
                             Labor Service
                           </span>
                         )}
@@ -708,7 +701,7 @@ function InventoryContent() {
 
                       {/* 6. Navigation Chevron Indicator */}
                       <td className="px-6 py-4 text-right">
-                        <div className="inline-flex items-center text-xs text-zinc-500 group-hover:text-cyan-400 transition-colors font-medium">
+                        <div className="inline-flex items-center text-xs text-slate-400 group-hover:text-lime-700 transition-colors font-medium">
                           <span className="hidden group-hover:inline mr-1">View Profile</span>
                           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -722,16 +715,16 @@ function InventoryContent() {
         </div>
 
         {/* Footer Info */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400 shrink-0">
+        <div className="p-4 border-t border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600 shrink-0">
           <div>
-            Displaying <span className="font-semibold text-white">{filteredItems.length}</span> {activeTab === "PRODUCT" ? "product(s)" : "service(s)"}
+            Displaying <span className="font-semibold text-slate-900">{filteredItems.length}</span> {activeTab === "PRODUCT" ? "product(s)" : "service(s)"}
             {activeTab === "PRODUCT" && (
-              <span className="text-zinc-500 ml-2">
+              <span className="text-slate-500 ml-2">
                 (Sorted by critical deficit & proximity to reorder threshold)
               </span>
             )}
           </div>
-          <div className="flex gap-4 items-center text-zinc-500">
+          <div className="flex gap-4 items-center text-slate-500">
             <span>• Click any row to view full profile, margins & controls</span>
           </div>
         </div>
@@ -745,20 +738,20 @@ function InventoryContent() {
         title={`Add New ${formData.item_type === "PRODUCT" ? "Part / Product" : "Service"}`}
         subtitle="Add an item to the active workshop catalog"
         icon={formData.item_type === "PRODUCT" ? <Package className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
-        iconVariant={formData.item_type === "PRODUCT" ? "cyan" : "purple"}
+        iconVariant={formData.item_type === "PRODUCT" ? "lime" : "purple"}
         preventBackdropClose={isSubmitting}
       >
         <form onSubmit={handleCreateItemSubmit}>
           <ModalBody>
             {errorMsg && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {/* Type Switcher */}
-            <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/10">
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button
                 type="button"
                 onClick={() => {
@@ -774,8 +767,8 @@ function InventoryContent() {
                 className={clsx(
                   "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all",
                   formData.item_type === "PRODUCT"
-                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-xs"
+                    : "text-slate-600 hover:text-slate-950"
                 )}
               >
                 Product / Part
@@ -796,8 +789,8 @@ function InventoryContent() {
                 className={clsx(
                   "flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all",
                   formData.item_type === "SERVICE"
-                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-xs"
+                    : "text-slate-600 hover:text-slate-950"
                 )}
               >
                 Workshop Service
@@ -805,7 +798,7 @@ function InventoryContent() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                 Item Name
               </label>
               <input
@@ -814,13 +807,13 @@ function InventoryContent() {
                 placeholder={formData.item_type === "PRODUCT" ? "e.g. Motul 7100 10W-40 4T (1L)" : "e.g. Engine Oil Change & Filter Service"}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                   SKU / Code
                 </label>
                 <input
@@ -828,21 +821,21 @@ function InventoryContent() {
                   required
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                   Category
                 </label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                 >
                   {customCategories.map((c) => (
-                    <option key={c} value={c} className="bg-zinc-900 text-zinc-100">{c}</option>
+                    <option key={c} value={c} className="bg-white text-slate-900">{c}</option>
                   ))}
                 </select>
               </div>
@@ -850,7 +843,7 @@ function InventoryContent() {
 
             {formData.item_type === "PRODUCT" && (
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                   Brand
                 </label>
                 <input
@@ -858,14 +851,14 @@ function InventoryContent() {
                   placeholder="e.g. Motul, Honda, Yamaha"
                   value={formData.brand}
                   onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                 />
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                   Cost Price (₱)
                 </label>
                 <input
@@ -875,12 +868,12 @@ function InventoryContent() {
                   required
                   value={formData.cost_price}
                   onChange={(e) => setFormData({ ...formData, cost_price: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                   Selling Price (₱)
                 </label>
                 <input
@@ -890,7 +883,7 @@ function InventoryContent() {
                   required
                   value={formData.selling_price}
                   onChange={(e) => setFormData({ ...formData, selling_price: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                 />
               </div>
             </div>
@@ -898,7 +891,7 @@ function InventoryContent() {
             {formData.item_type === "PRODUCT" && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                     Current Stock
                   </label>
                   <input
@@ -907,12 +900,12 @@ function InventoryContent() {
                     required
                     value={formData.current_stock}
                     onChange={(e) => setFormData({ ...formData, current_stock: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                     Reorder Threshold
                   </label>
                   <input
@@ -921,7 +914,7 @@ function InventoryContent() {
                     required
                     value={formData.reorder_level}
                     onChange={(e) => setFormData({ ...formData, reorder_level: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-lime-500/50 transition-all shadow-xs"
                   />
                 </div>
               </div>
@@ -932,14 +925,14 @@ function InventoryContent() {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
             >
               {isSubmitting ? <span>Saving...</span> : <span>Save to Catalog</span>}
             </button>
@@ -963,22 +956,22 @@ function InventoryContent() {
       >
         {/* Search */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-zinc-300">Search Catalog</label>
+          <label className="text-xs font-semibold text-slate-700">Search Catalog</label>
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder={`Search ${activeTab === "PRODUCT" ? "parts, SKU, brand..." : "services, code, title..."}`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-lime-500/50"
             />
           </div>
         </div>
 
         {/* Catalog Type Switcher */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-300">Catalog Section</label>
+          <label className="text-xs font-semibold text-slate-700">Catalog Section</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -986,8 +979,8 @@ function InventoryContent() {
               className={clsx(
                 "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
                 activeTab === "PRODUCT"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-xs"
+                  : "bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-950"
               )}
             >
               <Package className="w-4 h-4" />
@@ -999,8 +992,8 @@ function InventoryContent() {
               className={clsx(
                 "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
                 activeTab === "SERVICE"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-xs"
+                  : "bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-950"
               )}
             >
               <Wrench className="w-4 h-4" />
@@ -1011,7 +1004,7 @@ function InventoryContent() {
 
         {/* Category Filter */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-300">Category</label>
+          <label className="text-xs font-semibold text-slate-700">Category</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -1019,8 +1012,8 @@ function InventoryContent() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 selectedCategory === "ALL"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-xs"
+                  : "bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-950"
               )}
             >
               All Categories
@@ -1033,8 +1026,8 @@ function InventoryContent() {
                 className={clsx(
                   "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                   selectedCategory === cat
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                    ? "bg-lime-500 text-zinc-950 font-bold shadow-xs"
+                    : "bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-950"
                 )}
               >
                 {cat}

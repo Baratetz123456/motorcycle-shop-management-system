@@ -4,9 +4,14 @@ import asyncio
 import json
 import uuid
 import aio_pika
-from fastapi import FastAPI, Depends, HTTPException, Request
+import csv
+import io
+from fastapi import FastAPI, Depends, HTTPException, Request, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, cast, String
+from sqlalchemy import select, update, cast, String, extract, Date as SADate
+from sqlalchemy.orm import selectinload
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
@@ -78,6 +83,120 @@ app.add_middleware(RequestLoggingMiddleware, service_name="sales_service")
 
 def generate_invoice_no():
     return f"INV-{uuid.uuid4().hex[:8].upper()}"
+
+@app.get("/reports/export")
+async def export_sales_reports(
+    request: Request,
+    report_type: str = Query("MONTHLY"),
+    date: Optional[str] = Query(None),
+    month: Optional[str] = Query(None),
+    year: Optional[str] = Query(None),
+    current_user: dict = Depends(require_roles(["admin", "manager", "cashier"])),
+    session: AsyncSession = Depends(get_db)
+):
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="SALES_REPORT_EXPORT",
+        resource="/api/v1/sales/reports/export",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={"exported_by": current_user.get("email"), "report_type": report_type, "date": date, "month": month, "year": year},
+        ip_address=client_ip
+    )
+
+    stmt = select(models.Transaction).options(selectinload(models.Transaction.items)).order_by(models.Transaction.created_at.desc())
+    stmt = stmt.where(models.Transaction.status == models.TransactionStatus.COMPLETED)
+
+    if report_type.upper() == "DAILY" and date:
+        try:
+            target_date = datetime.strptime(date, "%Y-%m-%d").date()
+            stmt = stmt.where(cast(models.Transaction.created_at, SADate) == target_date)
+        except Exception:
+            pass
+    elif report_type.upper() == "MONTHLY" and month:
+        try:
+            parts = month.split("-")
+            yr, mo = int(parts[0]), int(parts[1])
+            stmt = stmt.where(extract('year', models.Transaction.created_at) == yr, extract('month', models.Transaction.created_at) == mo)
+        except Exception:
+            pass
+    elif report_type.upper() == "YEARLY" and year:
+        try:
+            yr = int(year)
+            stmt = stmt.where(extract('year', models.Transaction.created_at) == yr)
+        except Exception:
+            pass
+
+    result = await session.execute(stmt)
+    transactions = result.scalars().all()
+
+    total_revenue = sum(float(t.total or 0) for t in transactions)
+    total_subtotal = sum(float(t.subtotal or 0) for t in transactions)
+    total_discount = sum(float(t.discount_amount or 0) for t in transactions)
+    tx_count = len(transactions)
+    avg_ticket = (total_revenue / tx_count) if tx_count > 0 else 0.0
+
+    period_label = (
+        date if report_type.upper() == "DAILY" and date else
+        month if report_type.upper() == "MONTHLY" and month else
+        year if report_type.upper() == "YEARLY" and year else
+        "all_time"
+    )
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Shop Metadata Header
+    writer.writerow(["VERSIKLO MOTORCYCLE PARTS & REPAIR SHOP"])
+    writer.writerow(["Official Sales & Financial Extraction Ledger (Python Backend Engine)"])
+    writer.writerow(["Report Interval", report_type.upper()])
+    writer.writerow(["Target Period", period_label])
+    writer.writerow(["Exported At (UTC)", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")])
+    writer.writerow(["Exported By", current_user.get("email", "Staff User")])
+    writer.writerow([])
+
+    # Executive Summary Block
+    writer.writerow(["EXECUTIVE FINANCIAL SUMMARY"])
+    writer.writerow(["Metric", "Value (PHP)"])
+    writer.writerow(["Gross Completed Sales Revenue", f"{total_revenue:.2f}"])
+    writer.writerow(["Net Subtotal Billed", f"{total_subtotal:.2f}"])
+    writer.writerow(["Total Discounts Applied", f"{total_discount:.2f}"])
+    writer.writerow(["Completed Invoices Count", tx_count])
+    writer.writerow(["Average Transaction Value", f"{avg_ticket:.2f}"])
+    writer.writerow([])
+
+    # Itemized Sales Transactions
+    writer.writerow(["ITEMIZED SALES TRANSACTIONS LEDGER"])
+    writer.writerow([
+        "Invoice No", "Date & Time", "Cashier", "Mechanic", "Subtotal (PHP)",
+        "Discount (PHP)", "Total (PHP)", "Cash Received (PHP)", "Change (PHP)", "Status", "Items Breakdown"
+    ])
+
+    for tx in transactions:
+        created_str = tx.created_at.strftime("%Y-%m-%d %H:%M:%S") if tx.created_at else "N/A"
+        items_desc = "; ".join([f"{item.qty}x [ID:{item.item_id}] @ ₱{float(item.price):.2f}" for item in (tx.items or [])])
+        writer.writerow([
+            tx.invoice_no or "",
+            created_str,
+            tx.cashier_name or "Counter Cashier",
+            tx.mechanic_name or "N/A",
+            f"{float(tx.subtotal or 0):.2f}",
+            f"{float(tx.discount_amount or 0):.2f}",
+            f"{float(tx.total or 0):.2f}",
+            f"{float(tx.cash_received or 0):.2f}",
+            f"{float(tx.cash_change or 0):.2f}",
+            tx.status.value if hasattr(tx.status, 'value') else str(tx.status),
+            items_desc
+        ])
+
+    output.seek(0)
+    filename = f"versiklo_sales_report_{report_type.lower()}_{period_label}.csv"
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @app.get("/transactions", response_model=List[schemas.TransactionResponse])
 async def get_transactions(

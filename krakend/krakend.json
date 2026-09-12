@@ -300,6 +300,22 @@
       ]
     },
     {
+      "endpoint": "/api/v1/sales/reports/export",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "input_query_strings": ["*"],
+      "backend": [
+        {
+          "url_pattern": "/reports/export",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["http://sales_service:8000"]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/sales/transactions",
       "method": "GET",
       "output_encoding": "no-op",

@@ -253,82 +253,57 @@ export default function CustomerRepairHistoryPage() {
   });
 
   return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
       
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <History className="w-8 h-8 text-cyan-400" />
+          <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
+            <History className="w-8 h-8 text-lime-600" />
             Customer Records
           </h1>
-          <p className="text-zinc-400 mt-1 text-sm">
+          <p className="text-slate-500 mt-1 text-sm">
             Past repairs, parts used, and bikes linked to returning customers.
           </p>
         </div>
-
-        <div className="hidden md:flex items-center gap-3">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search customer, contact, bike..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-            />
-          </div>
-        </div>
       </div>
 
-      {/* Filters Bar: Status Tabs & Date Range Filter */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 shrink-0">
-        {/* Status Tabs */}
-        <div className="grid grid-cols-3 gap-1 bg-zinc-900/80 p-1.5 rounded-2xl border border-white/10 w-full sm:w-fit">
-          <button
-            onClick={() => setFilterTab("ALL")}
-            className={clsx(
-              "px-2 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center",
-              filterTab === "ALL"
-                ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <span className="truncate">All ({histories.length})</span>
-          </button>
+      {/* Desktop Filter & Search Bar */}
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm shrink-0">
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar overscroll-x-contain pb-1 sm:pb-0">
+          {/* Status Tabs */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shrink-0">
+              {(["ALL", "ACTIVE", "PAST"] as const).map((tab) => {
+                const isSelected = filterTab === tab;
+                const label = tab === "ALL" ? `All (${histories.length})` : tab === "ACTIVE" ? "On Bench" : "Completed";
+                const Icon = tab === "ACTIVE" ? Wrench : tab === "PAST" ? CheckCircle : null;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setFilterTab(tab)}
+                    className={clsx(
+                      "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
+                      isSelected
+                        ? "bg-lime-500 text-zinc-950 shadow-sm font-bold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    )}
+                  >
+                    {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          <button
-            onClick={() => setFilterTab("ACTIVE")}
-            className={clsx(
-              "px-2 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center",
-              filterTab === "ACTIVE"
-                ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <Wrench className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">On Bench</span>
-          </button>
+          <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0" />
 
-          <button
-            onClick={() => setFilterTab("PAST")}
-            className={clsx(
-              "px-2 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center",
-              filterTab === "PAST"
-                ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                : "text-zinc-400 hover:text-white"
-            )}
-          >
-            <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Completed</span>
-          </button>
-        </div>
-
-        {/* Date Range Filter Controls (Hidden on Mobile) */}
-        <div className="hidden md:flex flex-wrap items-center gap-2 bg-zinc-900/60 p-2 rounded-2xl border border-white/10">
-          <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
-            <div className="inline-flex items-center gap-1 min-w-max">
-              <Calendar className="w-4 h-4 text-cyan-400 ml-1 mr-1 shrink-0" />
+          {/* Date Range Filter Controls */}
+          <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200 shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-lime-600 ml-1.5 mr-0.5 shrink-0" />
               {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
                 const labels = {
                   ALL: "All Time",
@@ -342,10 +317,10 @@ export default function CustomerRepairHistoryPage() {
                     key={preset}
                     onClick={() => handleSelectPreset(preset)}
                     className={clsx(
-                      "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap shrink-0",
+                      "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
                       isSelected
-                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
-                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 border border-transparent"
+                        ? "bg-lime-500 text-zinc-950 border border-lime-600 shadow-sm font-bold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white border border-transparent"
                     )}
                   >
                     {labels[preset]}
@@ -353,50 +328,62 @@ export default function CustomerRepairHistoryPage() {
                 );
               })}
             </div>
+
+            <div className="h-3.5 w-px bg-slate-200 hidden sm:block shrink-0" />
+
+            {/* Custom Date Inputs */}
+            <div className="flex items-center gap-1 text-xs text-slate-600 shrink-0">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
+                className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                title="Filter from service date"
+              />
+              <span className="text-slate-400 text-[11px]">to</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                title="Filter to service date"
+              />
+
+              {(startDate || endDate || datePreset !== "ALL") && (
+                <button
+                  onClick={handleClearDateFilter}
+                  className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-rose-600 transition-colors ml-0.5"
+                  title="Clear date filter"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
+        </div>
 
-          <div className="h-4 w-px bg-white/10 hidden sm:block" />
-
-          {/* Custom Date Inputs */}
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-              className="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
-              title="Filter from service date"
-            />
-            <span className="text-zinc-500">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-              className="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
-              title="Filter to service date"
-            />
-
-            {(startDate || endDate || datePreset !== "ALL") && (
-              <button
-                onClick={handleClearDateFilter}
-                className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-rose-400 transition-colors ml-0.5"
-                title="Clear date filter"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+        {/* Search Bar */}
+        <div className="relative w-full lg:w-72 shrink-0">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search customer, contact, bike..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500 shadow-sm"
+          />
         </div>
       </div>
 
       {/* History Table Container */}
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900/40 border border-white/10 rounded-2xl flex flex-col backdrop-blur-xl shadow-2xl">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-white border-0 md:border md:border-slate-200 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
         <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
-          {/* Mobile View: Adaptive Customer Cards */}
-          <div className="block md:hidden p-3 space-y-3">
+          {/* Mobile View: Borderless Edge-to-Edge Customer Rows */}
+          <div className="block md:hidden px-1 divide-y divide-slate-100 pb-24">
             {filteredHistories.length === 0 ? (
-              <div className="text-center py-16 text-zinc-500">
-                <Calendar className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
-                <p className="font-semibold text-zinc-400">No customer records match your filter criteria.</p>
+              <div className="text-center py-16 text-slate-400">
+                <Calendar className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                <p className="font-semibold text-slate-600">No customer records match your filter criteria.</p>
                 {(startDate || endDate || search || filterTab !== "ALL") && (
                   <button
                     onClick={() => {
@@ -404,7 +391,7 @@ export default function CustomerRepairHistoryPage() {
                       setFilterTab("ALL");
                       handleClearDateFilter();
                     }}
-                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
+                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-lime-500 text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all shadow-sm"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Reset All Filters</span>
@@ -419,48 +406,48 @@ export default function CustomerRepairHistoryPage() {
                   <div
                     key={record.customer_id}
                     onClick={() => router.push(`/repairs/history/logs?id=${encodeURIComponent(record.customer_id)}`)}
-                    className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer space-y-3 active:scale-[0.99] group shadow-sm"
+                    className="py-3.5 px-2 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer space-y-2 group"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:border-cyan-500/50 transition-colors shrink-0">
+                        <div className="p-2 rounded-xl bg-lime-50 text-lime-700 border border-lime-200 group-hover:border-lime-400 transition-colors shrink-0">
                           <User className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <div className="font-bold text-white group-hover:text-cyan-300 transition-colors text-sm truncate">
+                          <div className="font-bold text-slate-900 group-hover:text-lime-700 transition-colors text-sm truncate">
                             {record.customer_name}
                           </div>
-                          <div className="text-xs text-zinc-400 flex items-center gap-1.5 mt-0.5">
-                            <Bike className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                            <span className="truncate">{record.motorcycle_model}</span>
+                          <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                            <Bike className="w-3.5 h-3.5 text-lime-600 shrink-0" />
+                            <span className="truncate font-medium text-slate-700">{record.motorcycle_model}</span>
                           </div>
                         </div>
                       </div>
 
                       {isActive ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shrink-0">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-lime-100 text-lime-800 border border-lime-300 shrink-0">
                           <Wrench className="w-3 h-3" /> On Bench
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700 shrink-0">
-                          <CheckCircle className="w-3 h-3" /> Ready
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+                          <CheckCircle className="w-3 h-3 text-slate-500" /> Ready
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-zinc-400">
+                    <div className="flex items-center justify-between pt-1 text-xs text-slate-500">
                       <div className="flex items-center gap-3">
-                        <span className="font-mono text-[11px] text-zinc-300">
+                        <span className="font-mono text-[11px] text-slate-700">
                           {record.contact_number}
                         </span>
-                        <span className="text-zinc-600">•</span>
-                        <span className="text-[11px]">
+                        <span className="text-slate-300">•</span>
+                        <span className="text-[11px] text-slate-500">
                           {new Date(record.last_service_date).toLocaleDateString()}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1 text-[11px] font-semibold text-cyan-400 shrink-0">
-                        <span>Logs</span>
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-lime-700 shrink-0">
+                        <span>{record.total_repair_sessions || 1} {(record.total_repair_sessions || 1) === 1 ? "Job" : "Jobs"}</span>
                         <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
@@ -471,22 +458,22 @@ export default function CustomerRepairHistoryPage() {
           </div>
 
           {/* Desktop View: Full History Table */}
-          <table className="hidden md:table w-full text-left text-sm text-zinc-300 whitespace-nowrap">
-            <thead className="text-xs uppercase bg-zinc-900/90 text-zinc-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
+          <table className="hidden md:table w-full text-left text-sm text-slate-700 whitespace-nowrap">
+            <thead className="text-xs uppercase bg-slate-50 text-slate-500 border-b border-slate-200 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-4 font-semibold">Customer</th>
-                <th className="px-6 py-4 font-semibold">Bike Model</th>
-                <th className="px-6 py-4 font-semibold">Last Service</th>
-                <th className="px-6 py-4 font-semibold text-center">Status</th>
-                <th className="px-6 py-4 font-semibold text-right"></th>
+                <th className="px-6 py-4 font-bold">Customer</th>
+                <th className="px-6 py-4 font-bold">Bike Model</th>
+                <th className="px-6 py-4 font-bold">Last Service</th>
+                <th className="px-6 py-4 font-bold text-center">Status</th>
+                <th className="px-6 py-4 font-bold text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100">
               {filteredHistories.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-16 text-zinc-500">
-                    <Calendar className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
-                    <p className="font-semibold text-zinc-400">No customer records match your filter criteria.</p>
+                  <td colSpan={5} className="text-center py-16 text-slate-400">
+                    <Calendar className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                    <p className="font-semibold text-slate-600">No customer records match your filter criteria.</p>
                     {(startDate || endDate || search || filterTab !== "ALL") && (
                       <button
                         onClick={() => {
@@ -494,7 +481,7 @@ export default function CustomerRepairHistoryPage() {
                           setFilterTab("ALL");
                           handleClearDateFilter();
                         }}
-                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-lime-500 text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all shadow-sm"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Reset All Filters</span>
@@ -510,43 +497,43 @@ export default function CustomerRepairHistoryPage() {
                     <tr 
                       key={record.customer_id} 
                       onClick={() => router.push(`/repairs/history/logs?id=${encodeURIComponent(record.customer_id)}`)}
-                      className="hover:bg-white/[0.04] transition-all cursor-pointer group"
+                      className="hover:bg-slate-50/80 transition-all cursor-pointer group"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:border-cyan-500/50 transition-colors">
+                          <div className="p-2 rounded-xl bg-lime-50 text-lime-700 border border-lime-200 group-hover:border-lime-400 transition-colors">
                             <User className="w-4 h-4" />
                           </div>
-                          <span className="font-bold text-zinc-100 group-hover:text-cyan-300 transition-colors">
+                          <span className="font-bold text-slate-900 group-hover:text-lime-700 transition-colors">
                             {record.customer_name}
                           </span>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 font-semibold text-zinc-200">
+                      <td className="px-6 py-4 font-semibold text-slate-800">
                         {record.motorcycle_model}
                       </td>
 
-                      <td className="px-6 py-4 text-xs text-zinc-400">
+                      <td className="px-6 py-4 text-xs text-slate-500">
                         {new Date(record.last_service_date).toLocaleDateString()}
                       </td>
 
                       <td className="px-6 py-4 text-center">
                         {isActive ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-lime-100 text-lime-800 border border-lime-300">
                             <Wrench className="w-3.5 h-3.5" />
                             Active on Bench
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
-                            <CheckCircle className="w-3.5 h-3.5" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                            <CheckCircle className="w-3.5 h-3.5 text-slate-500" />
                             Ready for Service
                           </span>
                         )}
                       </td>
 
                       <td className="px-6 py-4 text-right">
-                        <div className="inline-flex items-center text-xs text-zinc-500 group-hover:text-cyan-400 transition-colors font-medium">
+                        <div className="inline-flex items-center text-xs text-slate-400 group-hover:text-lime-700 transition-colors font-semibold">
                           <span className="hidden group-hover:inline mr-1">View Profile</span>
                           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -560,9 +547,9 @@ export default function CustomerRepairHistoryPage() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/80 flex items-center justify-between text-xs text-zinc-400 shrink-0">
+        <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500 shrink-0">
           <div>Showing {filteredHistories.length} customer record(s)</div>
-          <div className="flex gap-4 items-center text-zinc-500">
+          <div className="flex gap-4 items-center text-slate-400">
             <span>• Accessible by Admin, Manager, and Mechanic</span>
           </div>
         </div>
@@ -584,22 +571,22 @@ export default function CustomerRepairHistoryPage() {
       >
         {/* Search */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-zinc-300">Search Records</label>
+          <label className="text-xs font-semibold text-slate-700">Search Records</label>
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search customer, contact, bike..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+              className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
             />
           </div>
         </div>
 
         {/* Status Filter */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-300">Repair Status</label>
+          <label className="text-xs font-semibold text-slate-700">Repair Status</label>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
@@ -607,8 +594,8 @@ export default function CustomerRepairHistoryPage() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 filterTab === "ALL"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
+                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
               )}
             >
               All Records
@@ -619,8 +606,8 @@ export default function CustomerRepairHistoryPage() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 filterTab === "ACTIVE"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
+                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
               )}
             >
               On Bench
@@ -631,8 +618,8 @@ export default function CustomerRepairHistoryPage() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 filterTab === "PAST"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                  : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
+                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
               )}
             >
               Completed
@@ -642,7 +629,7 @@ export default function CustomerRepairHistoryPage() {
 
         {/* Date Range Presets & Custom */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-zinc-300">Service Date Range</label>
+          <label className="text-xs font-semibold text-slate-700">Service Date Range</label>
           <div className="grid grid-cols-2 gap-2">
             {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((p) => {
               const labels = { ALL: "All Time", TODAY: "Today", WEEK: "This Week", MONTH: "This Month" };
@@ -654,8 +641,8 @@ export default function CustomerRepairHistoryPage() {
                   className={clsx(
                     "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                     datePreset === p
-                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
-                      : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                      ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
+                      : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
                   )}
                 >
                   {labels[p]}
@@ -666,21 +653,21 @@ export default function CustomerRepairHistoryPage() {
 
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div>
-              <label className="text-[11px] text-zinc-500 mb-1 block">From</label>
+              <label className="text-[11px] text-slate-500 mb-1 block">From</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
               />
             </div>
             <div>
-              <label className="text-[11px] text-zinc-500 mb-1 block">To</label>
+              <label className="text-[11px] text-slate-500 mb-1 block">To</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
               />
             </div>
           </div>

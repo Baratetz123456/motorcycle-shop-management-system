@@ -960,10 +960,10 @@ export default function POSPage() {
         <main className="flex-1 w-full p-4 sm:p-8 space-y-6 pb-20">
           
           {/* Top Bar: Return to Catalog */}
-          <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-200">
             <button
               onClick={() => setActiveView("catalog")}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Services & Products Catalog</span>
@@ -973,7 +973,7 @@ export default function POSPage() {
               <button
                 onClick={() => setIsClearConfirmOpen(true)}
                 disabled={cart.length === 0}
-                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-red-500/20 hover:text-red-400 text-zinc-400 text-xs font-bold transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 text-slate-600 text-xs font-bold transition-all flex items-center gap-2 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Clear Cart</span>
@@ -983,15 +983,15 @@ export default function POSPage() {
 
           {/* Connected Customer Info Banner */}
           {selectedRepair ? (
-            <div className="bg-zinc-900 border border-cyan-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center font-bold text-xl">
+                <div className="w-14 h-14 rounded-2xl bg-lime-50 text-lime-800 border border-lime-200 flex items-center justify-center font-bold text-xl">
                   {selectedRepair.customer_name.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-white">{selectedRepair.customer_name}</h2>
-                    <span className="font-mono text-xs bg-cyan-950 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-md font-bold">
+                    <h2 className="text-xl font-black text-slate-900">{selectedRepair.customer_name}</h2>
+                    <span className="font-mono text-xs bg-lime-50 text-lime-800 border border-lime-300 px-2 py-0.5 rounded-md font-bold">
                       {selectedRepair.jo_number}
                     </span>
                   </div>
@@ -1203,8 +1203,8 @@ export default function POSPage() {
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="text-left sm:text-right">
-                  <span className="text-zinc-400 block text-[11px] uppercase font-bold">Net Total Due</span>
-                  <span className="text-3xl sm:text-4xl font-black font-mono text-cyan-400">
+                  <span className="text-slate-500 block text-[11px] uppercase font-bold">Net Total Due</span>
+                  <span className="text-3xl sm:text-4xl font-black font-mono text-lime-700">
                     ₱{total.toFixed(2)}
                   </span>
                 </div>
@@ -1212,7 +1212,7 @@ export default function POSPage() {
                 <button
                   onClick={handleProceedToCheckout}
                   disabled={!selectedRepair}
-                  className="px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-black text-sm transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-4 rounded-2xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-black text-sm transition-all flex items-center justify-center gap-3 active:scale-95 shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
                 >
                   <span>Go to Payment</span>
                   <ArrowRight className="w-5 h-5" />

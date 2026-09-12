@@ -152,22 +152,22 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (deniedInfo) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-zinc-100 font-sans relative overflow-hidden">
-        <div className="max-w-md w-full bg-zinc-900/80 border border-red-500/30 rounded-2xl p-7 text-center shadow-2xl backdrop-blur-xl relative z-10">
-          <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-400 shadow-lg shadow-red-500/10">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-slate-900 font-sans relative overflow-hidden">
+        <div className="max-w-md w-full bg-white border border-rose-200 rounded-2xl p-7 text-center shadow-xl relative z-10">
+          <div className="w-14 h-14 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-center mx-auto mb-4 text-rose-600 shadow-sm">
             <ShieldAlert className="w-7 h-7" />
           </div>
 
-          <h2 className="text-xl font-bold text-red-400 mb-2">Access Denied</h2>
+          <h2 className="text-xl font-bold text-rose-700 mb-2">Access Denied</h2>
 
-          <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-3.5 mb-5 text-sm text-zinc-300">
-            Role <span className="font-semibold text-white px-1.5 py-0.5 rounded bg-zinc-800 text-xs tracking-wide">{deniedInfo.role}</span> is not permitted to access <span className="font-semibold text-white">{deniedInfo.pageName}</span>.
+          <div className="bg-rose-50/60 border border-rose-200 rounded-xl p-3.5 mb-5 text-sm text-slate-700 leading-relaxed">
+            Role <span className="font-bold text-slate-900 px-2 py-0.5 rounded bg-white border border-rose-200 text-xs tracking-wide shadow-xs">{deniedInfo.role}</span> is not permitted to access <span className="font-bold text-slate-900">{deniedInfo.pageName}</span>.
           </div>
 
           <div className="space-y-3">
             <button
               onClick={handleImmediateNavigate}
-              className="w-full bg-red-600 hover:bg-red-500 text-white font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 group text-sm"
+              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 group text-sm shadow-sm"
             >
               <span>Go to {deniedInfo.fallbackName}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -176,7 +176,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
             {deniedInfo.fallbackPath !== "/login" && (
               <button
                 onClick={handleLogout}
-                className="w-full bg-zinc-950/60 hover:bg-zinc-800/80 border border-white/10 text-zinc-400 hover:text-zinc-200 font-medium py-2 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs"
+                className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 hover:text-slate-900 font-semibold py-2 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Sign Out</span>
@@ -184,14 +184,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          <div className="mt-5 pt-4 border-t border-white/5">
-            <div className="flex items-center justify-between text-[11px] text-zinc-500 mb-1.5 font-mono">
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5 font-mono">
               <span>Auto-redirecting to {deniedInfo.fallbackName}...</span>
-              <span className="text-zinc-400 font-semibold">{countdown}s</span>
+              <span className="text-slate-700 font-bold">{countdown}s</span>
             </div>
-            <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
               <div
-                className="bg-red-500 h-full rounded-full transition-all duration-1000 ease-linear"
+                className="bg-rose-500 h-full rounded-full transition-all duration-1000 ease-linear"
                 style={{ width: `${(countdown / 2) * 100}%` }}
               />
             </div>
@@ -203,8 +203,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
-        <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">
+        <div className="w-6 h-6 border-2 border-lime-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

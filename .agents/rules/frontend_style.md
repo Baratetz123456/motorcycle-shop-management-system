@@ -29,6 +29,12 @@ When generating or modifying React components in this project, you MUST adhere t
   - Bottom Drawer Footers: Slide-up action buttons (e.g., "Apply & View Results") must be styled with `shrink-0 sticky bottom-0 z-20 bg-zinc-950` and bottom safe-area insets (`paddingBottom: max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))`).
 - **Zero Horizontal Scrolling on Mobile**: Prohibit horizontal swipe pill rails (`overflow-x-auto no-scrollbar touch-pan-x`) on mobile viewports (`< md`). Use full-width vertical stacks, 2-to-3 column responsive grids, or mobile select dropdowns.
 
+## 2.3. Mobile Board & Profile Navigation Invariants
+- **No Mobile Kanban Boards**: Interactive multi-column Kanban boards with touch drag-and-drop are prohibited on mobile screens (`< md`). On mobile, replace Kanban grids with **Tabbed Status Navigation** (`Pending`, `Ongoing`, `Completed`, `Invoiced`) with active count badges and direct 1-tap action buttons.
+- **Top Filter Deduplication**: When a floating filter button (`FloatingFilterButton`) is anchored at the bottom right, do NOT duplicate search fields or filter buttons at the top of the mobile viewport. All mobile search and filter controls belong consolidated inside `MobileFilterSheet`.
+- **Stage Movement Confirmation & Revert Options**: Mobile job cards must provide dual forward (advance) and backward (revert) stage action buttons, and MUST prompt an explicit `ConfirmModal` before modifying job stage to prevent accidental taps.
+- **Card-Free Profile Canvas**: Mobile detail and profile views (`/repairs/jobs/[id]`) must never use heavy boxed card containers (`rounded-3xl border p-6 bg-zinc-900/60`). Standardize on an edge-to-edge canvas with clean borderless list rows, subtle dividers (`border-b border-white/5`), high-contrast typography, and a sticky horizontal tab menu (`Overview`, `Diagnosis`, `Parts & Services`, `History`).
+
 ## 3. State Management & Lifecycle Safety
 - Use **Zustand** for local, client-side state (like POS Cart or UI toggles).
 - **Snapshot Before Store Reset**: When completing multi-step operations like checkout or order creation, always snapshot transaction data into a local component state (`receiptSummary`) before clearing the global store (`clearCart()`). Wiping the store resets reactive calculations to zero.
@@ -39,7 +45,20 @@ When generating or modifying React components in this project, you MUST adhere t
 
 ## 4. Transaction & Receipt UX Patterns
 - **Dedicated Pages vs Modals**: Complex receipts, invoice inspections, and transaction details must open in dedicated full-page routes (e.g., `/sales/receipt?id=...`), not modal popups.
-- **Standard Receipt Utilities**: Provide **Print Receipt** (`window.print()`), **Copy Invoice #**, staff attribution badges (Cashier & Mechanic), and linked navigation to audit logs.
+- **10-Section Official Commercial Invoice Standard**: Official invoice receipts (`/sales/receipt`) must capture all 10 core sections:
+  1. Official Store Header & TIN (`491-002-884-000 NV`).
+  2. Invoice & Order Metadata (Invoice No, Linked Job Order No, Timestamp, Status Pill).
+  3. Customer & Bike Profile (Name, Phone, Bike Model, Plate / VIN).
+  4. Staff Attribution (Cashier, Mechanic, Labor Commission Rate).
+  5. Itemized Table with Category tags (`[PART]` vs `[SERVICE]`).
+  6. BIR Tax Breakdown (12% VATable Sales, 12% VAT Amount, VAT-Exempt, Zero-Rated).
+  7. Financial Settlement (Gross Subtotal, Discount, Net Due, Tendered, Change).
+  8. Workshop Labor Commission Settlement (Gross Labor, Mechanic Commission, Net Shop Retained).
+  9. Warranty & Statutory Terms (30-day labor, 7-day parts, RA 10173 notice).
+  10. Dual Physical Signature Lines (Customer Received By & Authorized Cashier).
+- **Print Cutoff Prevention Invariant**: In `@media print`, all ancestor containers (`html`, `body`, `#__next`, `div`, `main`, `section`, `article`) must enforce `height: auto !important; max-height: none !important; overflow: visible !important; position: static !important;` to eliminate page truncation across multi-page receipts. Dynamically set `document.title = "Invoice-" + invoice_no` before `window.print()`.
+- **Structured CSV Export**: Provide a `Download CSV` action that exports identical financial, tax, itemized ledger, and signatory data.
+- **Single Top Back Button & Void Safeguard**: Keep a single `< Back to Invoices` button at the top (no redundant bottom back button), and require an irreversible danger `ConfirmModal` (`confirmVariant="danger"`) before voiding transactions.
 - **Suspense Boundaries**: Any page utilizing `useSearchParams()` must be wrapped in a `<Suspense>` boundary to ensure clean Next.js static and dynamic prerendering.
 
 ## 4.1. Card-Free Split-Screen Login Invariant
@@ -49,19 +68,39 @@ When generating or modifying React components in this project, you MUST adhere t
   - **Seamless Form Panel (`w-full lg:w-1/2`)**: Borderless, frameless inputs (`bg-zinc-900/80 border border-white/10 focus:border-cyan-500 rounded-xl`), high-contrast Cyan submit button, and streamlined quick-demo role chips (`Admin`, `Cashier`, `Mechanic`, `Manager`) sitting directly on the canvas without card enclosure boxes.
   - **Mobile Responsive**: Adapts naturally to a full-screen borderless layout on mobile viewports without cramped card padding.
 
-## 5. Design Aesthetics (The "WOW" Factor)
-- Always use a Dark Mode default (`bg-zinc-950`).
-- **Glassmorphism**: Utilize `bg-zinc-900/60 backdrop-blur-xl` and subtle borders (`border-white/10`) for cards, tables, and headers.
-- **Gradients**: Use vibrant text gradients for primary headers (e.g., `bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500`).
-- **Micro-animations**: Elements should respond to interaction. Use `transition-all`, `hover:scale-105`, `hover:border-cyan-500/50`, and subtle box shadows (`shadow-lg shadow-cyan-500/20`).
-- Avoid generic plain colors; use curated Tailwind hues like `cyan-400`, `blue-500`, `zinc-900`, `zinc-950`.
+## 5. Design Aesthetics: High-Octane Minimalist Light Theme (Kawasaki Lime Green)
+- **Primary Aesthetic**: MotoShop standardizes on a **High-Octane Minimalist Light Theme** inspired by motorcycle racing engineering:
+  - **Pure White Canvas**: Crisp white background (`#ffffff`), seamless cards (`#ffffff`), and subtle off-canvas backdrops (`#f8fafc`).
+  - **Metallic Hairline Dividers**: Sleek hairline borders (`#e2e8f0` and `#cbd5e1`) replacing heavy card enclosures and dark borders.
+  - **Deep Carbon Typography**: High-contrast text in `#18181b` and `#0f172a` with `#000000` accents.
+  - **Electric Kawasaki Racing Lime Green (`#84cc16` / `#65a30d` / `#4d7c0f`)**: Used for primary action buttons, active navigation pills, and focus glow rings.
+- **WCAG AAA Button Text Contrast Invariant**:
+  - Solid lime green action buttons (`bg-lime-500`, `bg-cyan-500`, `bg-lime-400`) MUST strictly use bold carbon black text (`#09090b`) to maintain contrast ratios exceeding 12:1. White text on lime green is strictly prohibited.
+  - Solid dark action buttons (e.g., red destructive/void, purple diagnostic) preserve pure white text (`#ffffff`).
+- **Card-Free Modern Workshop**: Prohibit boxed card enclosures on management pages; use open canvas layouts with hairline dividers and borderless list rows.
+- **Glassmorphism & Gradients**: Utilize subtle backdrop blurs and clean metallic borders. Header titles use clean deep carbon typography (`text-zinc-900 font-extrabold`).
+- **Micro-animations**: Elements should respond to interaction. Use `transition-all`, `hover:scale-[1.02]`, `hover:border-lime-500/50`, and subtle box shadows (`shadow-sm hover:shadow-md`).
 - **High-Contrast Light Mode Invariants**:
-  - Sign Out & Destructive buttons: Must use explicit high-contrast red styling (`text-red-700 bg-red-100 border-red-300` in light mode; `text-red-400 bg-red-500/10 border-red-500/20` in dark mode).
-  - Disabled buttons: Prohibit white text on light backgrounds. Use muted high-contrast slate tokens (`text-slate-600 bg-slate-100 border-slate-300` in light mode).
-  - Clean Content Cards: Prohibit ambient blur blobs and noisy inner gradients behind card text in light mode to maintain pristine readability.
+  - Sign Out & Destructive buttons: Must use explicit high-contrast red styling (`text-red-700 bg-red-100 border-red-300`).
+  - Disabled buttons: Prohibit white text on light backgrounds. Use muted high-contrast slate tokens (`text-slate-600 bg-slate-100 border-slate-300`).
+  - Clean Content Canvas: Prohibit ambient blur blobs and noisy inner gradients behind text to maintain pristine readability.
 - **Universal Touch Scrolling & Scrollbar Sizing**:
   - Top-level scrollable viewports must support touch panning (`touch-pan-y`, `touch-pan-x`) and `overscroll-contain`.
   - Use slim 6px theme-adaptive scrollbars on main viewports and 4px compact scrollbars (`.scrollbar-compact`) on modal dialogs and Kanban column card decks.
+
+## 5.1. Strict Light & Dark Mode CSS Separation & Theme Persistence Invariants
+- **No Unmount / Tab Mode Reversion**: Page and drawer components (particularly `/settings` and user profiles) must NEVER rollback or revert appearance mode (`dark`, `light`, `system`) on component unmount (`useEffect` return cleanup) or tab switches. Mode selection must apply and persist immediately across page transitions.
+- **Strict CSS Scoping in Global Stylesheets (`globals.css`)**:
+  - Every light-mode rule (especially text remappings like `.text-white` to dark carbon `#0f172a`, card surfaces, hairline borders, and status pills) MUST be strictly scoped under `html:not(.dark)` or `html.light`. Never apply unscoped global `.text-white` remapping which turns dark mode text into invisible dark slate.
+  - Form controls (`input`, `select`, `textarea`) and tables (`table`, `th`, `td`) MUST provide explicit scoped rules for both light mode (`html:not(.dark)`) and dark mode (`html.dark`):
+    - Dark mode inputs: `#18181b` surface, `#3f3f46` hairline border, bold `#ffffff` text, `#71717a` placeholder, and `#84cc16` lime focus ring.
+    - Dark mode tables: `#18181b` headers, `#121215` rows, `#1c1c22` hover state, `#27272a` dividers, and `#f4f4f5` text.
+- **Zero-Specificity Receipt Canvas Exclusions**:
+  - The official commercial receipt (`/sales/receipt`) MUST strictly maintain the BIR White Canvas invariant (`#ffffff` canvas, subtle `#f8fafc` sub-cards, `#0f172a` typography) even when `html.dark` is active.
+  - Dark mode card, divide, border, and table rules must use `:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *))` exclusion selectors. Because `:where()` has zero specificity `(0, 0, 0)`, it protects descendants without inflating selector specificity.
+- **Multi-Key Theme Storage & Pre-Hydration**:
+  - `saveAppMode` must synchronize across user-keyed storage (`motoshop_app_mode_${userId}`), global mode (`motoshop_app_mode`), and legacy key (`motoshop_theme_mode`), dispatching both `mode_updated` and `motoshop_theme_changed` events.
+  - The blocking `<head>` script in `layout.tsx` must inspect user-keyed mode first, then global mode, setting `document.documentElement.classList` (`dark` vs `light`) and `data-mode` prior to render to eliminate hydration theme flash.
 
 ## 6. Versiklo Canonical Content System & Shop Floor Copy
 

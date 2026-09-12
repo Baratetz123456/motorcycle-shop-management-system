@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   Coins
 } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 function LoginForm() {
   const router = useRouter();
@@ -170,14 +171,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex bg-zinc-950 text-zinc-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen flex bg-slate-50 text-slate-900 font-sans selection:bg-lime-500/30 selection:text-lime-950">
       {/* Left Showcase Banner (Desktop Only) */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-5/12 relative flex-col justify-between p-12 xl:p-16 bg-zinc-950 border-r border-white/10 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-5/12 relative flex-col justify-between p-12 xl:p-16 bg-white border-r border-slate-200 overflow-hidden">
         {/* Subtle Background Pattern */}
         <div 
           className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
-            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(#0f172a 1px, transparent 1px)",
             backgroundSize: "28px 28px"
           }}
         />
@@ -185,12 +186,10 @@ function LoginForm() {
         {/* Top Branding */}
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-cyan-500 flex items-center justify-center text-zinc-950 shadow-lg shadow-cyan-500/20">
-              <Bike className="w-6 h-6 stroke-[2.5]" />
-            </div>
+            <BrandLogo size="lg" variant="lime-on-dark" />
             <div>
-              <span className="text-xl font-extrabold tracking-tight text-white block">Versiklo</span>
-              <span className="text-[10px] font-mono text-cyan-400 font-semibold tracking-wider uppercase">
+              <span className="text-xl font-extrabold tracking-tight text-slate-900 block">MotoShop Pro</span>
+              <span className="text-[10px] font-mono text-lime-700 font-bold tracking-wider uppercase">
                 Motorcycle Shop OS
               </span>
             </div>
@@ -200,15 +199,15 @@ function LoginForm() {
         {/* Center Presentation */}
         <div className="relative z-10 my-auto py-12 space-y-8">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-lime-50 border border-lime-200 text-lime-800 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-lime-700" />
               <span>Workshop Management Platform</span>
             </div>
-            <h1 className="text-3xl xl:text-4xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-3xl xl:text-4xl font-black tracking-tight text-slate-900 leading-tight">
               Precision tools for <br />
-              <span className="text-cyan-400">motorcycle shops</span> & dealers.
+              <span className="text-lime-700">motorcycle shops</span> & dealers.
             </h1>
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
+            <p className="text-sm text-slate-600 leading-relaxed max-w-md">
               Streamline repair bay dispatches, counter POS checkouts, inventory stock catalogs, and mechanic commissions with zero friction.
             </p>
           </div>
@@ -233,12 +232,12 @@ function LoginForm() {
               },
             ].map((feat, i) => (
               <div key={i} className="flex items-start gap-3.5">
-                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center shrink-0 mt-0.5 text-cyan-400">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 text-lime-700">
                   <feat.icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-zinc-200">{feat.title}</div>
-                  <div className="text-[11px] text-zinc-500">{feat.desc}</div>
+                  <div className="text-xs font-bold text-slate-900">{feat.title}</div>
+                  <div className="text-[11px] text-slate-500">{feat.desc}</div>
                 </div>
               </div>
             ))}
@@ -246,12 +245,12 @@ function LoginForm() {
         </div>
 
         {/* Bottom Status Indicator */}
-        <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-zinc-500">
+        <div className="relative z-10 pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-[11px] text-zinc-400">All Microservices Online</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-mono text-[11px] text-slate-600 font-semibold">All Microservices Online</span>
           </div>
-          <span className="font-mono text-[11px]">v2.6.4</span>
+          <span className="font-mono text-[11px] font-semibold text-slate-400">v2.6.4</span>
         </div>
       </div>
 
@@ -259,12 +258,10 @@ function LoginForm() {
       <div className="flex-1 flex flex-col justify-between p-6 sm:p-12 lg:p-16 min-h-screen overflow-y-auto">
         {/* Mobile Header Branding (Hidden on desktop) */}
         <div className="lg:hidden flex items-center gap-3 pt-4 pb-8">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500 flex items-center justify-center text-zinc-950 shadow-md">
-            <Bike className="w-5 h-5 stroke-[2.5]" />
-          </div>
+          <BrandLogo size="md" variant="lime-on-dark" />
           <div>
-            <span className="text-lg font-extrabold text-white block">Versiklo</span>
-            <span className="text-[10px] font-mono text-cyan-400 uppercase font-semibold">Motorcycle Shop OS</span>
+            <span className="text-lg font-extrabold text-slate-900 block">MotoShop Pro</span>
+            <span className="text-[10px] font-mono text-lime-700 uppercase font-bold">Motorcycle Shop OS</span>
           </div>
         </div>
 
@@ -272,26 +269,26 @@ function LoginForm() {
         <div className="my-auto max-w-md w-full mx-auto space-y-8 py-6">
           {/* Header */}
           <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
               Sign In
             </h2>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-slate-600">
               Enter your credentials to access your workshop bench.
             </p>
           </div>
 
           {/* Feedback Alerts */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs sm:text-sm flex items-start gap-3 animate-in fade-in">
-              <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
-              <div>{error}</div>
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-3 animate-in fade-in">
+              <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
+              <div className="font-medium">{error}</div>
             </div>
           )}
 
           {success && (
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm flex items-center gap-3 animate-in fade-in">
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <div>{success}</div>
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center gap-3 animate-in fade-in">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+              <div className="font-medium">{success}</div>
             </div>
           )}
 
@@ -300,12 +297,12 @@ function LoginForm() {
             <div className="space-y-2">
               <label 
                 htmlFor="email-input" 
-                className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider"
+                className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
               >
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   id="email-input"
                   type="email"
@@ -313,7 +310,7 @@ function LoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@motoshop.com"
-                  className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 transition-all font-sans"
+                  className="w-full bg-white border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 transition-all font-sans shadow-sm"
                 />
               </div>
             </div>
@@ -322,13 +319,13 @@ function LoginForm() {
               <div className="flex items-center justify-between">
                 <label 
                   htmlFor="password-input" 
-                  className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider"
+                  className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
                 >
                   Password
                 </label>
               </div>
               <div className="relative">
-                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   id="password-input"
                   type="password"
@@ -336,7 +333,7 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-900/80 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 transition-all font-sans"
+                  className="w-full bg-white border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 transition-all font-sans shadow-sm"
                 />
               </div>
             </div>
@@ -345,7 +342,7 @@ function LoginForm() {
               id="login-button"
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.99] flex items-center justify-center gap-2 group disabled:opacity-50 mt-2"
+              className="w-full py-3.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 group disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed mt-2"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
@@ -359,32 +356,32 @@ function LoginForm() {
           </form>
 
           {/* Quick Demo Credentials for All 4 Roles */}
-          <div className="pt-6 border-t border-white/10 space-y-3">
-            <div className="flex items-center justify-between text-xs text-zinc-400">
-              <span className="font-semibold flex items-center gap-1.5 text-zinc-300">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Quick Demo Profiles
+          <div className="pt-6 border-t border-slate-200 space-y-3">
+            <div className="flex items-center justify-between text-xs text-slate-600">
+              <span className="font-bold flex items-center gap-1.5 text-slate-800">
+                <Sparkles className="w-3.5 h-3.5 text-lime-700" /> Quick Demo Profiles
               </span>
-              <span className="text-[11px] text-zinc-500">Click to autofill</span>
+              <span className="text-[11px] text-slate-500 font-medium">Click to autofill</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { role: "Admin", email: "admin@motoshop.com", pass: "admin123", color: "text-cyan-400", border: "hover:border-cyan-500/40" },
-                { role: "Cashier", email: "cashier@motoshop.com", pass: "cashier123", color: "text-emerald-400", border: "hover:border-emerald-500/40" },
-                { role: "Mechanic", email: "mechanic@motoshop.com", pass: "mechanic123", color: "text-amber-400", border: "hover:border-amber-500/40" },
-                { role: "Manager", email: "manager@motoshop.com", pass: "manager123", color: "text-purple-400", border: "hover:border-purple-500/40" },
+                { role: "Admin", email: "admin@motoshop.com", pass: "admin123", color: "text-lime-800", border: "hover:border-lime-500" },
+                { role: "Cashier", email: "cashier@motoshop.com", pass: "cashier123", color: "text-emerald-800", border: "hover:border-emerald-500" },
+                { role: "Mechanic", email: "mechanic@motoshop.com", pass: "mechanic123", color: "text-amber-800", border: "hover:border-amber-500" },
+                { role: "Manager", email: "manager@motoshop.com", pass: "manager123", color: "text-purple-800", border: "hover:border-purple-500" },
               ].map((item) => (
                 <button
                   key={item.role}
                   type="button"
                   onClick={() => fillQuickCredentials(item.email, item.pass)}
-                  className={`text-left p-3 rounded-xl bg-zinc-900/60 hover:bg-zinc-800/80 border border-white/5 ${item.border} transition-all group`}
+                  className={`text-left p-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 ${item.border} transition-all group shadow-sm`}
                 >
                   <div className={`text-xs font-bold ${item.color} flex items-center justify-between`}>
                     <span>{item.role}</span>
-                    <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-zinc-400" />
+                    <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-slate-500" />
                   </div>
-                  <div className="text-[10px] text-zinc-400 font-mono mt-0.5 truncate">
+                  <div className="text-[10px] text-slate-600 font-mono mt-0.5 truncate">
                     {item.email}
                   </div>
                 </button>
@@ -394,12 +391,12 @@ function LoginForm() {
         </div>
 
         {/* Legal Compliance Footer */}
-        <div className="pt-8 pb-4 flex items-center justify-center gap-4 text-xs text-zinc-500 font-medium">
-          <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+        <div className="pt-8 pb-4 flex items-center justify-center gap-4 text-xs text-slate-500 font-medium">
+          <Link href="/privacy" className="hover:text-lime-700 transition-colors">
             Privacy Policy
           </Link>
-          <span className="text-zinc-700">•</span>
-          <Link href="/terms" className="hover:text-cyan-400 transition-colors">
+          <span className="text-slate-300">•</span>
+          <Link href="/terms" className="hover:text-lime-700 transition-colors">
             Terms of Service
           </Link>
         </div>
@@ -412,8 +409,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
-          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-600">
+          <div className="w-6 h-6 border-2 border-lime-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

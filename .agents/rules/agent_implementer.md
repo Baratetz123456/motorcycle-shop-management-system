@@ -91,3 +91,21 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
       - If no prior session indicator is present, bypass the refresh call entirely to prevent noisy red 401 Unauthorized errors in browser DevTools.
     - **Upstream DevTools Error Suppression Shield**: Maintain the 4-layer client-side error shield in `layout.tsx` (`window.onerror` returning `true`, `window.addEventListener('error', ..., true)`, `window.addEventListener('unhandledrejection', ...)`, and `console.error` filter) to silence upstream Chromium DevTools Live Metrics `reportAllChanges (startTime)` VM script crashes.
 
+16. **Resilient Entity Identifier Lookup & UUID Fallback**:
+    - When defining endpoints that look up transactions, job orders, or inventory items by ID:
+      - Always type the path parameter as `str` (e.g. `transaction_id: str`), NOT strict `UUID`.
+      - Parse the string inside a `try/except (ValueError, AttributeError)` block:
+        - If valid UUID: query `models.Entity.id == parsed_uuid`.
+        - If non-UUID string: fallback to matching `models.Entity.invoice_no == transaction_id` or `cast(models.Entity.id, String) == transaction_id`.
+      - This prevents FastAPI Pydantic validator from throwing `422 Unprocessable Entity` on client fallback IDs (`tx-...`, `jo-...`) or invoice numbers (`INV-...`).
+    - On the frontend, always generate client fallback IDs using standard RFC4122 `uuidv4()`, never ad-hoc timestamps (`tx-${Date.now()}`).
+    - Pre-check local storage before dispatching unnecessary network requests if an ID begins with a client-local prefix (`tx-` or `jo-`).
+
+17. **Strict Light & Dark Mode CSS Separation & Theme Persistence**:
+    - **No Unmount / Tab Mode Reversion**: Prohibit `useEffect` return cleanup or tab switching logic from reverting `display_mode` / appearance mode to stale local references. User theme choices must apply and persist immediately across page transitions.
+    - **Strict Scoping in `globals.css`**: Every light-mode rule (especially `.text-white` remappings, cards, hairline borders, and status pills) must be strictly scoped under `html:not(.dark)` or `html.light`. Never apply unscoped global `.text-white` remapping which turns dark mode text into invisible dark slate.
+    - **Explicit Dark Form Controls & Tables**: Form controls (`input`, `select`, `textarea`) and data tables (`table`, `th`, `td`) must provide explicit scoped rules for both light mode (`html:not(.dark)`) and dark mode (`html.dark`) to guarantee high-contrast legibility, deep carbon backgrounds (`#18181b` / `#121215`), `#ffffff` input text, and clear `#71717a` placeholder text.
+    - **Zero-Specificity Receipt Canvas Exclusions**: Official commercial receipts (`/sales/receipt`) must strictly maintain the BIR White Canvas invariant (`#ffffff` canvas, subtle `#f8fafc` sub-cards, `#0f172a` typography) even in dark mode. Dark background and border rules must use `:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *))` exclusion selectors.
+    - **Multi-Key Theme Storage & Pre-Hydration**: `saveAppMode` must synchronize across user-keyed storage (`motoshop_app_mode_${userId}`), global mode (`motoshop_app_mode`), and legacy key (`motoshop_theme_mode`), dispatching both `mode_updated` and `motoshop_theme_changed` events. The blocking `<head>` script in `layout.tsx` must inspect user-keyed mode first, then global mode, setting `document.documentElement.classList` (`dark` vs `light`) and `data-mode` prior to render to eliminate hydration theme flash.
+
+

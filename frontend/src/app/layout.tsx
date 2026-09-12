@@ -24,15 +24,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" data-theme="lime" data-mode="light" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  var t = localStorage.getItem('motoshop_app_theme') || 'cyan';
-                  document.documentElement.setAttribute('data-theme', t);
+                  var uid = localStorage.getItem('user_id');
+                  var mode = (uid ? localStorage.getItem('motoshop_app_mode_' + uid) : null) || localStorage.getItem('motoshop_app_mode') || localStorage.getItem('motoshop_theme_mode') || 'light';
+                  var resolved = mode;
+                  if (mode === 'system') {
+                    resolved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                  }
+                  if (resolved === 'dark') {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-mode', 'dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                    document.documentElement.setAttribute('data-mode', 'light');
+                  }
                 } catch(e) {}
 
                 // Suppress upstream Chromium DevTools injected Live Metrics / web-vitals bug (Chromium Issue 543499029)
@@ -103,7 +116,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-zinc-50 min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-zinc-900 min-h-screen selection:bg-lime-500/30 selection:text-lime-900`}
       >
         <ProvidersWrapper>
           {children}

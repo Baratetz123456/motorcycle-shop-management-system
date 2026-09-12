@@ -6,7 +6,7 @@ import { X, AlertTriangle, AlertCircle, Info } from "lucide-react";
 import clsx from "clsx";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl";
-export type ModalVariant = "cyan" | "purple" | "emerald" | "amber" | "rose";
+export type ModalVariant = "lime" | "cyan" | "purple" | "emerald" | "amber" | "rose";
 
 export type ModalIconProp = React.ComponentType<{ className?: string }> | React.ReactNode;
 
@@ -32,11 +32,12 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
 };
 
 const ICON_VARIANT_CLASSES: Record<ModalVariant, string> = {
-  cyan: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
-  purple: "bg-purple-500/10 border-purple-500/20 text-purple-400",
-  emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  amber: "bg-amber-500/10 border-amber-500/20 text-amber-400",
-  rose: "bg-rose-500/10 border-rose-500/20 text-rose-400",
+  lime: "bg-lime-50 border-lime-200 text-lime-700",
+  cyan: "bg-lime-50 border-lime-200 text-lime-700",
+  purple: "bg-purple-50 border-purple-200 text-purple-700",
+  emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
+  amber: "bg-amber-50 border-amber-200 text-amber-700",
+  rose: "bg-rose-50 border-rose-200 text-rose-700",
 };
 
 function renderModalIcon(icon: ModalIconProp) {
@@ -97,7 +98,7 @@ export function Modal({
       <div
         ref={contentRef}
         className={clsx(
-          "bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl shadow-black/80 backdrop-blur-2xl overflow-hidden animate-in zoom-in-95 duration-200 w-full relative font-sans text-zinc-100 flex flex-col my-auto",
+          "bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 w-full relative font-sans text-slate-900 flex flex-col my-auto",
           SIZE_CLASSES[size],
           className
         )}
@@ -142,7 +143,7 @@ export function ModalHeader({
   return (
     <div
       className={clsx(
-        "px-6 py-5 border-b border-white/10 bg-zinc-950/70 backdrop-blur-md flex items-center justify-between shrink-0",
+        "px-6 py-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between shrink-0",
         className
       )}
     >
@@ -161,8 +162,8 @@ export function ModalHeader({
             </div>
           )}
           <div>
-            {title && <h2 className="text-lg font-bold text-white tracking-tight">{title}</h2>}
-            {subtitle && <p className="text-xs text-zinc-400 mt-0.5">{subtitle}</p>}
+            {title && <h2 className="text-lg font-bold text-slate-900 tracking-tight">{title}</h2>}
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
           </div>
         </div>
       )}
@@ -170,7 +171,7 @@ export function ModalHeader({
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors ml-auto shrink-0"
+          className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors ml-auto shrink-0"
           title="Close dialog (Esc)"
           aria-label="Close dialog"
         >
@@ -210,7 +211,7 @@ export function ModalFooter({
   return (
     <div
       className={clsx(
-        "px-6 py-4 border-t border-white/10 bg-zinc-950/50 flex items-center justify-end gap-3 shrink-0",
+        "px-6 py-4 border-t border-slate-200 bg-slate-50/80 flex items-center justify-end gap-3 shrink-0",
         className
       )}
     >
@@ -272,15 +273,15 @@ export function ConfirmModal({
       preventBackdropClose={isLoading}
     >
       <ModalBody>
-        <div className="space-y-3 text-sm text-zinc-300">
+        <div className="space-y-3 text-sm text-slate-700">
           <div>{modalBodyContent}</div>
           {warningDetails && (
             <div
               className={clsx(
                 "p-3.5 rounded-xl border text-xs leading-relaxed",
                 confirmVariant === "danger"
-                  ? "bg-rose-500/10 border-rose-500/20 text-rose-300"
-                  : "bg-amber-500/10 border-amber-500/20 text-amber-300"
+                  ? "bg-rose-50 border-rose-200 text-rose-800"
+                  : "bg-amber-50 border-amber-200 text-amber-800"
               )}
             >
               {warningDetails}
@@ -293,7 +294,7 @@ export function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={isLoading}
-          className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all disabled:opacity-50"
+          className="px-4 py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-all"
         >
           {cancelText}
         </button>
@@ -302,12 +303,12 @@ export function ConfirmModal({
           onClick={onConfirm}
           disabled={isLoading}
           className={clsx(
-            "px-5 py-2.5 rounded-xl font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2",
+            "px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2",
             confirmVariant === "danger"
-              ? "bg-red-600 hover:bg-red-500 text-white shadow-sm"
+              ? "bg-red-600 hover:bg-red-700 text-white shadow-sm"
               : confirmVariant === "warning"
-              ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-sm"
-              : "bg-cyan-500 hover:bg-cyan-400 text-zinc-950 shadow-sm"
+              ? "bg-amber-500 hover:bg-amber-600 text-zinc-950 shadow-sm"
+              : "bg-lime-500 hover:bg-lime-400 text-zinc-950 shadow-sm"
           )}
         >
           {isLoading ? (

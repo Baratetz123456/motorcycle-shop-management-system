@@ -11,9 +11,9 @@ export default function UserManagementPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-400 font-sans">
-      <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mb-3" />
-      <span className="text-xs font-mono">Redirecting to Settings &gt; Staff & Users...</span>
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600 font-sans">
+      <div className="w-6 h-6 border-2 border-lime-500 border-t-transparent rounded-full animate-spin mb-3" />
+      <span className="text-xs font-mono font-medium">Redirecting to Settings &gt; Staff & Users...</span>
     </div>
   );
 }

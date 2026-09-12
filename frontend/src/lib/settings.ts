@@ -15,6 +15,8 @@ export interface SystemSettings {
   boardReleasedTitle?: string;
   // Record Retention for Released/Invoiced Jobs ("1" | "3" | "7" | "30" | "all")
   boardRetentionDays?: string;
+  shopTin?: string;
+  shopRegistrationNo?: string;
 }
 
 export const BOARD_RETENTION_OPTIONS = [
