@@ -175,7 +175,7 @@ export default function DashboardLayout({
             {isProfileOpen && (
               <div
                 ref={popoverRef}
-                className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 space-y-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+                className="profile-popover absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 space-y-4 z-50 animate-in fade-in zoom-in-95 duration-150"
               >
                 {/* User Identity Header */}
                 <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800">

@@ -131,7 +131,7 @@ export function Sidebar() {
   return (
     <aside
       aria-label="Desktop Sidebar Navigation"
-      className="hidden md:flex fixed top-16 left-0 bottom-0 w-64 bg-white border-r border-slate-200 flex-col z-30 select-none shadow-xs"
+      className="hidden md:flex fixed top-16 left-0 bottom-0 w-64 bg-white dark:bg-zinc-950 border-r border-slate-200 dark:border-zinc-800 flex-col z-30 select-none shadow-xs"
     >
       {/* Dynamic Nav Items */}
       <nav
@@ -152,7 +152,7 @@ export function Sidebar() {
           return (
             <div key={item.href} className="space-y-1">
               {showGroupHeader && (
-                <div className="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <div className="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                   {item.group}
                 </div>
               )}
@@ -171,14 +171,14 @@ export function Sidebar() {
                 }}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all relative group ${
                   isActive
-                    ? "nav-active-item bg-lime-500/15 text-lime-900 border border-lime-500/30 font-bold shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "nav-active-item bg-lime-500/15 dark:bg-lime-950/30 text-lime-900 dark:text-lime-400 border border-lime-500/30 dark:border-lime-500/40 font-bold shadow-xs"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-900/60"
                 }`}
               >
                 {isActive && (
-                  <span className="nav-active-bar absolute left-1.5 top-2 bottom-2 w-1 rounded-full bg-lime-600" />
+                  <span className="nav-active-bar absolute left-1.5 top-2 bottom-2 w-1 rounded-full bg-lime-600 dark:bg-lime-400" />
                 )}
-                <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-lime-700" : "text-slate-400 group-hover:text-slate-700"}`} />
+                <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-lime-700 dark:text-lime-400" : "text-slate-400 dark:text-zinc-400 group-hover:text-slate-700 dark:group-hover:text-zinc-200"}`} />
                 <span className="truncate">{item.label}</span>
               </Link>
             </div>
@@ -187,21 +187,21 @@ export function Sidebar() {
       </nav>
 
       {/* Footer System Status & Legal Links */}
-      <div className="shrink-0 p-3.5 border-t border-slate-200 bg-slate-50/70 space-y-2">
-        <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+      <div className="shrink-0 p-3.5 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 space-y-2">
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 px-1">
           <div className="flex items-center gap-1.5 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>MotoShop Engine</span>
           </div>
-          <span className="font-mono text-[10px] text-slate-400">v2.6</span>
+          <span className="font-mono text-[10px] text-slate-400 dark:text-zinc-500">v2.6</span>
         </div>
 
-        <div className="flex items-center justify-center gap-3 pt-1 text-[10px] text-slate-500 font-medium">
-          <Link href="/privacy" className="hover:text-lime-700 transition-colors">
+        <div className="flex items-center justify-center gap-3 pt-1 text-[10px] text-slate-500 dark:text-zinc-400 font-medium">
+          <Link href="/privacy" className="hover:text-lime-700 dark:hover:text-lime-400 transition-colors">
             Privacy Policy
           </Link>
-          <span className="text-slate-300">•</span>
-          <Link href="/terms" className="hover:text-lime-700 transition-colors">
+          <span className="text-slate-300 dark:text-zinc-600">•</span>
+          <Link href="/terms" className="hover:text-lime-700 dark:hover:text-lime-400 transition-colors">
             Terms of Service
           </Link>
         </div>

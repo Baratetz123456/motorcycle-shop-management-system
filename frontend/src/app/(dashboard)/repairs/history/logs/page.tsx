@@ -159,13 +159,13 @@ function CustomerRepairHistoryLogsContent() {
 
   if (!customer) {
     return (
-      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-slate-800 bg-slate-50">
+      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-slate-800 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-950">
         <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
-        <h2 className="text-xl font-bold text-slate-900 mb-1">Customer Record Not Found</h2>
-        <p className="text-xs text-slate-500 mb-6">Could not find repair logs matching the requested customer identifier.</p>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 mb-1">Customer Record Not Found</h2>
+        <p className="text-xs text-slate-500 dark:text-zinc-400 mb-6">Could not find repair logs matching the requested customer identifier.</p>
         <button
           onClick={() => router.push("/repairs/history")}
-          className="px-5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+          className="px-5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Repair History</span>
@@ -177,13 +177,13 @@ function CustomerRepairHistoryLogsContent() {
   const isActive = customer.active_status === "ACTIVE_REPAIR";
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 touch-pan-y bg-slate-50">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 touch-pan-y bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100">
       <div className="w-full space-y-8 animate-profile-enter">
         {/* Top Action & Navigation Bar */}
         <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
           <button
             onClick={() => router.push("/repairs/history")}
-            className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Repair History</span>
@@ -192,16 +192,16 @@ function CustomerRepairHistoryLogsContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.print()}
-              className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 text-xs font-bold shadow-sm"
+              className="px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 transition-colors flex items-center gap-2 text-xs font-bold shadow-sm"
             >
-              <Printer className="w-4 h-4 text-lime-600" />
+              <Printer className="w-4 h-4 text-lime-600 dark:text-lime-400" />
               <span>Print Service Record</span>
             </button>
 
             {isActive ? (
               <button
                 disabled
-                className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-400 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
               >
                 <Lock className="w-4 h-4" />
                 <span>Active in Repair</span>
@@ -209,7 +209,7 @@ function CustomerRepairHistoryLogsContent() {
             ) : (
               <button
                 onClick={() => handleResumeRepair(customer)}
-                className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-2 shadow-sm active:scale-[0.98]"
+                className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 dark:hover:bg-zinc-800 font-bold text-xs transition-colors flex items-center gap-2 shadow-sm active:scale-[0.98]"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>Start Job</span>
@@ -222,15 +222,15 @@ function CustomerRepairHistoryLogsContent() {
         <div className="w-full space-y-6 pb-20">
           
           {/* Customer Profile Banner (Card-Free Canvas on Mobile, Card on Desktop) */}
-          <div className="bg-transparent md:bg-white border-0 md:border md:border-slate-200 rounded-none md:rounded-3xl p-0 md:p-8 md:shadow-sm space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+          <div className="bg-transparent md:bg-white md:dark:bg-zinc-900 border-0 md:border md:border-slate-200 md:dark:border-zinc-800 rounded-none md:rounded-3xl p-0 md:p-8 md:shadow-sm space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-zinc-800">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-lime-50 border border-lime-200 flex items-center justify-center text-lime-700 font-black text-xl md:text-2xl shrink-0">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-lime-50 dark:bg-lime-950/40 border border-lime-200 dark:border-lime-800/50 flex items-center justify-center text-lime-700 dark:text-lime-400 font-black text-xl md:text-2xl shrink-0">
                   {customer.customer_name.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-xl md:text-3xl font-black text-slate-900">{customer.customer_name}</h1>
+                    <h1 className="text-xl md:text-3xl font-black text-slate-900 dark:text-zinc-100">{customer.customer_name}</h1>
                     {isActive ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-lime-100 text-lime-800 border border-lime-300">
                         <Wrench className="w-3.5 h-3.5" /> Active in Repair

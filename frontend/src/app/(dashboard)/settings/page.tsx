@@ -2425,8 +2425,8 @@ function SettingsContent() {
                   className={clsx(
                     "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed",
                     isProfileDirty
-                      ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 ring-2 ring-amber-400/50 scale-105"
-                      : "bg-lime-500 hover:bg-lime-400 text-zinc-950"
+                      ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 dark:bg-amber-950/40 dark:border dark:border-amber-500/60 dark:text-amber-300 ring-2 ring-amber-400/50 scale-105"
+                      : "bg-lime-500 hover:bg-lime-400 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 dark:hover:bg-zinc-800"
                   )}
                 >
                   {isUpdatingProfile ? (

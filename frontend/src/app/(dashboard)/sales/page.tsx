@@ -175,27 +175,27 @@ export default function SalesManagementPage() {
   ].reduce((a, b) => a + b, 0);
 
   return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-slate-900">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 dark:bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-slate-900 dark:text-zinc-100">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-            <Receipt className="w-8 h-8 text-lime-600" />
+          <h1 className="text-3xl font-black text-slate-900 dark:text-zinc-100 flex items-center gap-3">
+            <Receipt className="w-8 h-8 text-lime-600 dark:text-lime-400" />
             Invoices & Receipts
           </h1>
-          <p className="text-slate-500 mt-1 text-sm">
+          <p className="text-slate-500 dark:text-zinc-400 mt-1 text-sm">
             Completed sales receipts, open customer invoices, and audit logs.
           </p>
         </div>
       </div>
 
       {/* Desktop Filter & Search Bar */}
-      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm shrink-0">
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm shrink-0">
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar overscroll-x-contain pb-1 sm:pb-0">
           {/* Status Filter */}
           <div className="flex items-center gap-2 shrink-0">
-            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
-            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shrink-0">
+            <Filter className="w-4 h-4 text-slate-400 dark:text-zinc-500 shrink-0" />
+            <div className="flex bg-slate-100 dark:bg-zinc-800/70 p-1 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs shrink-0">
               {["ALL", "COMPLETED", "VOIDED"].map((st) => (
                 <button
                   key={st}
@@ -203,8 +203,8 @@ export default function SalesManagementPage() {
                   className={clsx(
                     "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap",
                     statusFilter === st
-                      ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                      : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                      ? "bg-lime-500 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 font-bold shadow-sm"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-700/50"
                   )}
                 >
                   {st}
@@ -213,12 +213,12 @@ export default function SalesManagementPage() {
             </div>
           </div>
 
-          <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
 
           {/* Date Range Filter Controls */}
-          <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200 shrink-0">
+          <div className="flex items-center gap-1.5 bg-slate-100/80 dark:bg-zinc-800/70 p-1 rounded-xl border border-slate-200 dark:border-zinc-700 shrink-0">
             <div className="flex items-center gap-1 shrink-0">
-              <Calendar className="w-3.5 h-3.5 text-lime-600 ml-1.5 mr-0.5 shrink-0" />
+              <Calendar className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400 ml-1.5 mr-0.5 shrink-0" />
               {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
                 const labels = {
                   ALL: "All Time",
@@ -234,8 +234,8 @@ export default function SalesManagementPage() {
                     className={clsx(
                       "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
                       isSelected
-                        ? "bg-lime-500 text-zinc-950 border border-lime-600 shadow-sm font-bold"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white border border-transparent"
+                        ? "bg-lime-500 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 border border-lime-600 shadow-sm font-bold"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white dark:hover:bg-zinc-700/50 border border-transparent"
                     )}
                   >
                     {labels[preset]}
@@ -244,30 +244,30 @@ export default function SalesManagementPage() {
               })}
             </div>
 
-            <div className="h-3.5 w-px bg-slate-200 hidden sm:block shrink-0" />
+            <div className="h-3.5 w-px bg-slate-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
 
             {/* Custom Date Inputs */}
-            <div className="flex items-center gap-1 text-xs text-slate-600 shrink-0">
+            <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-zinc-400 shrink-0">
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-                className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
                 title="Filter from transaction date"
               />
-              <span className="text-slate-400 text-[11px]">to</span>
+              <span className="text-slate-400 dark:text-zinc-500 text-[11px]">to</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
                 title="Filter to transaction date"
               />
 
               {(startDate || endDate || datePreset !== "ALL") && (
                 <button
                   onClick={handleClearDateFilter}
-                  className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-rose-600 transition-colors ml-0.5"
+                  className="p-1 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-md text-slate-400 hover:text-rose-600 transition-colors ml-0.5"
                   title="Clear date filter"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -279,13 +279,13 @@ export default function SalesManagementPage() {
 
         {/* Search Bar */}
         <div className="relative w-full lg:w-72 shrink-0">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
           <input
             type="text"
             placeholder="Search Invoice #, Customer, Bike..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-lime-500 shadow-sm"
+            className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-lime-500 shadow-sm"
           />
         </div>
       </div>
