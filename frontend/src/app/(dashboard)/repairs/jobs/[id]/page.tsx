@@ -28,6 +28,7 @@ import { apiClient } from "@/lib/api-client";
 import { RepairStatus, RepairJob } from "@/app/(dashboard)/repairs/board/page";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
+import { FloatingProfileActionsButton, MobileProfileActionsSheet } from "@/components/ui/MobileProfileActionsSheet";
 
 // --- Diagnosis Log Types ---
 interface DiagnosisEntry {
@@ -106,6 +107,7 @@ export default function JobCardProfilePage() {
 
   // Mobile Tab Navigation State
   const [mobileTab, setMobileTab] = useState<"overview" | "diagnosis" | "parts" | "history">("overview");
+  const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -531,8 +533,8 @@ export default function JobCardProfilePage() {
     <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 bg-zinc-950 text-zinc-100">
       <div className="w-full space-y-8 animate-profile-enter">
 
-        {/* ============ TOP NAVIGATION & ACTION BAR ============ */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* ============ TOP NAVIGATION & ACTION BAR (Desktop Only >= md) ============ */}
+        <div className="hidden md:flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             onClick={() => router.push("/repairs/board")}
             className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors bg-zinc-900 border border-zinc-800 px-4 py-2.5 rounded-xl hover:bg-zinc-800 self-start group"
@@ -1452,6 +1454,48 @@ export default function JobCardProfilePage() {
             </p>
           </div>
         }
+      />
+      {/* Mobile Floating Action Button & Actions Sheet (< md) */}
+      <FloatingProfileActionsButton
+        onClick={() => setIsMobileActionsOpen(true)}
+        label="Actions"
+      />
+
+      <MobileProfileActionsSheet
+        isOpen={isMobileActionsOpen}
+        onClose={() => setIsMobileActionsOpen(false)}
+        title={job.customer}
+        subtitle={`${job.jo_number} • ${job.motorcycle}`}
+        actions={[
+          {
+            id: "back",
+            label: "Back to Workshop Board",
+            icon: <ArrowLeft className="w-4 h-4" />,
+            onClick: () => router.push("/repairs/board"),
+          },
+          {
+            id: "diagnose",
+            label: "Add Diagnosis Note",
+            icon: <Plus className="w-4 h-4" />,
+            variant: "primary" as const,
+            onClick: () => {
+              setMobileTab("diagnosis");
+              setTimeout(() => {
+                const textarea = document.querySelector('textarea[placeholder*="observation"], textarea[placeholder*="diagnosis"]') as HTMLTextAreaElement | null;
+                textarea?.focus();
+              }, 100);
+            },
+          },
+          ...(canDelete ? [
+            {
+              id: "delete",
+              label: "Delete Job Card",
+              icon: <Trash2 className="w-4 h-4" />,
+              variant: "danger" as const,
+              onClick: () => setIsDeleteModalOpen(true),
+            },
+          ] : []),
+        ]}
       />
     </div>
   );

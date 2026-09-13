@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePosStore } from "@/lib/store/pos-store";
 import { 
@@ -33,6 +33,9 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { PosCatalogCardsSkeleton, PosRepairsCardsSkeleton } from "@/components/pos/PosSkeleton";
+import { CategoryCardBanner } from "@/components/pos/CategoryCardBanner";
+import { CustomerBikeCardBanner } from "@/components/pos/CustomerBikeCardBanner";
+import { FloatingFilterFab, MobilePosFilterSheet } from "@/components/pos/MobilePosFilterSheet";
 
 interface CatalogItem {
   id: string;
@@ -67,25 +70,7 @@ interface ActiveRepairCart {
   }[];
 }
 
-const PARTS_SUB_FILTERS = [
-  { id: "ALL", label: "All Parts" },
-  { id: "Oils & Lubricants", label: "Oils & Lubricants", keywords: ["oil", "lube", "lubricant", "fluid", "motul", "castrol"] },
-  { id: "Brakes", label: "Brakes", keywords: ["brake", "pad", "rotor", "caliper", "shoe", "disc"] },
-  { id: "Tires", label: "Tires & Tubes", keywords: ["tire", "tube", "wheel", "rim"] },
-  { id: "Engine & Exhaust", label: "Engine & Exhaust", keywords: ["engine", "piston", "gasket", "spark", "plug", "exhaust", "pipe", "filter", "belt", "chain"] },
-  { id: "Electrical", label: "Electrical & Battery", keywords: ["battery", "light", "bulb", "fuse", "wire", "horn", "relay", "starter"] },
-  { id: "Accessories", label: "Accessories", keywords: ["grip", "mirror", "seat", "cover", "helmet", "lock"] },
-];
 
-const SERVICES_SUB_FILTERS = [
-  { id: "ALL", label: "All Services" },
-  { id: "Tune-up", label: "Tune-up", keywords: ["tune", "maintenance", "tune-up", "carburetor", "cleaning"] },
-  { id: "Oil Change", label: "Oil Change", keywords: ["oil", "fluid", "flush"] },
-  { id: "Brake Service", label: "Brake Service", keywords: ["brake", "bleeding", "pad", "shoe"] },
-  { id: "Inspection", label: "Inspection & Check", keywords: ["check", "inspection", "diagnostic", "scan"] },
-  { id: "Electrical", label: "Electrical & Wiring", keywords: ["wiring", "electrical", "battery", "light"] },
-  { id: "Overhaul", label: "Engine Overhaul", keywords: ["overhaul", "engine", "transmission", "rebuild"] },
-];
 
 function POSPageContent() {
   const router = useRouter();
@@ -114,6 +99,7 @@ function POSPageContent() {
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [frequencyMap, setFrequencyMap] = useState<Record<string, number>>({});
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Auto-restore customer and cart view if specified in query params (e.g. returning from checkout)
   useEffect(() => {
@@ -433,29 +419,50 @@ function POSPageContent() {
     router.push(`/pos/checkout?${query}`);
   };
 
-  // Filter and sort catalog by frequency of availment and sub-filter pills
-  const filteredCatalog = catalog
-    .filter((item) => {
-      const matchesSearch =
-        item.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.sku.toLowerCase().includes(search.toLowerCase());
-      const matchesFilter = item.item_type === activeFilter;
-
-      const subList = activeFilter === "SERVICE" ? SERVICES_SUB_FILTERS : PARTS_SUB_FILTERS;
-      const subObj = subList.find((s) => s.id === activeSubFilter);
-      const matchesSubFilter =
-        !subObj ||
-        activeSubFilter === "ALL" ||
-        (item.category && item.category.toLowerCase().includes(activeSubFilter.toLowerCase())) ||
-        (subObj.keywords && subObj.keywords.some((kw) => item.name.toLowerCase().includes(kw) || (item.category && item.category.toLowerCase().includes(kw))));
-
-      return matchesSearch && matchesFilter && matchesSubFilter;
-    })
-    .sort((a, b) => {
-      const freqA = frequencyMap[a.name] || 0;
-      const freqB = frequencyMap[b.name] || 0;
-      return freqB - freqA; // Highest frequency first
+  // Dynamically derive sub-category filter pills from loaded catalog items for activeFilter
+  const dynamicSubCategories = useMemo(() => {
+    const itemsForType = catalog.filter(
+      (i) => (i.item_type || "PRODUCT").toUpperCase() === activeFilter.toUpperCase()
+    );
+    const counts: Record<string, number> = {};
+    itemsForType.forEach((i) => {
+      const cat = i.category?.trim() || (activeFilter === "SERVICE" ? "General Service" : "General Parts");
+      counts[cat] = (counts[cat] || 0) + 1;
     });
+    const cats = Object.keys(counts).sort((a, b) => a.localeCompare(b));
+    return [
+      { id: "ALL", label: `All ${activeFilter === "SERVICE" ? "Services" : "Parts"}`, count: itemsForType.length },
+      ...cats.map((c) => ({ id: c, label: c, count: counts[c] })),
+    ];
+  }, [catalog, activeFilter]);
+
+  // Filter and sort catalog with resilient case-insensitive matching and dynamic categories
+  const filteredCatalog = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return catalog
+      .filter((item) => {
+        const matchesSearch =
+          !q ||
+          item.name.toLowerCase().includes(q) ||
+          item.sku.toLowerCase().includes(q) ||
+          (item.category && item.category.toLowerCase().includes(q)) ||
+          (item.brand && item.brand.toLowerCase().includes(q));
+
+        const matchesFilter = (item.item_type || "PRODUCT").toUpperCase() === activeFilter.toUpperCase();
+
+        const itemCat = (item.category?.trim() || (activeFilter === "SERVICE" ? "General Service" : "General Parts")).toLowerCase();
+        const matchesSubFilter =
+          activeSubFilter === "ALL" ||
+          itemCat === activeSubFilter.toLowerCase().trim();
+
+        return matchesSearch && matchesFilter && matchesSubFilter;
+      })
+      .sort((a, b) => {
+        const freqA = frequencyMap[a.name] || 0;
+        const freqB = frequencyMap[b.name] || 0;
+        return freqB - freqA; // Highest frequency first
+      });
+  }, [catalog, search, activeFilter, activeSubFilter, frequencyMap]);
 
   return (
     <div className="flex flex-col min-h-full bg-zinc-950 text-zinc-50 font-sans w-full max-w-full overflow-x-hidden">
@@ -545,12 +552,12 @@ function POSPageContent() {
           <section className={clsx(
             "border-b border-zinc-800 transition-all",
             selectedRepair && !isChangingCustomer 
-              ? "sticky top-0 z-20 bg-zinc-950 p-3 sm:p-5" 
-              : "bg-zinc-900 p-4 sm:p-6"
+              ? "sticky top-0 z-20 bg-zinc-950 p-3 sm:p-5 hidden md:block" 
+              : "bg-zinc-900 p-3 sm:p-6"
           )}>
             <div className="w-full space-y-4">
               
-              {/* If customer is already selected and NOT actively expanding selector */}
+              {/* If customer is already selected and NOT actively expanding selector (Desktop Only) */}
               {selectedRepair && !isChangingCustomer ? (
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative overflow-hidden">
                   <div className="flex items-center gap-3 sm:gap-4 relative z-10 min-w-0">
@@ -577,7 +584,7 @@ function POSPageContent() {
                     </div>
                   </div>
 
-                  {/* Desktop Only: Change Customer & View Cart buttons (Hidden on mobile) */}
+                  {/* Desktop Only: Change Customer & View Cart buttons */}
                   <div className="hidden md:flex items-center gap-3 relative z-10 self-end sm:self-center">
                     <button
                       onClick={handleChangeCustomer}
@@ -599,11 +606,11 @@ function POSPageContent() {
                 <div className="space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div>
-                      <h2 className="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+                      <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
                         <User className="w-4 h-4" />
                         Step 1: Select Active Customer Repair
                       </h2>
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5">
                         Choose an ongoing or returning customer job order to assign products and services before adding to cart.
                       </p>
                     </div>
@@ -617,79 +624,85 @@ function POSPageContent() {
                     )}
                   </div>
 
-                  {/* Customer Repair Selection Cards */}
+                  {/* Customer Repair Selection Cards (2 columns on mobile, 4 columns on desktop) */}
                   {isLoadingRepairs ? (
                     <div className="pt-1">
                       <PosRepairsCardsSkeleton count={4} />
                     </div>
                   ) : activeRepairs.length === 0 ? (
-                    <div className="p-8 text-center bg-zinc-900/40 border border-white/5 rounded-2xl text-zinc-500 text-xs flex flex-col items-center justify-center">
+                    <div className="p-8 text-center bg-zinc-900/40 border border-zinc-800 rounded-2xl text-zinc-500 text-xs flex flex-col items-center justify-center">
                       <User className="w-8 h-8 mb-2 opacity-30 text-zinc-400" />
                       <p>No active customer job orders found.</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 pt-1" data-testid="customer-repair-cards-grid">
                       {activeRepairs.map((repair) => {
                         const isSelected = selectedRepair?.job_id === repair.job_id;
 
                         return (
                           <div
                             key={repair.job_id}
+                            data-testid="customer-repair-card"
                             onClick={() => selectActiveCustomerRepair(repair)}
                             className={clsx(
-                              "group p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 relative overflow-hidden",
+                              "group rounded-2xl border transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden",
                               isSelected
-                                ? "bg-cyan-950/40 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400"
-                                : "bg-zinc-900/80 border-white/10 hover:border-cyan-500/40 hover:bg-zinc-900"
+                                ? "bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500 shadow-none"
+                                : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
                             )}
                           >
-                            <div>
-                              <div className="flex items-center justify-between gap-2 mb-2">
-                                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-950 text-cyan-400 border border-white/5">
-                                  {repair.jo_number}
+                            {/* Bike Category Artwork Top Banner */}
+                            <CustomerBikeCardBanner motorcycleName={repair.motorcycle_name} />
+
+                            <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between gap-2.5 sm:gap-3">
+                              <div>
+                                <div className="flex items-center justify-between gap-1 mb-1.5 sm:mb-2">
+                                  <span className="font-mono text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-zinc-950 text-emerald-400 border border-zinc-800 truncate">
+                                    {repair.jo_number}
+                                  </span>
+                                  <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 truncate">
+                                    {repair.status}
+                                  </span>
+                                </div>
+
+                                <h3 className="font-bold text-white text-xs sm:text-sm group-hover:text-emerald-300 transition-colors line-clamp-1">
+                                  {repair.customer_name}
+                                </h3>
+                                <p className="text-[10px] sm:text-xs text-zinc-400 flex items-center gap-1 mt-1 truncate">
+                                  <Bike className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-500 shrink-0" />
+                                  <span className="truncate">{repair.motorcycle_name}</span>
+                                </p>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-zinc-800">
+                                <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase font-semibold">
+                                  Charges
                                 </span>
-                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                  {repair.status}
+                                <span className="text-[11px] sm:text-xs font-mono font-bold text-emerald-400">
+                                  ₱{repair.total_amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                                 </span>
                               </div>
 
-                              <h3 className="font-bold text-white text-sm group-hover:text-cyan-300 transition-colors">
-                                {repair.customer_name}
-                              </h3>
-                              <p className="text-xs text-zinc-400 flex items-center gap-1.5 mt-1">
-                                <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                                <span className="truncate">{repair.motorcycle_name}</span>
-                              </p>
-                            </div>
-
-                            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                              <span className="text-[10px] text-zinc-500 uppercase font-semibold">
-                                Charges
-                              </span>
-                              <span className="text-xs font-mono font-bold text-cyan-400">
-                                ₱{repair.total_amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                              </span>
-                            </div>
-
-                            <div className="pt-1">
-                              <button
-                                type="button"
-                                className={clsx(
-                                  "w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
-                                  isSelected
-                                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                                    : "bg-zinc-800 text-zinc-300 group-hover:bg-zinc-700 group-hover:text-white"
-                                )}
-                              >
-                                {isSelected ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>Selected</span>
-                                  </>
-                                ) : (
-                                  <span>Select</span>
-                                )}
-                              </button>
+                              <div className="pt-1">
+                                <button
+                                  type="button"
+                                  className={clsx(
+                                    "w-full py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 border",
+                                    isSelected
+                                      ? "bg-emerald-600 text-white border-emerald-500 shadow-none"
+                                      : "bg-zinc-800 text-zinc-300 border-zinc-700 group-hover:bg-zinc-700 group-hover:text-white"
+                                  )}
+                                >
+                                  {isSelected ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Selected</span>
+                                    </>
+                                  ) : (
+                                    <span>Select</span>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -707,22 +720,23 @@ function POSPageContent() {
             (!selectedRepair || isChangingCustomer) && "hidden md:flex"
           )}>
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Inline Controls (Desktop Only: Hidden on Mobile) */}
+            <div className="hidden md:flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               
               {/* Exactly Two Filters: Services & Products */}
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 hidden sm:inline-block">Filter:</span>
-                <div className="flex bg-zinc-900 p-1 rounded-2xl border border-white/10 text-xs w-full sm:w-auto shadow-inner">
+                <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800 text-xs w-full sm:w-auto shadow-none">
                   <button
                     onClick={() => {
                       setActiveFilter("SERVICE");
                       setActiveSubFilter("ALL");
                     }}
                     className={clsx(
-                      "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2",
+                      "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border",
                       activeFilter === "SERVICE"
-                        ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
-                        : "text-zinc-400 hover:text-white"
+                        ? "bg-emerald-600 text-white font-bold border-emerald-500 shadow-none"
+                        : "text-zinc-400 hover:text-white border-transparent"
                     )}
                   >
                     <Wrench className="w-4 h-4" />
@@ -735,10 +749,10 @@ function POSPageContent() {
                       setActiveSubFilter("ALL");
                     }}
                     className={clsx(
-                      "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2",
+                      "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border",
                       activeFilter === "PRODUCT"
-                        ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20"
-                        : "text-zinc-400 hover:text-white"
+                        ? "bg-emerald-600 text-white font-bold border-emerald-500 shadow-none"
+                        : "text-zinc-400 hover:text-white border-transparent"
                     )}
                   >
                     <Package className="w-4 h-4" />
@@ -755,14 +769,14 @@ function POSPageContent() {
                   placeholder={`Search ${activeFilter === "SERVICE" ? "services" : "products"} or SKU...`}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-zinc-900/90 border border-white/10 rounded-2xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-xs sm:text-sm text-white placeholder-zinc-500"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs sm:text-sm text-white placeholder-zinc-500 shadow-none"
                 />
               </div>
             </div>
 
-            {/* Sub-Filter Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 scrollbar-none pt-1 overscroll-x-contain">
-              {(activeFilter === "SERVICE" ? SERVICES_SUB_FILTERS : PARTS_SUB_FILTERS).map((pill) => {
+            {/* Sub-Filter Category Pills (Desktop Only: Hidden on Mobile) */}
+            <div className="hidden md:flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 scrollbar-none pt-1 overscroll-x-contain">
+              {dynamicSubCategories.map((pill) => {
                 const isSelected = activeSubFilter === pill.id;
                 return (
                   <button
@@ -771,11 +785,19 @@ function POSPageContent() {
                     className={clsx(
                       "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 border",
                       isSelected
-                        ? "bg-emerald-600 text-white font-bold border-emerald-500"
+                        ? "bg-emerald-600 text-white font-bold border-emerald-500 shadow-none"
                         : "bg-zinc-900 text-zinc-400 hover:text-white border-zinc-800"
                     )}
                   >
                     <span>{pill.label}</span>
+                    {pill.count !== undefined && (
+                      <span className={clsx(
+                        "text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full",
+                        isSelected ? "bg-emerald-700 text-white" : "bg-zinc-800 text-zinc-400"
+                      )}>
+                        {pill.count}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -789,13 +811,13 @@ function POSPageContent() {
               </div>
             )}
 
-            {/* Catalog Grid (Ordered by Popularity: 'sold' for products, 'completed' for services) */}
+            {/* Catalog Grid (2 columns on mobile, 3-4 columns on desktop) */}
             {isLoadingCatalog ? (
               <div className="flex-1 pt-1">
                 <PosCatalogCardsSkeleton count={8} />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 flex-1">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 flex-1" data-testid="catalog-cards-grid">
                 {filteredCatalog.length === 0 ? (
                   <div className="col-span-full py-16 flex flex-col items-center justify-center text-zinc-500 text-xs">
                     <Package className="w-12 h-12 mb-3 opacity-30" />
@@ -803,156 +825,197 @@ function POSPageContent() {
                   </div>
                 ) : (
                   filteredCatalog.map((product) => {
-                  const isService = product.item_type === "SERVICE";
-                  const cartItem = cart.find((c) => c.id === product.id);
-                  const frequency = frequencyMap[product.name] || 0;
-                  const isOutOfStock = !isService && product.current_stock === 0;
+                    const isService = product.item_type === "SERVICE";
+                    const cartItem = cart.find((c) => c.id === product.id);
+                    const frequency = frequencyMap[product.name] || 0;
+                    const isOutOfStock = !isService && product.current_stock === 0;
 
-                  return (
-                    <div
-                      key={product.id}
-                      className={clsx(
-                        "group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300",
-                        !selectedRepair && "opacity-80 border-dashed border-zinc-800",
-                        isOutOfStock && "opacity-60 border-zinc-800"
-                      )}
-                    >
-                      <div>
-                        {/* Top Header: Badge & Frequency Availment Indicator */}
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="rounded-xl p-2 border bg-zinc-800 text-zinc-300 border-zinc-700">
-                            {isService ? <Wrench className="w-4 h-4 text-zinc-400" /> : <Package className="w-4 h-4 text-zinc-400" />}
-                          </div>
+                    return (
+                      <div
+                        key={product.id}
+                        data-testid="pos-catalog-card"
+                        className={clsx(
+                          "group relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300",
+                          !selectedRepair && "opacity-80 border-dashed border-zinc-800",
+                          isOutOfStock && "opacity-60 border-zinc-800"
+                        )}
+                      >
+                        {/* Top Category Image Banner (SVG illustration matching dark zinc theme) */}
+                        <CategoryCardBanner
+                          category={product.category}
+                          itemType={product.item_type}
+                          name={product.name}
+                          brand={product.brand}
+                        />
 
-                          <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                            {frequency > 0 && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1" title="Historical popularity">
-                                <Flame className="w-3 h-3 text-zinc-400" />
-                                <span>{isService ? `${frequency} completed` : `${frequency} sold`}</span>
+                        {/* Card Body */}
+                        <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between">
+                          <div>
+                            {/* Top Details: Frequency indicator & SKU */}
+                            <div className="flex items-center justify-between gap-1.5 mb-2">
+                              <span className="text-[9px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-md bg-zinc-950 text-zinc-400 border border-zinc-800 uppercase truncate">
+                                {product.sku}
                               </span>
-                            )}
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-zinc-950 text-zinc-400 border border-zinc-800 uppercase">
-                              {product.sku}
-                            </span>
-                          </div>
-                        </div>
 
-                        {/* Title, Brand & Category */}
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <h3 className="font-bold text-zinc-100 text-sm line-clamp-2">{product.name}</h3>
-                          {product.brand && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
-                              {product.brand}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-zinc-500 mb-4">{product.category || (isService ? "Service Labor" : "Component")}</p>
-                      </div>
-
-                      {/* Pricing & Prominent Stock Indicator */}
-                      <div className="space-y-3 pt-3 border-t border-zinc-800">
-                        <div className="flex items-end justify-between gap-2">
-                          <span className="text-xl font-black text-white">₱{Number(product.selling_price).toFixed(2)}</span>
-                          
-                          {/* Stock Status Pill */}
-                          {isService ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                              Service Labor
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-300 flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-400" />
-                              {product.current_stock > 10 && `Remaining: ${product.current_stock} in stock`}
-                              {product.current_stock > 0 && product.current_stock <= 10 && `Low Stock: ${product.current_stock} left`}
-                              {product.current_stock === 0 && "Out of Stock"}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Dynamic Add to Cart Button or Stepper */}
-                        {!selectedRepair ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setWarningMessage("Please select an active customer repair from Step 1 above to begin adding items!");
-                              window.scrollTo({ top: 0, behavior: "smooth" });
-                            }}
-                            className="w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800 cursor-pointer"
-                            title="Please select an active customer repair before adding or modifying items"
-                          >
-                            <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                            <span>Select Customer First</span>
-                          </button>
-                        ) : !cartItem ? (
-                          <button
-                            onClick={() => handleAddItemToCustomerCart(product)}
-                            disabled={isOutOfStock}
-                            className={clsx(
-                              "w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all",
-                              isOutOfStock
-                                ? "bg-zinc-900 text-zinc-500 border border-zinc-800 cursor-not-allowed"
-                                : "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 active:scale-95"
-                            )}
-                          >
-                            {isOutOfStock ? (
-                              <span>Out of Stock</span>
-                            ) : (
-                              <>
-                                <Plus className="w-3.5 h-3.5" />
-                                <span>Add to Cart</span>
-                              </>
-                            )}
-                          </button>
-                        ) : (
-                          <div className="w-full flex items-center justify-between p-1 rounded-xl bg-zinc-950 border border-zinc-700">
-                            <button
-                              onClick={() => {
-                                if (cartItem.qty <= 1) {
-                                  removeFromCart(cartItem.id);
-                                } else {
-                                  updateQty(cartItem.id, cartItem.qty - 1);
-                                }
-                              }}
-                              className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors"
-                              title="Decrease quantity"
-                            >
-                              <Minus className="w-3.5 h-3.5" />
-                            </button>
-
-                            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-200">
-                              <span>{cartItem.qty}</span>
-                              <span className="text-[10px] text-zinc-500 font-sans uppercase">in cart</span>
+                              {frequency > 0 && (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1 shrink-0" title="Historical popularity">
+                                  <Flame className="w-3 h-3 text-zinc-400" />
+                                  <span className="hidden sm:inline">{isService ? `${frequency} completed` : `${frequency} sold`}</span>
+                                  <span className="sm:hidden">{frequency}</span>
+                                </span>
+                              )}
                             </div>
 
-                            <button
-                              onClick={() => {
-                                if (!isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock) {
-                                  setWarningMessage(`Cannot add more than available stock (${product.current_stock}) for ${product.name}!`);
-                                  return;
-                                }
-                                updateQty(cartItem.id, cartItem.qty + 1);
-                              }}
-                              disabled={!isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock}
-                              className={clsx(
-                                "p-1.5 rounded-lg transition-colors",
-                                !isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock
-                                  ? "text-zinc-600 cursor-not-allowed"
-                                  : "hover:bg-zinc-800 text-zinc-300 hover:text-white"
-                              )}
-                              title="Increase quantity"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
+                            {/* Product / Service Title & Brand */}
+                            <h3 className="font-bold text-zinc-100 text-xs sm:text-sm line-clamp-2 mb-1" title={product.name}>
+                              {product.name}
+                            </h3>
+                            {product.brand && (
+                              <span className="inline-block text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700 mb-2">
+                                {product.brand}
+                              </span>
+                            )}
                           </div>
-                        )}
+
+                          {/* Pricing & Stock Status */}
+                          <div className="space-y-2 sm:space-y-3 pt-2 sm:pt-3 border-t border-zinc-800 mt-2">
+                            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1 sm:gap-2">
+                              <span className="text-base sm:text-xl font-black text-white">
+                                ₱{Number(product.selling_price).toFixed(2)}
+                              </span>
+                              
+                              {/* Stock Status Pill */}
+                              {isService ? (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 self-start sm:self-auto">
+                                  Service Labor
+                                </span>
+                              ) : (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-300 flex items-center gap-1 self-start sm:self-auto truncate">
+                                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-400" />
+                                  <span className="truncate">
+                                    {product.current_stock > 10 && `${product.current_stock} in stock`}
+                                    {product.current_stock > 0 && product.current_stock <= 10 && `${product.current_stock} left`}
+                                    {product.current_stock === 0 && "Out of Stock"}
+                                  </span>
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Dynamic Add to Cart Button or Stepper */}
+                            {!selectedRepair ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setWarningMessage("Please select an active customer repair from Step 1 above to begin adding items!");
+                                  window.scrollTo({ top: 0, behavior: "smooth" });
+                                }}
+                                className="w-full py-2 px-2 sm:px-4 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800 cursor-pointer truncate"
+                                title="Please select an active customer repair before adding or modifying items"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                <span className="truncate">Select Customer</span>
+                              </button>
+                            ) : !cartItem ? (
+                              <button
+                                onClick={() => handleAddItemToCustomerCart(product)}
+                                disabled={isOutOfStock}
+                                className={clsx(
+                                  "w-full py-2 px-2 sm:px-4 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all truncate",
+                                  isOutOfStock
+                                    ? "bg-zinc-900 text-zinc-500 border border-zinc-800 cursor-not-allowed"
+                                    : "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 active:scale-95"
+                                )}
+                              >
+                                {isOutOfStock ? (
+                                  <span>Out of Stock</span>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Add to Cart</span>
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              <div className="w-full flex items-center justify-between p-1 rounded-xl bg-zinc-950 border border-zinc-700">
+                                <button
+                                  onClick={() => {
+                                    if (cartItem.qty <= 1) {
+                                      removeFromCart(cartItem.id);
+                                    } else {
+                                      updateQty(cartItem.id, cartItem.qty - 1);
+                                    }
+                                  }}
+                                  className="p-1 sm:p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors"
+                                  title="Decrease quantity"
+                                >
+                                  <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                </button>
+
+                                <div className="flex items-center gap-1 text-[11px] sm:text-xs font-mono font-bold text-zinc-200">
+                                  <span>{cartItem.qty}</span>
+                                  <span className="text-[9px] sm:text-[10px] text-zinc-500 font-sans uppercase hidden sm:inline">in cart</span>
+                                </div>
+
+                                <button
+                                  onClick={() => {
+                                    if (!isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock) {
+                                      setWarningMessage(`Cannot add more than available stock (${product.current_stock}) for ${product.name}!`);
+                                      return;
+                                    }
+                                    updateQty(cartItem.id, cartItem.qty + 1);
+                                  }}
+                                  disabled={!isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock}
+                                  className={clsx(
+                                    "p-1 sm:p-1.5 rounded-lg transition-colors",
+                                    !isService && product.current_stock !== undefined && cartItem.qty >= product.current_stock
+                                      ? "text-zinc-600 cursor-not-allowed"
+                                      : "hover:bg-zinc-800 text-zinc-300 hover:text-white"
+                                  )}
+                                  title="Increase quantity"
+                                >
+                                  <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Floating Action Button (FAB) for Mobile Catalog Filter (Positioned above the cart FAB) */}
+          {selectedRepair && activeView === "catalog" && (
+            <FloatingFilterFab
+              onClick={() => setIsMobileFilterOpen(true)}
+              hasActiveFilters={Boolean(search.trim()) || activeFilter === "PRODUCT" || activeSubFilter !== "ALL"}
+            />
           )}
-        </section>
+
+          {/* Mobile Filter Slide-up Sheet */}
+          <MobilePosFilterSheet
+            isOpen={isMobileFilterOpen}
+            onClose={() => setIsMobileFilterOpen(false)}
+            search={search}
+            onSearchChange={setSearch}
+            activeFilter={activeFilter}
+            onFilterChange={(type) => {
+              setActiveFilter(type);
+              setActiveSubFilter("ALL");
+            }}
+            subFilters={dynamicSubCategories}
+            activeSubFilter={activeSubFilter}
+            onSubFilterChange={setActiveSubFilter}
+            onReset={() => {
+              setSearch("");
+              setActiveFilter("SERVICE");
+              setActiveSubFilter("ALL");
+            }}
+            totalResults={filteredCatalog.length}
+          />
 
           {/* Floating Action Button (FAB) for View Cart on Mobile (56px circular, icon-only) */}
           {selectedRepair && activeView === "catalog" && (

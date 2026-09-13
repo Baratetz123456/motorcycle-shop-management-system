@@ -26,6 +26,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { CustomerHistoryRecord } from "../page";
 import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
+import { FloatingProfileActionsButton, MobileProfileActionsSheet } from "@/components/ui/MobileProfileActionsSheet";
 
 function CustomerRepairHistoryLogsContent() {
   const router = useRouter();
@@ -34,6 +35,7 @@ function CustomerRepairHistoryLogsContent() {
 
   const [customer, setCustomer] = useState<CustomerHistoryRecord | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
 
   useEffect(() => {
     loadCustomerLog();
@@ -151,7 +153,7 @@ function CustomerRepairHistoryLogsContent() {
 
   if (loading) {
     return (
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 bg-zinc-950 min-h-screen text-zinc-100">
         <DetailViewSkeleton hasTable={true} />
       </div>
     );
@@ -159,13 +161,13 @@ function CustomerRepairHistoryLogsContent() {
 
   if (!customer) {
     return (
-      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-slate-800 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-950">
+      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-zinc-200 bg-zinc-950">
         <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
-        <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 mb-1">Customer Record Not Found</h2>
-        <p className="text-xs text-slate-500 dark:text-zinc-400 mb-6">Could not find repair logs matching the requested customer identifier.</p>
+        <h2 className="text-xl font-bold text-zinc-100 mb-1">Customer Record Not Found</h2>
+        <p className="text-xs text-zinc-400 mb-6">Could not find repair logs matching the requested customer identifier.</p>
         <button
           onClick={() => router.push("/repairs/history")}
-          className="px-5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+          className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold flex items-center gap-2 transition-all shadow-none"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Repair History</span>
@@ -177,13 +179,14 @@ function CustomerRepairHistoryLogsContent() {
   const isActive = customer.active_status === "ACTIVE_REPAIR";
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 touch-pan-y bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100">
-      <div className="w-full space-y-8 animate-profile-enter">
-        {/* Top Action & Navigation Bar */}
-        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y bg-zinc-950 text-zinc-100">
+      <div className="w-full space-y-6 md:space-y-8 animate-profile-enter">
+        
+        {/* Top Action & Navigation Bar (Preserved on Desktop >= md, Hidden on Mobile < md) */}
+        <div className="w-full hidden md:flex flex-row items-center justify-between gap-4 no-print">
           <button
             onClick={() => router.push("/repairs/history")}
-            className="px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-none active:scale-[0.98]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Repair History</span>
@@ -192,16 +195,16 @@ function CustomerRepairHistoryLogsContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.print()}
-              className="px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 transition-colors flex items-center gap-2 text-xs font-bold shadow-sm"
+              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-2 text-xs font-bold shadow-none active:scale-[0.98]"
             >
-              <Printer className="w-4 h-4 text-lime-600 dark:text-lime-400" />
+              <Printer className="w-4 h-4 text-emerald-400" />
               <span>Print Service Record</span>
             </button>
 
             {isActive ? (
               <button
                 disabled
-                className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
+                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
               >
                 <Lock className="w-4 h-4" />
                 <span>Active in Repair</span>
@@ -209,7 +212,7 @@ function CustomerRepairHistoryLogsContent() {
             ) : (
               <button
                 onClick={() => handleResumeRepair(customer)}
-                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm border border-emerald-500/30 active:scale-[0.98]"
+                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-none border border-emerald-500/30 active:scale-[0.98]"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>Start Job</span>
@@ -218,66 +221,67 @@ function CustomerRepairHistoryLogsContent() {
           </div>
         </div>
 
-        {/* Main Profile & Detailed Service Record View */}
-        <div className="w-full space-y-6 pb-20">
+        {/* Main Customer Profile & Detailed Service Record View */}
+        <div className="w-full space-y-6">
           
-          {/* Customer Profile Banner (Card-Free Canvas on Mobile, Card on Desktop) */}
-          <div className="bg-transparent md:bg-white md:dark:bg-zinc-900 border-0 md:border md:border-slate-200 md:dark:border-zinc-800 rounded-none md:rounded-3xl p-0 md:p-8 md:shadow-sm space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-zinc-800">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-lime-50 dark:bg-lime-950/40 border border-lime-200 dark:border-lime-800/50 flex items-center justify-center text-lime-700 dark:text-lime-400 font-black text-xl md:text-2xl shrink-0">
+          {/* Customer Profile Header (Card-Free Canvas on Mobile, Structured Panel on Desktop) */}
+          <div className="bg-transparent md:bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-3xl p-0 md:p-8 shadow-none space-y-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-5 border-b border-zinc-800/80">
+              <div className="flex items-center gap-3.5 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 font-black text-lg sm:text-xl md:text-2xl shrink-0">
                   {customer.customer_name.split(" ").map((n) => n[0]).join("")}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-xl md:text-3xl font-black text-slate-900 dark:text-zinc-100">{customer.customer_name}</h1>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-lg sm:text-xl md:text-3xl font-black text-zinc-100 truncate">{customer.customer_name}</h1>
                     {isActive ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-lime-100 text-lime-800 border border-lime-300">
-                        <Wrench className="w-3.5 h-3.5" /> Active in Repair
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-800/80 shrink-0">
+                        <Wrench className="w-3 h-3" /> Active in Repair
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                        <CheckCircle className="w-3.5 h-3.5 text-slate-500" /> Ready for Service
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 shrink-0">
+                        <CheckCircle className="w-3 h-3 text-zinc-500" /> Ready for Service
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
-                    <span className="flex items-center gap-1 font-semibold text-slate-700">
-                      <Bike className="w-3.5 h-3.5 text-lime-600" />
-                      {customer.motorcycle_model}
+                  <div className="text-xs text-zinc-400 mt-1 flex items-center gap-2.5 sm:gap-3 flex-wrap">
+                    <span className="flex items-center gap-1 font-semibold text-zinc-300">
+                      <Bike className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="truncate">{customer.motorcycle_model}</span>
                     </span>
-                    <span className="text-slate-300 hidden sm:inline">•</span>
-                    <span className="flex items-center gap-1 font-mono text-slate-500">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-zinc-700 hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1 font-mono text-zinc-400">
+                      <Phone className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                       {customer.contact_number}
                     </span>
-                  </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex sm:items-center gap-6 bg-slate-50 p-3.5 px-4 sm:px-6 rounded-xl md:rounded-2xl border border-slate-200">
+              {/* Stats Chips (Desktop Boxed vs Mobile Grid) */}
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-6 bg-zinc-900/80 md:bg-zinc-950 p-3 sm:p-3.5 px-3.5 sm:px-6 rounded-xl md:rounded-2xl border border-zinc-800/80 shrink-0">
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Total Sessions</span>
-                  <span className="font-mono text-xl sm:text-2xl font-black text-slate-900">{customer.total_repair_sessions}</span>
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">Total Sessions</span>
+                  <span className="font-mono text-lg sm:text-2xl font-black text-zinc-100">{customer.total_repair_sessions}</span>
                 </div>
-                <div className="w-px h-8 bg-slate-200" />
+                <div className="hidden sm:block w-px h-8 bg-zinc-800" />
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-semibold">Last Serviced</span>
-                  <span className="font-mono text-xs font-bold text-slate-800">{new Date(customer.last_service_date).toLocaleDateString()}</span>
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">Last Serviced</span>
+                  <span className="font-mono text-xs sm:text-sm font-bold text-zinc-300">{new Date(customer.last_service_date).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center justify-between text-xs text-zinc-400">
               <span className="flex items-center gap-2">
-                <History className="w-4 h-4 text-lime-600" />
-                <span>Chronological Service Records ({customer.past_jobs.length} completed logs)</span>
+                <History className="w-4 h-4 text-emerald-500" />
+                <span className="font-medium">Chronological Service Records ({customer.past_jobs.length} completed logs)</span>
               </span>
-              <span className="text-slate-400 text-[11px] font-mono">Customer ID: {customer.customer_id}</span>
+              <span className="text-zinc-500 text-[11px] font-mono">Customer ID: {customer.customer_id}</span>
             </div>
           </div>
 
-          {/* Detailed Itemized Job Order Logs */}
+          {/* Detailed Itemized Job Order Logs (Card-Free Timeline on Mobile, Structured Panels on Desktop) */}
           <div className="space-y-6">
             {customer.past_jobs.map((job) => {
               const totalCost = job.total_billed !== undefined 
@@ -287,29 +291,29 @@ function CustomerRepairHistoryLogsContent() {
               return (
                 <div
                   key={job.job_id}
-                  className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-sm space-y-5 relative overflow-hidden"
+                  className="bg-transparent md:bg-zinc-900 border-b md:border border-zinc-800/80 md:border-zinc-800 rounded-none md:rounded-3xl p-0 md:p-8 pb-6 md:pb-8 shadow-none space-y-4 sm:space-y-5 relative"
                 >
-                  {/* Job Order Top Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-lime-800 font-bold bg-lime-100 px-3 py-1.5 rounded-xl border border-lime-300 text-sm">
+                  {/* Job Order Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 sm:pb-4 border-b border-zinc-800/60">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="font-mono text-emerald-400 font-bold bg-zinc-900 border border-zinc-800 px-2.5 sm:px-3 py-1 rounded-lg sm:rounded-xl text-xs sm:text-sm">
                         {job.jo_number}
                       </span>
-                      <span className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="text-xs text-zinc-400 flex items-center gap-1.5 font-medium">
+                        <Calendar className="w-3.5 h-3.5 text-zinc-500" />
                         Repaired on {new Date(job.date_repaired).toLocaleDateString()}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-600">
-                        Mechanic: <span className="font-bold text-slate-900">{job.mechanic_name}</span>
+                      <span className="text-xs text-zinc-400">
+                        Mechanic: <span className="font-bold text-zinc-200">{job.mechanic_name}</span>
                       </span>
                       <span className={clsx(
-                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                        "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
                         job.status === "COMPLETED" || job.status === "RELEASED"
-                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                          : "bg-amber-100 text-amber-800 border-amber-300"
+                          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/80"
+                          : "bg-zinc-900 text-zinc-300 border-zinc-700"
                       )}>
                         {job.status}
                       </span>
@@ -318,12 +322,12 @@ function CustomerRepairHistoryLogsContent() {
 
                   {/* Mechanic Diagnostic & Inspection Notes */}
                   {job.mechanic_notes && (
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
-                      <span className="text-[10px] font-bold text-lime-700 uppercase tracking-wider block flex items-center gap-1.5">
-                        <FileText className="w-3.5 h-3.5 text-lime-600" />
+                    <div className="p-3.5 sm:p-4 bg-zinc-900/60 md:bg-zinc-950 rounded-xl md:rounded-2xl border border-zinc-800/80 space-y-1">
+                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-emerald-500" />
                         Diagnostic Notes & Service Summary
                       </span>
-                      <p className="text-xs text-slate-700 leading-relaxed italic">
+                      <p className="text-xs text-zinc-300 leading-relaxed italic">
                         "{job.mechanic_notes}"
                       </p>
                     </div>
@@ -332,22 +336,24 @@ function CustomerRepairHistoryLogsContent() {
                   {/* Itemized Parts & Labor Products Applied */}
                   {job.items_used && job.items_used.length > 0 && (
                     <div className="space-y-2">
-                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block flex items-center gap-1.5">
-                        <Tag className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-zinc-500" />
                         Itemized Products & Services Availed ({job.items_used.length})
                       </span>
-                      <div className="rounded-2xl border border-slate-200 overflow-hidden">
+
+                      {/* Desktop / Tablet Table View */}
+                      <div className="hidden sm:block rounded-xl md:rounded-2xl border border-zinc-800 overflow-hidden">
                         <table className="w-full text-sm text-left">
-                          <thead className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                          <thead className="bg-zinc-950 text-zinc-400 text-xs font-semibold uppercase tracking-wider border-b border-zinc-800">
                             <tr>
-                              <th className="p-3.5 px-4 font-bold">Item / Service Description</th>
-                              <th className="p-3.5 px-4 text-center font-bold">Type</th>
-                              <th className="p-3.5 px-4 text-center font-bold">Qty</th>
-                              <th className="p-3.5 px-4 text-right font-bold">Unit Price</th>
-                              <th className="p-3.5 px-4 text-right font-bold">Subtotal</th>
+                              <th className="p-3 px-4 font-bold">Item / Service Description</th>
+                              <th className="p-3 px-4 text-center font-bold">Type</th>
+                              <th className="p-3 px-4 text-center font-bold">Qty</th>
+                              <th className="p-3 px-4 text-right font-bold">Unit Price</th>
+                              <th className="p-3 px-4 text-right font-bold">Subtotal</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100 bg-white">
+                          <tbody className="divide-y divide-zinc-800/80 bg-zinc-900/40">
                             {job.items_used.map((it, i) => {
                               const nameLower = (it.name || "").toLowerCase();
                               const isService =
@@ -362,19 +368,21 @@ function CustomerRepairHistoryLogsContent() {
                                 nameLower.includes("wiring");
 
                               return (
-                                <tr key={i} className="hover:bg-slate-50/80 transition-colors">
-                                  <td className="p-3.5 px-4 font-bold text-slate-900">{it.name}</td>
-                                  <td className="p-3.5 px-4 text-center">
+                                <tr key={i} className="hover:bg-zinc-800/40 transition-colors">
+                                  <td className="p-3 px-4 font-bold text-zinc-200">{it.name}</td>
+                                  <td className="p-3 px-4 text-center">
                                     <span className={clsx(
-                                      "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                      isService ? "bg-indigo-50 text-indigo-700 border border-indigo-200" : "bg-lime-50 text-lime-800 border border-lime-200"
+                                      "px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
+                                      isService 
+                                        ? "bg-zinc-900 text-zinc-300 border-zinc-700" 
+                                        : "bg-emerald-950/60 text-emerald-400 border-emerald-800/80"
                                     )}>
                                       {isService ? "Labor Service" : "Part Product"}
                                     </span>
                                   </td>
-                                  <td className="p-3.5 px-4 text-center text-xs font-mono text-slate-600">{it.qty}</td>
-                                  <td className="p-3.5 px-4 text-right text-xs font-mono text-slate-600">₱{it.price.toFixed(2)}</td>
-                                  <td className="p-3.5 px-4 text-right font-mono font-bold text-slate-900 text-sm">
+                                  <td className="p-3 px-4 text-center text-xs font-mono text-zinc-400">{it.qty}</td>
+                                  <td className="p-3 px-4 text-right text-xs font-mono text-zinc-400">₱{it.price.toFixed(2)}</td>
+                                  <td className="p-3 px-4 text-right font-mono font-bold text-zinc-100 text-sm">
                                     ₱{(it.qty * it.price).toFixed(2)}
                                   </td>
                                 </tr>
@@ -383,35 +391,78 @@ function CustomerRepairHistoryLogsContent() {
                           </tbody>
                         </table>
                       </div>
+
+                      {/* Mobile Compact Borderless Item Rows (< sm) */}
+                      <div className="block sm:hidden divide-y divide-zinc-800/80 rounded-xl bg-zinc-900/50 border border-zinc-800/80 overflow-hidden">
+                        {job.items_used.map((it, i) => {
+                          const nameLower = (it.name || "").toLowerCase();
+                          const isService =
+                            nameLower.includes("labor") ||
+                            nameLower.includes("service") ||
+                            nameLower.includes("repair") ||
+                            nameLower.includes("overhaul") ||
+                            nameLower.includes("tune-up") ||
+                            nameLower.includes("inspection") ||
+                            nameLower.includes("cleaning") ||
+                            nameLower.includes("checkup") ||
+                            nameLower.includes("wiring");
+
+                          return (
+                            <div key={i} className="p-2.5 flex items-center justify-between gap-3 text-xs">
+                              <div className="min-w-0">
+                                <div className="font-bold text-zinc-200 truncate">{it.name}</div>
+                                <div className="text-[11px] text-zinc-400 flex items-center gap-2 mt-0.5 font-mono">
+                                  <span>Qty: {it.qty}</span>
+                                  <span>•</span>
+                                  <span>₱{it.price.toFixed(2)}</span>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className={clsx(
+                                  "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase block mb-1 border",
+                                  isService 
+                                    ? "bg-zinc-900 text-zinc-400 border-zinc-700" 
+                                    : "bg-emerald-950/60 text-emerald-400 border-emerald-800/80"
+                                )}>
+                                  {isService ? "Labor" : "Part"}
+                                </span>
+                                <span className="font-mono font-bold text-zinc-100">
+                                  ₱{(it.qty * it.price).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
 
-                  {/* Financial Charges Settlement Bar */}
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                    <div className="flex flex-wrap items-center gap-6">
+                  {/* Financial Settlement Breakdown */}
+                  <div className="p-3.5 sm:p-4 bg-zinc-900/60 md:bg-zinc-950 rounded-xl md:rounded-2xl border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                       <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">Service Labor Charge</span>
-                        <span className="font-mono text-slate-900 font-bold text-sm">₱{job.labor_charge.toFixed(2)}</span>
+                        <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Service Labor</span>
+                        <span className="font-mono text-zinc-200 font-bold text-sm">₱{job.labor_charge.toFixed(2)}</span>
                       </div>
-                      <div className="w-px h-6 bg-slate-200 hidden sm:block" />
+                      <div className="w-px h-6 bg-zinc-800 hidden sm:block" />
                       <div>
-                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">Parts & Materials</span>
-                        <span className="font-mono text-slate-900 font-bold text-sm">₱{job.parts_charge.toFixed(2)}</span>
+                        <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Parts & Materials</span>
+                        <span className="font-mono text-zinc-200 font-bold text-sm">₱{job.parts_charge.toFixed(2)}</span>
                       </div>
                       {job.invoice_no && (
                         <>
-                          <div className="w-px h-6 bg-slate-200 hidden sm:block" />
+                          <div className="w-px h-6 bg-zinc-800 hidden sm:block" />
                           <div>
-                            <span className="text-slate-500 block text-[10px] uppercase font-semibold">Invoice Synced</span>
-                            <span className="font-mono text-indigo-700 font-bold text-xs">{job.invoice_no}</span>
+                            <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Invoice Synced</span>
+                            <span className="font-mono text-emerald-400 font-bold text-xs">{job.invoice_no}</span>
                           </div>
                         </>
                       )}
                     </div>
 
-                    <div className="text-right border-t sm:border-t-0 border-slate-200 pt-2 sm:pt-0">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold">Total Service Billed</span>
-                      <span className="font-mono text-lime-700 font-black text-lg">₱{totalCost.toFixed(2)}</span>
+                    <div className="text-left sm:text-right border-t sm:border-t-0 border-zinc-800/80 pt-2 sm:pt-0 flex sm:flex-col justify-between sm:justify-center items-center sm:items-end">
+                      <span className="text-zinc-400 block text-[10px] uppercase font-bold">Total Service Billed</span>
+                      <span className="font-mono text-emerald-400 font-black text-base sm:text-lg">₱{totalCost.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -422,6 +473,42 @@ function CustomerRepairHistoryLogsContent() {
 
         </div>
       </div>
+
+      {/* Mobile Floating Action Button & Actions Sheet (< md) */}
+      <FloatingProfileActionsButton
+        onClick={() => setIsMobileActionsOpen(true)}
+        label="Actions"
+      />
+
+      <MobileProfileActionsSheet
+        isOpen={isMobileActionsOpen}
+        onClose={() => setIsMobileActionsOpen(false)}
+        title={customer.customer_name}
+        subtitle={`${customer.motorcycle_model} • ${customer.contact_number}`}
+        actions={[
+          {
+            id: "back",
+            label: "Back to Customer Records",
+            icon: <ArrowLeft className="w-4 h-4" />,
+            onClick: () => router.push("/repairs/history"),
+          },
+          ...(!isActive ? [
+            {
+              id: "start-job",
+              label: "Start Job",
+              icon: <Play className="w-4 h-4 fill-current" />,
+              variant: "primary" as const,
+              onClick: () => handleResumeRepair(customer),
+            }
+          ] : []),
+          {
+            id: "print",
+            label: "Print Service Record",
+            icon: <Printer className="w-4 h-4" />,
+            onClick: () => window.print(),
+          }
+        ]}
+      />
     </div>
   );
 }
@@ -429,7 +516,7 @@ function CustomerRepairHistoryLogsContent() {
 export default function CustomerRepairHistoryLogsPage() {
   return (
     <Suspense fallback={
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 bg-zinc-950 min-h-screen text-zinc-100">
         <DetailViewSkeleton hasTable={true} />
       </div>
     }>

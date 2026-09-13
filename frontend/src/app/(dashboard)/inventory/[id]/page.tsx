@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { Modal, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
+import { FloatingProfileActionsButton, MobileProfileActionsSheet } from "@/components/ui/MobileProfileActionsSheet";
 
 export interface CatalogItem {
   id: string;
@@ -82,6 +83,7 @@ export default function ItemProfilePage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [copiedSku, setCopiedSku] = useState(false);
   const [mobileTab, setMobileTab] = useState<"overview" | "stock" | "financials" | "details">("overview");
+  const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
 
   // Role permissions
   const [userRole, setUserRole] = useState<string>("admin");
@@ -295,8 +297,8 @@ export default function ItemProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center text-slate-500 gap-3 bg-slate-50">
-        <div className="w-8 h-8 border-2 border-lime-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-[80vh] flex flex-col items-center justify-center text-zinc-400 gap-3 bg-zinc-950">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         <p className="text-sm font-medium">Loading item profile...</p>
       </div>
     );
@@ -304,21 +306,21 @@ export default function ItemProfilePage() {
 
   if (error || !item) {
     return (
-      <div className="p-8 max-w-4xl mx-auto font-sans bg-slate-50 min-h-screen">
+      <div className="p-8 max-w-4xl mx-auto font-sans bg-zinc-950 min-h-screen">
         <button
           onClick={() => router.push("/inventory")}
-          className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm mb-6"
+          className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-2 text-xs font-semibold w-fit mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Inventory</span>
         </button>
-        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-8 text-center text-rose-700 shadow-sm">
-          <ShieldAlert className="w-12 h-12 mx-auto mb-3 text-rose-600" />
-          <h2 className="text-xl font-bold mb-2">Item Not Found</h2>
-          <p className="text-sm text-slate-600 mb-6">{error || "The requested item does not exist or has been removed."}</p>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center text-zinc-300">
+          <ShieldAlert className="w-12 h-12 mx-auto mb-3 text-zinc-400" />
+          <h2 className="text-xl font-bold mb-2 text-white">Item Not Found</h2>
+          <p className="text-sm text-zinc-400 mb-6">{error || "The requested item does not exist or has been removed."}</p>
           <button
             onClick={() => router.push("/inventory")}
-            className="px-5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all inline-flex items-center gap-2 shadow-sm"
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all inline-flex items-center gap-2 border border-emerald-500"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Inventory</span>
@@ -341,8 +343,8 @@ export default function ItemProfilePage() {
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 bg-zinc-950 text-zinc-100">
       <div className="w-full space-y-8 animate-profile-enter">
-        {/* Top Action & Navigation Bar */}
-        <div className="flex flex-row items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
+        {/* Top Action & Navigation Bar (Desktop Only >= md) */}
+        <div className="hidden md:flex flex-row items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
           <button
             onClick={() => router.push("/inventory")}
             className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 font-bold transition-all flex items-center gap-2 text-xs w-fit active:scale-[0.98]"
@@ -1115,6 +1117,42 @@ export default function ItemProfilePage() {
         confirmVariant="danger"
         isLoading={isDeleting}
         icon={<Trash2 className="w-5 h-5" />}
+      />
+      {/* Mobile Floating Action Button & Actions Sheet (< md) */}
+      <FloatingProfileActionsButton
+        onClick={() => setIsMobileActionsOpen(true)}
+        label="Actions"
+      />
+
+      <MobileProfileActionsSheet
+        isOpen={isMobileActionsOpen}
+        onClose={() => setIsMobileActionsOpen(false)}
+        title={item.name}
+        subtitle={`SKU: ${item.sku} • ${isProduct ? "Product" : "Service"}`}
+        actions={[
+          {
+            id: "back",
+            label: "Back to Inventory",
+            icon: <ArrowLeft className="w-4 h-4" />,
+            onClick: () => router.push("/inventory"),
+          },
+          ...(canManage ? [
+            {
+              id: "edit",
+              label: "Edit Details",
+              icon: <Edit3 className="w-4 h-4" />,
+              variant: "primary" as const,
+              onClick: openEditModal,
+            },
+            {
+              id: "delete",
+              label: "Delete Item",
+              icon: <Trash2 className="w-4 h-4" />,
+              variant: "danger" as const,
+              onClick: () => setIsDeleteModalOpen(true),
+            },
+          ] : []),
+        ]}
       />
       </div>
     </div>
