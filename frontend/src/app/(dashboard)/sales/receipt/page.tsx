@@ -23,6 +23,7 @@ import { ConfirmModal } from "@/components/ui/Modal";
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { printIsolatedDocument } from "@/components/documents/printUtils";
 import { PrintableInvoiceDocument, getInvoiceDocumentHtml } from "@/components/documents/PrintableInvoiceDocument";
+import { FloatingDocActionsButton, MobileDocActionsSheet } from "@/components/ui/MobileDocActionsSheet";
 
 interface TransactionRecord {
   id: string;
@@ -59,6 +60,7 @@ function SalesReceiptContent() {
   const [isVoiding, setIsVoiding] = useState(false);
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
   const [copiedInvoice, setCopiedInvoice] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [mechanicRates, setMechanicRates] = useState<Record<string, number>>({});
   const [settings, setSettings] = useState<SystemSettings>(getSystemSettings());
 
@@ -469,8 +471,8 @@ function SalesReceiptContent() {
       `}</style>
 
       <div className="w-full space-y-6">
-        {/* Top Action & Navigation Bar (No-Print) */}
-        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 no-print max-w-4xl mx-auto">
+        {/* Top Action & Navigation Bar (Desktop Only, hidden on mobile < sm) */}
+        <div className="w-full hidden sm:flex sm:flex-row sm:items-center justify-between gap-4 shrink-0 no-print max-w-4xl mx-auto">
           <button
             onClick={() => router.push("/sales")}
             className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
@@ -749,8 +751,8 @@ function SalesReceiptContent() {
             <p className="font-mono">Reference ID: {transaction.id} • Official Record • {settings.appName || "Versiklo"} Operations</p>
           </div>
 
-          {/* Void Transaction Action Bar (Screen only) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-zinc-800 no-print">
+          {/* Void Transaction Action Bar (Screen desktop only) */}
+          <div className="hidden sm:flex sm:items-center justify-between gap-4 pt-3 border-t border-zinc-800 no-print">
             <div>
               {!isCashierReadOnly && isCompleted ? (
                 <button
@@ -786,6 +788,32 @@ function SalesReceiptContent() {
           />
 
         </div>
+
+        {/* Floating Action Button (Mobile Only) */}
+        <FloatingDocActionsButton
+          onClick={() => setIsActionsOpen(true)}
+        />
+
+        {/* Mobile Slide-Up Actions Sheet */}
+        <MobileDocActionsSheet
+          isOpen={isActionsOpen}
+          onClose={() => setIsActionsOpen(false)}
+          title="Invoice Actions"
+          subtitle={transaction ? `${transaction.invoice_no} • ₱${transaction.total.toFixed(2)}` : undefined}
+          onBack={() => router.push("/sales")}
+          backLabel="Back to Invoices"
+          onPrint={handlePrintInvoice}
+          printLabel="Print / Save PDF"
+          onDownloadCSV={handleDownloadCSV}
+          csvLabel="Download CSV Report"
+          onCopy={handleCopyInvoice}
+          copyLabel="Copy Invoice Number"
+          isCopied={copiedInvoice}
+          onVoid={!isCashierReadOnly && isCompleted ? () => setIsVoidModalOpen(true) : undefined}
+          voidLabel="Void Transaction"
+          isVoidDisabled={isCashierReadOnly || !isCompleted}
+          voidRestrictedText={isCashierReadOnly ? "Voiding restricted for Cashier role" : "Invoice is Voided"}
+        />
       </div>
     </div>
 

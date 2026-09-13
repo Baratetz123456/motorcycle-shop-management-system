@@ -290,22 +290,23 @@ test.describe("Executive Dashboard, Reports & Payroll Redesign Suite", () => {
     await expect(page.locator("text=Mike Smith")).toBeVisible();
     await expect(page.locator("text=35% Comm.")).toBeVisible();
 
-    // Open Payslip Modal
+    // Open Payslip Dedicated Page
     const payslipBtn = page.locator("button:has-text('Payslip')").first();
     await payslipBtn.click();
 
-    // Verify Modal & TIN Header
-    await expect(page.locator("text=Official Staff Compensation Voucher")).toBeVisible();
-    await page.waitForTimeout(350);
+    // Verify Dedicated Page Navigation, Canvas & Header
+    await page.waitForURL(/.*payroll\/payslip.*/);
+    await page.waitForLoadState("networkidle");
     await expect(page.locator("[data-payslip-canvas='true']").getByText(/VERSIKLO MOTORCYCLE PARTS/i)).toBeVisible();
     await expect(page.locator("[data-payslip-canvas='true']").getByText(/BIR Registered TIN/i)).toBeVisible();
-    await expect(page.locator("text=Print Official Payslip")).toBeVisible();
+    await expect(page.locator("text=Print Official Payslip").first()).toBeVisible();
 
     // Capture Payslip Screenshot
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, "payroll-payslip.png") });
 
-    // Close Modal
-    await page.locator("button:has-text('Close')").click();
+    // Navigate back to Payroll list
+    await page.locator("button:has-text('Back to Payroll')").first().click();
+    await page.waitForURL(/.*payroll$/);
 
     // Verify Mass Disbursement ConfirmModal Safeguard
     const disburseAllBtn = page.locator("button:has-text('Disburse All Pending')");

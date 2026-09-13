@@ -284,8 +284,9 @@ export default function PayrollPage() {
       selectedPeriod === "MONTHLY" ? "Monthly Settlement (30 Days)" :
       selectedPeriod === "YEARLY" ? "Annual Settlement (Year-to-Date)" : "Consolidated Cumulative Settlement";
 
-    setSelectedPayslip({
+    const payslipRecord = {
       ...recipient,
+      id: recipient.name.toLowerCase().replace(/\s+/g, "-"),
       payPeriod: periodLabel,
       payslipNo: `PAY-${Date.now().toString().slice(-6)}`,
       issuedDate: new Date().toLocaleDateString("en-PH", {
@@ -293,7 +294,20 @@ export default function PayrollPage() {
         month: "long",
         day: "numeric"
       })
-    });
+    };
+
+    setSelectedPayslip(payslipRecord);
+
+    try {
+      const existing = localStorage.getItem("motoshop_payroll_cache");
+      const list = existing ? JSON.parse(existing) : [];
+      list.unshift(payslipRecord);
+      localStorage.setItem("motoshop_payroll_cache", JSON.stringify(list.slice(0, 20)));
+    } catch (e) {
+      // ignore
+    }
+
+    router.push(`/payroll/payslip?id=${encodeURIComponent(payslipRecord.id)}&role=${recipient.role}&period=${selectedPeriod}`);
   };
 
   const handlePrintPayslip = () => {

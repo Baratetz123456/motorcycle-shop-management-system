@@ -222,5 +222,76 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     expect(payrollBg).not.toBe('rgb(255, 255, 255)');
     expect(['rgb(9, 9, 11)', 'rgb(18, 18, 21)']).toContain(payrollBg);
   });
+
+  test('Invoice and Payslip dedicated pages: mobile view hides top buttons and renders floating action sheet; desktop shows top bar and hides FAB', async ({ page }) => {
+    // 1. Invoice Page Mobile View (390 x 844)
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+      localStorage.setItem('motoshop_sales_logs', JSON.stringify([{
+        id: 'tx-mobile-test',
+        invoice_no: 'INV-MOB-01',
+        customer_name: 'Mobile Customer',
+        subtotal: 1000,
+        total: 1000,
+        amount_paid: 1000,
+        status: 'COMPLETED',
+        payment_method: 'CASH',
+        created_at: new Date().toISOString(),
+        items: [{ name: 'Oil Filter', qty: 1, price: 1000, type: 'product' }]
+      }]));
+    });
+
+    await page.goto('/sales/receipt?id=tx-mobile-test');
+    await page.waitForLoadState('networkidle');
+
+    // On mobile: top bar is hidden
+    const topBar = page.locator('button:has-text("Print / Save PDF")');
+    await expect(topBar).not.toBeVisible();
+
+    // On mobile: floating actions button is visible
+    const fab = page.locator('button[aria-label="Open document actions sheet"]');
+    await expect(fab).toBeVisible();
+
+    // Tap floating button to open action sheet
+    await fab.click();
+    await expect(page.locator('text=Invoice Actions')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Back to Invoices")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Download CSV Report")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Copy Invoice Number")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Print / Save PDF")')).toBeVisible();
+
+    // Close action sheet
+    await page.locator('button[aria-label="Close action sheet"]').click();
+
+    // 2. Payslip Page Mobile View (390 x 844)
+    await page.goto('/payroll/payslip?id=staff-01&role=Mechanic');
+    await page.waitForLoadState('networkidle');
+
+    // Top print button is hidden on mobile
+    const payslipTopPrint = page.locator('button:visible:has-text("Print Official Payslip")');
+    await expect(payslipTopPrint).not.toBeVisible();
+
+    // Floating action button is visible on mobile
+    const payslipFab = page.locator('button[aria-label="Open document actions sheet"]');
+    await expect(payslipFab).toBeVisible();
+
+    // Tap floating button to open action sheet
+    await payslipFab.click();
+    await expect(page.locator('text=Payslip Actions')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Back to Payroll")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Download CSV Voucher")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Copy Voucher Number")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Print Official Payslip")')).toBeVisible();
+
+    // Close action sheet
+    await page.locator('button[aria-label="Close action sheet"]').click();
+
+    // 3. Desktop View (1440 x 900) - Top bar visible, FAB hidden
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(page.locator('button:visible:has-text("Print Official Payslip")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Back to Payroll")')).toBeVisible();
+    await expect(page.locator('button:visible:has-text("Download CSV")')).toBeVisible();
+    await expect(payslipFab).not.toBeVisible();
+  });
 });
 
