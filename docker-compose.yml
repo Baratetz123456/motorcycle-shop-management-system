@@ -1,0 +1,144 @@
+services:
+  # Supabase equivalent local DB (using standard Postgres for simplicity of microservices, can be swapped to full supabase local stack if needed, but this is lighter)
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: motorcycle_shop
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d motorcycle_shop"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Caching and Idempotency
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ for Message Broker (Saga Pattern)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI port
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # KrakenD API Gateway
+  krakend:
+    image: devopsfaith/krakend:2.6
+    volumes:
+      - ./krakend/krakend.json:/etc/krakend/krakend.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth_service
+      - inventory_service
+      - sales_service
+      - repairs_service
+
+  # Microservices placeholders (we will build these, but here for reference)
+  # In local dev, we might run them via python directly or via docker
+  auth_service:
+    build: 
+      context: ./backend
+      dockerfile: auth_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "auth_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:123@db:5432/motorcycle_shop
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  inventory_service:
+    build: 
+      context: ./backend
+      dockerfile: inventory_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "inventory_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:123@db:5432/motorcycle_shop
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  sales_service:
+    build: 
+      context: ./backend
+      dockerfile: sales_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "sales_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:123@db:5432/motorcycle_shop
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  repairs_service:
+    build: 
+      context: ./backend
+      dockerfile: repairs_service/Dockerfile
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "repairs_service.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:123@db:5432/motorcycle_shop
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  db_data:
