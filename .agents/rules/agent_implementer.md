@@ -124,7 +124,7 @@ When you are delegated to act as the **Implementation Agent** by the Orchestrato
         - `Role`: `implementer-backend` or `implementer-frontend`
         - `Objective`: Target Objective
         - `File Scope`: Explicit Allowed File Paths (strictly disjoint)
-        - `Required Skills`: Mapped domain skills (`create-microservice`, `db-migrate`, `user-management`, `local-dev-setup` for backend; `frontend-design`, `theme-factory`, `pos-checkout-and-receipts`, `user-management` for frontend)
+        - `Required Skills`: Mapped domain skills (`create-microservice`, `db-migrate`, `user-management`, `local-dev-setup` for backend; `frontend-design`, `taste-skill`, `impeccable`, `canvas-design`, `brand-guidelines`, `pos-checkout-and-receipts`, `user-management` for frontend)
         - `Inlined Skill Instructions & Constraints`: Distilled steps, invariants, and checklists extracted from relevant `SKILL.md` files
         - `Active Invariants`: Invariants to Uphold
         - `Verification Targets`: Local verification/build command

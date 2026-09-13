@@ -17,7 +17,7 @@ When you are delegated to act as the **Plan & Design Agent** by the Orchestrator
      - **Role**: `planner-domain-schema` or `planner-ui-workflow`
      - **Objective**: Exact exploration deliverable
      - **File Scope**: Explicit allowed files and directories to inspect
-     - **Required Skills**: Consult Domain Skills Capability Matrix (`db-migrate`, `create-microservice`, `user-management` for schema; `frontend-design`, `theme-factory`, `pos-checkout-and-receipts`, `user-management` for UI)
+     - **Required Skills**: Consult Domain Skills Capability Matrix (`db-migrate`, `create-microservice`, `user-management` for schema; `frontend-design`, `taste-skill`, `impeccable`, `canvas-design`, `brand-guidelines`, `pos-checkout-and-receipts`, `user-management` for UI)
      - **Inlined Skill Instructions & Constraints**: Distilled steps and invariants extracted from relevant `SKILL.md` files
      - **Active Invariants**: Architecture, security, styling, or session rules
    - Await each subagent's **Subagent Deliverable Report** and synthesize findings into the central `implementation_plan.md`.

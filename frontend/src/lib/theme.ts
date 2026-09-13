@@ -301,6 +301,15 @@ export const getStoredTheme = getAppMode;
 export const setStoredTheme = saveAppMode;
 export const applyTheme = applyModeToDocument;
 
+export function toggleAppMode(userId?: string | null): AppMode {
+  if (typeof window === "undefined") return "dark";
+  const current = getAppMode(userId);
+  const effective = resolveEffectiveMode(current);
+  const nextMode: AppMode = effective === "dark" ? "light" : "dark";
+  saveAppMode(nextMode, userId);
+  return nextMode;
+}
+
 export function useTheme() {
   const [themeMode, setThemeModeState] = useState<AppMode>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
@@ -360,9 +369,15 @@ export function useTheme() {
     saveAppMode(newMode);
   }, []);
 
+  const toggleTheme = useCallback(() => {
+    const next: AppMode = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(next);
+  }, [resolvedTheme, setTheme]);
+
   return {
     theme: themeMode,
     resolvedTheme,
     setTheme,
+    toggleTheme,
   };
 }

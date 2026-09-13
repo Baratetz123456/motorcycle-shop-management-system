@@ -490,19 +490,19 @@ function SalesReceiptContent() {
         </div>
 
         {/* Main Official Receipt Document Container */}
-        <div className="printable-receipt w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 md:p-10 shadow-sm relative overflow-hidden space-y-8">
+        <div data-invoice-canvas="true" className="printable-receipt w-full bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 md:p-10 shadow-sm relative overflow-hidden space-y-8">
 
           {/* Official Shop Header & TIN Information */}
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-200 dark:border-zinc-800 print-border">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-200 print-border">
             <div>
               <div className="flex items-center gap-3.5">
                 <BrandLogo size="lg" variant="lime-on-dark" />
                 <div>
-                  <h1 className="text-2xl font-black tracking-wide text-slate-900 dark:text-zinc-100 print-text-dark">MOTOSHOP PRO</h1>
-                  <p className="text-xs font-semibold text-lime-700 dark:text-lime-400 print-text-dark">Official Commercial Sales Invoice & Service Receipt</p>
-                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 print-text-muted mt-1">123 Rizal Ave, Brgy. San Antonio, Pasig City, Metro Manila</p>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 print-text-muted">
-                    Tel: (02) 8123-4567 • Email: support@motoshop.com • <span className="font-mono font-bold text-slate-700 dark:text-zinc-300 print-text-dark">TIN: 491-002-884-000 NV</span>
+                  <h1 className="text-2xl font-black tracking-wide text-slate-900 print-text-dark">MOTOSHOP PRO</h1>
+                  <p className="text-xs font-semibold text-lime-700 print-text-dark">Official Commercial Sales Invoice & Service Receipt</p>
+                  <p className="text-[11px] text-slate-500 print-text-muted mt-1">123 Rizal Ave, Brgy. San Antonio, Pasig City, Metro Manila</p>
+                  <p className="text-[10px] text-slate-400 print-text-muted">
+                    Tel: (02) 8123-4567 • Email: support@motoshop.com • <span className="font-mono font-bold text-slate-700 print-text-dark">TIN: 491-002-884-000 NV</span>
                   </p>
                 </div>
               </div>

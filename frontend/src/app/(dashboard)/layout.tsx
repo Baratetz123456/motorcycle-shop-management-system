@@ -7,12 +7,13 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { ChevronDown, LogOut, User, Lock, Settings } from "lucide-react";
+import { ChevronDown, LogOut, User, Lock, Settings, Sun, Moon } from "lucide-react";
 import { getSystemSettings } from "@/lib/settings";
 import { UserAvatar } from "@/lib/avatars";
 import { tokenStore } from "@/lib/auth-token";
 import { apiClient } from "@/lib/api-client";
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
+import { useTheme } from "@/lib/theme";
 
 export default function DashboardLayout({
   children,
@@ -32,6 +33,7 @@ export default function DashboardLayout({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
+  const { resolvedTheme, toggleTheme } = useTheme();
   const popoverRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -144,97 +146,133 @@ export default function DashboardLayout({
             </div>
           </Link>
 
-          {/* Right: User Profile Button with Popover Trigger */}
-          <div className="relative">
+          {/* Right: Quick Sun/Moon Toggle & User Profile Button */}
+          <div className="flex items-center gap-2">
             <button
-              ref={profileButtonRef}
               type="button"
-              onClick={() => setIsProfileOpen((prev) => !prev)}
-              className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-lime-400/40 hover:bg-lime-400/70 text-zinc-950 border border-lime-600/30 transition-all active:scale-95 shadow-xs"
-              aria-expanded={isProfileOpen}
-              aria-haspopup="true"
-              aria-label="User profile and settings menu"
+              onClick={toggleTheme}
+              className="header-mode-toggle p-2 sm:px-2.5 sm:py-2 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+              title={resolvedTheme === "dark" ? "Switch to Daylight Mode" : "Switch to Dark Mode"}
+              aria-label="Toggle theme appearance mode"
             >
-              <UserAvatar avatarId={userAvatar} className="w-8 h-8 rounded-full border border-zinc-950/20 shadow-xs" />
-              <div className="hidden sm:flex flex-col text-left">
-                <span className="text-xs font-black text-zinc-950 leading-tight truncate max-w-[120px]">
-                  {userName}
-                </span>
-                <span className="text-[10px] font-mono font-bold uppercase text-lime-950">
-                  {userRole}
-                </span>
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-zinc-950 transition-transform duration-200 ${
-                  isProfileOpen ? "rotate-180" : ""
-                }`}
-              />
+              {resolvedTheme === "dark" ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-zinc-950" />
+              )}
             </button>
 
-            {/* Profile Popover Card */}
-            {isProfileOpen && (
-              <div
-                ref={popoverRef}
-                className="profile-popover absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 space-y-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+            <div className="relative">
+              <button
+                ref={profileButtonRef}
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-lime-400/40 hover:bg-lime-400/70 text-zinc-950 border border-lime-600/30 transition-all active:scale-95 shadow-xs cursor-pointer"
+                aria-expanded={isProfileOpen}
+                aria-haspopup="true"
+                aria-label="User profile and settings menu"
               >
-                {/* User Identity Header */}
-                <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800">
-                  <UserAvatar avatarId={userAvatar} className="w-11 h-11 rounded-full border border-slate-200 dark:border-zinc-700 shadow-xs" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{userName}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate font-mono">{userEmail}</p>
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-lime-50 dark:bg-lime-950/40 border border-lime-200 dark:border-lime-700/50 text-[10px] font-bold text-lime-800 dark:text-lime-400 uppercase tracking-wider">
-                      {userRole}
-                    </span>
+                <UserAvatar avatarId={userAvatar} className="w-8 h-8 rounded-full border border-zinc-950/20 shadow-xs" />
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-black text-zinc-950 leading-tight truncate max-w-[120px]">
+                    {userName}
+                  </span>
+                  <span className="header-role-badge text-[10px] font-mono font-bold uppercase text-lime-950">
+                    {userRole}
+                  </span>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-zinc-950 transition-transform duration-200 ${
+                    isProfileOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {/* Profile Popover Card */}
+              {isProfileOpen && (
+                <div
+                  ref={popoverRef}
+                  className="profile-popover absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 space-y-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+                >
+                  {/* User Identity Header */}
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800">
+                    <UserAvatar avatarId={userAvatar} className="w-11 h-11 rounded-full border border-slate-200 dark:border-zinc-700 shadow-xs" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{userName}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate font-mono">{userEmail}</p>
+                      <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-lime-50 dark:bg-lime-950/40 border border-lime-200 dark:border-lime-700/50 text-[10px] font-bold text-lime-800 dark:text-lime-400 uppercase tracking-wider">
+                        {userRole}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Quick Action Navigation */}
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toggleTheme();
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors text-left cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {resolvedTheme === "dark" ? (
+                          <Sun className="w-4 h-4 text-amber-400" />
+                        ) : (
+                          <Moon className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                        )}
+                        <span>Appearance</span>
+                      </div>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold uppercase">
+                        {resolvedTheme === "dark" ? "Dark Mode" : "Light Mode"}
+                      </span>
+                    </button>
+
+                    <Link
+                      href="/settings?tab=profile"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
+                    >
+                      <User className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                      <span>My Profile</span>
+                    </Link>
+
+                    <Link
+                      href="/settings"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                      <span>{userRole === "admin" || userRole === "manager" ? "Shop Settings" : "Appearance & Settings"}</span>
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        setIsPasswordModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors text-left cursor-pointer"
+                    >
+                      <Lock className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                      <span>Change Password</span>
+                    </button>
+                  </div>
+
+                  {/* Sign Out Button (High Contrast) */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/50 transition-all shadow-xs active:scale-95 cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                      <span>Sign Out</span>
+                    </button>
                   </div>
                 </div>
-
-                {/* Quick Action Navigation */}
-                <div className="space-y-1">
-                  <Link
-                    href="/settings?tab=profile"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
-                  >
-                    <User className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                    <span>My Profile</span>
-                  </Link>
-
-                  <Link
-                    href="/settings"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
-                  >
-                    <Settings className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                    <span>{userRole === "admin" || userRole === "manager" ? "Shop Settings" : "Appearance & Settings"}</span>
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsPasswordModalOpen(true);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors text-left"
-                  >
-                    <Lock className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                    <span>Change Password</span>
-                  </button>
-                </div>
-
-                {/* Sign Out Button (High Contrast) */}
-                <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/50 transition-all shadow-xs active:scale-95"
-                  >
-                    <LogOut className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </header>
 

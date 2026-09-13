@@ -1066,7 +1066,7 @@ export default function RepairBoardPage() {
                   "flex items-center gap-2 px-3.5 py-2.5 rounded-2xl font-bold text-xs whitespace-nowrap transition-all shrink-0 border",
                   isActive
                     ? "bg-lime-500 text-zinc-950 border-lime-600 shadow-sm scale-[1.02]"
-                    : "bg-slate-100 text-slate-600 border-slate-200 hover:text-slate-950 hover:bg-slate-200"
+                    : "bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-800 hover:text-slate-950 dark:hover:text-zinc-100 hover:bg-slate-200 dark:hover:bg-zinc-800"
                 )}
               >
                 <span>{col.title}</span>
@@ -1075,7 +1075,7 @@ export default function RepairBoardPage() {
                     "px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold",
                     isActive
                       ? "bg-zinc-950 text-lime-400"
-                      : "bg-white text-slate-700 border border-slate-200"
+                      : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700"
                   )}
                 >
                   {count}
@@ -1140,25 +1140,25 @@ export default function RepairBoardPage() {
                   key={job.id}
                   onClick={() => router.push(`/repairs/jobs/${job.id}`)}
                   className={clsx(
-                    "bg-white border rounded-2xl p-4 space-y-3 shadow-sm transition-all relative cursor-pointer active:scale-[0.99]",
+                    "bg-white dark:bg-zinc-900 border rounded-2xl p-4 space-y-3 shadow-sm transition-all relative cursor-pointer active:scale-[0.99]",
                     isPaid
-                      ? "border-emerald-300"
-                      : "border-slate-200 hover:border-lime-500"
+                      ? "border-emerald-300 dark:border-emerald-500/40"
+                      : "border-slate-200 dark:border-zinc-800 hover:border-lime-500"
                   )}
                 >
                   {/* Header: JO# + Payment Status Tag + 3-Dots Action Menu */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-lime-800 bg-lime-50 px-2.5 py-1 rounded-lg border border-lime-300">
+                      <span className="font-mono font-bold text-xs text-lime-800 dark:text-lime-400 bg-lime-50 dark:bg-lime-500/10 px-2.5 py-1 rounded-lg border border-lime-300 dark:border-lime-500/30">
                         {job.jo_number}
                       </span>
                       {isPaid ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 uppercase tracking-wider">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1 uppercase tracking-wider">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           PAID
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 uppercase tracking-wider">
                           Unpaid Cart
                         </span>
                       )}
@@ -1172,7 +1172,7 @@ export default function RepairBoardPage() {
                           e.stopPropagation();
                           setMenuOpenJobId(isMenuOpen ? null : job.id);
                         }}
-                        className="p-1.5 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                        className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                         aria-label="More options"
                       >
                         <MoreVertical className="w-4 h-4" />
@@ -1181,7 +1181,7 @@ export default function RepairBoardPage() {
                       {isMenuOpen && (
                         <div
                           onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-8 z-30 w-52 bg-zinc-900 border border-white/10 rounded-2xl p-1.5 shadow-2xl space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
+                          className="absolute right-0 top-8 z-30 w-52 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-2xl p-1.5 shadow-2xl space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
                         >
                           <button
                             type="button"
@@ -1189,9 +1189,9 @@ export default function RepairBoardPage() {
                               setMenuOpenJobId(null);
                               router.push(`/repairs/jobs/${job.id}`);
                             }}
-                            className="w-full px-3 py-2 rounded-xl text-left text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 font-medium"
+                            className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 font-medium"
                           >
-                            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                            <FileText className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
                             <span>View Job Details</span>
                           </button>
                           <button
@@ -1200,9 +1200,9 @@ export default function RepairBoardPage() {
                               setMenuOpenJobId(null);
                               handleOpenEditModal(job);
                             }}
-                            className="w-full px-3 py-2 rounded-xl text-left text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 font-medium"
+                            className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 font-medium"
                           >
-                            <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                            <Edit3 className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                             <span>Edit Diagnosis</span>
                           </button>
                           <button
@@ -1211,9 +1211,9 @@ export default function RepairBoardPage() {
                               setMenuOpenJobId(null);
                               setStatusPickerJob(job);
                             }}
-                            className="w-full px-3 py-2 rounded-xl text-left text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 font-medium"
+                            className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 font-medium"
                           >
-                            <Activity className="w-3.5 h-3.5 text-purple-400" />
+                            <Activity className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                             <span>Move to Stage...</span>
                           </button>
                           {canDelete && (
@@ -1223,9 +1223,9 @@ export default function RepairBoardPage() {
                                 setMenuOpenJobId(null);
                                 setDeleteConfirmJob(job);
                               }}
-                              className="w-full px-3 py-2 rounded-xl text-left text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2 font-medium"
+                              className="w-full px-3 py-2 rounded-xl text-left text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 font-medium"
                             >
-                              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                              <Trash2 className="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
                               <span>Delete Job Card</span>
                             </button>
                           )}
@@ -1236,12 +1236,12 @@ export default function RepairBoardPage() {
 
                   {/* Customer & Motorcycle */}
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <User className="w-4 h-4 text-lime-600 shrink-0" />
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                      <User className="w-4 h-4 text-lime-600 dark:text-lime-400 shrink-0" />
                       {job.customer}
                     </h4>
-                    <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-1">
-                      <Bike className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
+                      <Bike className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
                       {job.motorcycle}
                     </p>
                   </div>

@@ -214,7 +214,7 @@ html:not(.dark) .btn-primary:hover:not(:disabled) {
   background-color: #65a30d !important;
 }
 
-/* Primary Action Buttons in Dark Mode (High-Contrast Carbon with Electric Lime) */
+/* Primary Action Buttons in Dark Mode (Solid Vibrant Lime with Bold Carbon Text - WCAG AAA > 12:1) */
 html.dark button[class*="bg-cyan-500"],
 html.dark button[class*="bg-cyan-400"],
 html.dark button[class*="bg-lime-500"],
@@ -224,10 +224,11 @@ html.dark a[class*="bg-cyan-400"],
 html.dark a[class*="bg-lime-500"],
 html.dark a[class*="bg-lime-400"],
 html.dark .btn-primary {
-  background-color: #18181b !important;
-  border: 1px solid rgba(132, 204, 22, 0.6) !important;
-  color: #bef264 !important;
+  background-color: #84cc16 !important;
+  border: 1px solid #65a30d !important;
+  color: #09090b !important;
   font-weight: 700 !important;
+  box-shadow: 0 2px 10px -2px rgba(132, 204, 22, 0.35) !important;
 }
 
 html.dark button[class*="bg-cyan-500"] *,
@@ -239,7 +240,7 @@ html.dark a[class*="bg-cyan-400"] *,
 html.dark a[class*="bg-lime-500"] *,
 html.dark a[class*="bg-lime-400"] *,
 html.dark .btn-primary * {
-  color: #bef264 !important;
+  color: #09090b !important;
 }
 
 html.dark button[class*="bg-cyan-500"]:hover:not(:disabled),
@@ -251,21 +252,78 @@ html.dark a[class*="bg-cyan-400"]:hover,
 html.dark a[class*="bg-lime-500"]:hover,
 html.dark a[class*="bg-lime-400"]:hover,
 html.dark .btn-primary:hover:not(:disabled) {
+  background-color: #a3e635 !important;
+  border-color: #84cc16 !important;
+  color: #09090b !important;
+  box-shadow: 0 4px 14px -2px rgba(132, 204, 22, 0.45) !important;
+}
+
+/* Light Mode Top Header Navbar Invariant */
+html:not(.dark) header.bg-lime-500,
+html:not(.dark) header[class*="bg-lime-500"] {
+  background-color: #84cc16 !important;
+  border-bottom: 1px solid rgba(101, 163, 13, 0.4) !important;
+}
+
+html:not(.dark) header.bg-lime-500 *:not(.profile-popover, .profile-popover *),
+html:not(.dark) header[class*="bg-lime-500"] *:not(.profile-popover, .profile-popover *) {
+  color: #09090b;
+}
+
+/* Dark Mode Top Header Navbar - Sleek Metallic Deep Carbon Surface */
+html.dark header,
+html.dark header.bg-lime-500,
+html.dark header[class*="bg-lime-500"] {
+  background-color: rgba(15, 15, 19, 0.96) !important;
+  border-bottom: 1px solid #27272a !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark header *:not(.profile-popover, .profile-popover *, [class*="bg-lime-500"], [class*="bg-lime-400"], [class*="bg-lime-500"] *, [class*="bg-lime-400"] *, .header-mode-toggle, .header-mode-toggle *) {
+  color: #f4f4f5;
+}
+
+html.dark header .header-brand-sub {
+  color: #a1a1aa !important;
+}
+
+/* Header User Profile & Mode Controls */
+html.dark header button[aria-label="User profile and settings menu"] {
+  background-color: #18181b !important;
+  border: 1px solid #3f3f46 !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark header button[aria-label="User profile and settings menu"] * {
+  color: #f4f4f5 !important;
+}
+
+html.dark header button[aria-label="User profile and settings menu"] .header-role-badge {
+  color: #bef264 !important;
+}
+
+html.dark .header-mode-toggle {
+  background-color: #18181b !important;
+  border: 1px solid #3f3f46 !important;
+  color: #bef264 !important;
+}
+
+html.dark .header-mode-toggle:hover {
   background-color: #27272a !important;
   border-color: #84cc16 !important;
   color: #bef264 !important;
 }
 
-/* Top colored header navbar invariant (Exclude nested dropdowns/popovers) */
-header.bg-lime-500,
-header[class*="bg-lime-500"] {
-  background-color: #84cc16 !important;
-  border-bottom: 1px solid rgba(101, 163, 13, 0.4) !important;
+html:not(.dark) .header-mode-toggle {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  color: #09090b !important;
 }
 
-header.bg-lime-500 *:not(.profile-popover, .profile-popover *),
-header[class*="bg-lime-500"] *:not(.profile-popover, .profile-popover *) {
-  color: #09090b;
+html:not(.dark) .header-mode-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Profile Popover Component (Dark Mode & Light Mode Scoped) */
@@ -879,38 +937,7 @@ html.dark [class*="divide-slate-"] > * {
   border-color: #27272a !important;
 }
 
-/* Dynamic Screen View for Official Receipts (Dark Mode Screen Theme) */
-@media screen {
-  html.dark .printable-receipt {
-    background-color: #121215 !important;
-    border-color: #27272a !important;
-    color: #f4f4f5 !important;
-  }
-  html.dark .printable-receipt .print-card-bg {
-    background-color: #18181b !important;
-    border-color: #27272a !important;
-    color: #f4f4f5 !important;
-  }
-  html.dark .printable-receipt .print-text-dark {
-    color: #f4f4f5 !important;
-  }
-  html.dark .printable-receipt .print-text-muted {
-    color: #a1a1aa !important;
-  }
-  html.dark .printable-receipt .print-border {
-    border-color: #27272a !important;
-  }
-  html.dark .printable-receipt table th {
-    background-color: #18181b !important;
-    color: #d4d4d8 !important;
-    border-color: #27272a !important;
-  }
-  html.dark .printable-receipt table td {
-    background-color: #121215 !important;
-    color: #f4f4f5 !important;
-    border-color: #27272a !important;
-  }
-}
+
 
 /* Dark Main Container */
 html.dark main {

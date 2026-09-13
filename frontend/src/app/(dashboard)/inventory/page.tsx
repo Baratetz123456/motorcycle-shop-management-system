@@ -359,15 +359,15 @@ function InventoryContent() {
   };
 
   return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 dark:bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-3">
-            <Boxes className="w-8 h-8 text-lime-600" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+            <Boxes className="w-8 h-8 text-lime-600 dark:text-lime-400" />
             Parts & Stock Catalog
           </h1>
-          <p className="text-slate-500 mt-1 text-sm">
+          <p className="text-slate-500 dark:text-zinc-400 mt-1 text-sm">
             Monitor inventory quantities, reorder thresholds, and showroom service pricing.
           </p>
         </div>
@@ -387,23 +387,23 @@ function InventoryContent() {
 
       {/* Deleted Item Notification Banner */}
       {deletedNotice && (
-        <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2.5 animate-in fade-in shrink-0">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+        <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2.5 animate-in fade-in shrink-0">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span>{deletedNotice}</span>
         </div>
       )}
       {/* Desktop Filter & Search Bar */}
-      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm shrink-0">
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm shrink-0">
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar overscroll-x-contain pb-1 sm:pb-0 flex-1 min-w-0">
           {/* Main Tabs (Parts vs Services) */}
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shrink-0">
+          <div className="flex bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs shrink-0">
             <button
               onClick={() => handleTabSwitch("PRODUCT")}
               className={clsx(
                 "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
                 activeTab === "PRODUCT"
                   ? "bg-lime-500 text-zinc-950 shadow-sm font-bold"
-                  : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
               )}
             >
               <Package className="w-3.5 h-3.5 shrink-0" />
@@ -415,7 +415,7 @@ function InventoryContent() {
                 "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
                 activeTab === "SERVICE"
                   ? "bg-lime-500 text-zinc-950 shadow-sm font-bold"
-                  : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
               )}
             >
               <Wrench className="w-3.5 h-3.5 shrink-0" />
@@ -423,7 +423,7 @@ function InventoryContent() {
             </button>
           </div>
 
-          <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-zinc-700 hidden sm:block shrink-0" />
 
           {/* Category Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none shrink-0 py-0.5">
@@ -432,8 +432,8 @@ function InventoryContent() {
               className={clsx(
                 "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0",
                 selectedCategory === "ALL"
-                  ? "bg-lime-50 text-lime-900 border border-lime-300 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-950 hover:bg-slate-100 border border-transparent"
+                  ? "bg-lime-50 dark:bg-lime-950/40 text-lime-900 dark:text-lime-300 border border-lime-300 dark:border-lime-700/50 shadow-xs font-bold"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 border border-transparent"
               )}
             >
               All Categories
@@ -447,8 +447,8 @@ function InventoryContent() {
                   className={clsx(
                     "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0",
                     isSelected
-                      ? "bg-lime-50 text-lime-900 border border-lime-300 shadow-xs font-bold"
-                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-100 border border-transparent"
+                      ? "bg-lime-50 dark:bg-lime-950/40 text-lime-900 dark:text-lime-300 border border-lime-300 dark:border-lime-700/50 shadow-xs font-bold"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 border border-transparent"
                   )}
                 >
                   {cat}
@@ -460,22 +460,22 @@ function InventoryContent() {
 
         {/* Search Input */}
         <div className="relative w-full lg:w-72 shrink-0">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
           <input
             type="text"
             placeholder={`Search ${activeTab === "PRODUCT" ? "parts, SKU, brand..." : "services, code..."}`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-lime-500/50 placeholder-slate-400"
+            className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-lime-500/50 placeholder-slate-400 dark:placeholder-zinc-500"
           />
         </div>
       </div>
 
       {/* Streamlined Catalog Table & Mobile List */}
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-white border-0 md:border md:border-slate-200 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-white md:dark:bg-zinc-900 border-0 md:border md:border-slate-200 md:dark:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
         <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
           {/* Mobile View: Borderless Edge-to-Edge Catalog Rows */}
-          <div className="block md:hidden px-1 divide-y divide-slate-100 pb-24">
+          <div className="block md:hidden px-1 divide-y divide-slate-100 dark:divide-zinc-800 pb-24">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, rIdx) => (
                 <div key={rIdx} className="py-3.5 px-2 space-y-2">
