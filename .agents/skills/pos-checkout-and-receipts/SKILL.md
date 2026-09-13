@@ -126,3 +126,39 @@ return (
   - `GET /api/v1/sales/transactions`
   - `GET /api/v1/sales/transactions/{id}`
   - `POST /api/v1/sales/transactions/{id}/void`
+
+### 7. POS Showroom Counter & 2-Column Mobile Catalog Standards
+
+#### A. Mobile 2-Column Grid Layout
+- In mobile viewports (`< md`), display active customer repair cards (Step 1) and catalog items (Step 2) in a responsive 2-column grid (`grid-cols-2 gap-2.5 sm:gap-3`).
+- Cards must use `rounded-2xl overflow-hidden` with edge-to-edge top banner artwork and a structured text content body (`p-3 sm:p-4 flex flex-col justify-between`).
+
+#### B. Floating Filter FAB & Slide-Up Sheet
+- Render an unlabelled circular floating filter FAB (`data-testid="pos-mobile-filter-fab"`) directly above the floating cart button on mobile screens.
+- Portaled to `document.body` or floating fixed container with bottom inset `bottom-24 right-4 z-40`.
+- Includes an active filter indicator dot when filters (search, non-all subcategory) are active.
+- Opens `MobilePosFilterSheet` providing:
+  - Search input with clear button.
+  - Catalog type selector (`Services` vs `Parts`).
+  - Dynamic sub-category pill grid with live badge counts.
+
+#### C. Dynamic Sub-Category Discovery
+Always compute sub-categories dynamically from the active item list to prevent stale or cross-polluted category counts:
+```typescript
+const availableCategories = useMemo(() => {
+  const categoriesMap = new Map<string, number>();
+  const scopedItems = catalogItems.filter(item => item.item_type === activeType);
+  scopedItems.forEach(item => {
+    const cat = item.category?.trim() || (activeType === "SERVICE" ? "General Service" : "General Parts");
+    categoriesMap.set(cat, (categoriesMap.get(cat) || 0) + 1);
+  });
+  return Array.from(categoriesMap.entries()).map(([name, count]) => ({ name, count }));
+}, [catalogItems, activeType]);
+```
+
+#### D. Photorealistic Mechanical & Bike Category Banners
+- **CategoryCardBanner**: Renders 3D-styled SVGs with multi-stop metallic linear/radial gradients (`rotor-steel`, `oil-amber`, `pulley-metal`, `spring-cyan`, `piston-crown`).
+  - Strict precedence: evaluate `isBrake` before `isOil` to prevent "Brake Fluid" from matching oil bottles.
+- **CustomerBikeCardBanner**: Automatically identifies bike category from motorcycle name/brand (`Maxi-Scooter`, `Sportbike`, `Naked Street`, `Hyper Underbone`, `Adventure Touring`, `Cruiser Classic`).
+  - Displays workshop grid floor pattern, horizon studio lighting line, brand watermark pill (top-left), and category badge (bottom-right).
+
