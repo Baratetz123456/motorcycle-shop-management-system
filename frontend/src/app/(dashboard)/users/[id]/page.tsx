@@ -180,7 +180,7 @@ export default function UserProfilePage() {
         name: `${user.first_name} ${user.last_name}`,
       });
       setIsDeleteModalOpen(false);
-      router.push("/users");
+      router.push("/settings?tab=users");
     } catch (err: any) {
       console.error("Failed to delete user:", err);
       const detail = err.response?.data?.detail;

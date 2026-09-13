@@ -56,7 +56,7 @@ export const CONFIGURABLE_MODULES: ConfigurableModule[] = [
   {
     id: "repairs_board",
     name: "Workshop Job Cards",
-    routes: ["/repairs/board", "/repair-board", "/repairs/jobs"],
+    routes: ["/repairs/board", "/repairs/jobs"],
     description: "Track bikes on the repair bench from drop-off to final invoice.",
   },
   {
@@ -97,7 +97,6 @@ export const DEFAULT_ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/repairs/jobs": ["admin", "manager", "mechanic"],
   "/repairs/history": ["admin", "manager", "mechanic"],
   "/repairs/history/logs": ["admin", "manager", "mechanic"],
-  "/repair-board": ["admin", "manager", "mechanic"],
   "/reports": ["admin", "manager"],
   "/dashboard": ["admin", "manager"],
   "/audit-logs": ["admin"],
@@ -174,7 +173,6 @@ export const ROUTE_FRIENDLY_NAMES: Record<string, string> = {
   "/motorcycles": "Bike Registry",
   "/repairs/board": "Workshop Job Cards",
   "/repairs/jobs": "Job Card Profile",
-  "/repair-board": "Workshop Job Cards",
   "/repairs/history": "Customer Records",
   "/repairs/history/logs": "Customer Service History",
   "/reports": "Dashboard",
