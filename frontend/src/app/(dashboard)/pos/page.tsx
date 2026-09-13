@@ -461,13 +461,13 @@ function POSPageContent() {
     <div className="flex flex-col min-h-full bg-zinc-950 text-zinc-50 font-sans w-full max-w-full overflow-x-hidden">
       
       {/* Top Main Navigation Header */}
-      <header className="sticky top-0 z-30 bg-zinc-950/90 border-b border-white/10 backdrop-blur-xl px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-800 px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-black text-white">
               Showroom Counter
             </h1>
-            <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
               Counter Sales
             </span>
           </div>
@@ -475,13 +475,13 @@ function POSPageContent() {
 
         {/* View Switcher: Catalog vs Current Order (Desktop only, mobile uses direct workflow) */}
         <div className="hidden md:flex items-center gap-2 sm:gap-4">
-          <div className="flex bg-zinc-900/90 p-1 rounded-2xl border border-white/10 text-xs w-full sm:w-auto shadow-inner">
+          <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800 text-xs w-full sm:w-auto">
             <button
               onClick={() => setActiveView("catalog")}
               className={clsx(
                 "flex-1 sm:flex-none px-4 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2",
                 activeView === "catalog"
-                  ? "bg-emerald-600 text-white font-bold shadow-sm"
+                  ? "bg-emerald-600 text-white font-bold"
                   : "text-zinc-400 hover:text-white"
               )}
             >
@@ -503,7 +503,7 @@ function POSPageContent() {
                 !selectedRepair
                   ? "opacity-50 cursor-not-allowed text-zinc-500 hover:text-zinc-500"
                   : activeView === "cart"
-                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    ? "bg-emerald-600 text-white font-bold"
                     : "text-zinc-400 hover:text-white"
               )}
               title={!selectedRepair ? "Please select an active customer bike to review order" : undefined}
@@ -515,7 +515,7 @@ function POSPageContent() {
               )}
               <span>Review Order</span>
               {selectedRepair && itemCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-mono text-[10px] font-black shadow-sm">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-mono text-[10px] font-black">
                   {itemCount}
                 </span>
               )}
@@ -526,12 +526,12 @@ function POSPageContent() {
 
       {/* Warning Notification Banner */}
       {warningMessage && (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 sm:px-8 py-3 flex items-center justify-between text-amber-300 text-xs font-semibold animate-in fade-in duration-200">
+        <div className="bg-zinc-900 border-b border-zinc-800 px-4 sm:px-8 py-3 flex items-center justify-between text-zinc-300 text-xs font-semibold animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-zinc-400 shrink-0" />
             <span>{warningMessage}</span>
           </div>
-          <button onClick={() => setWarningMessage(null)} className="text-amber-400 hover:text-white">
+          <button onClick={() => setWarningMessage(null)} className="text-zinc-400 hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -543,33 +543,33 @@ function POSPageContent() {
           
           {/* Section: Active Customer Repair Selection */}
           <section className={clsx(
-            "border-b border-white/10 backdrop-blur-md transition-all",
+            "border-b border-zinc-800 transition-all",
             selectedRepair && !isChangingCustomer 
-              ? "sticky top-0 z-20 bg-zinc-950/95 p-3 sm:p-5" 
-              : "bg-zinc-900/40 p-4 sm:p-6"
+              ? "sticky top-0 z-20 bg-zinc-950 p-3 sm:p-5" 
+              : "bg-zinc-900 p-4 sm:p-6"
           )}>
             <div className="w-full space-y-4">
               
               {/* If customer is already selected and NOT actively expanding selector */}
               {selectedRepair && !isChangingCustomer ? (
-                <div className="bg-zinc-900/90 border border-cyan-500/30 rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-xl relative overflow-hidden">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative overflow-hidden">
                   <div className="flex items-center gap-3 sm:gap-4 relative z-10 min-w-0">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-sm sm:text-lg shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-sm sm:text-lg shrink-0">
                       {selectedRepair.customer_name.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] sm:text-xs uppercase font-bold text-cyan-400 tracking-wider">Active Customer</span>
-                        <span className="font-mono text-[10px] sm:text-[11px] bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">
+                        <span className="text-[10px] sm:text-xs uppercase font-bold text-zinc-400 tracking-wider">Active Customer</span>
+                        <span className="font-mono text-[10px] sm:text-[11px] bg-zinc-800 text-zinc-300 border border-zinc-700 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">
                           {selectedRepair.jo_number}
                         </span>
-                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
                           {selectedRepair.status}
                         </span>
                       </div>
                       <h2 className="text-base sm:text-xl font-black text-white mt-0.5 truncate">{selectedRepair.customer_name}</h2>
                       <p className="text-xs text-zinc-400 flex items-center gap-2 font-medium mt-0.5 truncate">
-                        <Bike className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <Bike className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                         <span className="truncate">{selectedRepair.motorcycle_name}</span>
                         <span className="text-zinc-600 hidden sm:inline">•</span>
                         <span className="hidden sm:inline">Mechanic: Mike Smith</span>
@@ -581,13 +581,13 @@ function POSPageContent() {
                   <div className="hidden md:flex items-center gap-3 relative z-10 self-end sm:self-center">
                     <button
                       onClick={handleChangeCustomer}
-                      className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white text-xs font-bold transition-all border border-white/10"
+                      className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white text-xs font-bold transition-all border border-zinc-700"
                     >
                       Change Customer
                     </button>
                     <button
                       onClick={() => setActiveView("cart")}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-2 border border-emerald-500/30 shadow-sm"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-2 border border-emerald-500"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" />
                       <span>View Cart ({itemCount})</span>
@@ -769,12 +769,10 @@ function POSPageContent() {
                     key={pill.id}
                     onClick={() => setActiveSubFilter(pill.id)}
                     className={clsx(
-                      "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0",
+                      "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 border",
                       isSelected
-                        ? activeFilter === "SERVICE"
-                          ? "bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-1 ring-purple-400"
-                          : "bg-cyan-600 text-white shadow-md shadow-cyan-600/30 ring-1 ring-cyan-400"
-                        : "bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-white/5 hover:border-white/15"
+                        ? "bg-emerald-600 text-white font-bold border-emerald-500"
+                        : "bg-zinc-900 text-zinc-400 hover:text-white border-zinc-800"
                     )}
                   >
                     <span>{pill.label}</span>
@@ -785,8 +783,8 @@ function POSPageContent() {
 
             {/* If no customer selected, show clear instructions banner */}
             {!selectedRepair && (
-              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 text-xs font-semibold flex items-center gap-3 animate-pulse">
-                <AlertCircle className="w-5 h-5 shrink-0 text-amber-400" />
+              <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-zinc-300 text-xs font-semibold flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 shrink-0 text-zinc-400" />
                 <span>Please select an active customer repair from Step 1 above to enable adding products and services to cart.</span>
               </div>
             )}
@@ -814,31 +812,26 @@ function POSPageContent() {
                     <div
                       key={product.id}
                       className={clsx(
-                        "group relative bg-zinc-900/60 border rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 shadow-md",
-                        !selectedRepair && "opacity-80 border-dashed border-white/10",
-                        isOutOfStock && "opacity-60 border-red-500/20 bg-red-950/10",
-                        selectedRepair && !isOutOfStock && isService && "border-white/10 hover:border-purple-500/50 hover:shadow-purple-500/10",
-                        selectedRepair && !isOutOfStock && !isService && "border-white/10 hover:border-cyan-500/50 hover:shadow-cyan-500/10"
+                        "group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300",
+                        !selectedRepair && "opacity-80 border-dashed border-zinc-800",
+                        isOutOfStock && "opacity-60 border-zinc-800"
                       )}
                     >
                       <div>
                         {/* Top Header: Badge & Frequency Availment Indicator */}
                         <div className="flex justify-between items-start mb-3">
-                          <div className={clsx(
-                            "rounded-xl p-2 border",
-                            isService ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
-                          )}>
-                            {isService ? <Wrench className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+                          <div className="rounded-xl p-2 border bg-zinc-800 text-zinc-300 border-zinc-700">
+                            {isService ? <Wrench className="w-4 h-4 text-zinc-400" /> : <Package className="w-4 h-4 text-zinc-400" />}
                           </div>
 
                           <div className="flex items-center gap-1.5 flex-wrap justify-end">
                             {frequency > 0 && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1" title="Historical popularity">
-                                <Flame className="w-3 h-3 text-amber-400" />
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1" title="Historical popularity">
+                                <Flame className="w-3 h-3 text-zinc-400" />
                                 <span>{isService ? `${frequency} completed` : `${frequency} sold`}</span>
                               </span>
                             )}
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-zinc-950 text-zinc-400 border border-white/5 uppercase">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-zinc-950 text-zinc-400 border border-zinc-800 uppercase">
                               {product.sku}
                             </span>
                           </div>
@@ -848,7 +841,7 @@ function POSPageContent() {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <h3 className="font-bold text-zinc-100 text-sm line-clamp-2">{product.name}</h3>
                           {product.brand && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700">
                               {product.brand}
                             </span>
                           )}
@@ -857,28 +850,18 @@ function POSPageContent() {
                       </div>
 
                       {/* Pricing & Prominent Stock Indicator */}
-                      <div className="space-y-3 pt-3 border-t border-white/5">
+                      <div className="space-y-3 pt-3 border-t border-zinc-800">
                         <div className="flex items-end justify-between gap-2">
                           <span className="text-xl font-black text-white">₱{Number(product.selling_price).toFixed(2)}</span>
                           
-                          {/* Prominent Stock Status Pill */}
+                          {/* Stock Status Pill */}
                           {isService ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
                               Service Labor
                             </span>
                           ) : (
-                            <span className={clsx(
-                              "text-[10px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1.5",
-                              product.current_stock > 10 && "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
-                              product.current_stock > 0 && product.current_stock <= 10 && "bg-amber-500/10 text-amber-300 border-amber-500/30",
-                              product.current_stock === 0 && "bg-red-500/10 text-red-400 border-red-500/30 font-black"
-                            )}>
-                              <span className={clsx(
-                                "w-1.5 h-1.5 rounded-full shrink-0",
-                                product.current_stock > 10 && "bg-emerald-400",
-                                product.current_stock > 0 && product.current_stock <= 10 && "bg-amber-400",
-                                product.current_stock === 0 && "bg-red-400"
-                              )} />
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-300 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-400" />
                               {product.current_stock > 10 && `Remaining: ${product.current_stock} in stock`}
                               {product.current_stock > 0 && product.current_stock <= 10 && `Low Stock: ${product.current_stock} left`}
                               {product.current_stock === 0 && "Out of Stock"}
@@ -894,10 +877,10 @@ function POSPageContent() {
                               setWarningMessage("Please select an active customer repair from Step 1 above to begin adding items!");
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
-                            className="w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all bg-zinc-900/90 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 shadow-sm cursor-pointer"
+                            className="w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800 cursor-pointer"
                             title="Please select an active customer repair before adding or modifying items"
                           >
-                            <Lock className="w-3.5 h-3.5 text-amber-400" />
+                            <Lock className="w-3.5 h-3.5 text-zinc-400" />
                             <span>Select Customer First</span>
                           </button>
                         ) : !cartItem ? (
@@ -907,10 +890,8 @@ function POSPageContent() {
                             className={clsx(
                               "w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all",
                               isOutOfStock
-                                ? "bg-red-500/10 text-red-400 border border-red-500/30 cursor-not-allowed"
-                                : isService
-                                  ? "bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-500/20 active:scale-95"
-                                  : "bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-500/20 active:scale-95"
+                                ? "bg-zinc-900 text-zinc-500 border border-zinc-800 cursor-not-allowed"
+                                : "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 active:scale-95"
                             )}
                           >
                             {isOutOfStock ? (
@@ -923,7 +904,7 @@ function POSPageContent() {
                             )}
                           </button>
                         ) : (
-                          <div className="w-full flex items-center justify-between p-1 rounded-xl shadow-inner bg-zinc-950 border border-cyan-500/30">
+                          <div className="w-full flex items-center justify-between p-1 rounded-xl bg-zinc-950 border border-zinc-700">
                             <button
                               onClick={() => {
                                 if (cartItem.qty <= 1) {
@@ -938,7 +919,7 @@ function POSPageContent() {
                               <Minus className="w-3.5 h-3.5" />
                             </button>
 
-                            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300">
+                            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-200">
                               <span>{cartItem.qty}</span>
                               <span className="text-[10px] text-zinc-500 font-sans uppercase">in cart</span>
                             </div>
@@ -978,11 +959,11 @@ function POSPageContent() {
             <div className="fixed bottom-20 right-4 z-40 md:hidden animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setActiveView("cart")}
-                className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-zinc-950 shadow-2xl shadow-emerald-500/40 border border-emerald-300 transition-all transform active:scale-95 flex items-center justify-center"
+                className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 transition-all transform active:scale-95 flex items-center justify-center"
                 aria-label="View Cart"
                 data-testid="view-cart-fab"
               >
-                <ShoppingCart className="w-6 h-6 text-zinc-950" />
+                <ShoppingCart className="w-6 h-6 text-white" />
               </button>
             </div>
           )}
@@ -994,12 +975,12 @@ function POSPageContent() {
         <main className="flex-1 w-full p-4 sm:p-8 space-y-6 pb-24">
           
           {/* Combined Sticky Top Header: Navigation, Clear Cart, and Active Customer Details */}
-          <div className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur-md border-b border-white/10 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 sm:py-3.5 space-y-2.5 -mt-4 sm:-mt-8 shadow-xl">
+          <div className="sticky top-0 z-20 bg-zinc-950 border-b border-zinc-800 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 sm:py-3.5 space-y-2.5 -mt-4 sm:-mt-8">
             {/* Top Row: Back to Catalog & Clear Cart (Top-Right) */}
             <div className="flex items-center justify-between gap-3">
               <button
                 onClick={() => setActiveView("catalog")}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4 text-zinc-400" />
                 <span className="hidden sm:inline">Back to Services & Products Catalog</span>
@@ -1010,7 +991,7 @@ function POSPageContent() {
                 onClick={() => setIsClearConfirmOpen(true)}
                 disabled={cart.length === 0}
                 data-testid="top-clear-cart-button"
-                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-400 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Clear Cart</span>
@@ -1019,20 +1000,20 @@ function POSPageContent() {
 
             {/* Bottom Row: Connected Customer Info Banner (Card-Free, Minimalist Layout) */}
             {selectedRepair ? (
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/5">
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-zinc-800">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xs sm:text-base shrink-0">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs sm:text-base shrink-0">
                     {selectedRepair.customer_name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm sm:text-base font-black text-white truncate">{selectedRepair.customer_name}</span>
-                      <span className="font-mono text-[10px] sm:text-xs bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 rounded-md font-bold">
+                      <span className="font-mono text-[10px] sm:text-xs bg-zinc-800 text-zinc-300 border border-zinc-700 px-1.5 py-0.5 rounded-md font-bold">
                         {selectedRepair.jo_number}
                       </span>
                     </div>
                     <p className="text-xs text-zinc-400 flex items-center gap-2 mt-0.5 truncate">
-                      <Bike className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <Bike className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                       <span className="truncate">{selectedRepair.motorcycle_name}</span>
                       <span className="text-zinc-600 hidden sm:inline">•</span>
                       <span className="hidden sm:inline">Mechanic: Mike Smith</span>
@@ -1041,12 +1022,12 @@ function POSPageContent() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
                     {selectedRepair.status}
                   </span>
                   <button
                     onClick={handleChangeCustomer}
-                    className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-zinc-900 border border-cyan-500/30 hover:bg-cyan-500/10 text-cyan-400 hover:text-cyan-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                    className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5"
                   >
                     <User className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Change Customer</span>
@@ -1055,14 +1036,14 @@ function POSPageContent() {
                 </div>
               </div>
             ) : (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs font-semibold flex items-center justify-between gap-4">
+              <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-xs font-semibold flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-zinc-400 shrink-0" />
                   <span>No active customer selected. Please select a customer repair session to link this order.</span>
                 </div>
                 <button
                   onClick={() => setActiveView("catalog")}
-                  className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0 border border-emerald-500"
                 >
                   Select Customer
                 </button>
@@ -1074,12 +1055,12 @@ function POSPageContent() {
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
               <h3 className="font-bold text-sm sm:text-base text-white flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
                 <span>Order Items ({itemCount})</span>
               </h3>
               <button
                 onClick={() => setActiveView("catalog")}
-                className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add More Services / Products</span>
@@ -1087,7 +1068,7 @@ function POSPageContent() {
             </div>
 
             {cart.length === 0 ? (
-              <div className="py-16 flex flex-col items-center justify-center text-zinc-500 text-center px-4 space-y-3 border border-white/5 rounded-2xl bg-zinc-900/20">
+              <div className="py-16 flex flex-col items-center justify-center text-zinc-500 text-center px-4 space-y-3 border border-zinc-800 rounded-2xl bg-zinc-900/40">
                 <ShoppingCart className="w-12 h-12 opacity-30 text-zinc-400" />
                 <h4 className="text-sm font-bold text-zinc-300">Your order cart is empty</h4>
                 <p className="text-xs text-zinc-500 max-w-sm">
@@ -1095,7 +1076,7 @@ function POSPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveView("catalog")}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all mt-2 border border-emerald-500/30 shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all mt-2 border border-emerald-500"
                 >
                   Browse Catalog
                 </button>
@@ -1103,7 +1084,7 @@ function POSPageContent() {
             ) : (
               <>
                 {/* Mobile View (< md): Card-Free Edge-to-Edge List with Hairline Dividers */}
-                <div className="md:hidden divide-y divide-zinc-800/80 border-t border-b border-zinc-800/80">
+                <div className="md:hidden divide-y divide-zinc-800 border-t border-b border-zinc-800">
                   {cart.map((item) => {
                     const isService = item.id.startsWith("labor-") || item.name.toLowerCase().includes("service") || item.name.toLowerCase().includes("tune-up") || item.name.toLowerCase().includes("cleaning");
                     const lineTotal = item.price * item.qty;
@@ -1114,12 +1095,7 @@ function POSPageContent() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-bold text-zinc-100 text-sm">{item.name}</span>
-                              <span className={clsx(
-                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
-                                isService
-                                  ? "bg-purple-500/10 text-purple-300 border-purple-500/30"
-                                  : "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
-                              )}>
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border bg-zinc-800 text-zinc-300 border-zinc-700">
                                 {isService ? "Service" : "Part"}
                               </span>
                             </div>
@@ -1130,7 +1106,7 @@ function POSPageContent() {
 
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="p-1.5 text-zinc-500 hover:text-red-400 active:bg-red-400/10 rounded-lg transition-colors"
+                            className="p-1.5 text-zinc-400 hover:text-white active:bg-zinc-800 rounded-lg transition-colors"
                             title="Remove item"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1139,7 +1115,7 @@ function POSPageContent() {
 
                         <div className="flex items-center justify-between pt-1">
                           {/* Quantity Stepper */}
-                          <div className="flex items-center gap-2.5 bg-zinc-900 border border-white/10 rounded-xl px-2 py-1">
+                          <div className="flex items-center gap-2.5 bg-zinc-900 border border-zinc-800 rounded-xl px-2 py-1">
                             <button
                               onClick={() => {
                                 if (item.qty <= 1) {
@@ -1176,9 +1152,9 @@ function POSPageContent() {
                 </div>
 
                 {/* Desktop View (>= md): Clean Structured Table Layout */}
-                <div className="hidden md:block bg-zinc-900/60 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl">
+                <div className="hidden md:block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-white/5">
+                    <thead className="bg-zinc-950 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-zinc-800">
                       <tr>
                         <th className="p-4 px-6 font-semibold">Item / Service Description</th>
                         <th className="p-4 px-4 font-semibold text-center">Type</th>
@@ -1188,24 +1164,19 @@ function POSPageContent() {
                         <th className="p-4 px-4 font-semibold text-center">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 font-mono">
+                    <tbody className="divide-y divide-zinc-800 font-mono">
                       {cart.map((item) => {
                         const isService = item.id.startsWith("labor-") || item.name.toLowerCase().includes("service") || item.name.toLowerCase().includes("tune-up") || item.name.toLowerCase().includes("cleaning");
                         const lineTotal = item.price * item.qty;
 
                         return (
-                          <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                          <tr key={item.id} className="hover:bg-zinc-800/40 transition-colors">
                             <td className="p-4 px-6 font-sans">
                               <span className="font-bold text-zinc-100 text-sm block">{item.name}</span>
                             </td>
 
                             <td className="p-4 px-4 text-center font-sans">
-                              <span className={clsx(
-                                "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border",
-                                isService
-                                  ? "bg-purple-500/10 text-purple-300 border-purple-500/30"
-                                  : "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
-                              )}>
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-zinc-800 text-zinc-300 border-zinc-700">
                                 {isService ? "Service" : "Product"}
                               </span>
                             </td>
@@ -1216,7 +1187,7 @@ function POSPageContent() {
 
                             <td className="p-4 px-6">
                               <div className="flex items-center justify-center gap-2">
-                                <div className="flex items-center gap-2 p-1 rounded-xl border bg-zinc-950 border-white/10">
+                                <div className="flex items-center gap-2 p-1 rounded-xl border bg-zinc-950 border-zinc-800">
                                   <button
                                     onClick={() => {
                                       if (item.qty <= 1) {
@@ -1251,7 +1222,7 @@ function POSPageContent() {
                             <td className="p-4 px-4 text-center">
                               <button
                                 onClick={() => removeFromCart(item.id)}
-                                className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
                                 title="Remove item"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -1269,14 +1240,14 @@ function POSPageContent() {
 
           {/* Cart Financial Summary & Complete Checkout Bar (Sticky Bottom) */}
           {cart.length > 0 && (
-            <div className="sticky bottom-0 z-30 bg-zinc-950/95 border-t border-white/10 p-4 sm:p-6 backdrop-blur-xl -mx-4 sm:-mx-8 shadow-2xl mt-8">
+            <div className="sticky bottom-0 z-30 bg-zinc-950 border-t border-zinc-800 p-4 sm:p-6 -mx-4 sm:-mx-8 mt-8">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center justify-between sm:justify-start sm:gap-8">
                   <div>
                     <span className="text-zinc-500 block text-[10px] uppercase font-bold tracking-wider">Subtotal</span>
                     <span className="text-sm font-bold text-zinc-300 font-mono">₱{subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                  <div className="w-px h-8 bg-zinc-800 hidden sm:block" />
                   <div>
                     <span className="text-zinc-400 block text-[10px] uppercase font-bold tracking-wider">Net Total Due</span>
                     <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
@@ -1290,7 +1261,7 @@ function POSPageContent() {
                     onClick={() => setIsClearConfirmOpen(true)}
                     disabled={cart.length === 0}
                     data-testid="bottom-clear-cart-button"
-                    className="hidden sm:flex px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 text-zinc-400 text-xs font-bold transition-all items-center justify-center gap-2"
+                    className="hidden sm:flex px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition-all items-center justify-center gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
                     <span>Clear Cart</span>
@@ -1300,7 +1271,7 @@ function POSPageContent() {
                     onClick={handleProceedToCheckout}
                     disabled={!selectedRepair || cart.length === 0}
                     data-testid="proceed-to-payment-button"
-                    className="w-full sm:w-auto flex-1 sm:flex-none px-6 sm:px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/30 border border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto flex-1 sm:flex-none px-6 sm:px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 active:scale-95 border border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span>Proceed to Payment</span>
                     <ArrowRight className="w-4 h-4" />
@@ -1355,7 +1326,7 @@ export default function POSPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     }>
       <POSPageContent />

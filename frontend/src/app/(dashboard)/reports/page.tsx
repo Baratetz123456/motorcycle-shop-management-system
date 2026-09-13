@@ -200,20 +200,20 @@ export default function BusinessReportsPage() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto w-full">
+    <div className="min-h-full bg-zinc-950 text-zinc-100 font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto w-full">
       {/* ============ TOP HEADER & PERIOD FILTER ============ */}
-      <div className="pb-6 border-b border-slate-200 dark:border-zinc-800 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="pb-6 border-b border-zinc-800 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5 tracking-tight">
-              <Activity className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+            <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
+              <Activity className="w-7 h-7 text-emerald-400" />
               <span>Business Intelligence & Reports</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-lime-50 dark:bg-lime-950/30 text-lime-800 dark:text-lime-400 border border-lime-200 dark:border-lime-800/50">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-zinc-800 text-zinc-300 border border-zinc-700">
               Live BI
             </span>
           </div>
-          <p className="text-slate-500 dark:text-zinc-400 mt-1 text-xs sm:text-sm">
+          <p className="text-zinc-400 mt-1 text-xs sm:text-sm">
             Revenue trajectory, gross margins, inventory valuation, and repair labor performance.
           </p>
         </div>
@@ -221,7 +221,7 @@ export default function BusinessReportsPage() {
         {/* Action Controls & Export */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Period Toggle Pills */}
-          <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs">
+          <div className="flex bg-zinc-900 p-1 rounded-xl border border-zinc-800 text-xs">
             {[
               { id: "7D", label: "7 Days" },
               { id: "30D", label: "30 Days" },
@@ -234,7 +234,7 @@ export default function BusinessReportsPage() {
                 className={clsx(
                   "px-3 py-1.5 rounded-lg font-bold transition-all text-xs",
                   period === tab.id
-                    ? "bg-emerald-600 text-white shadow-xs"
+                    ? "bg-emerald-600 text-white"
                     : "text-zinc-400 hover:text-white"
                 )}
               >
@@ -245,7 +245,7 @@ export default function BusinessReportsPage() {
 
           <button
             onClick={() => router.push("/reports/extract")}
-            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-2 border border-emerald-500/30 shadow-sm active:scale-[0.98]"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-2 border border-emerald-500 active:scale-[0.98]"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Financial Ledger & CSV</span>
@@ -254,7 +254,7 @@ export default function BusinessReportsPage() {
       </div>
 
       {/* ============ CARD-FREE KPI FINANCIAL RIBBON ============ */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 py-5 border-y border-slate-200 dark:border-zinc-800 mb-8 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-zinc-800">
+      <div className="grid grid-cols-2 lg:grid-cols-4 py-5 border-y border-zinc-800 mb-8 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800">
         
         {/* Metric 1: Total Revenue */}
         <div 
@@ -262,17 +262,17 @@ export default function BusinessReportsPage() {
           className="px-4 py-3 sm:py-0 first:pl-0 cursor-pointer group transition-colors"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
               Net Sales Revenue
             </span>
-            <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40">
+            <span className="text-[10px] text-zinc-300 font-bold bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
               +{period}
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-zinc-100 font-mono group-hover:text-lime-700 dark:group-hover:text-lime-400 transition-colors">
+          <div className="text-2xl sm:text-3xl font-black text-zinc-100 font-mono group-hover:text-emerald-400 transition-colors">
             ₱{totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-lime-700 dark:text-lime-400 font-medium group-hover:underline mt-1">
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-200 mt-1">
             <span>Inspect Sales Ledger</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -284,17 +284,17 @@ export default function BusinessReportsPage() {
           className="px-4 py-3 sm:py-0 cursor-pointer group transition-colors"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
               Est. Operating Margin (38%)
             </span>
-            <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40">
+            <span className="text-[10px] text-zinc-300 font-bold bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
               Profitable
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
             ₱{netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium group-hover:underline mt-1">
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-200 mt-1">
             <span>Staff Payroll & Wages</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -306,22 +306,17 @@ export default function BusinessReportsPage() {
           className="px-4 py-3 sm:py-0 cursor-pointer group transition-colors"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
               Low Stock Alerts
             </span>
-            <span className={clsx(
-              "text-[10px] font-bold px-1.5 py-0.5 rounded border",
-              lowStockCount > 0
-                ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/40"
-                : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40"
-            )}>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border bg-zinc-800 text-zinc-300 border-zinc-700">
               {lowStockCount > 0 ? `${lowStockCount} Reorder` : "Healthy"}
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-zinc-100 font-mono">
             {lowStockCount} items
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium group-hover:underline mt-1">
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-200 mt-1">
             <span>Manage Inventory</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -333,17 +328,17 @@ export default function BusinessReportsPage() {
           className="px-4 py-3 sm:py-0 last:pr-0 cursor-pointer group transition-colors"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
               Completed Repairs
             </span>
-            <span className="text-[10px] text-blue-800 dark:text-blue-300 font-bold bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/40">
+            <span className="text-[10px] text-zinc-300 font-bold bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
               Workshop
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-zinc-100 font-mono">
             {completedRepairsCount}
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline mt-1">
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-200 mt-1">
             <span>Workshop Kanban Board</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -352,18 +347,18 @@ export default function BusinessReportsPage() {
       </div>
 
       {/* ============ BORDERLESS INTEGRATED CHARTS ============ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8 border-b border-slate-200 dark:border-zinc-800 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8 border-b border-zinc-800 mb-8">
         
         {/* Revenue Trajectory Chart (2 Cols) */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Sales & Revenue Trajectory</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">Daily business transaction volume synchronized with POS</p>
+              <h3 className="text-base font-bold text-white">Sales & Revenue Trajectory</h3>
+              <p className="text-xs text-zinc-400">Daily business transaction volume synchronized with POS</p>
             </div>
             <button
               onClick={() => router.push("/sales")}
-              className="text-xs text-lime-700 dark:text-lime-400 hover:underline font-semibold flex items-center gap-1"
+              className="text-xs text-zinc-400 hover:text-white font-semibold flex items-center gap-1 transition-colors"
             >
               <span>View Invoices</span>
               <ArrowRight className="w-3 h-3" />
@@ -374,14 +369,14 @@ export default function BusinessReportsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="limeGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#84cc16" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#84cc16" stopOpacity={0.0}/>
+                  <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.4} vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" strokeOpacity={0.6} vertical={false} />
+                <XAxis dataKey="name" stroke="#71717a" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis stroke="#71717a" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#18181b', 
@@ -389,12 +384,12 @@ export default function BusinessReportsPage() {
                     borderRadius: '12px', 
                     fontSize: 12,
                     color: '#ffffff',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                    boxShadow: 'none'
                   }}
-                  itemStyle={{ color: '#84cc16', fontWeight: 700 }}
+                  itemStyle={{ color: '#10b981', fontWeight: 700 }}
                   formatter={(val: any) => [`₱${Number(val).toLocaleString()}`, "Revenue"]}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#84cc16" strokeWidth={3} fillOpacity={1} fill="url(#limeGradient)" />
+                <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#emeraldGradient)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -404,12 +399,12 @@ export default function BusinessReportsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Workshop Output</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">Weekly job volume completed by technicians</p>
+              <h3 className="text-base font-bold text-white">Workshop Output</h3>
+              <p className="text-xs text-zinc-400">Weekly job volume completed by technicians</p>
             </div>
             <button
               onClick={() => router.push("/repairs/board")}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1"
+              className="text-xs text-zinc-400 hover:text-white font-semibold flex items-center gap-1 transition-colors"
             >
               <span>Board</span>
               <ArrowRight className="w-3 h-3" />
@@ -419,20 +414,21 @@ export default function BusinessReportsPage() {
           <div className="h-[280px] w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={repairsChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.4} vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" strokeOpacity={0.6} vertical={false} />
+                <XAxis dataKey="name" stroke="#71717a" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis stroke="#71717a" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip 
-                  cursor={{ fill: 'rgba(59, 130, 246, 0.08)' }}
+                  cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                   contentStyle={{ 
                     backgroundColor: '#18181b', 
                     borderColor: '#27272a', 
                     borderRadius: '12px', 
                     fontSize: 12,
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    boxShadow: 'none'
                   }}
                 />
-                <Bar dataKey="completed" fill="#06b6d4" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="completed" fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -445,43 +441,43 @@ export default function BusinessReportsPage() {
         
         {/* Feed 1: Recent Completed Sales Invoices */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-emerald-400" />
               <span>Recent Completed Sales</span>
             </h4>
             <button
               onClick={() => router.push("/sales")}
-              className="text-xs text-lime-700 dark:text-lime-400 hover:underline flex items-center gap-1 font-semibold"
+              className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-semibold transition-colors"
             >
               <span>All Invoices</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs">
+          <div className="divide-y divide-zinc-900 text-xs">
             {filteredSales.length === 0 ? (
-              <p className="text-slate-500 dark:text-zinc-500 py-6 text-center">No completed transactions in this period.</p>
+              <p className="text-zinc-500 py-6 text-center">No completed transactions in this period.</p>
             ) : (
               filteredSales.slice(0, 5).map((tx) => (
                 <div
                   key={tx.id}
                   onClick={() => router.push(`/sales/receipt?id=${tx.id}`)}
-                  className="py-3 flex items-center justify-between cursor-pointer hover:bg-slate-100/60 dark:hover:bg-zinc-900/40 px-2.5 rounded-xl transition-colors group"
+                  className="py-3 flex items-center justify-between cursor-pointer hover:bg-zinc-900/60 px-2.5 rounded-xl transition-colors group"
                 >
                   <div>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">
+                    <span className="font-mono font-bold text-white group-hover:text-emerald-400 transition-colors">
                       {tx.invoice_no}
                     </span>
-                    <span className="text-[11px] text-slate-500 dark:text-zinc-500 block">
+                    <span className="text-[11px] text-zinc-400 block">
                       {tx.customer_name || "Walk-in Customer"} • {tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "Recent"}
                     </span>
                   </div>
                   <div className="text-right font-mono">
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm block">
+                    <span className="font-bold text-emerald-400 text-sm block">
                       ₱{Number(tx.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase font-semibold">
+                    <span className="text-[10px] text-zinc-400 uppercase font-semibold">
                       {tx.payment_method || "Paid"}
                     </span>
                   </div>
@@ -494,50 +490,47 @@ export default function BusinessReportsPage() {
         {/* Feed 2: Inventory Valuation & Tax Summary */}
         <div className="space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800 mb-3">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Boxes className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800 mb-3">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Boxes className="w-4 h-4 text-zinc-400" />
                 <span>Inventory Valuation & Tax Analysis</span>
               </h4>
               <button
                 onClick={() => router.push("/inventory")}
-                className="text-xs text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 font-semibold"
+                className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-semibold transition-colors"
               >
                 <span>Stock Control</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
 
-            <div className="divide-y divide-slate-100 dark:divide-zinc-900 text-xs mb-6">
+            <div className="divide-y divide-zinc-900 text-xs mb-6">
               <div className="py-3 flex justify-between items-center">
                 <div>
-                  <span className="text-slate-800 dark:text-zinc-200 block font-semibold">Total Warehouse Asset Value</span>
-                  <span className="text-[11px] text-slate-500 dark:text-zinc-500">Aggregated inventory purchase wholesale cost</span>
+                  <span className="text-zinc-200 block font-semibold">Total Warehouse Asset Value</span>
+                  <span className="text-[11px] text-zinc-400">Aggregated inventory purchase wholesale cost</span>
                 </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white text-base">
+                <span className="font-mono font-bold text-white text-base">
                   ₱{inventoryValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
 
               <div className="py-3 flex justify-between items-center">
                 <div>
-                  <span className="text-slate-800 dark:text-zinc-200 block font-semibold">BIR 12% Value Added Tax (VAT)</span>
-                  <span className="text-[11px] text-slate-500 dark:text-zinc-500">Estimated output tax collected during period</span>
+                  <span className="text-zinc-200 block font-semibold">BIR 12% Value Added Tax (VAT)</span>
+                  <span className="text-[11px] text-zinc-400">Estimated output tax collected during period</span>
                 </div>
-                <span className="font-mono text-cyan-600 dark:text-cyan-400 font-bold text-sm">
+                <span className="font-mono text-zinc-200 font-bold text-sm">
                   ₱{vatAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
 
               <div className="py-3 flex justify-between items-center">
                 <div>
-                  <span className="text-slate-800 dark:text-zinc-200 block font-semibold">Low Stock Reorder Items</span>
-                  <span className="text-[11px] text-slate-500 dark:text-zinc-500">Catalog items requiring supplier restocking</span>
+                  <span className="text-zinc-200 block font-semibold">Low Stock Reorder Items</span>
+                  <span className="text-[11px] text-zinc-400">Catalog items requiring supplier restocking</span>
                 </div>
-                <span className={clsx(
-                  "font-mono font-bold text-sm",
-                  lowStockCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
-                )}>
+                <span className="font-mono font-bold text-sm text-zinc-200">
                   {lowStockCount} items
                 </span>
               </div>
@@ -547,14 +540,14 @@ export default function BusinessReportsPage() {
           <div className="flex gap-3 pt-2">
             <button
               onClick={() => router.push("/inventory")}
-              className="flex-1 py-2.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-2"
             >
-              <Package className="w-4 h-4 text-lime-600 dark:text-lime-400" />
+              <Package className="w-4 h-4 text-zinc-400" />
               <span>Inventory Catalog</span>
             </button>
             <button
               onClick={() => router.push("/payroll")}
-              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all border border-emerald-500/30 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all border border-emerald-500 flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               <DollarSign className="w-4 h-4" />
               <span>Payroll Hub</span>

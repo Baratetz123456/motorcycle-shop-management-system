@@ -265,13 +265,13 @@ function POSCheckoutContent() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
       
       {/* Top Navigation Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 px-4 sm:px-8 py-3.5 bg-zinc-950/95 backdrop-blur-xl flex items-center justify-between gap-4 shrink-0 shadow-lg">
+      <header className="sticky top-0 z-30 border-b border-zinc-800 px-4 sm:px-8 py-3.5 bg-zinc-950 flex items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <button
             onClick={handleReturnToPOS}
             aria-label="Return to POS Cart"
             data-testid="return-to-pos-button"
-            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold shrink-0"
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold shrink-0"
           >
             <ArrowLeft className="w-4 h-4 text-zinc-400" />
             <span className="hidden sm:inline">Return to POS Cart</span>
@@ -287,11 +287,11 @@ function POSCheckoutContent() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="bg-cyan-500/10 text-cyan-400 text-[10px] sm:text-xs font-mono font-bold px-2.5 sm:px-3 py-1 rounded-md border border-cyan-500/30">
+          <span className="bg-zinc-800 text-zinc-300 text-[10px] sm:text-xs font-mono font-bold px-2.5 sm:px-3 py-1 rounded-md border border-zinc-700">
             {jobId ? (jobId.startsWith("job-") || jobId.startsWith("JO-") ? jobId : `JO: ${jobId.slice(0, 8)}`) : "Walk-in Order"}
           </span>
-          <span className="hidden md:flex bg-purple-500/10 text-purple-300 text-xs font-semibold px-3 py-1 rounded-md border border-purple-500/30 items-center gap-1.5">
-            <Wrench className="w-3.5 h-3.5" />
+          <span className="hidden md:flex bg-zinc-800 text-zinc-300 text-xs font-semibold px-3 py-1 rounded-md border border-zinc-700 items-center gap-1.5">
+            <Wrench className="w-3.5 h-3.5 text-zinc-400" />
             <span>Mechanic: {mechanicName}</span>
           </span>
         </div>
@@ -303,18 +303,18 @@ function POSCheckoutContent() {
         {isSuccess ? (
           /* Full-Page Official Receipt View (Card-Free, Clean Canvas) */
           <div className="max-w-2xl mx-auto py-6 sm:py-12 px-4 sm:px-6 space-y-6 animate-in fade-in duration-200">
-            <div className="flex flex-col items-center text-center space-y-2 pb-6 border-b border-white/10">
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/30 shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]">
+            <div className="flex flex-col items-center text-center space-y-2 pb-6 border-b border-zinc-800">
+              <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-800">
                 <CheckCircle2 className="w-8 h-8 text-emerald-400" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white">Payment Completed!</h2>
               <p className="text-xs text-zinc-400">
-                Official Receipt #: <span className="font-mono font-bold text-cyan-400 text-sm">{invoiceNo}</span>
+                Official Receipt #: <span className="font-mono font-bold text-white text-sm">{invoiceNo}</span>
               </p>
             </div>
 
             {/* Receipt Breakdown (Card-Free with hairline dividers) */}
-            <div className="divide-y divide-zinc-800/80 text-sm">
+            <div className="divide-y divide-zinc-800 text-sm">
               <div className="flex justify-between items-center py-2.5">
                 <span className="text-zinc-400 text-xs">Customer:</span>
                 <span className="text-white font-bold">{receiptSummary?.customerName || customerName}</span>
@@ -325,11 +325,11 @@ function POSCheckoutContent() {
               </div>
               <div className="flex justify-between items-center py-2.5">
                 <span className="text-zinc-400 text-xs">Assigned Mechanic:</span>
-                <span className="text-purple-300 font-semibold">{receiptSummary?.mechanicName || mechanicName}</span>
+                <span className="text-zinc-200 font-semibold">{receiptSummary?.mechanicName || mechanicName}</span>
               </div>
               <div className="flex justify-between items-center py-2.5">
                 <span className="text-zinc-400 text-xs">Payment Method:</span>
-                <span className="font-mono text-cyan-300 font-bold uppercase">{receiptSummary?.paymentMethod || paymentMethod}</span>
+                <span className="font-mono text-zinc-200 font-bold uppercase">{receiptSummary?.paymentMethod || paymentMethod}</span>
               </div>
 
               {receiptSummary?.items && receiptSummary.items.length > 0 && (
@@ -401,7 +401,7 @@ function POSCheckoutContent() {
               <button
                 type="button"
                 onClick={handleReturnToPOS}
-                className="flex-1 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 border border-emerald-500/30 shadow-sm"
+                className="flex-1 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 border border-emerald-500"
               >
                 <span>Return to POS</span>
                 <ArrowRight className="w-4 h-4" />
@@ -416,21 +416,21 @@ function POSCheckoutContent() {
             <div className="lg:col-span-7 flex flex-col space-y-6">
               
               {/* Active Customer & Motorcycle Metadata Strip (Card-Free) */}
-              <div className="pb-5 border-b border-white/10 flex items-center justify-between gap-4">
+              <div className="pb-5 border-b border-zinc-800 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-base shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-base shrink-0">
                     {customerName.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">Active Customer</span>
-                      <span className="font-mono text-[10px] bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 rounded font-bold">
+                      <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Active Customer</span>
+                      <span className="font-mono text-[10px] bg-zinc-800 text-zinc-300 border border-zinc-700 px-1.5 py-0.5 rounded font-bold">
                         {jobId ? (jobId.startsWith("job-") || jobId.startsWith("JO-") ? jobId : `JO: ${jobId.slice(0, 8)}`) : "Walk-in"}
                       </span>
                     </div>
                     <h2 className="text-lg font-black text-white mt-0.5 truncate">{customerName}</h2>
                     <p className="text-xs text-zinc-400 flex items-center gap-2 font-medium mt-0.5 truncate">
-                      <Bike className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <Bike className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                       <span className="truncate">{motorcycleName}</span>
                       <span className="text-zinc-600">•</span>
                       <span>Mechanic: {mechanicName}</span>
@@ -441,7 +441,7 @@ function POSCheckoutContent() {
                 <button
                   type="button"
                   onClick={handleReturnToPOS}
-                  className="hidden sm:flex px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors items-center gap-1.5 shrink-0"
+                  className="hidden sm:flex px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-800 transition-colors items-center gap-1.5 shrink-0"
                 >
                   <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
                   <span>Edit Cart</span>
@@ -452,7 +452,7 @@ function POSCheckoutContent() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                    <ShoppingCart className="w-4 h-4 text-cyan-400" />
+                    <ShoppingCart className="w-4 h-4 text-emerald-400" />
                     <span>Itemized Order Breakdown ({cart.length})</span>
                   </h3>
                   <span className="text-xs text-zinc-500 font-mono">
@@ -460,7 +460,7 @@ function POSCheckoutContent() {
                   </span>
                 </div>
 
-                <div className="divide-y divide-zinc-800/80 border-t border-b border-zinc-800/80 max-h-80 overflow-y-auto">
+                <div className="divide-y divide-zinc-805 border-t border-b border-zinc-800 max-h-80 overflow-y-auto">
                   {cart.length === 0 ? (
                     <div className="text-center py-10 text-zinc-500 text-xs">
                       No items in cart. Click Return to POS Cart to add products or services.
@@ -473,16 +473,11 @@ function POSCheckoutContent() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-bold text-zinc-100 text-sm truncate">{item.name}</span>
-                              <span className={clsx(
-                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
-                                isService
-                                  ? "bg-purple-500/10 text-purple-300 border-purple-500/30"
-                                  : "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
-                              )}>
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border bg-zinc-800 text-zinc-300 border-zinc-700">
                                 {isService ? "Service" : "Part"}
                               </span>
                             </div>
-                            <span className="text-xs text-zinc-500 font-mono mt-0.5 block">
+                            <span className="text-xs text-zinc-400 font-mono mt-0.5 block">
                               {item.qty} × ₱{item.price.toFixed(2)}
                             </span>
                           </div>
@@ -501,7 +496,7 @@ function POSCheckoutContent() {
               <div className="pt-2 space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
                       <Percent className="w-3.5 h-3.5" /> Discount Percentage (%)
                     </label>
                     <span className="text-xs text-zinc-500">Applies to subtotal</span>
@@ -516,7 +511,7 @@ function POSCheckoutContent() {
                         value={discountPercent || ""}
                         onChange={(e) => handleDiscountChange(Number(e.target.value))}
                         placeholder="0"
-                        className="w-full bg-zinc-900 border border-amber-500/30 rounded-xl py-2.5 px-4 font-mono text-base font-bold text-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-xl py-2.5 px-4 font-mono text-base font-bold text-zinc-100 focus:outline-none focus:border-emerald-500"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-500">%</span>
                     </div>
@@ -531,8 +526,8 @@ function POSCheckoutContent() {
                           className={clsx(
                             "px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold transition-all border",
                             discountPercent === pct
-                              ? "bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-md shadow-amber-500/10"
-                              : "bg-zinc-900 text-zinc-400 border-white/10 hover:text-white hover:bg-zinc-800"
+                              ? "bg-emerald-600 text-white border-emerald-500 font-bold"
+                              : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800"
                           )}
                         >
                           {pct}%
@@ -543,18 +538,18 @@ function POSCheckoutContent() {
                 </div>
 
                 {/* Calculations Summary Strip */}
-                <div className="pt-3 border-t border-white/10 space-y-2 text-xs">
+                <div className="pt-3 border-t border-zinc-800 space-y-2 text-xs">
                   <div className="flex justify-between text-zinc-400">
                     <span>Gross Subtotal:</span>
                     <span className="font-mono text-zinc-200 font-semibold">₱{subtotal.toFixed(2)}</span>
                   </div>
                   {discountPercent > 0 && (
-                    <div className="flex justify-between text-amber-400 font-semibold">
+                    <div className="flex justify-between text-zinc-300 font-semibold">
                       <span>Discount ({discountPercent}%):</span>
                       <span className="font-mono">-₱{discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-end pt-2 border-t border-white/5">
+                  <div className="flex justify-between items-end pt-2 border-t border-zinc-800">
                     <span className="text-zinc-300 font-bold text-sm">Discounted Net Total Due:</span>
                     <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
                       ₱{netTotalDue.toFixed(2)}
@@ -566,7 +561,7 @@ function POSCheckoutContent() {
             </div>
 
             {/* Right Panel: Payment Method, Cash Received & Live Change Calculation (Span 5) */}
-            <div className="lg:col-span-5 lg:border-l lg:border-white/10 lg:pl-10 flex flex-col space-y-6">
+            <div className="lg:col-span-5 lg:border-l lg:border-zinc-800 lg:pl-10 flex flex-col space-y-6">
               
               {/* Select Payment Method */}
               <div>
@@ -581,8 +576,8 @@ function POSCheckoutContent() {
                     className={clsx(
                       "flex flex-col items-center justify-center gap-2 p-3.5 sm:p-4 rounded-xl border transition-all",
                       paymentMethod === "CASH"
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/10 font-bold"
-                        : "border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-white hover:bg-zinc-900"
+                        ? "border-emerald-500 bg-emerald-600 text-white font-bold"
+                        : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800"
                     )}
                   >
                     <Banknote className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -595,8 +590,8 @@ function POSCheckoutContent() {
                     className={clsx(
                       "flex flex-col items-center justify-center gap-2 p-3.5 sm:p-4 rounded-xl border transition-all",
                       paymentMethod === "CARD"
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/10 font-bold"
-                        : "border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-white hover:bg-zinc-900"
+                        ? "border-emerald-500 bg-emerald-600 text-white font-bold"
+                        : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800"
                     )}
                   >
                     <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -610,13 +605,13 @@ function POSCheckoutContent() {
                 <div className="space-y-4 animate-in fade-in">
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                        <Coins className="w-4 h-4" /> 2. Cash Received from Customer (₱)
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                        <Coins className="w-4 h-4 text-emerald-400" /> 2. Cash Received from Customer (₱)
                       </label>
                       <button
                         type="button"
                         onClick={handleExactCash}
-                        className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 underline"
+                        className="text-[11px] font-bold text-zinc-400 hover:text-white underline"
                       >
                         Exact Amount
                       </button>
@@ -631,7 +626,7 @@ function POSCheckoutContent() {
                         value={cashReceivedInput}
                         onChange={(e) => setCashReceivedInput(e.target.value)}
                         placeholder="0.00"
-                        className="w-full bg-zinc-900 border border-cyan-500/40 rounded-xl py-3 pl-10 pr-4 font-mono text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 shadow-inner"
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-xl py-3 pl-10 pr-4 font-mono text-xl font-bold text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -647,7 +642,7 @@ function POSCheckoutContent() {
                           key={amt}
                           type="button"
                           onClick={() => handleQuickCash(amt)}
-                          className="py-2 rounded-xl bg-zinc-900 border border-white/10 hover:border-cyan-500/40 text-xs font-mono font-bold text-zinc-300 hover:text-white transition-all"
+                          className="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-mono font-bold text-zinc-300 hover:text-white transition-all"
                         >
                           ₱{amt}
                         </button>
@@ -655,7 +650,7 @@ function POSCheckoutContent() {
                       <button
                         type="button"
                         onClick={handleExactCash}
-                        className="py-2 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-xs font-mono font-bold text-cyan-300 hover:text-cyan-200 transition-all"
+                        className="py-2 rounded-xl bg-zinc-800 border border-zinc-700 text-xs font-mono font-bold text-zinc-200 hover:text-white transition-all"
                       >
                         Exact (₱{netTotalDue.toFixed(0)})
                       </button>
@@ -666,8 +661,8 @@ function POSCheckoutContent() {
                   <div className={clsx(
                     "p-4 rounded-xl border transition-all duration-300 flex justify-between items-center",
                     isCashInsufficient
-                      ? "bg-red-500/10 border-red-500/30 text-red-400"
-                      : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      ? "bg-zinc-900 border-zinc-800 text-zinc-300"
+                      : "bg-zinc-900 border-zinc-800 text-emerald-400"
                   )}>
                     <div>
                       <span className="text-xs font-bold uppercase tracking-wider block">
@@ -686,7 +681,7 @@ function POSCheckoutContent() {
                 </div>
               ) : (
                 /* Card Mode Information */
-                <div className="p-4 rounded-xl border border-white/10 bg-zinc-900/40 text-xs text-zinc-400 space-y-1.5">
+                <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900 text-xs text-zinc-400 space-y-1.5">
                   <span className="font-bold text-zinc-200 block flex items-center gap-1.5">
                     <CreditCard className="w-4 h-4 text-emerald-400" /> Card Settlement Selected
                   </span>
@@ -696,8 +691,8 @@ function POSCheckoutContent() {
 
               {/* Processing Error Notice */}
               {processingError && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-400 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-300 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-zinc-400" />
                   <span>{processingError}</span>
                 </div>
               )}
@@ -709,7 +704,7 @@ function POSCheckoutContent() {
                   onClick={handleExecutePayment}
                   data-testid="record-payment-button"
                   disabled={isCheckingOut || cart.length === 0 || isCashInsufficient}
-                  className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm sm:text-base font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 disabled:bg-zinc-900 disabled:border-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed active:scale-95 border border-emerald-500/40"
+                  className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm sm:text-base font-black rounded-xl transition-all flex items-center justify-center gap-2 disabled:bg-zinc-900 disabled:border-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed active:scale-95 border border-emerald-500"
                 >
                   {isCheckingOut ? (
                     <>
@@ -740,7 +735,7 @@ export default function POSCheckoutPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     }>
       <POSCheckoutContent />

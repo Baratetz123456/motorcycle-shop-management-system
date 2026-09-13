@@ -119,60 +119,61 @@ export function mapLogToPage(resource: string, action: string): string {
 }
 
 export function formatFriendlyAction(action: string): { label: string; color: string } {
+  const badgeColor = "bg-zinc-800 text-zinc-300 border-zinc-700 font-bold";
   const act = (action || "").toUpperCase();
   switch (act) {
     case "CREATE_USER":
-      return { label: "User Created", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" };
+      return { label: "User Created", color: badgeColor };
     case "UPDATE_USER":
-      return { label: "Profile Updated", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+      return { label: "Profile Updated", color: badgeColor };
     case "DELETE_USER":
-      return { label: "User Removed", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+      return { label: "User Removed", color: badgeColor };
     case "CHANGE_ROLE":
-      return { label: "Role Changed", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" };
+      return { label: "Role Changed", color: badgeColor };
     case "PASSWORD_CHANGED":
-      return { label: "Password Updated", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30" };
+      return { label: "Password Updated", color: badgeColor };
     case "STOCK_IN":
     case "CREATE_ITEM":
-      return { label: "Stock Added", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" };
+      return { label: "Stock Added", color: badgeColor };
     case "STOCK_OUT":
-      return { label: "Stock Deducted", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+      return { label: "Stock Deducted", color: badgeColor };
     case "ITEM_UPDATED":
-      return { label: "Stock Item Updated", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+      return { label: "Stock Item Updated", color: badgeColor };
     case "ITEM_DELETED":
-      return { label: "Stock Item Removed", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+      return { label: "Stock Item Removed", color: badgeColor };
     case "CREATE_TRANSACTION":
     case "POS_CHECKOUT":
-      return { label: "Sale Completed", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" };
+      return { label: "Sale Completed", color: badgeColor };
     case "VOID_TRANSACTION":
-      return { label: "Sale Voided", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+      return { label: "Sale Voided", color: badgeColor };
     case "REPAIR_ORDER_CREATED":
-      return { label: "Job Created", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+      return { label: "Job Created", color: badgeColor };
     case "REPAIR_STATUS_UPDATED":
-      return { label: "Job Status Updated", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+      return { label: "Job Status Updated", color: badgeColor };
     case "DIAGNOSIS_UPDATED":
-      return { label: "Diagnosis Updated", color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/30" };
+      return { label: "Diagnosis Updated", color: badgeColor };
     case "REPAIR_ORDER_DELETED":
-      return { label: "Job Order Deleted", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+      return { label: "Job Order Deleted", color: badgeColor };
     case "MOTORCYCLE_CREATED":
-      return { label: "Motorcycle Added", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" };
+      return { label: "Motorcycle Added", color: badgeColor };
     case "MOTORCYCLE_UPDATED":
-      return { label: "Motorcycle Updated", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+      return { label: "Motorcycle Updated", color: badgeColor };
     case "MOTORCYCLE_DELETED":
-      return { label: "Motorcycle Removed", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+      return { label: "Motorcycle Removed", color: badgeColor };
     case "PAYROLL_DISBURSED":
-      return { label: "Payroll Disbursed", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" };
+      return { label: "Payroll Disbursed", color: badgeColor };
     case "ADD_SHOP_EXPENSE":
-      return { label: "Shop Expense Added", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+      return { label: "Shop Expense Added", color: badgeColor };
     case "SETTINGS_UPDATED":
-      return { label: "Settings Saved", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30" };
+      return { label: "Settings Saved", color: badgeColor };
     case "SETTINGS_RESTORED_DEFAULTS":
-      return { label: "Settings Reset", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+      return { label: "Settings Reset", color: badgeColor };
     case "ROLE_PERMISSIONS_UPDATED":
-      return { label: "Permissions Saved", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" };
+      return { label: "Permissions Saved", color: badgeColor };
     case "ROLE_PERMISSIONS_RESET":
-      return { label: "Permissions Reset", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+      return { label: "Permissions Reset", color: badgeColor };
     default:
-      return { label: action.replace(/_/g, " "), color: "bg-zinc-800 text-zinc-300 border-zinc-700" };
+      return { label: action.replace(/_/g, " "), color: badgeColor };
   }
 }
 
@@ -526,13 +527,7 @@ export default function SystemLogsPage() {
   };
 
   const getRoleBadgeStyle = (r: string | null) => {
-    switch ((r || "").toLowerCase()) {
-      case "admin": return "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
-      case "manager": return "bg-purple-500/10 text-purple-400 border-purple-500/30";
-      case "cashier": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-      case "mechanic": return "bg-amber-500/10 text-amber-400 border-amber-500/30";
-      default: return "bg-zinc-800 text-zinc-300 border-zinc-700";
-    }
+    return "bg-zinc-800 text-zinc-300 border-zinc-700 font-bold";
   };
 
   return (
@@ -542,17 +537,17 @@ export default function SystemLogsPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-zinc-100 transition-colors bg-zinc-900 border border-white/10 px-3.5 py-2 rounded-xl hover:bg-zinc-800 shadow-sm shrink-0"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-zinc-100 transition-colors bg-zinc-900 border border-zinc-800 px-3.5 py-2 rounded-xl hover:bg-zinc-800 shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Settings</span>
           </Link>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
-              <Activity className="w-7 h-7 text-lime-600" />
+            <h1 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-2.5">
+              <Activity className="w-7 h-7 text-emerald-500" />
               Audit Log
             </h1>
-            <p className="text-slate-500 text-xs mt-0.5 hidden sm:block">
+            <p className="text-zinc-400 text-xs mt-0.5 hidden sm:block">
               Monitored activity records across showroom, stock catalog, workshop, payroll, and settings.
             </p>
           </div>
@@ -562,7 +557,7 @@ export default function SystemLogsPage() {
           <button
             onClick={handleExport}
             disabled={isExporting || filteredLogs.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl font-bold transition-all text-xs shadow-sm border border-emerald-500/30 disabled:bg-zinc-800 disabled:border-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl font-bold transition-colors text-xs border border-emerald-500 disabled:bg-zinc-800 disabled:border-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed"
           >
             {isExporting ? (
               <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -577,33 +572,33 @@ export default function SystemLogsPage() {
       </div>
 
       {/* Filter & Control Bar */}
-      <div className="hidden md:block p-3.5 bg-slate-50 border border-slate-200 rounded-2xl mb-4 shrink-0 space-y-3">
+      <div className="hidden md:block p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-2xl mb-4 shrink-0 space-y-3">
         {/* Row 1: Search + Module Pills */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative w-full lg:w-72 shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               type="text"
               placeholder="Search staff, action, changes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl py-1.5 pl-9 pr-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-lime-500"
+              className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-1.5 pl-9 pr-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
             />
           </div>
 
           {/* 6 Monitored Module Filter Pills (Horizontal Scrollable Rail) */}
           <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
-            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs gap-1 items-center min-w-max">
+            <div className="inline-flex bg-zinc-950 p-1 rounded-xl border border-zinc-800 text-xs gap-1 items-center min-w-max">
               {PAGE_FILTERS.map((f) => (
                 <button
                   key={f.value}
                   onClick={() => setSelectedPage(f.value)}
                   className={clsx(
-                    "px-2.5 py-1 rounded-lg font-semibold transition-all text-xs flex items-center gap-1 whitespace-nowrap shrink-0",
+                    "px-2.5 py-1 rounded-lg font-semibold transition-colors text-xs flex items-center gap-1 whitespace-nowrap shrink-0",
                     selectedPage === f.value
-                      ? "bg-emerald-600 text-white font-bold shadow-sm"
-                      : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
+                      ? "bg-emerald-600 text-white font-bold"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-800"
                   )}
                 >
                   {f.label}
@@ -614,12 +609,12 @@ export default function SystemLogsPage() {
         </div>
 
         {/* Row 2: Date Range Filter + Role Filter + Record Counter */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-200 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-zinc-800 text-xs">
           {/* Date Range Filter Controls */}
           <div className="overflow-x-auto no-scrollbar overscroll-x-contain -mx-1 px-1 py-0.5">
-            <div className="inline-flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 min-w-max">
+            <div className="inline-flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-zinc-800 min-w-max">
               <div className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-lime-600 ml-1.5 mr-0.5 shrink-0" />
+                <Calendar className="w-3.5 h-3.5 text-zinc-400 ml-1.5 mr-0.5 shrink-0" />
                 {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
                   const labels = {
                     ALL: "All Time",
@@ -633,10 +628,10 @@ export default function SystemLogsPage() {
                       key={preset}
                       onClick={() => handleSelectPreset(preset)}
                       className={clsx(
-                        "px-2 py-0.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0",
+                        "px-2 py-0.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0",
                         isSelected
-                          ? "bg-lime-50 text-lime-800 border border-lime-300 font-bold shadow-sm"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-transparent"
+                          ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                          : "text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent"
                       )}
                     >
                       {labels[preset]}
@@ -645,7 +640,7 @@ export default function SystemLogsPage() {
                 })}
               </div>
 
-            <div className="h-3.5 w-px bg-white/10 hidden sm:block" />
+            <div className="h-3.5 w-px bg-zinc-800 hidden sm:block" />
 
             {/* Custom Date Inputs */}
             <div className="flex items-center gap-1 text-xs text-zinc-400">
@@ -653,7 +648,7 @@ export default function SystemLogsPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-                className="bg-zinc-900 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-0.5 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500 [color-scheme:dark]"
                 title="Filter from date"
               />
               <span className="text-zinc-500 text-[11px]">to</span>
@@ -661,7 +656,7 @@ export default function SystemLogsPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-                className="bg-zinc-900 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-0.5 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500 [color-scheme:dark]"
                 title="Filter to date"
               />
             </div>
@@ -669,7 +664,7 @@ export default function SystemLogsPage() {
             {(startDate || endDate || datePreset !== "ALL") && (
               <button
                 onClick={handleClearDateFilter}
-                className="p-1 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-800/60 transition-colors ml-0.5"
+                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors ml-0.5"
                 title="Reset date filter"
               >
                 <X className="w-3.5 h-3.5" />
@@ -685,7 +680,7 @@ export default function SystemLogsPage() {
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="bg-zinc-950 border border-white/10 rounded-xl py-1 px-2.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
+                className="bg-zinc-950 border border-zinc-700 rounded-xl py-1 px-2.5 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
                 <option value="ALL">All Roles</option>
                 <option value="admin">Admin</option>
@@ -696,17 +691,17 @@ export default function SystemLogsPage() {
             </div>
 
             <div className="text-zinc-400 font-mono text-xs hidden sm:block">
-              Total: <span className="text-cyan-400 font-bold">{filteredLogs.length}</span> events
+              Total: <span className="text-white font-bold">{filteredLogs.length}</span> events
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-zinc-900/40 border-0 md:border md:border-white/10 rounded-none md:rounded-2xl flex flex-col md:backdrop-blur-xl shadow-none md:shadow-2xl">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-zinc-900/40 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col">
         <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
           {/* Mobile View: Borderless Edge-to-Edge Event Rows */}
-          <div className="block md:hidden px-1 divide-y divide-white/5 pb-24">
+          <div className="block md:hidden px-1 divide-y divide-zinc-800/60 pb-24">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, idx) => (
                 <div key={idx} className="py-3.5 px-2 space-y-2">
@@ -753,7 +748,7 @@ export default function SystemLogsPage() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-zinc-900 border border-white/5 text-zinc-200">
+                      <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-zinc-900 border border-zinc-700 text-zinc-200">
                         {pageName}
                       </span>
                       <span className={clsx("px-2 py-0.5 rounded-lg text-[11px] font-bold border inline-block", actionInfo.color)}>
@@ -766,7 +761,7 @@ export default function SystemLogsPage() {
                     </div>
 
                     {isExpanded && log.details && (
-                      <div className="mt-2 p-3 rounded-xl bg-zinc-950/90 border border-white/10 font-mono text-[11px] text-cyan-300 overflow-x-auto space-y-1 shadow-inner">
+                      <div className="mt-2 p-3 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-[11px] text-zinc-300 overflow-x-auto space-y-1">
                         <div className="text-[10px] uppercase text-zinc-500 font-bold flex items-center gap-1 mb-1">
                           <Code2 className="w-3 h-3" /> Technical Event Payload
                         </div>
@@ -776,7 +771,7 @@ export default function SystemLogsPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-end text-[10px] text-cyan-400 font-semibold pt-1">
+                    <div className="flex items-center justify-end text-[10px] text-zinc-400 font-semibold pt-1">
                       <span>{isExpanded ? "Collapse Payload" : "Tap for Technical Payload"}</span>
                     </div>
                   </div>
@@ -787,7 +782,7 @@ export default function SystemLogsPage() {
 
           {/* Desktop View: Full Data Table */}
           <table className="hidden md:table w-full text-left text-sm text-zinc-300">
-            <thead className="bg-zinc-950/90 border-b border-white/10 text-zinc-400 font-semibold text-xs uppercase tracking-wider sticky top-0 z-10 backdrop-blur-md">
+            <thead className="bg-zinc-950 border-b border-zinc-800 text-zinc-400 font-semibold text-xs uppercase tracking-wider sticky top-0 z-10">
               <tr>
                 <th className="py-3 px-5">Staff User</th>
                 <th className="py-3 px-4">Page / Module</th>
@@ -796,7 +791,7 @@ export default function SystemLogsPage() {
                 <th className="py-3 px-5 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 font-sans">
+            <tbody className="divide-y divide-zinc-800/60 font-sans">
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, idx) => (
                   <tr key={idx} className="hover:bg-white/[0.01]">
@@ -858,7 +853,7 @@ export default function SystemLogsPage() {
 
                       {/* Page / Section */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-zinc-950 border border-white/5 text-zinc-200">
+                        <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-zinc-950 border border-zinc-700 text-zinc-200">
                           {pageName}
                         </span>
                       </td>
@@ -876,7 +871,7 @@ export default function SystemLogsPage() {
                           {changesText}
                     </div>
                     {isExpanded && log.details && (
-                      <div className="mt-2.5 p-3 rounded-xl bg-zinc-950/90 border border-white/10 font-mono text-[11px] text-cyan-300 overflow-x-auto space-y-1 shadow-inner">
+                      <div className="mt-2.5 p-3 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-[11px] text-zinc-300 overflow-x-auto space-y-1">
                         <div className="text-[10px] uppercase text-zinc-500 font-bold flex items-center gap-1 mb-1">
                           <Code2 className="w-3 h-3" /> Technical Event Payload
                         </div>
@@ -905,18 +900,18 @@ export default function SystemLogsPage() {
     </div>
 
     {/* Pinned Bottom Pagination Footer */}
-    <div className="p-3.5 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 shrink-0">
+    <div className="p-3.5 border-t border-zinc-800 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
       <div className="text-center sm:text-left">
-        Showing <span className="font-semibold text-slate-900">{paginatedLogs.length}</span> of{" "}
-        <span className="font-semibold text-slate-900">{filteredLogs.length}</span> events (Page{" "}
-        <span className="font-semibold text-slate-900">{page}</span> of{" "}
-        <span className="font-semibold text-slate-900">{totalPages}</span>)
+        Showing <span className="font-bold text-white">{paginatedLogs.length}</span> of{" "}
+        <span className="font-bold text-white">{filteredLogs.length}</span> events (Page{" "}
+        <span className="font-bold text-white">{page}</span> of{" "}
+        <span className="font-bold text-white">{totalPages}</span>)
       </div>
       <div className="flex items-center gap-2">
         <button
           onClick={() => handlePageChange(page - 1)}
           disabled={page === 1}
-          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
           title="Previous Page"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -924,7 +919,7 @@ export default function SystemLogsPage() {
         <button
           onClick={() => handlePageChange(page + 1)}
           disabled={page === totalPages}
-          className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
           title="Next Page"
         >
           <ChevronRight className="w-4 h-4" />
@@ -957,7 +952,7 @@ export default function SystemLogsPage() {
               placeholder="Search staff, action, changes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
             />
           </div>
         </div>
@@ -972,10 +967,10 @@ export default function SystemLogsPage() {
                 type="button"
                 onClick={() => setSelectedPage(f.value)}
                 className={clsx(
-                  "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                  "px-3 py-2 rounded-xl text-xs font-bold text-center transition-colors border",
                   selectedPage === f.value
-                    ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
-                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                    ? "bg-emerald-600 text-white border-emerald-500"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                 )}
               >
                 {f.label}
@@ -994,10 +989,10 @@ export default function SystemLogsPage() {
                 type="button"
                 onClick={() => setRoleFilter(r)}
                 className={clsx(
-                  "px-2.5 py-2 rounded-xl text-xs font-semibold capitalize text-center transition-all",
+                  "px-2.5 py-2 rounded-xl text-xs font-bold capitalize text-center transition-colors border",
                   roleFilter === r
-                    ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
-                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                    ? "bg-emerald-600 text-white border-emerald-500"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                 )}
               >
                 {r === "ALL" ? "All Roles" : r}
@@ -1018,10 +1013,10 @@ export default function SystemLogsPage() {
                   type="button"
                   onClick={() => handleSelectPreset(p)}
                   className={clsx(
-                    "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                    "px-3 py-2 rounded-xl text-xs font-bold text-center transition-colors border",
                     datePreset === p
-                      ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
-                      : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                      ? "bg-emerald-600 text-white border-emerald-500"
+                      : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                   )}
                 >
                   {labels[p]}
@@ -1032,21 +1027,21 @@ export default function SystemLogsPage() {
 
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div>
-              <label className="text-[11px] text-zinc-500 mb-1 block">From</label>
+              <label className="text-[11px] text-zinc-400 mb-1 block">From</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500 [color-scheme:dark]"
               />
             </div>
             <div>
-              <label className="text-[11px] text-zinc-500 mb-1 block">To</label>
+              <label className="text-[11px] text-zinc-400 mb-1 block">To</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 [color-scheme:dark]"
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500 [color-scheme:dark]"
               />
             </div>
           </div>

@@ -23,7 +23,7 @@ export function ReportsSkeleton() {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="p-5 bg-zinc-900/40 border border-white/5 rounded-2xl space-y-3 backdrop-blur-sm"
+            className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-3"
           >
             <div className="flex items-center justify-between">
               <Skeleton className="h-3.5 w-24 rounded" />
@@ -41,7 +41,7 @@ export function ReportsSkeleton() {
       {/* Dual Analytics Charts Wireframes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Trend Area Chart Skeleton */}
-        <div className="p-6 bg-zinc-900/40 border border-white/5 rounded-3xl space-y-4 backdrop-blur-sm">
+        <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <Skeleton className="h-5 w-44 rounded-lg" />
@@ -63,7 +63,7 @@ export function ReportsSkeleton() {
         </div>
 
         {/* Repairs Distribution Bar Chart Skeleton */}
-        <div className="p-6 bg-zinc-900/40 border border-white/5 rounded-3xl space-y-4 backdrop-blur-sm">
+        <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <Skeleton className="h-5 w-48 rounded-lg" />
@@ -86,7 +86,7 @@ export function ReportsSkeleton() {
       </div>
 
       {/* Recent Activity / Sales Table Skeleton */}
-      <div className="p-6 bg-zinc-900/40 border border-white/5 rounded-3xl space-y-4 backdrop-blur-sm">
+      <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-4">
         <div className="flex items-center justify-between pb-2">
           <Skeleton className="h-5 w-44 rounded-lg" />
           <Skeleton className="h-4 w-24 rounded" />

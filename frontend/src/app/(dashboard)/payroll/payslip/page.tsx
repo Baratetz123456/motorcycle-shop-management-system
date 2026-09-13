@@ -448,9 +448,9 @@ function PayslipContent() {
           <div className="w-full hidden sm:flex sm:flex-row sm:items-center justify-between gap-4 shrink-0 no-print max-w-4xl mx-auto">
             <button
               onClick={handleReturnToPayroll}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 transition-colors flex items-center gap-2 text-xs font-semibold w-fit cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 text-zinc-400" />
               <span>Back to Payroll</span>
             </button>
 
@@ -458,43 +458,43 @@ function PayslipContent() {
               {payslip.status === "PENDING" ? (
                 <button
                   onClick={() => setIsDisburseModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm border border-emerald-500/30 active:scale-95 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-2 border border-emerald-500 cursor-pointer"
                   title="Disburse Settlement Funds"
                 >
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="w-4 h-4 text-white" />
                   <span>Disburse Settlement</span>
                 </button>
               ) : (
-                <span className="px-3 py-2 rounded-xl bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 text-xs font-bold uppercase flex items-center gap-1.5 shadow-sm">
-                  <CheckCircle className="w-3.5 h-3.5" />
+                <span className="px-3 py-2 rounded-xl bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-bold uppercase flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-zinc-400" />
                   <span>Settlement Disbursed</span>
                 </span>
               )}
 
               <button
                 onClick={handleCopyVoucher}
-                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-sm cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 transition-colors flex items-center gap-2 text-xs font-semibold cursor-pointer"
                 title="Copy Voucher Number"
               >
-                {copiedVoucher ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
+                {copiedVoucher ? <Check className="w-4 h-4 text-zinc-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
                 <span>{copiedVoucher ? "Copied" : "Copy Voucher #"}</span>
               </button>
 
               <button
                 onClick={handleDownloadCSV}
-                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 transition-colors flex items-center gap-2 text-xs font-semibold cursor-pointer"
                 title="Download structured payslip as CSV"
               >
-                <Download className="w-4 h-4 text-emerald-400" />
+                <Download className="w-4 h-4 text-zinc-400" />
                 <span>Download CSV</span>
               </button>
 
               <button
                 onClick={handlePrintPayslip}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm border border-emerald-500/30 active:scale-95 cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-2 border border-emerald-500 cursor-pointer"
                 title="Print or Save Official Payslip as PDF"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-4 h-4 text-white" />
                 <span>Print Official Payslip</span>
               </button>
             </div>
@@ -503,7 +503,7 @@ function PayslipContent() {
           {/* DEDICATED IN-APP DOCUMENT CANVAS (Dark Mode In-App, Pure White in Print) */}
           <div 
             data-payslip-canvas="true" 
-            className="printable-payslip w-full max-w-4xl mx-auto bg-zinc-900 text-zinc-100 border border-zinc-800 shadow-2xl rounded-xl p-6 sm:p-8 space-y-5 relative"
+            className="printable-payslip w-full max-w-4xl mx-auto bg-zinc-900 text-zinc-100 border border-zinc-800 rounded-xl p-6 sm:p-8 space-y-5 relative"
           >
             {/* 1. Letterhead & Brand Header */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-zinc-800">

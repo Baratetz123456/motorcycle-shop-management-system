@@ -42,7 +42,7 @@ export function FloatingDocActionsButton({
         bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)",
       }}
       className={clsx(
-        "fixed right-4 z-40 sm:hidden flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-full shadow-2xl shadow-emerald-950/60 active:scale-95 transition-all text-xs border border-emerald-400/30 ring-2 ring-emerald-500/20 backdrop-blur-md no-print cursor-pointer",
+        "fixed right-4 z-40 sm:hidden flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-full active:scale-95 transition-all text-xs border border-emerald-500 no-print cursor-pointer",
         className
       )}
       aria-label="Open document actions sheet"
@@ -126,7 +126,7 @@ export function MobileDocActionsSheet({
     <div className="fixed inset-0 z-50 sm:hidden flex flex-col justify-end no-print">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-200"
+        className="fixed inset-0 bg-black/95 transition-opacity duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -136,7 +136,7 @@ export function MobileDocActionsSheet({
         style={{
           paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))",
         }}
-        className="relative z-10 w-full bg-zinc-900 border-t border-zinc-800 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-250 font-sans text-zinc-100"
+        className="relative z-10 w-full bg-zinc-900 border-t border-zinc-700 rounded-t-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-200 font-sans text-zinc-100"
       >
         {/* Grab Handle */}
         <div className="w-full flex justify-center pt-3 pb-1">
@@ -144,7 +144,7 @@ export function MobileDocActionsSheet({
         </div>
 
         {/* Sheet Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800/80">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800">
           <div>
             <h2 className="text-sm font-bold text-white tracking-tight">{title}</h2>
             {subtitle && (
@@ -171,7 +171,7 @@ export function MobileDocActionsSheet({
                 onClose();
                 onDisburse();
               }}
-              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/50 transition-all border border-emerald-500/30 active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2.5 transition-all border border-emerald-500 active:scale-[0.98] cursor-pointer"
             >
               <CheckCircle className="w-4 h-4 text-white" />
               <span>{disburseLabel}</span>
@@ -186,9 +186,9 @@ export function MobileDocActionsSheet({
                 onClose();
                 onPrint();
               }}
-              className="w-full py-3 px-4 rounded-xl bg-zinc-800/90 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-200 border border-zinc-700/60 font-semibold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-850 text-white border border-zinc-700 font-bold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
             >
-              <Printer className="w-4 h-4 text-emerald-400" />
+              <Printer className="w-4 h-4 text-zinc-300" />
               <span>{printLabel}</span>
             </button>
           )}
@@ -201,7 +201,7 @@ export function MobileDocActionsSheet({
                 onClose();
                 onDownloadCSV();
               }}
-              className="w-full py-3 px-4 rounded-xl bg-zinc-800/90 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-200 border border-zinc-700/60 font-semibold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-850 text-white border border-zinc-700 font-bold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
             >
               <Download className="w-4 h-4 text-zinc-300" />
               <span>{csvLabel}</span>
@@ -213,12 +213,12 @@ export function MobileDocActionsSheet({
             <button
               type="button"
               onClick={onCopy}
-              className="w-full py-3 px-4 rounded-xl bg-zinc-800/90 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-200 border border-zinc-700/60 font-semibold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-850 text-white border border-zinc-700 font-bold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
             >
               {isCopied ? (
                 <>
                   <Check className="w-4 h-4 text-emerald-400" />
-                  <span className="text-emerald-400 font-bold">Copied to Clipboard!</span>
+                  <span className="text-white font-bold">Copied to Clipboard!</span>
                 </>
               ) : (
                 <>
@@ -237,16 +237,16 @@ export function MobileDocActionsSheet({
                 onClose();
                 onBack();
               }}
-              className="w-full py-3 px-4 rounded-xl bg-zinc-950 hover:bg-zinc-800 active:bg-zinc-800 text-zinc-300 border border-zinc-800 font-semibold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800 text-zinc-300 border border-zinc-800 font-bold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-zinc-400" />
               <span>{backLabel}</span>
             </button>
           )}
 
-          {/* Void Danger Action (If provided) */}
+          {/* Void Action (If provided) */}
           {onVoid && (
-            <div className="pt-2 border-t border-zinc-800/60">
+            <div className="pt-2 border-t border-zinc-800">
               {!isVoidDisabled ? (
                 <button
                   type="button"
@@ -254,9 +254,9 @@ export function MobileDocActionsSheet({
                     onClose();
                     onVoid();
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 active:bg-rose-900 text-rose-300 border border-rose-800/50 font-bold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-850 text-white border border-zinc-700 font-bold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
                 >
-                  <Ban className="w-4 h-4 text-rose-400" />
+                  <Ban className="w-4 h-4 text-zinc-400" />
                   <span>{voidLabel}</span>
                 </button>
               ) : (

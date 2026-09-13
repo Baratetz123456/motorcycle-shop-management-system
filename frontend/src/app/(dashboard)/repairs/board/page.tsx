@@ -926,10 +926,10 @@ export default function RepairBoardPage() {
   };
 
   const columns: { title: string; status: RepairStatus; color: string; bg: string }[] = [
-    { title: settings.boardPendingTitle || "New", status: "PENDING", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-    { title: settings.boardOngoingTitle || "In Progress", status: "ONGOING", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
-    { title: settings.boardCompletedTitle || "Completed", status: "COMPLETED", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-    { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+    { title: settings.boardPendingTitle || "New", status: "PENDING", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
+    { title: settings.boardOngoingTitle || "In Progress", status: "ONGOING", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
+    { title: settings.boardCompletedTitle || "Completed", status: "COMPLETED", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
+    { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
   ];
 
   const getStageCount = (status: RepairStatus) => {
@@ -1000,7 +1000,7 @@ export default function RepairBoardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Wrench className="w-8 h-8 text-cyan-400" />
+            <Wrench className="w-8 h-8 text-zinc-400" />
             Workshop Job Cards
           </h1>
           <p className="text-zinc-400 mt-1 text-sm">
@@ -1011,7 +1011,7 @@ export default function RepairBoardPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm transition-colors flex items-center gap-2 border border-emerald-500/30 shadow-sm"
+            className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors flex items-center gap-2 border border-emerald-500"
           >
             <Plus className="w-5 h-5" />
             <span>New Job Card</span>
@@ -1021,18 +1021,9 @@ export default function RepairBoardPage() {
 
       {/* Alert Notification Toast / Banner */}
       {alertNotification && (
-        <div
-          className={clsx(
-            "mb-4 px-4 py-3 rounded-2xl border flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2 duration-200 shadow-xl shrink-0",
-            alertNotification.type === "warning" && "bg-amber-500/10 border-amber-500/30 text-amber-300",
-            alertNotification.type === "error" && "bg-red-500/10 border-red-500/30 text-red-300",
-            alertNotification.type === "success" && "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-          )}
-        >
+        <div className="mb-4 px-4 py-3 rounded-xl border border-zinc-700 bg-zinc-900 text-zinc-200 flex items-center justify-between gap-3 text-xs shrink-0">
           <div className="flex items-center gap-2.5">
-            {alertNotification.type === "warning" && <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />}
-            {alertNotification.type === "error" && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
-            {alertNotification.type === "success" && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
+            <AlertCircle className="w-4 h-4 text-zinc-400 shrink-0" />
             <div>
               <strong className="font-bold">{alertNotification.title}: </strong>
               <span>{alertNotification.message}</span>
@@ -1040,7 +1031,7 @@ export default function RepairBoardPage() {
           </div>
           <button
             onClick={() => setAlertNotification(null)}
-            className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors"
+            className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1149,16 +1140,16 @@ export default function RepairBoardPage() {
                   {/* Header: JO# + Payment Status Tag + 3-Dots Action Menu */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-lime-800 dark:text-lime-400 bg-lime-50 dark:bg-lime-500/10 px-2.5 py-1 rounded-lg border border-lime-300 dark:border-lime-500/30">
+                      <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
                         {job.jo_number}
                       </span>
                       {isPaid ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1 uppercase tracking-wider">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1 uppercase tracking-wider">
+                          <CheckCircle className="w-3.5 h-3.5 text-zinc-400" />
                           PAID
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 uppercase tracking-wider">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 uppercase tracking-wider">
                           Unpaid Cart
                         </span>
                       )}
@@ -1172,7 +1163,7 @@ export default function RepairBoardPage() {
                           e.stopPropagation();
                           setMenuOpenJobId(isMenuOpen ? null : job.id);
                         }}
-                        className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        className="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                         aria-label="More options"
                       >
                         <MoreVertical className="w-4 h-4" />
@@ -1181,7 +1172,7 @@ export default function RepairBoardPage() {
                       {isMenuOpen && (
                         <div
                           onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-8 z-30 w-52 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-2xl p-1.5 shadow-2xl space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
+                          className="absolute right-0 top-8 z-30 w-52 bg-zinc-900 border border-zinc-700 rounded-xl p-1.5 space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
                         >
                           <button
                             type="button"
@@ -1189,9 +1180,9 @@ export default function RepairBoardPage() {
                               setMenuOpenJobId(null);
                               router.push(`/repairs/jobs/${job.id}`);
                             }}
-                            className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 font-medium"
+                            className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
                           >
-                            <FileText className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
+                            <FileText className="w-3.5 h-3.5 text-zinc-400" />
                             <span>View Job Details</span>
                           </button>
                           <button
@@ -1200,9 +1191,9 @@ export default function RepairBoardPage() {
                               setMenuOpenJobId(null);
                               handleOpenEditModal(job);
                             }}
-                            className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 font-medium"
+                            className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
                           >
-                            <Edit3 className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                            <Edit3 className="w-3.5 h-3.5 text-zinc-400" />
                             <span>Edit Diagnosis</span>
                           </button>
                           <button
@@ -1211,9 +1202,9 @@ export default function RepairBoardPage() {
                               setMenuOpenJobId(null);
                               setStatusPickerJob(job);
                             }}
-                            className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-2 font-medium"
+                            className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
                           >
-                            <Activity className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
+                            <Activity className="w-3.5 h-3.5 text-zinc-400" />
                             <span>Move to Stage...</span>
                           </button>
                           {canDelete && (
@@ -1223,9 +1214,9 @@ export default function RepairBoardPage() {
                                 setMenuOpenJobId(null);
                                 setDeleteConfirmJob(job);
                               }}
-                              className="w-full px-3 py-2 rounded-xl text-left text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 font-medium"
+                              className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
                             >
-                              <Trash2 className="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
+                              <Trash2 className="w-3.5 h-3.5 text-zinc-400" />
                               <span>Delete Job Card</span>
                             </button>
                           )}
@@ -1236,8 +1227,8 @@ export default function RepairBoardPage() {
 
                   {/* Customer & Motorcycle */}
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
-                      <User className="w-4 h-4 text-lime-600 dark:text-lime-400 shrink-0" />
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-zinc-400 shrink-0" />
                       {job.customer}
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
@@ -1259,19 +1250,19 @@ export default function RepairBoardPage() {
                   )}
 
                   {/* Assigned Mechanic & Quick Meta */}
-                  <div className="flex justify-between items-center text-xs pt-1 border-t border-white/5 text-zinc-400">
-                    <span className="flex items-center gap-1.5 font-semibold text-purple-300">
-                      <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="flex justify-between items-center text-xs pt-1 border-t border-zinc-800 text-zinc-400">
+                    <span className="flex items-center gap-1.5 font-semibold text-zinc-300">
+                      <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
                       {job.mechanic}
                     </span>
                     <span className="text-[11px] text-zinc-500 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                      <Clock className="w-3 h-3 text-zinc-500" />
                       {new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                     </span>
                   </div>
 
                   {/* Action Bar: Forward & Backward Movement */}
-                  <div className="pt-2 border-t border-white/5 flex items-center gap-2">
+                  <div className="pt-2 border-t border-zinc-800 flex items-center gap-2">
                     {/* Stage 1: PENDING */}
                     {job.status === "PENDING" && (
                       <button
@@ -1285,9 +1276,9 @@ export default function RepairBoardPage() {
                             direction: "forward"
                           });
                         }}
-                        className="flex-1 py-2.5 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                        className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                       >
-                        <Play className="w-3.5 h-3.5 fill-cyan-400 text-cyan-400" />
+                        <Play className="w-3.5 h-3.5 text-white" />
                         <span>Start Repair</span>
                       </button>
                     )}
@@ -1306,10 +1297,10 @@ export default function RepairBoardPage() {
                               direction: "backward"
                             });
                           }}
-                          className="py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+                          className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
                           title="Revert back to Pending stage"
                         >
-                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
                           <span>Revert</span>
                         </button>
                         <button
@@ -1323,9 +1314,9 @@ export default function RepairBoardPage() {
                               direction: "forward"
                             });
                           }}
-                          className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                         >
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          <CheckCircle className="w-3.5 h-3.5 text-white" />
                           <span>Complete Repair</span>
                         </button>
                       </>
@@ -1345,10 +1336,10 @@ export default function RepairBoardPage() {
                               direction: "backward"
                             });
                           }}
-                          className="py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+                          className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
                           title="Revert back to Ongoing stage"
                         >
-                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
                           <span>Revert</span>
                         </button>
                         {isPaid ? (
@@ -1363,9 +1354,9 @@ export default function RepairBoardPage() {
                                 direction: "forward"
                               });
                             }}
-                            className="flex-1 py-2.5 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                            className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                            <ShieldCheck className="w-3.5 h-3.5 text-white" />
                             <span>Release & Handover</span>
                           </button>
                         ) : (
@@ -1375,9 +1366,9 @@ export default function RepairBoardPage() {
                               e.stopPropagation();
                               router.push(`/pos/checkout?job_id=${job.id}&jo_number=${encodeURIComponent(job.jo_number)}`);
                             }}
-                            className="flex-1 py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                            className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+                            <DollarSign className="w-3.5 h-3.5 text-white" />
                             <span>Bill at POS</span>
                           </button>
                         )}
@@ -1398,10 +1389,10 @@ export default function RepairBoardPage() {
                               direction: "backward"
                             });
                           }}
-                          className="py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-colors active:scale-[0.98]"
+                          className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
                           title="Revert back to Completed stage"
                         >
-                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
                           <span>Revert</span>
                         </button>
                         <button
@@ -1410,7 +1401,7 @@ export default function RepairBoardPage() {
                             e.stopPropagation();
                             router.push(`/repairs/jobs/${job.id}`);
                           }}
-                          className="flex-1 py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 border border-white/10 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                          className="flex-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                         >
                           <FileText className="w-3.5 h-3.5 text-zinc-400" />
                           <span>View Details</span>
@@ -1424,7 +1415,7 @@ export default function RepairBoardPage() {
                         e.stopPropagation();
                         router.push(`/repairs/jobs/${job.id}`);
                       }}
-                      className="py-2.5 px-3 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/5 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-semibold flex items-center gap-1 transition-colors"
                     >
                       <span>Details</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -1476,23 +1467,23 @@ export default function RepairBoardPage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
               className={clsx(
-                "border rounded-3xl p-4 sm:p-5 flex flex-col backdrop-blur-xl overflow-visible md:overflow-hidden shadow-2xl transition-colors duration-150 md:min-h-0",
+                "border rounded-2xl p-4 sm:p-5 flex flex-col overflow-visible md:overflow-hidden transition-colors duration-150 md:min-h-0",
                 isOver && isUnpaidAndTargetReleased
-                  ? "bg-red-950/20 border-red-500/60 ring-2 ring-red-500/40"
+                  ? "bg-zinc-800 border-zinc-600"
                   : isOver
-                  ? "bg-cyan-950/20 border-cyan-500/60 ring-2 ring-cyan-500/30"
-                  : "bg-zinc-900/40 border-white/10"
+                  ? "bg-zinc-800 border-zinc-500"
+                  : "bg-zinc-900 border-zinc-800"
               )}
             >
               {/* Column Header */}
-              <div className={clsx("p-3.5 rounded-2xl border mb-4 flex items-center justify-between shrink-0", col.bg)}>
+              <div className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950 mb-4 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className={clsx("font-bold text-sm uppercase tracking-wider", col.color)}>
+                  <span className="font-bold text-sm uppercase tracking-wider text-zinc-300">
                     {col.title}
                   </span>
                   {col.status === "RELEASED" && (
                     <span 
-                      className="text-[10px] text-zinc-400 font-normal bg-zinc-900/80 px-2 py-0.5 rounded-md border border-white/5" 
+                      className="text-[10px] text-zinc-400 font-normal bg-zinc-900 px-2 py-0.5 rounded-md border border-zinc-800" 
                       title="Retention period configured in Shop Settings"
                     >
                       {settings.boardRetentionDays === "all" ? "All Time" : `${settings.boardRetentionDays || 7}d`}
@@ -1501,11 +1492,11 @@ export default function RepairBoardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {isOver && isUnpaidAndTargetReleased && (
-                    <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider animate-pulse">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                       Unpaid
                     </span>
                   )}
-                  <span className="bg-zinc-950 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-zinc-300 border border-white/10">
+                  <span className="bg-zinc-900 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-800">
                     {colJobs.length}
                   </span>
                 </div>
@@ -1514,7 +1505,7 @@ export default function RepairBoardPage() {
               {/* Job Order Cards Column Body */}
               <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto space-y-4 pr-0 md:pr-1 touch-pan-y overscroll-contain scrollbar-compact">
                 {colJobs.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-white/5 rounded-2xl p-4">
+                  <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-zinc-800 rounded-xl p-4">
                     No job cards in this stage.
                   </div>
                 ) : (
@@ -1543,27 +1534,25 @@ export default function RepairBoardPage() {
                         style={{ touchAction: "manipulation" }}
                         title="Double-click or double-tap to open Job Card profile • Drag to move or drag to bottom to delete"
                         className={clsx(
-                          "bg-zinc-950/80 border rounded-2xl p-5 space-y-3.5 shadow-lg relative group transition-colors duration-150 hover:border-cyan-500/40 cursor-grab active:cursor-grabbing select-none",
-                          isPaid
-                            ? "border-emerald-500/30 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]"
-                            : "border-white/10",
-                          isBeingDragged && "opacity-30 border-cyan-400 border-dashed",
+                          "bg-zinc-900 border rounded-xl p-4 space-y-3 relative group transition-colors duration-150 hover:border-zinc-700 cursor-grab active:cursor-grabbing select-none",
+                          isPaid ? "border-zinc-700" : "border-zinc-800",
+                          isBeingDragged && "opacity-30 border-zinc-500 border-dashed",
                           draggedJobId && !isBeingDragged && "pointer-events-none"
                         )}
                       >
                         {/* JO Badge & Payment Status Tag */}
                         <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-xs text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-lg border border-cyan-500/30">
+                          <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
                             {job.jo_number}
                           </span>
 
                           {isPaid ? (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 uppercase tracking-wider">
-                              <CheckCircle className="w-3 text-emerald-400" />
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1 uppercase tracking-wider">
+                              <CheckCircle className="w-3 h-3 text-zinc-400" />
                               PAID
                             </span>
                           ) : (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 uppercase tracking-wider">
                               Unpaid Cart
                             </span>
                           )}
@@ -1572,7 +1561,7 @@ export default function RepairBoardPage() {
                         {/* Customer & Motorcycle Info */}
                         <div>
                           <h4 className="text-base font-bold text-white flex items-center gap-2">
-                            <User className="w-4 h-4 text-cyan-400 shrink-0" />
+                            <User className="w-4 h-4 text-zinc-400 shrink-0" />
                             {job.customer}
                           </h4>
                           <p className="text-xs text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
@@ -1583,9 +1572,9 @@ export default function RepairBoardPage() {
 
                         {/* Mechanic Diagnosis Notes */}
                         {job.mechanic_notes && (
-                          <div className="p-3 bg-zinc-900/80 rounded-xl border border-white/5 space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1">
-                              <FileText className="w-3 h-3" /> Diagnosis Notes:
+                          <div className="p-2.5 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
+                              <FileText className="w-3 h-3 text-zinc-400" /> Diagnosis Notes:
                             </span>
                             <p className="text-xs text-zinc-300 italic line-clamp-2">
                               "{job.mechanic_notes}"
@@ -1594,20 +1583,20 @@ export default function RepairBoardPage() {
                         )}
 
                         {/* Assigned Mechanic */}
-                        <div className="flex justify-between items-center text-xs pt-2 border-t border-white/5 text-zinc-400">
-                          <span className="flex items-center gap-1.5 font-semibold text-purple-300">
-                            <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                        <div className="flex justify-between items-center text-xs pt-2 border-t border-zinc-800 text-zinc-400">
+                          <span className="flex items-center gap-1.5 font-semibold text-zinc-300">
+                            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
                             {job.mechanic}
                           </span>
                         </div>
 
                         {/* Card Footer Bar: Double-Click Instruction & Drag Handle */}
-                        <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-2 select-none">
+                        <div className="pt-2.5 border-t border-zinc-800 flex items-center justify-between gap-2 select-none">
                           <div
-                            className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium group-hover:text-cyan-400/90 transition-colors pointer-events-none"
+                            className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-300 transition-colors pointer-events-none"
                             title="Double-click or double-tap this card to open its full profile"
                           >
-                            <MousePointerClick className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                            <MousePointerClick className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                             <span>Double-click to open</span>
                           </div>
 
@@ -1617,7 +1606,7 @@ export default function RepairBoardPage() {
                               e.stopPropagation();
                               handleCardTouchStart(e, job, true);
                             }}
-                            className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-900/90 px-2 py-1 rounded-lg border border-white/5 font-medium select-none cursor-grab active:cursor-grabbing hover:border-cyan-500/30 hover:text-cyan-300 transition-colors"
+                            className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-800 px-2 py-1 rounded-lg border border-zinc-700 font-medium select-none cursor-grab active:cursor-grabbing hover:text-white transition-colors"
                             title="Drag this card into another column to change status, or drag to bottom trash can to delete"
                           >
                             <GripVertical className="w-3 h-3 text-zinc-400" />
@@ -1674,20 +1663,20 @@ export default function RepairBoardPage() {
             executeTrashDrop(targetId);
           }}
           className={clsx(
-            "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 backdrop-blur-xl transition-all duration-200 cursor-pointer shadow-2xl min-w-[440px] max-w-lg",
+            "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 transition-colors cursor-pointer min-w-[440px] max-w-lg",
             isOverTrash
-              ? "bg-red-900/95 border-red-400 scale-105 shadow-[0_0_60px_rgba(239,68,68,0.8)] ring-4 ring-red-500/40"
-              : "bg-red-950/90 border-red-500/80 shadow-[0_0_40px_rgba(239,68,68,0.4)]"
+              ? "bg-zinc-800 border-zinc-500"
+              : "bg-zinc-900 border-zinc-700"
           )}
         >
-          <div className="p-3 rounded-xl bg-red-500/20 text-red-400 transition-transform pointer-events-none border border-red-500/30">
-            <Trash2 className={clsx("w-6 h-6", isOverTrash ? "scale-125" : "animate-pulse")} />
+          <div className="p-3 rounded-xl bg-zinc-800 text-zinc-300 border border-zinc-700 transition-transform pointer-events-none">
+            <Trash2 className={clsx("w-6 h-6", isOverTrash ? "scale-110" : "")} />
           </div>
           <div className="pointer-events-none text-left">
-            <p className="text-sm font-black text-white uppercase tracking-wider">
+            <p className="text-sm font-bold text-white uppercase tracking-wider">
               {isOverTrash ? "Release to Delete Job Card" : "Drop here to delete Job Card"}
             </p>
-            <p className="text-xs text-red-300 font-medium mt-0.5">
+            <p className="text-xs text-zinc-400 font-medium mt-0.5">
               Release card into this zone to remove from workshop
             </p>
           </div>
@@ -1702,13 +1691,13 @@ export default function RepairBoardPage() {
             transform: "translate3d(-9999px, -9999px, 0)",
             willChange: "transform",
           }}
-          className="fixed top-0 left-0 -ml-36 -mt-16 z-[100] pointer-events-none w-72 p-4 rounded-2xl bg-zinc-900/95 border-2 border-cyan-500 shadow-[0_20px_50px_rgba(6,182,212,0.4)] backdrop-blur-md opacity-95 transition-none select-none"
+          className="fixed top-0 left-0 -ml-36 -mt-16 z-[100] pointer-events-none w-72 p-4 rounded-xl bg-zinc-900 border-2 border-zinc-700 opacity-95 transition-none select-none"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="font-mono font-bold text-xs text-cyan-400 bg-cyan-950 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
+            <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800 px-2.5 py-0.5 rounded-lg border border-zinc-700">
               {touchDraggedJob.jo_number}
             </span>
-            <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
               Moving...
             </span>
           </div>
@@ -1892,7 +1881,7 @@ export default function RepairBoardPage() {
               <p className="text-zinc-300">
                 Are you sure you want to remove <strong className="text-white">{deleteConfirmJob.customer}</strong> ({deleteConfirmJob.jo_number}) from the repair board?
               </p>
-              <p className="text-xs text-amber-300 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-left">
+              <p className="text-xs text-zinc-300 bg-zinc-800 p-3 rounded-xl border border-zinc-700 text-left">
                 This action will release the active session and remove the customer from the POS active carts selection bar.
               </p>
             </div>
@@ -1936,14 +1925,14 @@ export default function RepairBoardPage() {
                     }
                   }}
                   className={clsx(
-                    "w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition-all",
+                    "w-full p-3.5 rounded-xl border text-left flex items-center justify-between transition-colors",
                     isCurrent
-                      ? "bg-zinc-800/40 border-white/5 opacity-50 cursor-not-allowed text-zinc-500"
-                      : "bg-zinc-900/90 border-white/10 hover:border-cyan-500/40 hover:bg-zinc-900 text-white active:scale-[0.99]"
+                      ? "bg-zinc-800/40 border-zinc-800 opacity-50 cursor-not-allowed text-zinc-500"
+                      : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-white"
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={clsx("w-2.5 h-2.5 rounded-full", col.color.replace("text-", "bg-"))} />
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-500" />
                     <span className="font-bold text-xs">{col.title}</span>
                   </div>
                   {isCurrent ? (
@@ -1978,14 +1967,14 @@ export default function RepairBoardPage() {
               <p className="text-zinc-300 text-sm">
                 Are you sure you want to move Job Order <strong className="text-white font-mono">{confirmMoveJob.job.jo_number}</strong> ({confirmMoveJob.job.customer})?
               </p>
-              <div className="p-3 bg-zinc-950/80 rounded-2xl border border-white/10 flex items-center justify-between text-xs">
+              <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-800 flex items-center justify-between text-xs">
                 <span className="text-zinc-400 font-medium">New Status:</span>
-                <span className="font-bold font-mono text-cyan-300 uppercase tracking-wider bg-cyan-950/80 px-2.5 py-1 rounded-lg border border-cyan-500/30">
+                <span className="font-bold font-mono text-zinc-300 uppercase tracking-wider bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
                   {confirmMoveJob.targetStatus}
                 </span>
               </div>
               {confirmMoveJob.direction === "backward" && (
-                <p className="text-[11px] text-amber-300/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+                <p className="text-[11px] text-zinc-300 bg-zinc-800 p-2.5 rounded-xl border border-zinc-700">
                   Reverting this job order will send it back to the previous workshop bench stage.
                 </p>
               )}

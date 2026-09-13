@@ -454,15 +454,9 @@ export default function SalesManagementPage() {
                       <span className="font-mono font-bold text-emerald-400 text-sm">
                         {tx.invoice_no}
                       </span>
-                      {isCompleted ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
-                          Completed
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-950/40 text-rose-400 border border-rose-800/40">
-                          Voided
-                        </span>
-                      )}
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-800 border border-zinc-700 text-zinc-300">
+                        {isCompleted ? "Completed" : "Voided"}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-zinc-400">
@@ -580,17 +574,14 @@ export default function SalesManagementPage() {
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                        {isCompleted ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            Completed
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-950/40 text-rose-400 border border-rose-800/40">
-                            <Ban className="w-3.5 h-3.5" />
-                            Voided
-                          </span>
-                        )}
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-800 text-zinc-300 border border-zinc-700">
+                          {isCompleted ? (
+                            <CheckCircle className="w-3.5 h-3.5 text-zinc-400" />
+                          ) : (
+                            <Ban className="w-3.5 h-3.5 text-zinc-400" />
+                          )}
+                          <span>{isCompleted ? "Completed" : "Voided"}</span>
+                        </span>
                       </td>
 
                       <td className="px-6 py-4 text-right">

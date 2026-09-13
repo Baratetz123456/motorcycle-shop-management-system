@@ -192,31 +192,31 @@ export function MobileBottomNav() {
 
   // More Drawer Modal portaled to document.body
   const moreDrawerContent = hasMoreTab && isMoreOpen && mounted ? (
-    <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
-      {/* Backdrop with Acrylic Blur */}
+    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-zinc-950/70 backdrop-blur-xs animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/95 transition-opacity duration-200"
         onClick={() => setIsMoreOpen(false)}
         aria-hidden="true"
       />
 
       {/* Slide-Up Sheet Container */}
-      <div className="relative z-10 bg-white dark:bg-zinc-900 rounded-t-3xl border-t border-slate-200 dark:border-zinc-800 p-5 shadow-2xl max-h-[85vh] flex flex-col space-y-4 animate-in slide-in-from-bottom duration-250 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+      <div className="relative z-10 bg-zinc-900 rounded-t-2xl border-t border-zinc-700 p-5 max-h-[85vh] flex flex-col space-y-4 animate-in slide-in-from-bottom duration-200 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
         
         {/* iOS Style Tactile Grab Handle */}
-        <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 mx-auto -mt-1 mb-1" />
+        <div className="w-12 h-1.5 rounded-full bg-zinc-700 mx-auto -mt-1 mb-1" />
 
         {/* Drawer Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
               <Grid className="w-4 h-4 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+              <h3 className="text-sm font-black text-zinc-100 tracking-tight">
                 All Shop Modules
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+              <p className="text-[11px] text-zinc-400">
                 Precision Workshop OS • Complete Toolset
               </p>
             </div>
@@ -225,7 +225,7 @@ export function MobileBottomNav() {
           <button
             type="button"
             onClick={() => setIsMoreOpen(false)}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-colors active:scale-95 cursor-pointer"
+            className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors active:scale-95 cursor-pointer"
             aria-label="Close navigation drawer"
           >
             <X className="w-4 h-4" />
@@ -251,18 +251,18 @@ export function MobileBottomNav() {
                     setIsMoreOpen(false);
                   }}
                   className={clsx(
-                    "flex items-center justify-between p-3 rounded-2xl border transition-all active:scale-[0.98] group",
+                    "flex items-center justify-between p-3 rounded-xl border transition-colors active:scale-[0.98] group",
                     isActive
-                      ? "bg-lime-50 dark:bg-lime-950/40 border-lime-500 text-lime-900 dark:text-lime-300 font-bold ring-1 ring-lime-500/30 shadow-xs"
-                      : "bg-slate-50/70 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800/80 text-slate-800 dark:text-zinc-200"
+                      ? "bg-zinc-800 border-zinc-700 text-white font-bold"
+                      : "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-200"
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={clsx(
                       "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
                       isActive 
-                        ? "bg-emerald-600 text-white font-black shadow-xs" 
-                        : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700"
+                        ? "bg-emerald-600 text-white font-black" 
+                        : "bg-zinc-800 text-zinc-300 border border-zinc-700"
                     )}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -343,10 +343,10 @@ export function MobileBottomNav() {
 
   return (
     <>
-      {/* Precision Acrylic Glassmorphic Dock */}
+      {/* Precision Dock (Flat Black, Zero Blur, Zero Shadow) */}
       <nav 
         aria-label="Mobile Bottom Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-2xl border-t border-slate-200/80 dark:border-white/10 px-3 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_30px_rgba(0,0,0,0.5)] select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-zinc-950 border-t border-zinc-800 px-3 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] select-none"
       >
         <div className="flex items-center justify-around max-w-md mx-auto w-full gap-1">
           {dockItems.map((item) => {
@@ -365,24 +365,24 @@ export function MobileBottomNav() {
                     e.preventDefault();
                   }
                 }}
-                className="flex-1 max-w-[84px] relative flex flex-col items-center justify-center py-1 px-1 rounded-2xl transition-all duration-200 group active:scale-95 cursor-pointer"
+                className="flex-1 max-w-[84px] relative flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 group active:scale-95 cursor-pointer"
               >
                 {/* Active Pill Container */}
                 <div className={clsx(
-                  "flex items-center justify-center transition-all duration-200",
+                  "flex items-center justify-center transition-colors duration-150",
                   isActive
-                    ? "w-12 h-8 rounded-xl bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/25 ring-1 ring-emerald-500/40"
-                    : "w-10 h-7 rounded-lg text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-100 group-hover:bg-slate-100 dark:group-hover:bg-zinc-900"
+                    ? "w-12 h-8 rounded-xl bg-emerald-600 text-white font-black"
+                    : "w-10 h-7 rounded-lg text-zinc-400 group-hover:text-white group-hover:bg-zinc-900"
                 )}>
-                  <Icon className={clsx("transition-transform duration-200", isActive ? "w-4 h-4 stroke-[2.5]" : "w-5 h-5")} />
+                  <Icon className={clsx("transition-transform duration-150", isActive ? "w-4 h-4 stroke-[2.5]" : "w-5 h-5")} />
                 </div>
 
                 {/* Micro-Label for Immediate Clarity */}
                 <span className={clsx(
-                  "text-[10px] tracking-tight mt-1 transition-all duration-150 leading-none truncate max-w-full font-medium",
+                  "text-[10px] tracking-tight mt-1 transition-colors duration-150 leading-none truncate max-w-full font-medium",
                   isActive
                     ? "font-black text-emerald-400"
-                    : "text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-200"
+                    : "text-zinc-400 group-hover:text-zinc-200"
                 )}>
                   {item.shortLabel}
                 </span>
@@ -397,24 +397,24 @@ export function MobileBottomNav() {
               onClick={() => setIsMoreOpen(true)}
               title="More navigation options"
               aria-label="More navigation options"
-              className="flex-1 max-w-[84px] relative flex flex-col items-center justify-center py-1 px-1 rounded-2xl transition-all duration-200 group active:scale-95 cursor-pointer"
+              className="flex-1 max-w-[84px] relative flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 group active:scale-95 cursor-pointer"
             >
               {/* Active Pill Container */}
               <div className={clsx(
-                "flex items-center justify-center transition-all duration-200",
+                "flex items-center justify-center transition-colors duration-150",
                 isMoreActive
-                  ? "w-12 h-8 rounded-xl bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/25 ring-1 ring-emerald-500/40"
-                  : "w-10 h-7 rounded-lg text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-100 group-hover:bg-slate-100 dark:group-hover:bg-zinc-900"
+                  ? "w-12 h-8 rounded-xl bg-emerald-600 text-white font-black"
+                  : "w-10 h-7 rounded-lg text-zinc-400 group-hover:text-white group-hover:bg-zinc-900"
               )}>
-                <Grid className={clsx("transition-transform duration-200", isMoreActive ? "w-4 h-4 stroke-[2.5]" : "w-5 h-5")} />
+                <Grid className={clsx("transition-transform duration-150", isMoreActive ? "w-4 h-4 stroke-[2.5]" : "w-5 h-5")} />
               </div>
 
               {/* Micro-Label */}
               <span className={clsx(
-                "text-[10px] tracking-tight mt-1 transition-all duration-150 leading-none truncate max-w-full font-medium",
+                "text-[10px] tracking-tight mt-1 transition-colors duration-150 leading-none truncate max-w-full font-medium",
                 isMoreActive
                   ? "font-black text-emerald-400"
-                  : "text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-200"
+                  : "text-zinc-400 group-hover:text-zinc-200"
               )}>
                 More
               </span>

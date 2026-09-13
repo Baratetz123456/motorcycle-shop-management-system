@@ -475,37 +475,37 @@ function SalesReceiptContent() {
         <div className="w-full hidden sm:flex sm:flex-row sm:items-center justify-between gap-4 shrink-0 no-print max-w-4xl mx-auto">
           <button
             onClick={() => router.push("/sales")}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 transition-colors flex items-center gap-2 text-xs font-semibold w-fit"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 text-zinc-400" />
             <span>Back to Invoices</span>
           </button>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleCopyInvoice}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-sm"
+              className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 transition-colors flex items-center gap-2 text-xs font-semibold"
               title="Copy Invoice Number"
             >
-              {copiedInvoice ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
+              {copiedInvoice ? <Check className="w-4 h-4 text-zinc-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
               <span>{copiedInvoice ? "Copied" : "Copy Invoice #"}</span>
             </button>
 
             <button
               onClick={handleDownloadCSV}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-sm active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 transition-colors flex items-center gap-2 text-xs font-semibold"
               title="Download structured invoice as CSV"
             >
-              <Download className="w-4 h-4 text-emerald-400" />
+              <Download className="w-4 h-4 text-zinc-400" />
               <span>Download CSV</span>
             </button>
 
             <button
               onClick={handlePrintInvoice}
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm border border-emerald-500/30 active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-2 border border-emerald-500"
               title="Print or Save Invoice as PDF"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-white" />
               <span>Print / Save PDF</span>
             </button>
           </div>
@@ -514,7 +514,7 @@ function SalesReceiptContent() {
         {/* UNIFIED SINGLE-PAGE DOCUMENT TEMPLATE (Dark In-App, Pure White in Print) */}
         <div 
           data-invoice-canvas="true" 
-          className="printable-receipt w-full max-w-4xl mx-auto bg-zinc-900 text-zinc-100 border border-zinc-800 shadow-2xl rounded-xl p-6 sm:p-8 space-y-4 relative"
+          className="printable-receipt w-full max-w-4xl mx-auto bg-zinc-900 text-zinc-100 border border-zinc-800 rounded-xl p-6 sm:p-8 space-y-4 relative"
         >
 
           {/* 1. Official Letterhead Header (Dynamic Brand Info & TIN) */}

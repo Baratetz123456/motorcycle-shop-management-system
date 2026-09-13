@@ -32,12 +32,12 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
 };
 
 const ICON_VARIANT_CLASSES: Record<ModalVariant, string> = {
-  lime: "bg-lime-50 dark:bg-lime-950/40 border-lime-200 dark:border-lime-800/60 text-lime-700 dark:text-lime-400",
-  cyan: "bg-lime-50 dark:bg-lime-950/40 border-lime-200 dark:border-lime-800/60 text-lime-700 dark:text-lime-400",
-  purple: "bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-400",
-  emerald: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400",
-  amber: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-400",
-  rose: "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400",
+  lime: "bg-zinc-800 border-zinc-700 text-zinc-300",
+  cyan: "bg-zinc-800 border-zinc-700 text-zinc-300",
+  purple: "bg-zinc-800 border-zinc-700 text-zinc-300",
+  emerald: "bg-zinc-800 border-zinc-700 text-zinc-300",
+  amber: "bg-zinc-800 border-zinc-700 text-zinc-300",
+  rose: "bg-zinc-800 border-zinc-700 text-zinc-300",
 };
 
 function renderModalIcon(icon: ModalIconProp) {
@@ -88,7 +88,7 @@ export function Modal({
 
   const content = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/95 animate-in fade-in duration-200 overflow-y-auto"
       onClick={(e) => {
         if (!preventBackdropClose && e.target === e.currentTarget) {
           onClose();
@@ -98,7 +98,7 @@ export function Modal({
       <div
         ref={contentRef}
         className={clsx(
-          "bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 w-full relative font-sans text-slate-900 dark:text-zinc-100 flex flex-col my-auto",
+          "bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden animate-in zoom-in-95 duration-200 w-full relative font-sans text-zinc-100 flex flex-col my-auto",
           SIZE_CLASSES[size],
           className
         )}
@@ -143,7 +143,7 @@ export function ModalHeader({
   return (
     <div
       className={clsx(
-        "px-6 py-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900 flex items-center justify-between shrink-0",
+        "px-6 py-5 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between shrink-0",
         className
       )}
     >
@@ -154,7 +154,7 @@ export function ModalHeader({
           {icon && (
             <div
               className={clsx(
-                "w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-sm",
+                "w-10 h-10 rounded-xl border border-zinc-700 bg-zinc-800 text-zinc-300 flex items-center justify-center shrink-0",
                 ICON_VARIANT_CLASSES[iconVariant]
               )}
             >
@@ -162,8 +162,8 @@ export function ModalHeader({
             </div>
           )}
           <div>
-            {title && <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight">{title}</h2>}
-            {subtitle && <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{subtitle}</p>}
+            {title && <h2 className="text-lg font-bold text-zinc-100 tracking-tight">{title}</h2>}
+            {subtitle && <p className="text-xs text-zinc-400 mt-0.5">{subtitle}</p>}
           </div>
         </div>
       )}
@@ -171,7 +171,7 @@ export function ModalHeader({
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors ml-auto shrink-0"
+          className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors ml-auto shrink-0"
           title="Close dialog (Esc)"
           aria-label="Close dialog"
         >
@@ -211,7 +211,7 @@ export function ModalFooter({
   return (
     <div
       className={clsx(
-        "px-6 py-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/90 dark:bg-zinc-900/95 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 sm:gap-3 shrink-0",
+        "px-6 py-4 border-t border-zinc-800 bg-zinc-900 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 sm:gap-3 shrink-0",
         className
       )}
     >
@@ -253,11 +253,11 @@ export function ConfirmModal({
 
   const defaultIcon =
     confirmVariant === "danger" ? (
-      <AlertTriangle className="w-5 h-5" />
+      <AlertTriangle className="w-5 h-5 text-zinc-400" />
     ) : confirmVariant === "warning" ? (
-      <AlertCircle className="w-5 h-5" />
+      <AlertCircle className="w-5 h-5 text-zinc-400" />
     ) : (
-      <Info className="w-5 h-5" />
+      <Info className="w-5 h-5 text-zinc-400" />
     );
 
   const modalBodyContent = message !== undefined ? message : description;
@@ -273,17 +273,10 @@ export function ConfirmModal({
       preventBackdropClose={isLoading}
     >
       <ModalBody>
-        <div className="space-y-3 text-sm text-slate-700 dark:text-zinc-300">
+        <div className="space-y-3 text-sm text-zinc-300">
           <div>{modalBodyContent}</div>
           {warningDetails && (
-            <div
-              className={clsx(
-                "p-3.5 rounded-xl border text-xs leading-relaxed",
-                confirmVariant === "danger"
-                  ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300"
-                  : "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300"
-              )}
-            >
+            <div className="p-3.5 rounded-xl border border-zinc-700 bg-zinc-800 text-zinc-200 text-xs leading-relaxed">
               {warningDetails}
             </div>
           )}
@@ -294,7 +287,7 @@ export function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={isLoading}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-700 hover:border-zinc-600 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-all shadow-xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {cancelText}
         </button>
@@ -302,21 +295,12 @@ export function ConfirmModal({
           type="button"
           onClick={onConfirm}
           disabled={isLoading}
-          className={clsx(
-            "w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm disabled:bg-zinc-800/60 disabled:text-zinc-500 disabled:border-zinc-700/40 disabled:cursor-not-allowed",
-            confirmVariant === "danger"
-              ? "bg-rose-600 hover:bg-rose-500 border border-rose-500/30"
-              : confirmVariant === "warning"
-              ? "bg-amber-600 hover:bg-amber-500 border border-amber-500/30"
-              : "bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/30"
-          )}
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <span>Processing...</span>
           ) : (
-            <>
-              <span>{confirmText}</span>
-            </>
+            <span>{confirmText}</span>
           )}
         </button>
       </ModalFooter>

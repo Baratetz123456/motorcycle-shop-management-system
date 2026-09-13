@@ -643,13 +643,7 @@ function SettingsContent() {
   };
 
   const getRoleBadgeStyle = (r: string) => {
-    switch ((r || "").toLowerCase()) {
-      case "admin": return "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
-      case "manager": return "bg-purple-500/10 text-purple-400 border-purple-500/30";
-      case "cashier": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-      case "mechanic": return "bg-amber-500/10 text-amber-400 border-amber-500/30";
-      default: return "bg-zinc-800 text-zinc-300 border-zinc-700";
-    }
+    return "bg-zinc-800 text-zinc-300 border-zinc-700 font-bold";
   };
 
   // Reusable Theme Preference Selector
@@ -661,7 +655,7 @@ function SettingsContent() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Palette className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+              <Palette className="w-4 h-4 text-emerald-500" />
               App Theme & Visual Identity ({activeMode === "light" ? "Daylight Themes" : "Neon Dark Themes"})
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -671,8 +665,8 @@ function SettingsContent() {
             </p>
           </div>
           {isThemeDirty ? (
-            <span className="text-xs text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
+            <span className="text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 self-start sm:self-auto">
+              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
               Unsaved Theme Preview (Click Save to apply)
             </span>
           ) : themeSuccess ? (
@@ -694,11 +688,9 @@ function SettingsContent() {
                 type="button"
                 onClick={() => handleSelectTheme(theme.id)}
                 className={clsx(
-                  "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group flex flex-col justify-between h-32",
+                  "p-4 rounded-2xl border text-left transition-colors relative overflow-hidden group flex flex-col justify-between h-32",
                   isSelected
-                    ? isThemeDirty
-                      ? "bg-zinc-900 border-amber-500/50 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/40"
-                      : "bg-zinc-900 border-white/30 shadow-xl shadow-cyan-500/10 ring-2 ring-cyan-500/40"
+                    ? "bg-zinc-900 border-emerald-500 ring-1 ring-emerald-500/30"
                     : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
                 )}
               >
@@ -710,10 +702,7 @@ function SettingsContent() {
                     <div className="text-[11px] text-zinc-400 mt-0.5">{theme.tagline}</div>
                   </div>
                   {isSelected && (
-                    <div className={clsx(
-                      "w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-md",
-                      isThemeDirty ? "bg-amber-500 text-white font-bold" : "bg-emerald-600 text-white font-bold"
-                    )}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-emerald-600 text-white font-bold">
                       {isThemeDirty ? (
                         <Sparkles className="w-3 h-3 stroke-[2.5]" />
                       ) : (
@@ -728,14 +717,14 @@ function SettingsContent() {
                     {theme.previewSwatches.map((color, i) => (
                       <div
                         key={i}
-                        className="w-5 h-5 rounded-full border border-zinc-900 shadow-sm"
+                        className="w-5 h-5 rounded-full border border-zinc-900"
                         style={{ backgroundColor: color }}
                       />
                     ))}
                   </div>
                   <div className="ml-auto flex items-center gap-1.5">
                     {isCurrentSaved && (
-                      <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                      <span className="text-[9px] uppercase tracking-wider text-zinc-300 font-mono font-bold bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
                         Saved
                       </span>
                     )}
@@ -798,7 +787,7 @@ function SettingsContent() {
               className={clsx(
                 "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                 activeTab === "general"
-                  ? "bg-emerald-600 text-white font-bold shadow-sm"
+                  ? "bg-emerald-600 text-white font-bold"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
               )}
             >
@@ -810,9 +799,9 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("roles")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "roles"
-                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    ? "bg-emerald-600 text-white font-bold"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                 )}
               >
@@ -825,9 +814,9 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("users")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "users"
-                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    ? "bg-emerald-600 text-white font-bold"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                 )}
               >
@@ -839,9 +828,9 @@ function SettingsContent() {
             <button
               onClick={() => handleTabChange("profile")}
               className={clsx(
-                "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                "px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                 activeTab === "profile"
-                  ? "bg-emerald-600 text-white font-bold shadow-sm"
+                  ? "bg-emerald-600 text-white font-bold"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
               )}
             >
@@ -853,9 +842,9 @@ function SettingsContent() {
               <button
                 onClick={() => handleTabChange("logs")}
                 className={clsx(
-                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "logs"
-                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    ? "bg-emerald-600 text-white font-bold"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                 )}
               >
@@ -878,7 +867,7 @@ function SettingsContent() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div>
                       <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Building className="w-5 h-5 text-cyan-500 dark:text-cyan-400" />
+                        <Building className="w-5 h-5 text-emerald-500" />
                         Store Preferences
                       </h2>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
@@ -889,10 +878,10 @@ function SettingsContent() {
                     <button
                       type="button"
                       onClick={handleResetGeneral}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-white/10 hover:bg-zinc-800 transition-colors flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors flex items-center gap-1.5 self-start sm:self-auto"
                       title="Reset store preferences to factory defaults"
                     >
-                      <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
+                      <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
                       <span>Reset Store Defaults</span>
                     </button>
                   </div>
@@ -902,7 +891,7 @@ function SettingsContent() {
                       {/* Application Name */}
                       <div>
                         <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                          Application Name <span className="text-cyan-400">*</span>
+                          Application Name <span className="text-zinc-400">*</span>
                         </label>
                         <div className="relative">
                           <Sparkles className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -912,7 +901,7 @@ function SettingsContent() {
                             value={settings.appName}
                             onChange={(e) => setSettings({ ...settings, appName: e.target.value })}
                             placeholder="e.g. Versiklo"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                         </div>
                         <span className="text-[11px] text-zinc-500 mt-1.5 block">
@@ -932,7 +921,7 @@ function SettingsContent() {
                             value={settings.shopDescription ?? ""}
                             onChange={(e) => setSettings({ ...settings, shopDescription: e.target.value })}
                             placeholder="e.g. Shop Floor or Speed Workshop"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                         </div>
                         <span className="text-[11px] text-zinc-500 mt-1.5 block">
@@ -943,14 +932,14 @@ function SettingsContent() {
                       {/* Operating Timezone */}
                       <div>
                         <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                          Operating Timezone <span className="text-cyan-400">*</span>
+                          Operating Timezone <span className="text-zinc-400">*</span>
                         </label>
                         <div className="relative">
                           <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                           <select
                             value={settings.timezone}
                             onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
                           >
                             {TIMEZONE_OPTIONS.map((tz) => (
                               <option key={tz.value} value={tz.value} className="bg-zinc-900 text-zinc-100">
@@ -967,14 +956,14 @@ function SettingsContent() {
                       {/* Country Standard */}
                       <div>
                         <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                          Country of Operation <span className="text-cyan-400">*</span>
+                          Country of Operation <span className="text-zinc-400">*</span>
                         </label>
                         <div className="relative">
                           <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                           <select
                             value={settings.country}
                             onChange={(e) => handleCountryChange(e.target.value)}
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
                           >
                             {COUNTRY_OPTIONS.map((c) => (
                               <option key={c.country} value={c.country} className="bg-zinc-900 text-zinc-100">
@@ -1019,7 +1008,7 @@ function SettingsContent() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div>
                       <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Wrench className="w-5 h-5 text-cyan-400" />
+                        <Wrench className="w-5 h-5 text-emerald-500" />
                         Workshop & Repair Boards
                       </h2>
                       <p className="text-xs text-zinc-400 mt-1">
@@ -1031,14 +1020,14 @@ function SettingsContent() {
                       <button
                         type="button"
                         onClick={handleResetBoardDefaults}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-white/10 hover:bg-zinc-800 transition-colors flex items-center gap-1.5 shadow-sm"
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
                         title="Reset stage titles to New, In Progress, Completed, Invoiced and retention to 7 days"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
+                        <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
                         <span>Reset Defaults</span>
                       </button>
                       <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/10 px-3 py-1.5 rounded-xl text-xs text-zinc-400">
-                        <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                        <ShieldCheck className="w-4 h-4 text-zinc-400" />
                         <span>Admin Configurable</span>
                       </div>
                     </div>
@@ -1065,7 +1054,7 @@ function SettingsContent() {
                             value={settings.boardPendingTitle ?? "New"}
                             onChange={(e) => setSettings({ ...settings, boardPendingTitle: e.target.value })}
                             placeholder="New"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                           <span className="text-[10px] text-zinc-500 mt-1 block">Default: New</span>
                         </div>
@@ -1080,7 +1069,7 @@ function SettingsContent() {
                             value={settings.boardOngoingTitle ?? "In Progress"}
                             onChange={(e) => setSettings({ ...settings, boardOngoingTitle: e.target.value })}
                             placeholder="In Progress"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                           <span className="text-[10px] text-zinc-500 mt-1 block">Default: In Progress</span>
                         </div>
@@ -1095,7 +1084,7 @@ function SettingsContent() {
                             value={settings.boardCompletedTitle ?? "Completed"}
                             onChange={(e) => setSettings({ ...settings, boardCompletedTitle: e.target.value })}
                             placeholder="Completed"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                           <span className="text-[10px] text-zinc-500 mt-1 block">Default: Completed</span>
                         </div>
@@ -1110,7 +1099,7 @@ function SettingsContent() {
                             value={settings.boardReleasedTitle ?? "Invoiced"}
                             onChange={(e) => setSettings({ ...settings, boardReleasedTitle: e.target.value })}
                             placeholder="Invoiced"
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2 px-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                           <span className="text-[10px] text-zinc-500 mt-1 block">Default: Invoiced</span>
                         </div>
@@ -1128,7 +1117,7 @@ function SettingsContent() {
                           <select
                             value={settings.boardRetentionDays || "7"}
                             onChange={(e) => setSettings({ ...settings, boardRetentionDays: e.target.value })}
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                            className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
                           >
                             {BOARD_RETENTION_OPTIONS.map((opt) => (
                               <option key={opt.value} value={opt.value} className="bg-zinc-900 text-zinc-100">
@@ -1149,7 +1138,7 @@ function SettingsContent() {
                 <div className="pb-8 space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                      <div className="p-2.5 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-300">
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <div>
@@ -1165,14 +1154,14 @@ function SettingsContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Privacy Policy Card */}
-                    <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-cyan-500/30 transition-all flex flex-col justify-between group">
+                    <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-colors flex flex-col justify-between group">
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-cyan-400 flex items-center gap-1.5 uppercase tracking-wider">
+                          <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5 uppercase tracking-wider">
                             <Lock className="w-3.5 h-3.5" />
                             Data Protection
                           </span>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold">
                             RA 10173 DPA
                           </span>
                         </div>
@@ -1186,7 +1175,7 @@ function SettingsContent() {
                       <Link
                         href="/privacy"
                         target="_blank"
-                        className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-zinc-900/80 hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 text-xs font-medium text-zinc-200 hover:text-cyan-300 transition-all"
+                        className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 hover:text-white transition-colors"
                       >
                         <span>Inspect Privacy Policy</span>
                         <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform" />
@@ -1194,14 +1183,14 @@ function SettingsContent() {
                     </div>
 
                     {/* Terms & Conditions Card */}
-                    <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-blue-500/30 transition-all flex flex-col justify-between group">
+                    <div className="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 transition-colors flex flex-col justify-between group">
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-blue-400 flex items-center gap-1.5 uppercase tracking-wider">
+                          <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5 uppercase tracking-wider">
                             <FileText className="w-3.5 h-3.5" />
                             Shop Service Terms
                           </span>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold">
                             Civil Code & Consumer Act
                           </span>
                         </div>
@@ -1215,7 +1204,7 @@ function SettingsContent() {
                       <Link
                         href="/terms"
                         target="_blank"
-                        className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-zinc-900/80 hover:bg-blue-500/10 border border-white/10 hover:border-blue-500/30 text-xs font-medium text-zinc-200 hover:text-blue-300 transition-all"
+                        className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 hover:text-white transition-colors"
                       >
                         <span>Inspect Terms of Service</span>
                         <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform" />
@@ -1224,7 +1213,7 @@ function SettingsContent() {
                   </div>
 
                   <div className="text-[11px] text-zinc-500 flex items-center gap-2 pt-2 border-t border-zinc-800/60">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <Sparkles className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     <span>
                       Policies automatically reflect your configured Store Name (<strong>{settings.appName || "MotoShop"}</strong>) and contact credentials. Both documents are permanently reachable by clients and staff at the login screen and application footer.
                     </span>
@@ -1233,7 +1222,7 @@ function SettingsContent() {
               </div>
 
               {/* Unified Sticky Bottom Footer */}
-              <div className="shrink-0 px-6 py-3.5 bg-zinc-950/95 border-t border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 z-30 shadow-2xl">
+              <div className="shrink-0 px-6 py-3.5 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 z-30">
                 <div className="flex items-center gap-3">
                   {generalSuccess ? (
                     <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium animate-in fade-in">
@@ -1249,7 +1238,7 @@ function SettingsContent() {
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 shadow-sm active:scale-[0.98] transition-all"
+                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500 transition-colors"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Store Settings</span>
@@ -1267,47 +1256,29 @@ function SettingsContent() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Palette className="w-5 h-5 text-lime-400" />
+                      <Palette className="w-5 h-5 text-emerald-500" />
                       Appearance & Theme
                     </h2>
                     <p className="text-xs text-zinc-400 mt-1">
-                      Configure your workshop display appearance mode and color scheme.
+                      Customize your workspace color theme and view mode.
                     </p>
                   </div>
                 </div>
 
-                {/* Permanent Dark Mode Standard Notice */}
-                <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                      <Moon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">
-                        High-Octane Dark Mode Active
-                      </h4>
-                      <p className="text-xs text-zinc-400 mt-0.5">
-                        The application is permanently calibrated to High-Octane Dark Mode with zero-contrast-fatigue typography.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Theme Palette Options */}
                 {renderThemeSelector()}
               </div>
             </div>
 
-            {/* Sticky Save Footer for Non-Admins */}
-            <div className="shrink-0 px-6 py-3.5 bg-zinc-950/95 border-t border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 z-30 shadow-2xl">
+            {/* Unified Sticky Bottom Footer */}
+            <div className="shrink-0 px-6 py-3.5 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 z-30">
               <div className="flex items-center gap-3">
-                {generalSuccess ? (
+                {themeSuccess ? (
                   <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium animate-in fade-in">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    {generalSuccess}
+                    {themeSuccess}
                   </span>
                 ) : (
-                  <span className="text-xs text-zinc-400">
+                  <span className="text-xs text-zinc-500">
                     {isModeDirty || isThemeDirty
                       ? "Unsaved appearance preview (click Save to commit)"
                       : "Appearance preferences are saved"}
@@ -1318,7 +1289,7 @@ function SettingsContent() {
               <button
                 type="button"
                 onClick={handleSaveAppearanceOnly}
-                className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 shadow-sm"
+                className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500"
               >
                 <Save className="w-4 h-4" />
                 <span>Save Appearance Preferences</span>
@@ -1335,7 +1306,7 @@ function SettingsContent() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Sliders className="w-5 h-5 text-cyan-400" />
+                      <Sliders className="w-5 h-5 text-emerald-500" />
                       Role Access Matrix
                     </h2>
                     <p className="text-xs text-zinc-400 mt-1">
@@ -1353,7 +1324,7 @@ function SettingsContent() {
                     const isMechanic = currentRoles.includes("mechanic");
 
                     return (
-                      <div key={mod.id} className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 space-y-3 shadow-md">
+                      <div key={mod.id} className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 space-y-3">
                         <div>
                           <div className="font-bold text-white text-sm">{mod.name}</div>
                           <div className="text-xs text-zinc-400 mt-0.5">{mod.description}</div>
@@ -1361,9 +1332,9 @@ function SettingsContent() {
 
                         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
                           {/* Admin (Locked) */}
-                          <div className="flex items-center justify-between p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs">
-                            <span className="font-bold text-cyan-400">Admin</span>
-                            <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-cyan-400 bg-cyan-500/20 px-2 py-0.5 rounded-md">
+                          <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-xs">
+                            <span className="font-bold text-zinc-200">Admin</span>
+                            <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-white bg-zinc-700 px-2 py-0.5 rounded-md">
                               <Lock className="w-3 h-3" /> Locked
                             </span>
                           </div>
@@ -1373,16 +1344,16 @@ function SettingsContent() {
                             type="button"
                             onClick={() => handleToggleModuleRole(mod.id, "manager")}
                             className={clsx(
-                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95",
+                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-colors",
                               isManager
-                                ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
-                                : "bg-zinc-900/80 text-zinc-500 border-white/5"
+                                ? "bg-emerald-600 text-white border-emerald-500"
+                                : "bg-zinc-900 text-zinc-400 border-zinc-800"
                             )}
                           >
                             <span>Manager</span>
                             <span className={clsx(
                               "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
-                              isManager ? "bg-purple-500/30 text-purple-200" : "bg-zinc-800 text-zinc-600"
+                              isManager ? "bg-emerald-700 text-white" : "bg-zinc-800 text-zinc-400"
                             )}>
                               {isManager ? "Allowed" : "Off"}
                             </span>
@@ -1393,16 +1364,16 @@ function SettingsContent() {
                             type="button"
                             onClick={() => handleToggleModuleRole(mod.id, "cashier")}
                             className={clsx(
-                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95",
+                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-colors",
                               isCashier
-                                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                                : "bg-zinc-900/80 text-zinc-500 border-white/5"
+                                ? "bg-emerald-600 text-white border-emerald-500"
+                                : "bg-zinc-900 text-zinc-400 border-zinc-800"
                             )}
                           >
                             <span>Cashier</span>
                             <span className={clsx(
                               "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
-                              isCashier ? "bg-emerald-500/30 text-emerald-200" : "bg-zinc-800 text-zinc-600"
+                              isCashier ? "bg-emerald-700 text-white" : "bg-zinc-800 text-zinc-400"
                             )}>
                               {isCashier ? "Allowed" : "Off"}
                             </span>
@@ -1413,16 +1384,16 @@ function SettingsContent() {
                             type="button"
                             onClick={() => handleToggleModuleRole(mod.id, "mechanic")}
                             className={clsx(
-                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95",
+                              "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-colors",
                               isMechanic
-                                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                                : "bg-zinc-900/80 text-zinc-500 border-white/5"
+                                ? "bg-emerald-600 text-white border-emerald-500"
+                                : "bg-zinc-900 text-zinc-400 border-zinc-800"
                             )}
                           >
                             <span>Mechanic</span>
                             <span className={clsx(
                               "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
-                              isMechanic ? "bg-amber-500/30 text-amber-200" : "bg-zinc-800 text-zinc-600"
+                              isMechanic ? "bg-emerald-700 text-white" : "bg-zinc-800 text-zinc-400"
                             )}>
                               {isMechanic ? "Allowed" : "Off"}
                             </span>
@@ -1440,28 +1411,28 @@ function SettingsContent() {
                       <tr>
                         <th className="py-4 px-6">Store Operational Module</th>
                         <th className="py-4 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                          <span className="px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold">
                             Admin
                           </span>
                         </th>
                         <th className="py-4 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30">
+                          <span className="px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold">
                             Manager
                           </span>
                         </th>
                         <th className="py-4 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                          <span className="px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold">
                             Cashier
                           </span>
                         </th>
                         <th className="py-4 px-4 text-center">
-                          <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                          <span className="px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold">
                             Mechanic
                           </span>
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 font-sans">
+                    <tbody className="divide-y divide-zinc-800/60 font-sans">
                       {CONFIGURABLE_MODULES.map((mod) => {
                         const currentRoles = modulePermissions[mod.id] || ["admin"];
                         const isManager = currentRoles.includes("manager");
@@ -1469,9 +1440,9 @@ function SettingsContent() {
                         const isMechanic = currentRoles.includes("mechanic");
 
                         return (
-                          <tr key={mod.id} className="hover:bg-white/[0.02] transition-colors group">
+                          <tr key={mod.id} className="hover:bg-white/[0.02] transition-colors">
                             <td className="py-4 px-6">
-                              <div className="font-bold text-white group-hover:text-cyan-300 transition-colors">
+                              <div className="font-bold text-white transition-colors">
                                 {mod.name}
                               </div>
                               <div className="text-xs text-zinc-400 mt-0.5">
@@ -1479,9 +1450,9 @@ function SettingsContent() {
                               </div>
                             </td>
 
-                            {/* Admin (Always Locked Active) */}
+                            {/* Admin Role (Always Authorized / Locked) */}
                             <td className="py-4 px-4 text-center">
-                              <div className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 cursor-not-allowed">
+                              <div className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-zinc-800 text-zinc-300 border border-zinc-700 cursor-not-allowed">
                                 <Lock className="w-4 h-4" />
                               </div>
                             </td>
@@ -1495,8 +1466,8 @@ function SettingsContent() {
                                   aria-checked={isManager}
                                   onClick={() => handleToggleModuleRole(mod.id, "manager")}
                                   className={clsx(
-                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950",
-                                    isManager ? "bg-purple-600 shadow-lg shadow-purple-600/30" : "bg-zinc-800 border-white/10"
+                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50",
+                                    isManager ? "bg-emerald-600" : "bg-zinc-800 border-zinc-700"
                                   )}
                                   title={`Toggle ${mod.name} for Manager`}
                                 >
@@ -1504,7 +1475,7 @@ function SettingsContent() {
                                   <span
                                     aria-hidden="true"
                                     className={clsx(
-                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white ring-0 transition duration-200 ease-in-out",
                                       isManager ? "translate-x-5" : "translate-x-0"
                                     )}
                                   />
@@ -1521,8 +1492,8 @@ function SettingsContent() {
                                   aria-checked={isCashier}
                                   onClick={() => handleToggleModuleRole(mod.id, "cashier")}
                                   className={clsx(
-                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950",
-                                    isCashier ? "bg-emerald-600 shadow-lg shadow-emerald-600/30" : "bg-zinc-800 border-white/10"
+                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50",
+                                    isCashier ? "bg-emerald-600" : "bg-zinc-800 border-zinc-700"
                                   )}
                                   title={`Toggle ${mod.name} for Cashier`}
                                 >
@@ -1530,7 +1501,7 @@ function SettingsContent() {
                                   <span
                                     aria-hidden="true"
                                     className={clsx(
-                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white ring-0 transition duration-200 ease-in-out",
                                       isCashier ? "translate-x-5" : "translate-x-0"
                                     )}
                                   />
@@ -1547,8 +1518,8 @@ function SettingsContent() {
                                   aria-checked={isMechanic}
                                   onClick={() => handleToggleModuleRole(mod.id, "mechanic")}
                                   className={clsx(
-                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 focus:ring-offset-zinc-950",
-                                    isMechanic ? "bg-amber-600 shadow-lg shadow-amber-600/30" : "bg-zinc-800 border-white/10"
+                                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50",
+                                    isMechanic ? "bg-emerald-600" : "bg-zinc-800 border-zinc-700"
                                   )}
                                   title={`Toggle ${mod.name} for Mechanic`}
                                 >
@@ -1556,7 +1527,7 @@ function SettingsContent() {
                                   <span
                                     aria-hidden="true"
                                     className={clsx(
-                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+                                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white ring-0 transition duration-200 ease-in-out",
                                       isMechanic ? "translate-x-5" : "translate-x-0"
                                     )}
                                   />
@@ -1573,11 +1544,11 @@ function SettingsContent() {
             </div>
 
             {/* Unified Sticky Bottom Footer */}
-            <div className="shrink-0 px-6 py-3.5 bg-zinc-950/95 border-t border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 z-30 shadow-2xl">
+            <div className="shrink-0 px-6 py-3.5 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 z-30">
               <button
                 type="button"
                 onClick={handleResetRoles}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-white/10 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2 shadow-xs active:scale-[0.98]"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset Defaults</span>
@@ -1593,7 +1564,7 @@ function SettingsContent() {
                 <button
                   type="button"
                   onClick={handleSaveRoles}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold border border-emerald-500/30 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold border border-emerald-500 rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Permissions</span>
@@ -1610,7 +1581,7 @@ function SettingsContent() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-cyan-400" />
+                  <Users className="w-5 h-5 text-emerald-500" />
                   Staff Accounts
                 </h2>
                 <p className="text-xs text-zinc-400 mt-0.5">
@@ -1620,7 +1591,7 @@ function SettingsContent() {
 
               <Link
                 href="/users/register"
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0 shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>+ Add Staff</span>
@@ -1660,7 +1631,7 @@ function SettingsContent() {
                       className={clsx(
                         "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border whitespace-nowrap shrink-0",
                         staffRoleFilter === option.value
-                          ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm"
+                          ? "bg-zinc-800 text-white border-zinc-700 font-bold"
                           : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-800/60"
                       )}
                     >
@@ -1701,21 +1672,21 @@ function SettingsContent() {
                         <div
                           key={user.id}
                           onClick={() => router.push(`/users/${user.id}`)}
-                          className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer space-y-3 active:scale-[0.99] group shadow-sm"
+                          className="p-4 rounded-2xl bg-zinc-950/80 border border-white/10 hover:border-zinc-700 transition-colors cursor-pointer space-y-3 group"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900 shadow-sm">
+                              <div className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900">
                                 {user.avatar ? (
                                   <UserAvatar avatarId={user.avatar} className="w-10 h-10" />
                                 ) : (
-                                  <div className="w-full h-full bg-zinc-800 flex items-center justify-center font-bold text-cyan-400 text-sm">
+                                  <div className="w-full h-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-200 text-sm">
                                     {initials}
                                   </div>
                                 )}
                               </div>
                               <div className="min-w-0">
-                                <div className="font-bold text-white group-hover:text-cyan-400 transition-colors text-sm truncate">
+                                <div className="font-bold text-white group-hover:text-zinc-200 transition-colors text-sm truncate">
                                   {fullName}
                                 </div>
                                 <div className="text-[10px] text-zinc-500 font-mono">
@@ -1733,7 +1704,7 @@ function SettingsContent() {
                             <span className="text-zinc-400 font-mono text-[11px] truncate mr-2">
                               {user.email}
                             </span>
-                            <span className="flex items-center gap-1 text-[11px] font-semibold text-cyan-400 shrink-0">
+                            <span className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 shrink-0">
                               <span>Edit Profile</span>
                               <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                             </span>
@@ -1746,7 +1717,7 @@ function SettingsContent() {
 
                 {/* Desktop View: Traditional Data Table */}
                 <table className="hidden md:table w-full text-left text-xs text-zinc-300">
-                  <thead className="bg-zinc-950/90 border-b border-white/10 uppercase text-[11px] text-zinc-400 font-semibold tracking-wider sticky top-0 z-10 backdrop-blur-md">
+                  <thead className="bg-zinc-950/90 border-b border-white/10 uppercase text-[11px] text-zinc-400 font-semibold tracking-wider sticky top-0 z-10">
                     <tr>
                       <th className="py-3.5 px-6">Staff Member</th>
                       <th className="py-3.5 px-6">Email Address</th>
@@ -1793,17 +1764,17 @@ function SettingsContent() {
                           >
                             <td className="py-3.5 px-6">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900 shadow-sm">
+                                <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-900">
                                   {user.avatar ? (
                                     <UserAvatar avatarId={user.avatar} className="w-9 h-9" />
                                   ) : (
-                                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center font-bold text-cyan-400 text-xs">
+                                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-200 text-xs">
                                       {initials}
                                     </div>
                                   )}
                                 </div>
                                 <div>
-                                  <div className="font-bold text-white group-hover:text-cyan-300 transition-colors">
+                                  <div className="font-bold text-white group-hover:text-zinc-200 transition-colors">
                                     {fullName}
                                   </div>
                                   <div className="text-[10px] text-zinc-500 font-mono">
@@ -1824,7 +1795,7 @@ function SettingsContent() {
                             </td>
 
                             <td className="py-3.5 px-6 text-right">
-                              <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all ml-auto" />
+                              <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all ml-auto" />
                             </td>
                           </tr>
                         );
@@ -1835,12 +1806,12 @@ function SettingsContent() {
               </div>
 
               {/* Pinned Pagination Controls */}
-              <div className="p-3.5 border-t border-white/10 bg-zinc-950/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
+              <div className="p-3.5 border-t border-white/10 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
                 <div className="text-center sm:text-left">
-                  Showing <span className="font-bold text-slate-900">{staffUsers.length}</span> of{" "}
-                  <span className="font-bold text-slate-900">{staffTotal}</span> registered staff members (Page{" "}
-                  <span className="font-bold text-slate-900">{staffPage}</span> of{" "}
-                  <span className="font-bold text-slate-900">{staffTotalPages || 1}</span>)
+                  Showing <span className="font-bold text-white">{staffUsers.length}</span> of{" "}
+                  <span className="font-bold text-white">{staffTotal}</span> registered staff members (Page{" "}
+                  <span className="font-bold text-white">{staffPage}</span> of{" "}
+                  <span className="font-bold text-white">{staffTotalPages || 1}</span>)
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1848,7 +1819,7 @@ function SettingsContent() {
                     type="button"
                     onClick={() => handleStaffPageChange(staffPage - 1)}
                     disabled={staffPage <= 1 || staffLoading}
-                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
                     title="Previous Page"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -1857,7 +1828,7 @@ function SettingsContent() {
                     type="button"
                     onClick={() => handleStaffPageChange(staffPage + 1)}
                     disabled={staffPage >= staffTotalPages || staffLoading}
-                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all"
+                    className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
                     title="Next Page"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1890,7 +1861,7 @@ function SettingsContent() {
                     placeholder="Search name or email..."
                     value={staffSearch}
                     onChange={(e) => setStaffSearch(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
                   />
                 </div>
               </div>
@@ -1905,10 +1876,10 @@ function SettingsContent() {
                       type="button"
                       onClick={() => setStaffRoleFilter(opt.value)}
                       className={clsx(
-                        "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
+                        "px-3 py-2 rounded-xl text-xs font-bold text-center transition-colors border",
                         staffRoleFilter === opt.value
-                          ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
-                          : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+                          ? "bg-emerald-600 text-white border-emerald-500"
+                          : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                       )}
                     >
                       {opt.label}
@@ -1934,7 +1905,7 @@ function SettingsContent() {
                         <button
                           type="button"
                           onClick={() => setIsAvatarPopoverOpen(!isAvatarPopoverOpen)}
-                          className="relative group p-0.5 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-cyan-400 transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          className="relative group p-0.5 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-zinc-500 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                           title="Click to select staff avatar"
                         >
                           <div className="w-16 h-16 rounded-full bg-zinc-950 flex items-center justify-center p-1 overflow-hidden">
@@ -1951,8 +1922,8 @@ function SettingsContent() {
                             <div 
                               className="fixed inset-0 z-30" 
                               onClick={() => setIsAvatarPopoverOpen(false)} 
-                            />
-                            <div className="absolute left-0 top-full mt-2 z-40 p-3 bg-zinc-950 border border-white/10 rounded-2xl shadow-2xl w-64 animate-in fade-in zoom-in-95 duration-150">
+                              />
+                            <div className="absolute left-0 top-full mt-2 z-40 p-3 bg-zinc-950 border border-zinc-800 rounded-2xl w-64 animate-in fade-in zoom-in-95 duration-150">
                               <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80 mb-3">
                                 <span className="text-[11px] font-bold text-zinc-300">Choose Avatar</span>
                                 <span className="text-[10px] text-zinc-500 font-mono">12 styles</span>
@@ -1969,9 +1940,9 @@ function SettingsContent() {
                                         setIsAvatarPopoverOpen(false);
                                       }}
                                       className={clsx(
-                                        "w-12 h-12 rounded-full p-0.5 border transition-all flex items-center justify-center relative group hover:scale-105",
+                                        "w-12 h-12 rounded-full p-0.5 border transition-colors flex items-center justify-center relative group",
                                         isSelected
-                                          ? "border-cyan-400 bg-cyan-500/10 ring-2 ring-cyan-500/40"
+                                          ? "border-emerald-500 ring-1 ring-emerald-500/40"
                                           : "border-zinc-800 hover:border-zinc-600 bg-zinc-900/60"
                                       )}
                                     >
@@ -2003,16 +1974,16 @@ function SettingsContent() {
                     </div>
 
                     {isProfileDirty && (
-                      <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 self-start sm:self-auto">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                      <span className="text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 self-start sm:self-auto">
+                        <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
                         Unsaved profile changes
                       </span>
                     )}
                   </div>
 
                   {profileError && (
-                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2.5">
-                      <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs flex items-start gap-2.5">
+                      <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-zinc-400" />
                       <div>{profileError}</div>
                     </div>
                   )}
@@ -2022,7 +1993,7 @@ function SettingsContent() {
                     {/* First Name */}
                     <div>
                       <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                        First Name <span className="text-cyan-400">*</span>
+                        First Name <span className="text-zinc-400">*</span>
                       </label>
                       <div className="relative">
                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -2031,7 +2002,7 @@ function SettingsContent() {
                           required
                           value={profile.first_name}
                           onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                         />
                       </div>
                     </div>
@@ -2039,7 +2010,7 @@ function SettingsContent() {
                     {/* Last Name */}
                     <div>
                       <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                        Last Name <span className="text-cyan-400">*</span>
+                        Last Name <span className="text-zinc-400">*</span>
                       </label>
                       <div className="relative">
                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -2048,7 +2019,7 @@ function SettingsContent() {
                           required
                           value={profile.last_name}
                           onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                         />
                       </div>
                     </div>
@@ -2056,7 +2027,7 @@ function SettingsContent() {
                     {/* Email Address */}
                     <div>
                       <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                        Email Address <span className="text-cyan-400">*</span>
+                        Email Address <span className="text-zinc-400">*</span>
                       </label>
                       <div className="relative">
                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -2065,7 +2036,7 @@ function SettingsContent() {
                           required
                           value={profile.email}
                           onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          className="w-full bg-zinc-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors"
                         />
                       </div>
                     </div>
@@ -2094,7 +2065,7 @@ function SettingsContent() {
                   <div className="py-5 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-0.5">
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <KeyRound className="w-4 h-4 text-cyan-400" />
+                        <KeyRound className="w-4 h-4 text-emerald-500" />
                         <span>Account Authentication Password</span>
                       </h3>
                       <p className="text-xs text-zinc-400">
@@ -2105,7 +2076,7 @@ function SettingsContent() {
                     <button
                       type="button"
                       onClick={() => window.dispatchEvent(new CustomEvent("open_change_password_modal"))}
-                      className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-white/10 text-xs font-semibold transition-all flex items-center justify-center gap-2 shrink-0 shadow-sm"
+                      className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 text-xs font-bold transition-colors flex items-center justify-center gap-2 shrink-0"
                     >
                       <KeyRound className="w-3.5 h-3.5" />
                       <span>Change Password</span>
@@ -2115,11 +2086,11 @@ function SettingsContent() {
               </div>
 
               {/* Unified Sticky Bottom Footer */}
-              <div className="shrink-0 px-6 py-3.5 bg-zinc-950/95 border-t border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 z-30 shadow-2xl">
+              <div className="shrink-0 px-6 py-3.5 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 z-30">
                 <div className="flex items-center gap-3">
                   {isProfileDirty ? (
-                    <span className="text-xs text-amber-400 flex items-center gap-1.5 font-medium animate-pulse">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <span className="text-xs text-zinc-300 flex items-center gap-1.5 font-medium">
+                      <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
                       Unsaved changes ({[
                         isAvatarDirty ? "Avatar" : null,
                         isModeDirty ? "Appearance Mode" : null,
@@ -2140,12 +2111,7 @@ function SettingsContent() {
                 <button
                   type="submit"
                   disabled={isUpdatingProfile}
-                  className={clsx(
-                    "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]",
-                    isProfileDirty
-                      ? "bg-amber-600 hover:bg-amber-500 text-white border border-amber-500/40 ring-2 ring-amber-500/50 scale-[1.02]"
-                      : "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30"
-                  )}
+                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500"
                 >
                   {isUpdatingProfile ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -2168,7 +2134,7 @@ function SettingsContent() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-cyan-400" />
+                    <Activity className="w-5 h-5 text-emerald-500" />
                     Audit Log Snapshot
                   </h2>
                   <p className="text-xs text-zinc-400 mt-1">
@@ -2176,16 +2142,16 @@ function SettingsContent() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-zinc-950/80 px-4 py-2 rounded-xl border border-white/5 font-mono text-xs text-zinc-300">
+                <div className="flex items-center gap-2 bg-zinc-950/80 px-4 py-2 rounded-xl border border-zinc-800 font-mono text-xs text-zinc-300">
                   <span>Total Recorded Changes:</span>
-                  <span className="font-bold text-cyan-400">{totalLogsCount}</span>
+                  <span className="font-bold text-white">{totalLogsCount}</span>
                 </div>
               </div>
 
               {/* Dedicated Page Hero Banner */}
               <div className="p-6 md:p-8 rounded-xl bg-zinc-900/60 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-300 border border-zinc-700">
                     Dedicated History Logs Page
                   </span>
                   <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-white">
@@ -2198,7 +2164,7 @@ function SettingsContent() {
 
                 <Link
                   href="/audit-logs"
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shrink-0 border border-emerald-500/30 shadow-sm"
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shrink-0 border border-emerald-500"
                 >
                   <span>View Full Log</span>
                   <ArrowRight className="w-4 h-4" />
@@ -2256,7 +2222,7 @@ function SettingsContent() {
                                 {log.user_role || "SYSTEM"}
                               </span>
                             </td>
-                            <td className="py-3 px-4 font-semibold text-cyan-300">
+                            <td className="py-3 px-4 font-semibold text-zinc-200">
                               {log.action}
                             </td>
                             <td className="py-3 px-4 text-zinc-400 font-mono text-[11px] truncate max-w-xs">
