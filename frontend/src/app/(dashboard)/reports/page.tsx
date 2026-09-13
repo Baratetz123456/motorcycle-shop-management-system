@@ -182,46 +182,14 @@ export default function DashboardReportsPage() {
           </p>
         </div>
 
-        {/* Quick Actions & Navigation */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Primary Action */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => router.push("/reports/extract")}
-            className="px-4 py-2 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all flex items-center gap-2 shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all flex items-center gap-2 shadow-sm active:scale-95"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <FileSpreadsheet className="w-4 h-4" />
             <span>Shop Financial Ledger & Extracts</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/sales")}
-            className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 transition-all text-xs font-semibold flex items-center gap-1.5"
-          >
-            <Receipt className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400" />
-            <span>Sales</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/inventory")}
-            className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 transition-all text-xs font-semibold flex items-center gap-1.5"
-          >
-            <Boxes className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-            <span>Inventory</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/payroll")}
-            className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 transition-all text-xs font-semibold flex items-center gap-1.5"
-          >
-            <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>Payroll</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/repairs/board")}
-            className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 transition-all text-xs font-semibold flex items-center gap-1.5"
-          >
-            <Wrench className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>Repairs</span>
           </button>
         </div>
       </div>

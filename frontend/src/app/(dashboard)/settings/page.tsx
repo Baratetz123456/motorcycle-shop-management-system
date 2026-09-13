@@ -56,7 +56,6 @@ import {
   saveCustomPermissions, 
   resetCustomPermissions 
 } from "@/lib/permissions";
-import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
 import { 
   THEME_OPTIONS, 
   getAppTheme, 
@@ -163,7 +162,6 @@ function SettingsContent() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Tab 5: System Logs Snapshot State (Admin only)
   const [recentLogs, setRecentLogs] = useState<RecentAuditItem[]>([]);
@@ -654,63 +652,6 @@ function SettingsContent() {
     }
   };
 
-  // Reusable Appearance Mode Selector (Dark vs Light)
-  const renderModeSelector = () => (
-    <div className="py-5 border-y border-zinc-800/80 space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            {activeMode === "dark" ? (
-              <Moon className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-            ) : (
-              <Sun className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-            )}
-            <span>Display Appearance Mode</span>
-          </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Switch between high-contrast dark mode and clean daylight canvas.
-          </p>
-        </div>
-        {isModeDirty ? (
-          <span className="text-xs text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />
-            Unsaved Mode Preview (Click Save to apply)
-          </span>
-        ) : null}
-      </div>
-
-      <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-900/90 p-1 rounded-xl border border-slate-200 dark:border-white/10 w-fit">
-        <button
-          type="button"
-          onClick={() => handleSelectMode("dark")}
-          className={clsx(
-            "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
-            activeMode === "dark"
-              ? "bg-cyan-500 text-zinc-950 shadow-sm"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-          )}
-        >
-          <Moon className="w-3.5 h-3.5" />
-          <span>Dark Mode</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleSelectMode("light")}
-          className={clsx(
-            "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
-            activeMode === "light"
-              ? "bg-amber-400 text-zinc-950 shadow-sm"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-          )}
-        >
-          <Sun className="w-3.5 h-3.5" />
-          <span>Light Mode</span>
-        </button>
-      </div>
-    </div>
-  );
-
   // Reusable Theme Preference Selector
   const renderThemeSelector = () => {
     const currentThemes = getThemesForMode(activeMode);
@@ -813,12 +754,6 @@ function SettingsContent() {
 
   return (
     <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-visible md:overflow-hidden">
-      {/* Change Password Modal */}
-      <ChangePasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-      />
-
       {/* Top Header & Navigation Tabs */}
       <div className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-2 shrink-0">
         {/* Page Header */}
@@ -1341,115 +1276,20 @@ function SettingsContent() {
                   </div>
                 </div>
 
-                {/* Appearance Mode Cards */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                      Display Mode
-                    </label>
-                    <p className="text-xs text-slate-500 dark:text-zinc-500">
-                      Select light mode, dark mode, or follow your operating system default.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Light Mode Card */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectThemeMode("light")}
-                      className={clsx(
-                        "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                        activeMode === "light"
-                          ? "bg-white text-zinc-950 border-lime-500 ring-2 ring-lime-500/40 shadow-md"
-                          : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400">
-                          <Sun className="w-5 h-5" />
-                        </div>
-                        {activeMode === "light" && (
-                          <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                            ACTIVE
-                          </span>
-                        )}
-                      </div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Light Mode</div>
-                      <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
-                        Clean white canvas with hairline slate borders and electric lime accents.
-                      </div>
-                      <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-white border border-slate-300 shadow-xs" />
-                        <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
-                        <span className="w-4 h-4 rounded-full bg-zinc-950 shadow-xs" />
-                      </div>
-                    </button>
-
-                    {/* Dark Mode Card */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectThemeMode("dark")}
-                      className={clsx(
-                        "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                        activeMode === "dark"
-                          ? "bg-zinc-900 text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
-                          : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-400">
-                          <Moon className="w-5 h-5" />
-                        </div>
-                        {activeMode === "dark" && (
-                          <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                            ACTIVE
-                          </span>
-                        )}
-                      </div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">Dark Mode</div>
-                      <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
-                        Deep carbon black (#09090b) surfaces with vibrant Kawasaki Lime highlights.
-                      </div>
-                      <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-zinc-950 border border-zinc-700 shadow-xs" />
-                        <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
-                        <span className="w-4 h-4 rounded-full bg-zinc-100 shadow-xs" />
-                      </div>
-                    </button>
-
-                    {/* System Default Card */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectThemeMode("system")}
-                      className={clsx(
-                        "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group cursor-pointer",
-                        activeMode === "system"
-                          ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white border-lime-500 ring-2 ring-lime-500/40 shadow-md"
-                          : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-slate-300 dark:hover:border-zinc-700"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-600 dark:text-lime-400">
-                          <Sparkles className="w-5 h-5" />
-                        </div>
-                        {activeMode === "system" && (
-                          <span className="px-2 py-0.5 rounded-full bg-lime-500 text-[10px] font-bold text-zinc-950 flex items-center gap-1 shadow-xs">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                            ACTIVE
-                          </span>
-                        )}
-                      </div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-zinc-100">System Default</div>
-                      <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1 leading-relaxed">
-                        Automatically matches your operating system's light or dark mode setting.
-                      </div>
-                      <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-zinc-800 flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-gradient-to-r from-white to-zinc-950 border border-slate-300 shadow-xs" />
-                        <span className="w-4 h-4 rounded-full bg-lime-500 shadow-xs" />
-                      </div>
-                    </button>
+                {/* Display Mode Single Canonical Source Notice */}
+                <div className="p-4 rounded-2xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400 shrink-0">
+                      <Sun className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-200">
+                        Display Appearance Mode
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                        Dark and Daylight modes are controlled globally via the 1-click Sun/Moon toggle in the top navigation header bar.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -2250,9 +2090,6 @@ function SettingsContent() {
                     </div>
                   </div>
 
-                  {/* Display Appearance Mode (Compact Toggle) */}
-                  {renderModeSelector()}
-
                   {/* Password Authentication Section */}
                   <div className="py-5 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-0.5">
@@ -2267,7 +2104,7 @@ function SettingsContent() {
 
                     <button
                       type="button"
-                      onClick={() => setIsPasswordModalOpen(true)}
+                      onClick={() => window.dispatchEvent(new CustomEvent("open_change_password_modal"))}
                       className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-white/10 text-xs font-semibold transition-all flex items-center justify-center gap-2 shrink-0 shadow-sm"
                     >
                       <KeyRound className="w-3.5 h-3.5" />
@@ -2374,13 +2211,6 @@ function SettingsContent() {
                   <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                     Recent 5 Database Changes
                   </h4>
-                  <Link
-                    href="/audit-logs"
-                    className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 transition-colors"
-                  >
-                    <span>View All Change Logs</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
                 </div>
 
                 <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30">

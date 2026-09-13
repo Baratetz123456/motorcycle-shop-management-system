@@ -63,12 +63,18 @@ export default function DashboardLayout({
       if (e.detail?.avatarId) setUserAvatar(e.detail.avatarId);
     };
 
+    const handleOpenPasswordModal = () => {
+      setIsPasswordModalOpen(true);
+    };
+
     window.addEventListener("system_settings_updated", handleSettingsUpdated);
     window.addEventListener("user_profile_updated", handleProfileUpdated);
+    window.addEventListener("open_change_password_modal", handleOpenPasswordModal);
 
     return () => {
       window.removeEventListener("system_settings_updated", handleSettingsUpdated);
       window.removeEventListener("user_profile_updated", handleProfileUpdated);
+      window.removeEventListener("open_change_password_modal", handleOpenPasswordModal);
     };
   }, []);
 
@@ -208,26 +214,6 @@ export default function DashboardLayout({
 
                   {/* Quick Action Navigation */}
                   <div className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleTheme();
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors text-left cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {resolvedTheme === "dark" ? (
-                          <Sun className="w-4 h-4 text-amber-400" />
-                        ) : (
-                          <Moon className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                        )}
-                        <span>Appearance</span>
-                      </div>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold uppercase">
-                        {resolvedTheme === "dark" ? "Dark Mode" : "Light Mode"}
-                      </span>
-                    </button>
-
                     <Link
                       href="/settings?tab=profile"
                       onClick={() => setIsProfileOpen(false)}
