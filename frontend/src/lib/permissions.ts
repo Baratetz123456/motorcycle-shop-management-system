@@ -9,8 +9,8 @@ export interface UserSession {
 }
 
 export const ROLE_LANDING_PAGES: Record<UserRole, string> = {
-  admin: "/reports",
-  manager: "/reports",
+  admin: "/dashboard",
+  manager: "/dashboard",
   cashier: "/pos",
   mechanic: "/repairs/board",
 };

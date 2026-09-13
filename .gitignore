@@ -18,7 +18,13 @@ ENV/
 .coverage
 htmlcov/
 .mypy_cache/
-.ruff_cache/
+# Test Results & Artifacts
+test-results/
+playwright-report/
+**/test-results/
+**/playwright-report/
+**/tests/artifacts/
+blob-report/
 
 # Next.js / Build Outputs
 .next/

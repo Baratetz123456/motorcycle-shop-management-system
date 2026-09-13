@@ -66,6 +66,7 @@ flowchart TD
   - Mobile Job Profile Card-Free Invariant: Prohibit boxed card enclosures on mobile (< md); use an edge-to-edge canvas with borderless list rows, subtle dividers, and a sticky 4-tab menu (Overview, Diagnosis, Parts & Services, History).
   - Resilient Identifier Typing: Backend route parameters for entity lookups must use str (not UUID), safely querying UUID, invoice/JO number, and string-cast ID to eliminate 422 errors. Frontend fallbacks must use uuidv4().
   - Strict Light & Dark Mode CSS Separation & Persistence: Prohibit unmount mode rollback in pages/tabs; strictly scope light text remappings under `html:not(.dark)`; enforce explicit dark form controls/tables under `html.dark`; protect BIR white canvas receipts with `:not(:where(.printable-receipt, ...))` zero-specificity exclusions.
+  - Zero Repository Artifact Pollution Invariant: Prohibit storing visual test captures, screenshots, video recordings, or temporary testing outputs inside the project repository workspace (e.g. `frontend/tests/artifacts` or repository root). All runtime visual proofs must target `process.env.ARTIFACTS_DIR` (or system temporary directory `os.tmpdir()`), leaving the git working tree 100% clean.
 
 ### 3. Phase 3: Review (`.agents/rules/agent_reviewer.md` & [agent-reviewer](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-reviewer/SKILL.md))
 - Empowered to spawn `reviewer-security-rbac` and `reviewer-architecture-parity` child subagents at runtime.

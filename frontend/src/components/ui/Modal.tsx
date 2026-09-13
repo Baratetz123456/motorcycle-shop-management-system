@@ -98,7 +98,7 @@ export function Modal({
       <div
         ref={contentRef}
         className={clsx(
-          "bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 w-full relative font-sans text-slate-900 flex flex-col my-auto",
+          "bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 w-full relative font-sans text-slate-900 dark:text-zinc-100 flex flex-col my-auto",
           SIZE_CLASSES[size],
           className
         )}
@@ -211,7 +211,7 @@ export function ModalFooter({
   return (
     <div
       className={clsx(
-        "px-6 py-4 border-t border-slate-200 bg-slate-50/80 flex items-center justify-end gap-3 shrink-0",
+        "px-6 py-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/90 dark:bg-zinc-900/95 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 sm:gap-3 shrink-0",
         className
       )}
     >
@@ -273,15 +273,15 @@ export function ConfirmModal({
       preventBackdropClose={isLoading}
     >
       <ModalBody>
-        <div className="space-y-3 text-sm text-slate-700">
+        <div className="space-y-3 text-sm text-slate-700 dark:text-zinc-300">
           <div>{modalBodyContent}</div>
           {warningDetails && (
             <div
               className={clsx(
                 "p-3.5 rounded-xl border text-xs leading-relaxed",
                 confirmVariant === "danger"
-                  ? "bg-rose-50 border-rose-200 text-rose-800"
-                  : "bg-amber-50 border-amber-200 text-amber-800"
+                  ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300"
+                  : "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300"
               )}
             >
               {warningDetails}
@@ -294,7 +294,7 @@ export function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={isLoading}
-          className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 text-xs font-semibold transition-all btn-secondary"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 text-xs font-semibold transition-all shadow-xs active:scale-[0.98]"
         >
           {cancelText}
         </button>
@@ -303,12 +303,12 @@ export function ConfirmModal({
           onClick={onConfirm}
           disabled={isLoading}
           className={clsx(
-            "px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2",
+            "w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
             confirmVariant === "danger"
-              ? "bg-red-600 hover:bg-red-700 text-white shadow-sm"
+              ? "bg-rose-600 hover:bg-rose-700 text-white border border-rose-700 dark:border-rose-600"
               : confirmVariant === "warning"
-              ? "bg-amber-500 hover:bg-amber-600 text-zinc-950 shadow-sm"
-              : "bg-lime-500 hover:bg-lime-400 text-zinc-950 shadow-sm"
+              ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 border border-amber-600"
+              : "bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600"
           )}
         >
           {isLoading ? (

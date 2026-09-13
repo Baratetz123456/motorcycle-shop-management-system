@@ -27,14 +27,14 @@ interface NavItem {
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/reports", icon: BarChart3, group: "DASHBOARD" },
+  { label: "Dashboard", href: "/dashboard", icon: BarChart3, group: "DASHBOARD" },
   { label: "Showroom Counter", href: "/pos", icon: ShoppingBag, group: "SHOWROOM" },
   { label: "Job Cards", href: "/repairs/board", icon: Wrench, group: "WORKSHOP" },
   { label: "Parts & Stock", href: "/inventory", icon: Package, group: "PARTS" },
   { label: "Customer Records", href: "/repairs/history", icon: History, group: "CUSTOMERS" },
   { label: "Bike Registry", href: "/motorcycles", icon: Bike, group: "CUSTOMERS" },
   { label: "Invoices & Receipts", href: "/sales", icon: Receipt, group: "BACK OFFICE" },
-  { label: "Shop Reports", href: "/reports/extract", icon: FileSpreadsheet, group: "BACK OFFICE" },
+  { label: "Business Reports", href: "/reports", icon: FileSpreadsheet, group: "BACK OFFICE" },
   { label: "Payroll", href: "/payroll", icon: DollarSign, group: "BACK OFFICE" },
 ];
 

@@ -260,11 +260,11 @@ export default function UserProfilePage() {
               className={clsx(
                 "px-4 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 border",
                 isSelf
-                  ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed shadow-none"
-                  : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200 shadow-sm font-bold active:scale-[0.98]"
+                  ? "bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-600 border-slate-200 dark:border-zinc-700 cursor-not-allowed shadow-none"
+                  : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:border-rose-800/50 dark:text-rose-400 dark:hover:bg-rose-900/40 shadow-xs font-bold active:scale-[0.98]"
               )}
             >
-              <Trash2 className="w-4 h-4 text-rose-600" />
+              <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
               <span>Delete User</span>
             </button>
           </div>
@@ -549,16 +549,23 @@ export default function UserProfilePage() {
             <button
               type="button"
               onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all shadow-sm"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 text-xs font-semibold transition-all shadow-xs active:scale-[0.98]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isUpdating}
-              className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm active:scale-[0.98]"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600 text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
             >
-              {isUpdating ? "Saving..." : "Save Changes"}
+              {isUpdating ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <span>Save Changes</span>
+              )}
             </button>
           </ModalFooter>
         </form>

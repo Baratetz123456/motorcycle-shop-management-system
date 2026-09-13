@@ -145,14 +145,15 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-all"
+            disabled={isLoading}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 text-xs font-semibold transition-all shadow-xs active:scale-[0.98]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className="px-5 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold rounded-xl transition-all shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-2"
+            className="w-full sm:w-auto px-5 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold rounded-xl transition-all shadow-sm border border-lime-600 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />

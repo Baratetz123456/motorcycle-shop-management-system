@@ -1249,7 +1249,7 @@ function SettingsContent() {
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950"
+                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs flex items-center justify-center gap-2 bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600 shadow-sm active:scale-[0.98] transition-all"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Store Settings</span>
@@ -1577,7 +1577,7 @@ function SettingsContent() {
               <button
                 type="button"
                 onClick={handleResetRoles}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-white/10 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-white/10 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2 shadow-xs active:scale-[0.98]"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset Defaults</span>
@@ -1593,7 +1593,7 @@ function SettingsContent() {
                 <button
                   type="button"
                   onClick={handleSaveRoles}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold border border-lime-600 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Permissions</span>
@@ -2141,14 +2141,14 @@ function SettingsContent() {
                   type="submit"
                   disabled={isUpdatingProfile}
                   className={clsx(
-                    "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed",
+                    "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]",
                     isProfileDirty
-                      ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 dark:bg-amber-950/40 dark:border dark:border-amber-500/60 dark:text-amber-300 ring-2 ring-amber-400/50 scale-105"
-                      : "bg-lime-500 hover:bg-lime-400 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 dark:hover:bg-zinc-800"
+                      ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 border border-amber-600 ring-2 ring-amber-400/50 scale-[1.02]"
+                      : "bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600"
                   )}
                 >
                   {isUpdatingProfile ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
