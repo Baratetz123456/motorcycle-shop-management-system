@@ -62,7 +62,43 @@ clearCart(); // Safe now: confirmation UI reads from completedSummary
   9. **Warranty & Statutory Terms**: 30-day labor warranty, 7-day parts replacement policy, and statutory RA 10173 data privacy notice.
   10. **Dual Physical Signatures**: "Customer Received By" and "Authorized Cashier" physical signature lines.
 
-### 3. Print Cutoff Prevention & Document Styling
+### 3. Decoupled Sandbox Print Engine & Pure White Document Layout
+Printable documents must be decoupled from the application DOM to guarantee zero dark-mode style bleed and zero white background on screen.
+
+#### Component Structure (`frontend/src/components/documents/`)
+- `printUtils.ts`: Houses `printIsolatedDocument(title: string, documentHtml: string)`. Creates a hidden ephemeral `<iframe>`, injects standalone A4 CSS and HTML markup, calls `.print()`, and removes the iframe.
+- `PrintableInvoiceDocument.tsx`: Exports `getInvoiceDocumentHtml(props)` and `<PrintableInvoiceDocument />`.
+- `PrintablePayslipDocument.tsx`: Exports `getPrintablePayslipHtml(props)` and `<PrintablePayslipDocument />`.
+
+#### In-App Page Implementation Pattern
+```tsx
+// In screen page (e.g. /sales/receipt or /payroll):
+return (
+  <>
+    {/* Screen UI: Strictly Dark Mode, Hidden on Print */}
+    <div className="bg-zinc-950 text-zinc-100 w-full print:hidden">
+      <button onClick={() => printIsolatedDocument(`Invoice-${inv}`, getInvoiceDocumentHtml(props))}>
+        Print Official Invoice
+      </button>
+    </div>
+
+    {/* Dedicated Printable Document for Native Ctrl+P */}
+    <div className="hidden print:block w-full bg-white text-zinc-950">
+      <PrintableInvoiceDocument {...props} />
+    </div>
+  </>
+);
+```
+
+#### Document Canvas Rules
+1. **Pure White Canvas**: Pure `#ffffff` background across all elements.
+2. **Subtle Table Headers**: Header `<th>` fill `#f4f4f5` with `#09090b` text and hairline `#e4e4e7` borders.
+3. **No Black Backgrounds & No Thick Borders**: Zero black background bars and no card-style enclosures.
+4. **Single-Page A4 Squeeze**: Margins at `8mm`, table padding `4px 6px`, font size `7.5pt–9pt`, `break-inside: avoid`.
+5. **Dynamic Store Branding**: Strictly render store branding dynamically from `getSystemSettings()` (`settings.appName`, `shopDescription`, `shopAddress`, and TIN). Prohibit the word "motoshop".
+6. **Dark Mode Table Exclusions**: Ensure `globals.css` excludes `[data-printable-document="true"]`, `.printable-invoice-document`, and `.printable-payslip-document` from `html.dark table` color/background resets.
+
+### 4. Print Cutoff Prevention & Document Styling
 - **Ancestor Unconstraining**: Ensure print media styles reset all layout ancestor heights and overflow styles to prevent truncated print previews:
 ```css
 @media print {

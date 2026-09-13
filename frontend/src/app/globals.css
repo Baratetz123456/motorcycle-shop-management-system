@@ -1015,25 +1015,73 @@ html.dark select option {
 }
 
 /* Dark Tables */
-html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
-html.dark tbody:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)),
-html.dark tr:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)):not(:hover) {
+html.dark table:not(:where(
+  .printable-receipt, .printable-receipt *,
+  .printable-payslip, .printable-payslip *,
+  .printable-invoice-document, .printable-invoice-document *,
+  .printable-payslip-document, .printable-payslip-document *,
+  [data-printable-document="true"], [data-printable-document="true"] *,
+  [data-invoice-canvas="true"], [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"], [data-payslip-canvas="true"] *
+)),
+html.dark tbody:not(:where(
+  .printable-receipt, .printable-receipt *,
+  .printable-payslip, .printable-payslip *,
+  .printable-invoice-document, .printable-invoice-document *,
+  .printable-payslip-document, .printable-payslip-document *,
+  [data-printable-document="true"], [data-printable-document="true"] *,
+  [data-invoice-canvas="true"], [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"], [data-payslip-canvas="true"] *
+)),
+html.dark tr:not(:where(
+  .printable-receipt, .printable-receipt *,
+  .printable-payslip, .printable-payslip *,
+  .printable-invoice-document, .printable-invoice-document *,
+  .printable-payslip-document, .printable-payslip-document *,
+  [data-printable-document="true"], [data-printable-document="true"] *,
+  [data-invoice-canvas="true"], [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"], [data-payslip-canvas="true"] *
+)):not(:hover) {
   background-color: #121215 !important;
 }
 
-html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) th {
+html.dark table:not(:where(
+  .printable-receipt, .printable-receipt *,
+  .printable-payslip, .printable-payslip *,
+  .printable-invoice-document, .printable-invoice-document *,
+  .printable-payslip-document, .printable-payslip-document *,
+  [data-printable-document="true"], [data-printable-document="true"] *,
+  [data-invoice-canvas="true"], [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"], [data-payslip-canvas="true"] *
+)) th {
   background-color: #18181b !important;
   color: #d4d4d8 !important;
   border-bottom: 1px solid #27272a !important;
 }
 
-html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) td {
+html.dark table:not(:where(
+  .printable-receipt, .printable-receipt *,
+  .printable-payslip, .printable-payslip *,
+  .printable-invoice-document, .printable-invoice-document *,
+  .printable-payslip-document, .printable-payslip-document *,
+  [data-printable-document="true"], [data-printable-document="true"] *,
+  [data-invoice-canvas="true"], [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"], [data-payslip-canvas="true"] *
+)) td {
   background-color: #121215 !important;
   border-bottom: 1px solid #27272a !important;
   color: #f4f4f5 !important;
 }
 
-html.dark table:not(:where(.printable-receipt, .printable-receipt *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *)) tr:hover td {
+html.dark table:not(:where(
+  .printable-receipt, .printable-receipt *,
+  .printable-payslip, .printable-payslip *,
+  .printable-invoice-document, .printable-invoice-document *,
+  .printable-payslip-document, .printable-payslip-document *,
+  [data-printable-document="true"], [data-printable-document="true"] *,
+  [data-invoice-canvas="true"], [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"], [data-payslip-canvas="true"] *
+)) tr:hover td {
   background-color: #1c1c22 !important;
 }
 
@@ -1227,4 +1275,209 @@ main, [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-
   );
   animation: shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+}
+
+/* ==========================================================================
+   INVOICE & PAYROLL UNIFIED PRINT ENGINE & DARK MODE UI ISOLATION
+   ========================================================================== */
+
+/* 1. Bulletproof In-App Screen Dark Mode Enforcement */
+@media screen {
+  [data-invoice-page="true"],
+  [data-payroll-page="true"] {
+    background-color: #09090b !important;
+    color: #f4f4f5 !important;
+  }
+
+  [data-invoice-page="true"] [class*="bg-white"],
+  [data-payroll-page="true"] [class*="bg-white"],
+  [data-invoice-page="true"] [class*="bg-slate-50"],
+  [data-payroll-page="true"] [class*="bg-slate-50"] {
+    background-color: #121215 !important;
+    color: #f4f4f5 !important;
+  }
+
+  .printable-receipt,
+  .printable-payslip,
+  [data-invoice-canvas="true"],
+  [data-payslip-canvas="true"] {
+    background-color: #121215 !important;
+    color: #f4f4f5 !important;
+    border-color: #27272a !important;
+  }
+}
+
+/* 2. Unified Pure White Single-Page Print Engine */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm;
+  }
+
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body, #__next, div, main, section, article {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    background: #ffffff !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #09090b !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-size: 10pt !important;
+  }
+
+  nav,
+  aside,
+  header,
+  [role="navigation"],
+  button,
+  .no-print,
+  .modal-backdrop,
+  [data-modal-header="true"],
+  [data-modal-footer="true"],
+  .floating-filter-button,
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+
+  html.dark .printable-receipt,
+  html.dark .printable-payslip,
+  html.dark [data-invoice-canvas="true"],
+  html.dark [data-payslip-canvas="true"],
+  .printable-receipt,
+  .printable-payslip,
+  [data-invoice-canvas="true"],
+  [data-payslip-canvas="true"] {
+    display: block !important;
+    color: #09090b !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  html.dark .printable-receipt *,
+  html.dark .printable-payslip *,
+  html.dark [data-invoice-canvas="true"] *,
+  html.dark [data-payslip-canvas="true"] *,
+  .printable-receipt *,
+  .printable-payslip *,
+  [data-invoice-canvas="true"] *,
+  [data-payslip-canvas="true"] * {
+    color: #09090b !important;
+    border-color: #e4e4e7 !important;
+    background-color: transparent !important;
+  }
+
+  html.dark .printable-receipt table,
+  html.dark .printable-payslip table,
+  html.dark .printable-invoice-document table,
+  html.dark .printable-payslip-document table,
+  html.dark [data-printable-document="true"] table,
+  html.dark [data-invoice-canvas="true"] table,
+  html.dark [data-payslip-canvas="true"] table,
+  .printable-receipt table,
+  .printable-payslip table,
+  .printable-invoice-document table,
+  .printable-payslip-document table,
+  [data-printable-document="true"] table,
+  [data-invoice-canvas="true"] table,
+  [data-payslip-canvas="true"] table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+
+  html.dark .printable-receipt th,
+  html.dark .printable-receipt td,
+  html.dark .printable-payslip th,
+  html.dark .printable-payslip td,
+  html.dark .printable-invoice-document th,
+  html.dark .printable-invoice-document td,
+  html.dark .printable-payslip-document th,
+  html.dark .printable-payslip-document td,
+  html.dark [data-printable-document="true"] th,
+  html.dark [data-printable-document="true"] td,
+  .printable-receipt th,
+  .printable-receipt td,
+  .printable-payslip th,
+  .printable-payslip td,
+  .printable-invoice-document th,
+  .printable-invoice-document td,
+  .printable-payslip-document th,
+  .printable-payslip-document td,
+  [data-printable-document="true"] th,
+  [data-printable-document="true"] td {
+    border: 1px solid #e4e4e7 !important;
+    padding: 4px 6px !important;
+    color: #09090b !important;
+    font-size: 9pt !important;
+  }
+
+  html.dark .printable-receipt th,
+  html.dark .printable-payslip th,
+  html.dark .printable-invoice-document th,
+  html.dark .printable-payslip-document th,
+  html.dark [data-printable-document="true"] th,
+  .printable-receipt th,
+  .printable-payslip th,
+  .printable-invoice-document th,
+  .printable-payslip-document th,
+  [data-printable-document="true"] th {
+    background-color: #f4f4f5 !important;
+    background: #f4f4f5 !important;
+    font-weight: 700 !important;
+    color: #09090b !important;
+  }
+
+  html.dark .printable-receipt tr,
+  html.dark .printable-payslip tr,
+  html.dark .printable-invoice-document tr,
+  html.dark .printable-payslip-document tr,
+  html.dark [data-printable-document="true"] tr,
+  .printable-receipt tr,
+  .printable-payslip tr,
+  .printable-invoice-document tr,
+  .printable-payslip-document tr,
+  [data-printable-document="true"] tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+
+  html.dark .printable-receipt .print-pill,
+  html.dark .printable-payslip .print-pill,
+  html.dark .printable-invoice-document .print-pill,
+  html.dark .printable-payslip-document .print-pill,
+  html.dark [data-printable-document="true"] .print-pill,
+  .printable-receipt .print-pill,
+  .printable-payslip .print-pill,
+  .printable-invoice-document .print-pill,
+  .printable-payslip-document .print-pill,
+  [data-printable-document="true"] .print-pill {
+    background-color: #f4f4f5 !important;
+    color: #09090b !important;
+    border-color: #d4d4d8 !important;
+  }
 }

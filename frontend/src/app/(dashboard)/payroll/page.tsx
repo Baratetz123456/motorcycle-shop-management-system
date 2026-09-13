@@ -27,6 +27,8 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/comp
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
+import { printIsolatedDocument } from "@/components/documents/printUtils";
+import { PrintablePayslipDocument, getPrintablePayslipHtml } from "@/components/documents/PrintablePayslipDocument";
 
 interface CommissionRecord {
   id: string;
@@ -294,6 +296,26 @@ export default function PayrollPage() {
     });
   };
 
+  const handlePrintPayslip = () => {
+    if (!selectedPayslip) return;
+    const html = getPrintablePayslipHtml({
+      payslipNo: selectedPayslip.payslipNo,
+      name: selectedPayslip.name,
+      role: selectedPayslip.role,
+      payPeriod: selectedPayslip.payPeriod,
+      issuedDate: selectedPayslip.issuedDate,
+      status: selectedPayslip.status,
+      itemsProcessed: selectedPayslip.itemsProcessed || 0,
+      laborTotal: selectedPayslip.laborTotal,
+      commissionRate: selectedPayslip.commissionRate,
+      commissionEarned: selectedPayslip.commissionEarned,
+      baseWage: selectedPayslip.baseWage,
+      totalPayout: selectedPayslip.totalPayout,
+      settings,
+    });
+    printIsolatedDocument(`Payslip-${selectedPayslip.payslipNo}`, html);
+  };
+
   // Role Access Guard Screen
   if (!checkingAuth && userRole !== "admin" && userRole !== "manager") {
     return (
@@ -323,7 +345,11 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="min-h-full bg-zinc-950 p-4 sm:p-6 lg:p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto w-full">
+    <>
+      <div 
+        data-payroll-page="true"
+        className="min-h-full bg-zinc-950 p-4 sm:p-6 lg:p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto w-full print:hidden"
+      >
       
       {/* Top Header */}
       <div className="pb-6 border-b border-zinc-800 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -959,6 +985,7 @@ export default function PayrollPage() {
         isOpen={!!selectedPayslip}
         onClose={() => setSelectedPayslip(null)}
         size="lg"
+        className="bg-zinc-900 border-zinc-800 text-zinc-100"
       >
         <div data-modal-header="true">
           <ModalHeader
@@ -967,10 +994,11 @@ export default function PayrollPage() {
             title="Official Staff Compensation Voucher"
             subtitle={`Disbursement record for ${selectedPayslip?.name}`}
             onClose={() => setSelectedPayslip(null)}
+            className="bg-zinc-900 border-zinc-800 text-zinc-100"
           />
         </div>
 
-        <ModalBody className="space-y-4 text-xs font-sans p-3 sm:p-6 bg-zinc-950">
+        <ModalBody className="space-y-4 text-xs font-sans p-3 sm:p-6 bg-zinc-950 text-zinc-100">
           {/* UNIFIED SINGLE-PAGE DOCUMENT TEMPLATE (Dark In-App, Pure White in Print) */}
           <div 
             data-payslip-canvas="true" 
@@ -1159,10 +1187,10 @@ export default function PayrollPage() {
         </ModalBody>
 
         <div data-modal-footer="true">
-          <ModalFooter>
+          <ModalFooter className="bg-zinc-900 border-zinc-800">
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={handlePrintPayslip}
               className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm border border-emerald-500/30"
             >
               <Printer className="w-4 h-4" />
@@ -1224,5 +1252,27 @@ export default function PayrollPage() {
       </MobileFilterSheet>
 
     </div>
+
+    {/* Dedicated Isolated Printable Payslip Document for native Ctrl+P */}
+    {selectedPayslip && (
+      <div className="hidden print:block w-full bg-white text-zinc-950">
+        <PrintablePayslipDocument
+          payslipNo={selectedPayslip.payslipNo}
+          name={selectedPayslip.name}
+          role={selectedPayslip.role}
+          payPeriod={selectedPayslip.payPeriod}
+          issuedDate={selectedPayslip.issuedDate}
+          status={selectedPayslip.status}
+          itemsProcessed={selectedPayslip.itemsProcessed || 0}
+          laborTotal={selectedPayslip.laborTotal}
+          commissionRate={selectedPayslip.commissionRate}
+          commissionEarned={selectedPayslip.commissionEarned}
+          baseWage={selectedPayslip.baseWage}
+          totalPayout={selectedPayslip.totalPayout}
+          settings={settings}
+        />
+      </div>
+    )}
+  </>
   );
 }

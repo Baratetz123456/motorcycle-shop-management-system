@@ -21,6 +21,8 @@ import { extractInvoiceLaborAndCommission, fetchStaffCompensationFromDB } from "
 import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
+import { printIsolatedDocument } from "@/components/documents/printUtils";
+import { PrintableInvoiceDocument, getInvoiceDocumentHtml } from "@/components/documents/PrintableInvoiceDocument";
 
 interface TransactionRecord {
   id: string;
@@ -161,14 +163,31 @@ function SalesReceiptContent() {
   };
 
   const handlePrintInvoice = () => {
-    if (typeof window !== "undefined") {
-      const originalTitle = document.title;
-      if (transaction?.invoice_no) {
-        document.title = `Invoice-${transaction.invoice_no}`;
-      }
-      window.print();
-      document.title = originalTitle;
-    }
+    if (!transaction) return;
+    const docHtml = getInvoiceDocumentHtml({
+      invoiceNo: transaction.invoice_no,
+      jobOrderNumber: transaction.job_order_number || transaction.job_order_id,
+      createdAt: transaction.created_at,
+      status: transaction.status,
+      customerName: transaction.customer_name,
+      customerPhone: transaction.customer_phone,
+      motorcycleName: transaction.motorcycle_name,
+      plateNumber: transaction.plate_number,
+      cashierName: transaction.cashier_name,
+      mechanicName: transaction.mechanic_name,
+      paymentMethod: transaction.payment_method,
+      items: transaction.items || [{ name: "Repair Labor Charge", qty: 1, price: transaction.total }],
+      subtotal: transaction.subtotal,
+      discountPercentage: transaction.discount_percentage,
+      discountAmount: transaction.discount_amount,
+      total: transaction.total,
+      amountPaid: transaction.amount_paid,
+      cashReceived: transaction.cash_received,
+      cashChange: transaction.cash_change,
+      laborAnalysis,
+      settings,
+    });
+    printIsolatedDocument(`Invoice-${transaction.invoice_no}`, docHtml);
   };
 
   const handleCopyInvoice = () => {
@@ -319,7 +338,7 @@ function SalesReceiptContent() {
 
   if (loading) {
     return (
-      <div className="p-4 sm:p-6">
+      <div data-invoice-page="true" className="w-full flex-1 min-h-screen p-4 sm:p-6 bg-zinc-950 text-zinc-100">
         <DetailViewSkeleton hasTable={true} />
       </div>
     );
@@ -327,7 +346,7 @@ function SalesReceiptContent() {
 
   if (!transaction) {
     return (
-      <div className="min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
+      <div data-invoice-page="true" className="w-full flex-1 min-h-[70vh] p-8 flex flex-col items-center justify-center font-sans text-zinc-100 bg-zinc-950">
         <AlertCircle className="w-12 h-12 text-red-400 mb-3" />
         <h2 className="text-xl font-bold mb-1">Receipt Not Found</h2>
         <p className="text-xs text-zinc-400 mb-6">Could not find a valid transaction matching the requested ID.</p>
@@ -347,7 +366,11 @@ function SalesReceiptContent() {
   const vatAmount = transaction.total - vatableSales;
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y bg-zinc-950 text-zinc-100">
+    <>
+      <div 
+        data-invoice-page="true"
+        className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y bg-zinc-950 text-zinc-100 print:hidden"
+      >
       {/* Complete Single-Page Official Invoice Print Stylesheet */}
       <style jsx global>{`
         @media print {
@@ -765,13 +788,41 @@ function SalesReceiptContent() {
         </div>
       </div>
     </div>
+
+    {/* Dedicated Isolated Printable Invoice Document for native Ctrl+P */}
+    <div className="hidden print:block w-full bg-white text-zinc-950">
+      <PrintableInvoiceDocument
+        invoiceNo={transaction.invoice_no}
+        jobOrderNumber={transaction.job_order_number || transaction.job_order_id}
+        createdAt={transaction.created_at}
+        status={transaction.status}
+        customerName={transaction.customer_name}
+        customerPhone={transaction.customer_phone}
+        motorcycleName={transaction.motorcycle_name}
+        plateNumber={transaction.plate_number}
+        cashierName={transaction.cashier_name}
+        mechanicName={transaction.mechanic_name}
+        paymentMethod={transaction.payment_method}
+        items={transaction.items || [{ name: "Repair Labor Charge", qty: 1, price: transaction.total }]}
+        subtotal={transaction.subtotal}
+        discountPercentage={transaction.discount_percentage}
+        discountAmount={transaction.discount_amount}
+        total={transaction.total}
+        amountPaid={transaction.amount_paid}
+        cashReceived={transaction.cash_received}
+        cashChange={transaction.cash_change}
+        laborAnalysis={laborAnalysis}
+        settings={settings}
+      />
+    </div>
+  </>
   );
 }
 
 export default function SalesReceiptPage() {
   return (
     <Suspense fallback={
-      <div className="p-4 sm:p-6">
+      <div data-invoice-page="true" className="w-full flex-1 min-h-screen p-4 sm:p-6 bg-zinc-950 text-zinc-100">
         <DetailViewSkeleton hasTable={true} />
       </div>
     }>

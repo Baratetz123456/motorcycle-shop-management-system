@@ -175,27 +175,30 @@ export default function SalesManagementPage() {
   ].reduce((a, b) => a + b, 0);
 
   return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-slate-50 dark:bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-slate-900 dark:text-zinc-100">
+    <div 
+      data-invoice-page="true"
+      className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-zinc-100"
+    >
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-zinc-100 flex items-center gap-3">
-            <Receipt className="w-8 h-8 text-lime-600 dark:text-lime-400" />
+          <h1 className="text-3xl font-black text-white flex items-center gap-3">
+            <Receipt className="w-8 h-8 text-emerald-400" />
             Invoices & Receipts
           </h1>
-          <p className="text-slate-500 dark:text-zinc-400 mt-1 text-sm">
+          <p className="text-zinc-400 mt-1 text-sm">
             Completed sales receipts, open customer invoices, and audit logs.
           </p>
         </div>
       </div>
 
       {/* Desktop Filter & Search Bar */}
-      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm shrink-0">
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 p-4 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-sm shrink-0">
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar overscroll-x-contain pb-1 sm:pb-0">
           {/* Status Filter */}
           <div className="flex items-center gap-2 shrink-0">
-            <Filter className="w-4 h-4 text-slate-400 dark:text-zinc-500 shrink-0" />
-            <div className="flex bg-slate-100 dark:bg-zinc-800/70 p-1 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs shrink-0">
+            <Filter className="w-4 h-4 text-zinc-500 shrink-0" />
+            <div className="flex bg-zinc-800/70 p-1 rounded-xl border border-zinc-700 text-xs shrink-0">
               {["ALL", "COMPLETED", "VOIDED"].map((st) => (
                 <button
                   key={st}
@@ -213,12 +216,12 @@ export default function SalesManagementPage() {
             </div>
           </div>
 
-          <div className="h-4 w-px bg-slate-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+          <div className="h-4 w-px bg-zinc-800 hidden sm:block shrink-0" />
 
           {/* Date Range Filter Controls */}
-          <div className="flex items-center gap-1.5 bg-slate-100/80 dark:bg-zinc-800/70 p-1 rounded-xl border border-slate-200 dark:border-zinc-700 shrink-0">
+          <div className="flex items-center gap-1.5 bg-zinc-800/70 p-1 rounded-xl border border-zinc-700 shrink-0">
             <div className="flex items-center gap-1 shrink-0">
-              <Calendar className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400 ml-1.5 mr-0.5 shrink-0" />
+              <Calendar className="w-3.5 h-3.5 text-emerald-400 ml-1.5 mr-0.5 shrink-0" />
               {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
                 const labels = {
                   ALL: "All Time",
@@ -244,30 +247,30 @@ export default function SalesManagementPage() {
               })}
             </div>
 
-            <div className="h-3.5 w-px bg-slate-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+            <div className="h-3.5 w-px bg-zinc-800 hidden sm:block shrink-0" />
 
             {/* Custom Date Inputs */}
-            <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-zinc-400 shrink-0">
+            <div className="flex items-center gap-1 text-xs text-zinc-400 shrink-0">
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-                className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-sm"
                 title="Filter from transaction date"
               />
-              <span className="text-slate-400 dark:text-zinc-500 text-[11px]">to</span>
+              <span className="text-zinc-500 text-[11px]">to</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-                className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-sm"
                 title="Filter to transaction date"
               />
 
               {(startDate || endDate || datePreset !== "ALL") && (
                 <button
                   onClick={handleClearDateFilter}
-                  className="p-1 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-md text-slate-400 hover:text-rose-600 transition-colors ml-0.5"
+                  className="p-1 hover:bg-zinc-700 rounded-md text-zinc-400 hover:text-rose-400 transition-colors ml-0.5"
                   title="Clear date filter"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -279,13 +282,13 @@ export default function SalesManagementPage() {
 
         {/* Search Bar */}
         <div className="relative w-full lg:w-72 shrink-0">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <input
             type="text"
             placeholder="Search Invoice #, Customer, Bike..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-lime-500 shadow-sm"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
           />
         </div>
       </div>
@@ -310,22 +313,22 @@ export default function SalesManagementPage() {
       >
         {/* Search Input */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Search Invoice or Customer</label>
+          <label className="text-xs font-semibold text-zinc-300">Search Invoice or Customer</label>
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input
               type="text"
               placeholder="Invoice #, Customer, Bike..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-sm"
             />
           </div>
         </div>
 
         {/* Status Selector */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Transaction Status</label>
+          <label className="text-xs font-semibold text-zinc-300">Transaction Status</label>
           <div className="grid grid-cols-3 gap-2">
             {["ALL", "COMPLETED", "VOIDED"].map((st) => (
               <button
@@ -347,7 +350,7 @@ export default function SalesManagementPage() {
 
         {/* Date Presets */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Time Period</label>
+          <label className="text-xs font-semibold text-zinc-300">Time Period</label>
           <div className="grid grid-cols-2 gap-2">
             {(["ALL", "TODAY", "WEEK", "MONTH"] as const).map((preset) => {
               const labels = {
@@ -378,24 +381,24 @@ export default function SalesManagementPage() {
 
         {/* Custom Date Inputs */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Custom Date Range</label>
+          <label className="text-xs font-semibold text-zinc-300">Custom Date Range</label>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <span className="text-[10px] text-slate-500 dark:text-zinc-400 block mb-1">From</span>
+              <span className="text-[10px] text-zinc-400 block mb-1">From</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => handleCustomDateChange(e.target.value, endDate)}
-                className="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-2.5 py-2 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-2.5 py-2 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-sm"
               />
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 dark:text-zinc-400 block mb-1">To</span>
+              <span className="text-[10px] text-zinc-400 block mb-1">To</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => handleCustomDateChange(startDate, e.target.value)}
-                className="w-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-2.5 py-2 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-lime-500 shadow-sm"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-2.5 py-2 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-sm"
               />
             </div>
           </div>
@@ -403,10 +406,10 @@ export default function SalesManagementPage() {
       </MobileFilterSheet>
 
       {/* Transactions Table & Mobile Cards */}
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-white dark:bg-zinc-900 border-0 md:border md:border-slate-200 dark:md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
         <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
           {/* Mobile View: Borderless Edge-to-Edge List Rows */}
-          <div className="block md:hidden px-1 divide-y divide-slate-100 dark:divide-zinc-800/80 pb-24">
+          <div className="block md:hidden px-1 divide-y divide-zinc-800/80 pb-24">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, idx) => (
                 <div key={idx} className="py-3.5 px-2 space-y-2">
@@ -445,41 +448,41 @@ export default function SalesManagementPage() {
                   <div
                     key={tx.id}
                     onClick={() => router.push(`/sales/receipt?id=${encodeURIComponent(tx.id)}`)}
-                    className="py-4 px-3 hover:bg-slate-50 dark:hover:bg-zinc-800/50 rounded-xl transition-all cursor-pointer space-y-2 group"
+                    className="py-4 px-3 hover:bg-zinc-800/50 rounded-xl transition-all cursor-pointer space-y-2 group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-lime-700 dark:text-lime-400 text-sm">
+                      <span className="font-mono font-bold text-emerald-400 text-sm">
                         {tx.invoice_no}
                       </span>
                       {isCompleted ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
                           Completed
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-950/40 text-rose-400 border border-rose-800/40">
                           Voided
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
-                      <div className="font-bold text-slate-900 dark:text-zinc-100 text-sm">
+                    <div className="flex items-center justify-between text-xs text-zinc-400">
+                      <div className="font-bold text-zinc-100 text-sm">
                         {tx.customer_name || "Walk-in Customer"}
                       </div>
                       <span>{new Date(tx.created_at).toLocaleDateString()}</span>
                     </div>
 
                     {tx.motorcycle_name && (
-                      <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono">
+                      <div className="text-xs text-zinc-400 font-mono">
                         🏍️ {tx.motorcycle_name}
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between pt-1 text-xs text-slate-500 dark:text-zinc-400">
+                    <div className="flex items-center justify-between pt-1 text-xs text-zinc-400">
                       <span>Total Amount</span>
                       <div className="flex items-center gap-1">
-                        <span className="font-mono font-bold text-slate-900 dark:text-zinc-100 text-base">₱{tx.total.toFixed(2)}</span>
-                        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" />
+                        <span className="font-mono font-bold text-zinc-100 text-base">₱{tx.total.toFixed(2)}</span>
+                        <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
                   </div>
@@ -489,8 +492,8 @@ export default function SalesManagementPage() {
           </div>
 
           {/* Desktop View: Transactions Table */}
-          <table className="hidden md:table w-full text-left text-sm text-slate-700 dark:text-zinc-200 whitespace-nowrap">
-            <thead className="text-xs uppercase bg-slate-50 dark:bg-zinc-800/80 text-slate-500 dark:text-zinc-400 border-b border-slate-200 dark:border-zinc-700/80 sticky top-0 z-10">
+          <table className="hidden md:table w-full text-left text-sm text-zinc-200 whitespace-nowrap">
+            <thead className="text-xs uppercase bg-zinc-800/80 text-zinc-400 border-b border-zinc-700/80 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-4 font-bold">Invoice No</th>
                 <th className="px-6 py-4 font-bold">Date & Time</th>
@@ -500,10 +503,10 @@ export default function SalesManagementPage() {
                 <th className="px-6 py-4 font-bold text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-zinc-800">
               {isLoading ? (
                 Array.from({ length: 7 }).map((_, rIdx) => (
-                  <tr key={rIdx} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30">
+                  <tr key={rIdx} className="hover:bg-zinc-800/30">
                     <td className="px-6 py-4">
                       <Skeleton className="h-5 w-24 rounded-lg" />
                     </td>
@@ -529,9 +532,9 @@ export default function SalesManagementPage() {
                 ))
               ) : filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-slate-500 dark:text-zinc-400">
-                    <Calendar className="w-10 h-10 mx-auto text-slate-400 dark:text-zinc-500 mb-2" />
-                    <p className="font-semibold text-slate-600 dark:text-zinc-300">No sales transactions match your filter criteria.</p>
+                  <td colSpan={6} className="text-center py-16 text-zinc-400">
+                    <Calendar className="w-10 h-10 mx-auto text-zinc-500 mb-2" />
+                    <p className="font-semibold text-zinc-300">No sales transactions match your filter criteria.</p>
                     {(startDate || endDate || search || statusFilter !== "ALL") && (
                       <button
                         onClick={() => {
@@ -539,7 +542,7 @@ export default function SalesManagementPage() {
                           setStatusFilter("ALL");
                           handleClearDateFilter();
                         }}
-                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm"
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 hover:text-white transition-all shadow-sm"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Reset All Filters</span>
@@ -555,35 +558,35 @@ export default function SalesManagementPage() {
                     <tr 
                       key={tx.id} 
                       onClick={() => router.push(`/sales/receipt?id=${encodeURIComponent(tx.id)}`)}
-                      className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-all cursor-pointer group"
+                      className="hover:bg-zinc-800/40 transition-all cursor-pointer group"
                     >
-                      <td className="px-6 py-4 font-mono font-bold text-lime-700 dark:text-lime-400">{tx.invoice_no}</td>
+                      <td className="px-6 py-4 font-mono font-bold text-emerald-400">{tx.invoice_no}</td>
 
-                      <td className="px-6 py-4 text-xs text-slate-500 dark:text-zinc-400">
+                      <td className="px-6 py-4 text-xs text-zinc-400">
                         {new Date(tx.created_at).toLocaleString()}
                       </td>
 
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-900 dark:text-zinc-100 group-hover:text-lime-700 dark:group-hover:text-lime-400 transition-colors">
+                        <div className="font-bold text-zinc-100 group-hover:text-emerald-400 transition-colors">
                           {tx.customer_name || "Walk-in Customer"}
                         </div>
                         {tx.motorcycle_name && (
-                          <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-0.5">{tx.motorcycle_name}</div>
+                          <div className="text-xs text-zinc-400 font-mono mt-0.5">{tx.motorcycle_name}</div>
                         )}
                       </td>
 
-                      <td className="px-6 py-4 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 text-base">
+                      <td className="px-6 py-4 text-right font-mono font-bold text-zinc-100 text-base">
                         ₱{tx.total.toFixed(2)}
                       </td>
 
                       <td className="px-6 py-4 text-center">
                         {isCompleted ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
                             <CheckCircle className="w-3.5 h-3.5" />
                             Completed
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-950/40 text-rose-400 border border-rose-800/40">
                             <Ban className="w-3.5 h-3.5" />
                             Voided
                           </span>
@@ -591,7 +594,7 @@ export default function SalesManagementPage() {
                       </td>
 
                       <td className="px-6 py-4 text-right">
-                        <div className="inline-flex items-center text-xs text-slate-500 dark:text-zinc-400 group-hover:text-lime-700 dark:group-hover:text-lime-400 transition-colors font-medium">
+                        <div className="inline-flex items-center text-xs text-zinc-400 group-hover:text-emerald-400 transition-colors font-medium">
                           <span className="hidden group-hover:inline mr-1">View Receipt</span>
                           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -605,9 +608,9 @@ export default function SalesManagementPage() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col sm:flex-row gap-2 items-center justify-between text-xs text-slate-500 dark:text-zinc-400 shrink-0">
+        <div className="p-4 border-t border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row gap-2 items-center justify-between text-xs text-zinc-400 shrink-0">
           <div>Displaying {filteredTransactions.length} transaction record(s)</div>
-          <div className="flex gap-4 items-center text-slate-500 dark:text-zinc-400 text-[11px] sm:text-xs">
+          <div className="flex gap-4 items-center text-zinc-400 text-[11px] sm:text-xs">
             <span>• Commission rates are determined by each assigned mechanic</span>
           </div>
         </div>

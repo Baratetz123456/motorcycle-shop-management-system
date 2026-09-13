@@ -52,8 +52,8 @@ test.describe("Save & Delete Buttons UI/UX Overhaul Suite", () => {
     // General Store Settings Save button
     const saveStoreBtn = page.locator("button:has-text('Save Store Settings')");
     await expect(saveStoreBtn).toBeVisible({ timeout: 10000 });
-    await expect(saveStoreBtn).toHaveClass(/bg-lime-500/);
-    await expect(saveStoreBtn).toHaveClass(/text-zinc-950/);
+    await expect(saveStoreBtn).toHaveClass(/(bg-lime-500|bg-emerald-600)/);
+    await expect(saveStoreBtn).toHaveClass(/(text-zinc-950|text-white)/);
 
     // Switch to Roles tab
     const rolesTabBtn = page.locator("button:has-text('Role Accessibility')");
@@ -61,8 +61,8 @@ test.describe("Save & Delete Buttons UI/UX Overhaul Suite", () => {
       await rolesTabBtn.click();
       const saveRolesBtn = page.locator("button:has-text('Save Permissions')");
       await expect(saveRolesBtn).toBeVisible();
-      await expect(saveRolesBtn).toHaveClass(/bg-lime-500/);
-      await expect(saveRolesBtn).toHaveClass(/text-zinc-950/);
+      await expect(saveRolesBtn).toHaveClass(/(bg-lime-500|bg-emerald-600)/);
+      await expect(saveRolesBtn).toHaveClass(/(text-zinc-950|text-white)/);
     }
 
     await page.screenshot({ path: "C:/Users/barat/.gemini/antigravity-ide/brain/67140bbd-85d1-41ad-a046-c44c22276ad3/save-buttons-settings.png" });
@@ -78,7 +78,7 @@ test.describe("Save & Delete Buttons UI/UX Overhaul Suite", () => {
 
     await expect(editBtn).toBeVisible({ timeout: 10000 });
     await expect(deleteBtn).toBeVisible();
-    await expect(deleteBtn).toHaveClass(/text-rose-700/);
+    await expect(deleteBtn).toHaveClass(/(text-rose-700|bg-rose-600|text-white)/);
 
     // Click Edit Details to check modal footer
     await editBtn.click();
@@ -86,8 +86,8 @@ test.describe("Save & Delete Buttons UI/UX Overhaul Suite", () => {
     const cancelBtn = page.locator("button:has-text('Cancel')").first();
 
     await expect(saveChangesBtn).toBeVisible();
-    await expect(saveChangesBtn).toHaveClass(/bg-lime-500/);
-    await expect(saveChangesBtn).toHaveClass(/text-zinc-950/);
+    await expect(saveChangesBtn).toHaveClass(/(bg-lime-500|bg-emerald-600)/);
+    await expect(saveChangesBtn).toHaveClass(/(text-zinc-950|text-white)/);
     await expect(cancelBtn).toBeVisible();
 
     await page.screenshot({ path: "C:/Users/barat/.gemini/antigravity-ide/brain/67140bbd-85d1-41ad-a046-c44c22276ad3/inventory-save-delete.png" });

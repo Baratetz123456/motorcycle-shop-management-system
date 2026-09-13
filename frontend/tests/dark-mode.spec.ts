@@ -202,4 +202,25 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     const deleteButtons = page.locator('button:has-text("Delete")');
     await expect(deleteButtons).toHaveCount(1);
   });
+
+  test('Invoice and Payroll pages strictly enforce zero white background in-app on screen', async ({ page }) => {
+    // 1. Check /sales
+    await page.goto('/sales');
+    await page.waitForLoadState('networkidle');
+    const salesPage = page.locator('[data-invoice-page="true"]').first();
+    await expect(salesPage).toBeVisible({ timeout: 10000 });
+    const salesBg = await salesPage.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(salesBg).not.toBe('rgb(255, 255, 255)');
+    expect(['rgb(9, 9, 11)', 'rgb(18, 18, 21)']).toContain(salesBg);
+
+    // 2. Check /payroll
+    await page.goto('/payroll');
+    await page.waitForLoadState('networkidle');
+    const payrollPage = page.locator('[data-payroll-page="true"]').first();
+    await expect(payrollPage).toBeVisible({ timeout: 10000 });
+    const payrollBg = await payrollPage.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(payrollBg).not.toBe('rgb(255, 255, 255)');
+    expect(['rgb(9, 9, 11)', 'rgb(18, 18, 21)']).toContain(payrollBg);
+  });
 });
+

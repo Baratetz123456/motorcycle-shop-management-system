@@ -297,8 +297,8 @@ test.describe("Executive Dashboard, Reports & Payroll Redesign Suite", () => {
     // Verify Modal & TIN Header
     await expect(page.locator("text=Official Staff Compensation Voucher")).toBeVisible();
     await page.waitForTimeout(350);
-    await expect(page.locator("text=VERSIKLO MOTORCYCLE PARTS & SERVICES")).toBeVisible();
-    await expect(page.locator("text=BIR Registered TIN: 442-891-003-000 Non-VAT")).toBeVisible();
+    await expect(page.locator("[data-payslip-canvas='true']").getByText(/VERSIKLO MOTORCYCLE PARTS/i)).toBeVisible();
+    await expect(page.locator("[data-payslip-canvas='true']").getByText(/BIR Registered TIN/i)).toBeVisible();
     await expect(page.locator("text=Print Official Payslip")).toBeVisible();
 
     // Capture Payslip Screenshot

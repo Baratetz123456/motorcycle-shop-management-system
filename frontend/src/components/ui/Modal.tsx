@@ -143,7 +143,7 @@ export function ModalHeader({
   return (
     <div
       className={clsx(
-        "px-6 py-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between shrink-0",
+        "px-6 py-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900 flex items-center justify-between shrink-0",
         className
       )}
     >
@@ -162,8 +162,8 @@ export function ModalHeader({
             </div>
           )}
           <div>
-            {title && <h2 className="text-lg font-bold text-slate-900 tracking-tight">{title}</h2>}
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+            {title && <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight">{title}</h2>}
+            {subtitle && <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{subtitle}</p>}
           </div>
         </div>
       )}
@@ -171,7 +171,7 @@ export function ModalHeader({
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors ml-auto shrink-0"
+          className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors ml-auto shrink-0"
           title="Close dialog (Esc)"
           aria-label="Close dialog"
         >
