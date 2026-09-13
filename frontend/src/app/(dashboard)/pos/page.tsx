@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePosStore } from "@/lib/store/pos-store";
 import { 
   ShoppingCart, 
@@ -26,7 +26,8 @@ import {
   CreditCard,
   Banknote,
   CheckCircle2,
-  Lock
+  Lock,
+  Loader2
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -86,8 +87,9 @@ const SERVICES_SUB_FILTERS = [
   { id: "Overhaul", label: "Engine Overhaul", keywords: ["overhaul", "engine", "transmission", "rebuild"] },
 ];
 
-export default function POSPage() {
+function POSPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { cart, addToCart, removeFromCart, updateQty, getTotals, clearCart } = usePosStore();
   const { subtotal, total, itemCount } = getTotals();
 
@@ -112,6 +114,24 @@ export default function POSPage() {
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [frequencyMap, setFrequencyMap] = useState<Record<string, number>>({});
+
+  // Auto-restore customer and cart view if specified in query params (e.g. returning from checkout)
+  useEffect(() => {
+    const queryJobId = searchParams.get("job_id");
+    const queryView = searchParams.get("view");
+
+    if (queryJobId && activeRepairs.length > 0) {
+      const match = activeRepairs.find(
+        (r) => r.job_id === queryJobId || r.jo_number === queryJobId
+      );
+      if (match) {
+        selectActiveCustomerRepair(match, false);
+        if (queryView === "cart") {
+          setActiveView("cart");
+        }
+      }
+    }
+  }, [searchParams, activeRepairs]);
 
   // Guard: User is strictly prohibited from viewing or remaining on cart view without an active customer repair selected
   useEffect(() => {
@@ -389,6 +409,16 @@ export default function POSPage() {
     } catch (e) {}
   };
 
+  const handleChangeCustomer = () => {
+    if (selectedRepair && cart.length > 0) {
+      const existingKey = `motoshop_cart_${selectedRepair.job_id}`;
+      const extraItems = cart.filter((i) => !i.id.startsWith("labor-"));
+      localStorage.setItem(existingKey, JSON.stringify(extraItems));
+    }
+    setIsChangingCustomer(true);
+    setActiveView("catalog");
+  };
+
   const handleProceedToCheckout = () => {
     if (!selectedRepair) {
       setWarningMessage("Please select an active customer repair before proceeding to checkout!");
@@ -443,8 +473,8 @@ export default function POSPage() {
           </div>
         </div>
 
-        {/* View Switcher: Catalog vs Current Order (Full-page switch) */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        {/* View Switcher: Catalog vs Current Order (Desktop only, mobile uses direct workflow) */}
+        <div className="hidden md:flex items-center gap-2 sm:gap-4">
           <div className="flex bg-zinc-900/90 p-1 rounded-2xl border border-white/10 text-xs w-full sm:w-auto shadow-inner">
             <button
               onClick={() => setActiveView("catalog")}
@@ -512,39 +542,45 @@ export default function POSPage() {
         <main className="flex-1 flex flex-col pb-24 lg:pb-8">
           
           {/* Section: Active Customer Repair Selection */}
-          <section className="border-b border-white/10 bg-zinc-900/40 p-4 sm:p-6 backdrop-blur-md">
+          <section className={clsx(
+            "border-b border-white/10 backdrop-blur-md transition-all",
+            selectedRepair && !isChangingCustomer 
+              ? "sticky top-0 z-20 bg-zinc-950/95 p-3 sm:p-5" 
+              : "bg-zinc-900/40 p-4 sm:p-6"
+          )}>
             <div className="w-full space-y-4">
               
               {/* If customer is already selected and NOT actively expanding selector */}
               {selectedRepair && !isChangingCustomer ? (
-                <div className="bg-zinc-900 border border-cyan-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl relative overflow-hidden">
-                  <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-lg">
+                <div className="bg-zinc-900/90 border border-cyan-500/30 rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-xl relative overflow-hidden">
+                  <div className="flex items-center gap-3 sm:gap-4 relative z-10 min-w-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-sm sm:text-lg shrink-0">
                       {selectedRepair.customer_name.split(" ").map((n) => n[0]).join("")}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">Active Customer Linked</span>
-                        <span className="font-mono text-[11px] bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-md font-bold">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] sm:text-xs uppercase font-bold text-cyan-400 tracking-wider">Active Customer</span>
+                        <span className="font-mono text-[10px] sm:text-[11px] bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">
                           {selectedRepair.jo_number}
                         </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                           {selectedRepair.status}
                         </span>
                       </div>
-                      <h2 className="text-lg sm:text-xl font-black text-white mt-0.5">{selectedRepair.customer_name}</h2>
-                      <p className="text-xs text-zinc-400 flex items-center gap-2 font-medium mt-0.5">
-                        <Bike className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>{selectedRepair.motorcycle_name}</span>
-                        <span className="text-zinc-600">•</span>
-                        <span>Mechanic: Mike Smith</span>
+                      <h2 className="text-base sm:text-xl font-black text-white mt-0.5 truncate">{selectedRepair.customer_name}</h2>
+                      <p className="text-xs text-zinc-400 flex items-center gap-2 font-medium mt-0.5 truncate">
+                        <Bike className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="truncate">{selectedRepair.motorcycle_name}</span>
+                        <span className="text-zinc-600 hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">Mechanic: Mike Smith</span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 relative z-10 self-end sm:self-center">
+                  {/* Desktop Only: Change Customer & View Cart buttons (Hidden on mobile) */}
+                  <div className="hidden md:flex items-center gap-3 relative z-10 self-end sm:self-center">
                     <button
-                      onClick={() => setIsChangingCustomer(true)}
+                      onClick={handleChangeCustomer}
                       className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white text-xs font-bold transition-all border border-white/10"
                     >
                       Change Customer
@@ -666,7 +702,10 @@ export default function POSPage() {
           </section>
 
           {/* Section: Catalog Controls (Strictly 2 Filters: Services & Products) */}
-          <section className="w-full p-4 sm:p-8 space-y-6 flex-1 flex flex-col">
+          <section className={clsx(
+            "w-full p-4 sm:p-8 space-y-6 flex-1 flex flex-col",
+            (!selectedRepair || isChangingCustomer) && "hidden md:flex"
+          )}>
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               
@@ -934,21 +973,16 @@ export default function POSPage() {
           )}
         </section>
 
-          {/* Sticky Bottom Action Bar for Mobile Screens (Only visible when customer is selected) */}
-          {selectedRepair && cart.length > 0 && (
-            <div className="fixed bottom-0 inset-x-0 p-3 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/10 z-30 lg:hidden shadow-2xl">
+          {/* Floating Action Button (FAB) for View Cart on Mobile (56px circular, icon-only) */}
+          {selectedRepair && activeView === "catalog" && (
+            <div className="fixed bottom-20 right-4 z-40 md:hidden animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setActiveView("cart")}
-                className="w-full py-3 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm transition-all flex items-center justify-between border border-emerald-500/30 shadow-sm"
+                className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-zinc-950 shadow-2xl shadow-emerald-500/40 border border-emerald-300 transition-all transform active:scale-95 flex items-center justify-center"
+                aria-label="View Cart"
+                data-testid="view-cart-fab"
               >
-                <div className="flex items-center gap-2">
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>View Order Cart ({itemCount})</span>
-                </div>
-                <div className="flex items-center gap-2 font-mono">
-                  <span>₱{total.toFixed(2)}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </div>
+                <ShoppingCart className="w-6 h-6 text-zinc-950" />
               </button>
             </div>
           )}
@@ -957,81 +991,91 @@ export default function POSPage() {
 
       {/* VIEW 2: CURRENT ORDER CART (FULL PAGE) */}
       {activeView === "cart" && (
-        <main className="flex-1 w-full p-4 sm:p-8 space-y-6 pb-20">
+        <main className="flex-1 w-full p-4 sm:p-8 space-y-6 pb-24">
           
-          {/* Top Bar: Return to Catalog */}
-          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <button
-              onClick={() => setActiveView("catalog")}
-              className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Services & Products Catalog</span>
-            </button>
+          {/* Combined Sticky Top Header: Navigation, Clear Cart, and Active Customer Details */}
+          <div className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur-md border-b border-white/10 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 sm:py-3.5 space-y-2.5 -mt-4 sm:-mt-8 shadow-xl">
+            {/* Top Row: Back to Catalog & Clear Cart (Top-Right) */}
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={() => setActiveView("catalog")}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 hover:text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4 text-zinc-400" />
+                <span className="hidden sm:inline">Back to Services & Products Catalog</span>
+                <span className="sm:hidden">Back to Catalog</span>
+              </button>
 
-            <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsClearConfirmOpen(true)}
                 disabled={cart.length === 0}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 text-slate-600 text-xs font-bold transition-all flex items-center gap-2 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+                data-testid="top-clear-cart-button"
+                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-400 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Clear Cart</span>
               </button>
             </div>
+
+            {/* Bottom Row: Connected Customer Info Banner (Card-Free, Minimalist Layout) */}
+            {selectedRepair ? (
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/5">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xs sm:text-base shrink-0">
+                    {selectedRepair.customer_name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm sm:text-base font-black text-white truncate">{selectedRepair.customer_name}</span>
+                      <span className="font-mono text-[10px] sm:text-xs bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 rounded-md font-bold">
+                        {selectedRepair.jo_number}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400 flex items-center gap-2 mt-0.5 truncate">
+                      <Bike className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <span className="truncate">{selectedRepair.motorcycle_name}</span>
+                      <span className="text-zinc-600 hidden sm:inline">•</span>
+                      <span className="hidden sm:inline">Mechanic: Mike Smith</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    {selectedRepair.status}
+                  </span>
+                  <button
+                    onClick={handleChangeCustomer}
+                    className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-zinc-900 border border-cyan-500/30 hover:bg-cyan-500/10 text-cyan-400 hover:text-cyan-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Change Customer</span>
+                    <span className="sm:hidden">Change</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs font-semibold flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>No active customer selected. Please select a customer repair session to link this order.</span>
+                </div>
+                <button
+                  onClick={() => setActiveView("catalog")}
+                  className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shrink-0"
+                >
+                  Select Customer
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Connected Customer Info Banner */}
-          {selectedRepair ? (
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-lime-50 text-lime-800 border border-lime-200 flex items-center justify-center font-bold text-xl">
-                  {selectedRepair.customer_name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-slate-900">{selectedRepair.customer_name}</h2>
-                    <span className="font-mono text-xs bg-lime-50 text-lime-800 border border-lime-300 px-2 py-0.5 rounded-md font-bold">
-                      {selectedRepair.jo_number}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400 flex items-center gap-2 mt-1">
-                    <Bike className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>{selectedRepair.motorcycle_name}</span>
-                    <span className="text-zinc-600">•</span>
-                    <span>Mechanic: Mike Smith</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex sm:flex-col items-center sm:items-end justify-between gap-1 bg-zinc-950/60 sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-white/5">
-                <span className="text-zinc-400 text-xs">Customer Status</span>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                  {selectedRepair.status}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 text-xs font-semibold flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
-                <span>No active customer selected. Please select a customer repair session to link this order.</span>
-              </div>
-              <button
-                onClick={() => setActiveView("catalog")}
-                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shrink-0 border border-amber-500/30 shadow-sm"
-              >
-                Select Customer
-              </button>
-            </div>
-          )}
-
-          {/* Cart Items List */}
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl shadow-xl">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-cyan-400" />
-                <span>Current Order Items ({itemCount})</span>
+          {/* Cart Items Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="font-bold text-sm sm:text-base text-white flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+                <span>Order Items ({itemCount})</span>
               </h3>
               <button
                 onClick={() => setActiveView("catalog")}
@@ -1043,180 +1087,225 @@ export default function POSPage() {
             </div>
 
             {cart.length === 0 ? (
-              <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-center px-4 space-y-3">
-                <ShoppingCart className="w-16 h-16 opacity-30 text-zinc-400" />
-                <h4 className="text-base font-bold text-zinc-300">Your order cart is empty</h4>
+              <div className="py-16 flex flex-col items-center justify-center text-zinc-500 text-center px-4 space-y-3 border border-white/5 rounded-2xl bg-zinc-900/20">
+                <ShoppingCart className="w-12 h-12 opacity-30 text-zinc-400" />
+                <h4 className="text-sm font-bold text-zinc-300">Your order cart is empty</h4>
                 <p className="text-xs text-zinc-500 max-w-sm">
                   Switch back to the catalog to choose from available services and products for this customer.
                 </p>
                 <button
                   onClick={() => setActiveView("catalog")}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all mt-2 border border-emerald-500/30 shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all mt-2 border border-emerald-500/30 shadow-sm"
                 >
                   Browse Catalog
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto touch-pan-y overscroll-contain">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-white/5">
-                    <tr>
-                      <th className="p-4 px-6 font-semibold">Item / Service Description</th>
-                      <th className="p-4 px-4 font-semibold text-center">Type</th>
-                      <th className="p-4 px-4 font-semibold text-right">Unit Price</th>
-                      <th className="p-4 px-6 font-semibold text-center">Quantity</th>
-                      <th className="p-4 px-6 font-semibold text-right">Subtotal</th>
-                      <th className="p-4 px-4 font-semibold text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 font-mono">
-                    {cart.map((item) => {
-                      const isService = item.id.startsWith("labor-") || item.name.toLowerCase().includes("service") || item.name.toLowerCase().includes("tune-up") || item.name.toLowerCase().includes("cleaning");
-                      const lineTotal = item.price * item.qty;
+              <>
+                {/* Mobile View (< md): Card-Free Edge-to-Edge List with Hairline Dividers */}
+                <div className="md:hidden divide-y divide-zinc-800/80 border-t border-b border-zinc-800/80">
+                  {cart.map((item) => {
+                    const isService = item.id.startsWith("labor-") || item.name.toLowerCase().includes("service") || item.name.toLowerCase().includes("tune-up") || item.name.toLowerCase().includes("cleaning");
+                    const lineTotal = item.price * item.qty;
 
-                      return (
-                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="p-4 px-6 font-sans">
-                            <span className="font-bold text-zinc-100 text-sm block">{item.name}</span>
-                          </td>
-
-                          <td className="p-4 px-4 text-center font-sans">
-                            <span className={clsx(
-                              "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border",
-                              isService
-                                ? "bg-purple-500/10 text-purple-300 border-purple-500/30"
-                                : "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
-                            )}>
-                              {isService ? "Service" : "Product"}
-                            </span>
-                          </td>
-
-                          <td className="p-4 px-4 text-right text-zinc-300">
-                            ₱{item.price.toFixed(2)}
-                          </td>
-
-                          <td className="p-4 px-6">
-                            <div className="flex items-center justify-center gap-2">
-                              <div className={clsx(
-                                "flex items-center gap-2 p-1 rounded-xl border transition-all",
-                                !selectedRepair 
-                                  ? "bg-zinc-950/80 border-white/10 opacity-60" 
-                                  : "bg-zinc-950 border-white/10"
+                    return (
+                      <div key={item.id} className="py-3.5 flex flex-col gap-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-zinc-100 text-sm">{item.name}</span>
+                              <span className={clsx(
+                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
+                                isService
+                                  ? "bg-purple-500/10 text-purple-300 border-purple-500/30"
+                                  : "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
                               )}>
-                                <button
-                                  onClick={() => {
-                                    if (!selectedRepair) {
-                                      setWarningMessage("Please select an active customer repair session before modifying cart items!");
-                                      return;
-                                    }
-                                    if (item.qty <= 1) {
-                                      removeFromCart(item.id);
-                                    } else {
-                                      updateQty(item.id, item.qty - 1);
-                                    }
-                                  }}
-                                  disabled={!selectedRepair}
-                                  className={clsx(
-                                    "p-1 rounded-lg transition-colors",
-                                    !selectedRepair ? "text-zinc-600 cursor-not-allowed" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
-                                  )}
-                                  title={!selectedRepair ? "Customer required to modify quantity" : "Decrease quantity"}
-                                >
-                                  <Minus className="w-3.5 h-3.5" />
-                                </button>
-                                <span className="w-6 text-center font-bold text-zinc-100 text-xs flex items-center justify-center gap-0.5">
-                                  {!selectedRepair && <Lock className="w-2.5 h-2.5 text-amber-500/80" />}
-                                  {item.qty}
-                                </span>
-                                <button
-                                  onClick={() => {
-                                    if (!selectedRepair) {
-                                      setWarningMessage("Please select an active customer repair session before increasing quantity!");
-                                      return;
-                                    }
-                                    updateQty(item.id, item.qty + 1);
-                                  }}
-                                  disabled={!selectedRepair}
-                                  className={clsx(
-                                    "p-1 rounded-lg transition-colors",
-                                    !selectedRepair ? "text-zinc-600 cursor-not-allowed" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
-                                  )}
-                                  title={!selectedRepair ? "Customer required to increase quantity" : "Increase quantity"}
-                                >
-                                  <Plus className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
+                                {isService ? "Service" : "Part"}
+                              </span>
                             </div>
-                          </td>
+                            <div className="text-xs text-zinc-400 font-mono mt-0.5">
+                              ₱{item.price.toFixed(2)} each
+                            </div>
+                          </div>
 
-                          <td className="p-4 px-6 text-right font-bold text-white text-sm">
-                            ₱{lineTotal.toFixed(2)}
-                          </td>
+                          <button
+                            onClick={() => removeFromCart(item.id)}
+                            className="p-1.5 text-zinc-500 hover:text-red-400 active:bg-red-400/10 rounded-lg transition-colors"
+                            title="Remove item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
 
-                          <td className="p-4 px-4 text-center">
+                        <div className="flex items-center justify-between pt-1">
+                          {/* Quantity Stepper */}
+                          <div className="flex items-center gap-2.5 bg-zinc-900 border border-white/10 rounded-xl px-2 py-1">
                             <button
                               onClick={() => {
-                                if (!selectedRepair) {
-                                  setWarningMessage("Please select an active customer repair session before removing items!");
-                                  return;
+                                if (item.qty <= 1) {
+                                  removeFromCart(item.id);
+                                } else {
+                                  updateQty(item.id, item.qty - 1);
                                 }
-                                removeFromCart(item.id);
                               }}
-                              disabled={!selectedRepair}
-                              className={clsx(
-                                "p-1.5 rounded-lg transition-colors",
-                                !selectedRepair ? "text-zinc-700 cursor-not-allowed" : "text-zinc-500 hover:text-red-400 hover:bg-red-400/10"
-                              )}
-                              title={!selectedRepair ? "Customer required" : "Remove item"}
+                              className="p-1 text-zinc-400 hover:text-white rounded-lg active:bg-zinc-800 transition-colors"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Minus className="w-3.5 h-3.5" />
                             </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                            <span className="font-mono font-bold text-white text-xs min-w-[20px] text-center">
+                              {item.qty}
+                            </span>
+                            <button
+                              onClick={() => updateQty(item.id, item.qty + 1)}
+                              className="p-1 text-zinc-400 hover:text-white rounded-lg active:bg-zinc-800 transition-colors"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="text-[10px] text-zinc-500 uppercase block font-semibold">Subtotal</span>
+                            <span className="font-mono font-bold text-sm text-emerald-400">
+                              ₱{lineTotal.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop View (>= md): Clean Structured Table Layout */}
+                <div className="hidden md:block bg-zinc-900/60 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-zinc-950/80 text-zinc-400 uppercase text-xs font-semibold tracking-wider border-b border-white/5">
+                      <tr>
+                        <th className="p-4 px-6 font-semibold">Item / Service Description</th>
+                        <th className="p-4 px-4 font-semibold text-center">Type</th>
+                        <th className="p-4 px-4 font-semibold text-right">Unit Price</th>
+                        <th className="p-4 px-6 font-semibold text-center">Quantity</th>
+                        <th className="p-4 px-6 font-semibold text-right">Subtotal</th>
+                        <th className="p-4 px-4 font-semibold text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 font-mono">
+                      {cart.map((item) => {
+                        const isService = item.id.startsWith("labor-") || item.name.toLowerCase().includes("service") || item.name.toLowerCase().includes("tune-up") || item.name.toLowerCase().includes("cleaning");
+                        const lineTotal = item.price * item.qty;
+
+                        return (
+                          <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="p-4 px-6 font-sans">
+                              <span className="font-bold text-zinc-100 text-sm block">{item.name}</span>
+                            </td>
+
+                            <td className="p-4 px-4 text-center font-sans">
+                              <span className={clsx(
+                                "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border",
+                                isService
+                                  ? "bg-purple-500/10 text-purple-300 border-purple-500/30"
+                                  : "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
+                              )}>
+                                {isService ? "Service" : "Product"}
+                              </span>
+                            </td>
+
+                            <td className="p-4 px-4 text-right text-zinc-300">
+                              ₱{item.price.toFixed(2)}
+                            </td>
+
+                            <td className="p-4 px-6">
+                              <div className="flex items-center justify-center gap-2">
+                                <div className="flex items-center gap-2 p-1 rounded-xl border bg-zinc-950 border-white/10">
+                                  <button
+                                    onClick={() => {
+                                      if (item.qty <= 1) {
+                                        removeFromCart(item.id);
+                                      } else {
+                                        updateQty(item.id, item.qty - 1);
+                                      }
+                                    }}
+                                    className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                    title="Decrease quantity"
+                                  >
+                                    <Minus className="w-3.5 h-3.5" />
+                                  </button>
+                                  <span className="w-6 text-center font-bold text-zinc-100 text-xs">
+                                    {item.qty}
+                                  </span>
+                                  <button
+                                    onClick={() => updateQty(item.id, item.qty + 1)}
+                                    className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                    title="Increase quantity"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="p-4 px-6 text-right font-bold text-white text-sm">
+                              ₱{lineTotal.toFixed(2)}
+                            </td>
+
+                            <td className="p-4 px-4 text-center">
+                              <button
+                                onClick={() => removeFromCart(item.id)}
+                                className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                title="Remove item"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
 
-          {/* Cart Financial Summary & Complete Checkout Bar */}
+          {/* Cart Financial Summary & Complete Checkout Bar (Sticky Bottom) */}
           {cart.length > 0 && (
-            <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">
-                  Settlement Breakdown
-                </span>
-                <div className="flex items-center gap-6 text-xs text-zinc-300 font-mono">
+            <div className="sticky bottom-0 z-30 bg-zinc-950/95 border-t border-white/10 p-4 sm:p-6 backdrop-blur-xl -mx-4 sm:-mx-8 shadow-2xl mt-8">
+              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center justify-between sm:justify-start sm:gap-8">
                   <div>
-                    <span className="text-zinc-500 block text-[10px] uppercase">Subtotal</span>
-                    <span className="text-base font-bold text-zinc-200">₱{subtotal.toFixed(2)}</span>
+                    <span className="text-zinc-500 block text-[10px] uppercase font-bold tracking-wider">Subtotal</span>
+                    <span className="text-sm font-bold text-zinc-300 font-mono">₱{subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="w-px h-8 bg-white/10" />
+                  <div className="w-px h-8 bg-white/10 hidden sm:block" />
                   <div>
-                    <span className="text-zinc-500 block text-[10px] uppercase">Tax (0%)</span>
-                    <span className="text-base font-bold text-zinc-400">₱0.00</span>
+                    <span className="text-zinc-400 block text-[10px] uppercase font-bold tracking-wider">Net Total Due</span>
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
+                      ₱{total.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="text-left sm:text-right">
-                  <span className="text-slate-500 block text-[11px] uppercase font-bold">Net Total Due</span>
-                  <span className="text-3xl sm:text-4xl font-black font-mono text-lime-700">
-                    ₱{total.toFixed(2)}
-                  </span>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={() => setIsClearConfirmOpen(true)}
+                    disabled={cart.length === 0}
+                    data-testid="bottom-clear-cart-button"
+                    className="hidden sm:flex px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 text-zinc-400 text-xs font-bold transition-all items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Clear Cart</span>
+                  </button>
+
+                  <button
+                    onClick={handleProceedToCheckout}
+                    disabled={!selectedRepair || cart.length === 0}
+                    data-testid="proceed-to-payment-button"
+                    className="w-full sm:w-auto flex-1 sm:flex-none px-6 sm:px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/30 border border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span>Proceed to Payment</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
-
-                <button
-                  onClick={handleProceedToCheckout}
-                  disabled={!selectedRepair}
-                  className="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-sm transition-all flex items-center justify-center gap-3 active:scale-95 shadow-sm disabled:bg-zinc-800 disabled:border-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed border border-emerald-500/30"
-                >
-                  <span>Go to Payment</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
               </div>
             </div>
           )}
@@ -1259,5 +1348,17 @@ export default function POSPage() {
         icon={<Trash2 className="w-5 h-5" />}
       />
     </div>
+  );
+}
+
+export default function POSPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+      </div>
+    }>
+      <POSPageContent />
+    </Suspense>
   );
 }

@@ -107,7 +107,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-zinc-900 min-h-screen selection:bg-lime-500/30 selection:text-lime-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-zinc-900 min-h-screen selection:bg-emerald-600 selection:text-white`}
       >
         <ProvidersWrapper>
           {children}

@@ -145,14 +145,21 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     await page.goto('/payroll');
     await page.waitForLoadState('networkidle');
 
-    // Click payslip button for first employee in the list
-    const payslipBtn = page.locator('button:has-text("Payslip")').first();
-    await expect(payslipBtn).toBeVisible({ timeout: 10000 });
-    await payslipBtn.click();
+    // Switch to Commission & Payslips tab
+    await page.locator('button:has-text("Commission & Payslips")').click();
 
-    // Verify payslip modal canvas is displayed
+    // Click technician table row or navigate to payslip page
+    const techTable = page.locator('[data-technician-table="true"]');
+    await expect(techTable).toBeVisible({ timeout: 10000 });
+    const firstRow = techTable.locator('tbody tr').first();
+    await expect(firstRow).toBeVisible({ timeout: 10000 });
+    await firstRow.click();
+    await page.waitForURL(/.*payroll\/payslip.*/);
+
+    // Verify payslip canvas is displayed
     const payslipCanvas = page.locator('.printable-payslip, [data-payslip-canvas="true"]').first();
     await expect(payslipCanvas).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="itemized-activity-ledger"]')).toBeVisible({ timeout: 10000 });
 
     // 1. Verify in-app on-screen background is strictly NOT white (dark canvas in app)
     const screenBgColor = await payslipCanvas.evaluate((el) => window.getComputedStyle(el).backgroundColor);
@@ -292,6 +299,133 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     await expect(page.locator('button:visible:has-text("Back to Payroll")')).toBeVisible();
     await expect(page.locator('button:visible:has-text("Download CSV")')).toBeVisible();
     await expect(payslipFab).not.toBeVisible();
+  });
+
+  test('Text selection strictly enforces high-contrast emerald highlight with white text', async ({ page }) => {
+    await page.goto('/payroll');
+    await page.waitForLoadState('networkidle');
+
+    // Evaluate computed ::selection pseudo-element style on body
+    const selectionStyles = await page.evaluate(() => {
+      const body = document.querySelector('body');
+      const win = window;
+      const pseudo = win.getComputedStyle(body!, '::selection');
+      return {
+        bg: pseudo.backgroundColor,
+        color: pseudo.color,
+      };
+    });
+
+    // Verify emerald background and white text
+    expect(['rgb(5, 150, 105)', 'rgb(16, 185, 129)', '#059669', 'rgba(5, 150, 105, 1)']).toContain(selectionStyles.bg);
+    expect(['rgb(255, 255, 255)', '#ffffff', 'rgba(255, 255, 255, 1)']).toContain(selectionStyles.color);
+  });
+
+  test('Payroll page has dual tabs (Overview & Commissions) and Technician Commission Accounts renders as dedicated datatable without action buttons or modal flashing', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/payroll');
+    await page.waitForLoadState('networkidle');
+
+    // 1. Verify two primary tabs exist and Overview is default active
+    await expect(page.locator('button:has-text("Overview")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("Commission & Payslips")').first()).toBeVisible();
+    await expect(page.locator('text=Total Payroll Liability')).toBeVisible();
+
+    // 2. Switch to "Commission & Payslips" tab
+    await page.locator('button:has-text("Commission & Payslips")').first().click();
+
+    // 3. Table exists
+    const techTable = page.locator('[data-technician-table="true"]');
+    await expect(techTable).toBeVisible({ timeout: 10000 });
+
+    // 4. Table column headers are present
+    await expect(techTable.locator('th:has-text("Technician")')).toBeVisible();
+    await expect(techTable.locator('th:has-text("Rate")')).toBeVisible();
+    await expect(techTable.locator('th:has-text("Jobs Completed")')).toBeVisible();
+    await expect(techTable.locator('th:has-text("Labor Billed")')).toBeVisible();
+    await expect(techTable.locator('th:has-text("Commission Earned")')).toBeVisible();
+    await expect(techTable.locator('th:has-text("Settlement Status")')).toBeVisible();
+
+    // 5. Verify no colored action buttons in technician table rows (Disburse / Payslip buttons removed from rows)
+    await expect(techTable.locator('tbody button:has-text("Disburse")')).not.toBeVisible();
+    await expect(techTable.locator('tbody button:has-text("Payslip")')).not.toBeVisible();
+
+    // 6. Verify rightmost column has chevron and View Profile on hover
+    const firstRow = techTable.locator('tbody tr').first();
+    await expect(firstRow).toBeVisible();
+    await expect(firstRow.locator('text=View Profile')).toBeAttached();
+
+    // 7. Verify Cashier sub-tab parity, unified emerald styling, and removed shifts/txs columns
+    const cashierToggle = page.locator('button:has-text("Cashiers")').first();
+    await cashierToggle.click();
+    await expect(cashierToggle).toHaveClass(/bg-emerald-600/);
+
+    const cashierTable = page.locator('[data-cashier-table="true"]');
+    await expect(cashierTable).toBeVisible({ timeout: 10000 });
+    await expect(cashierTable.locator('th:has-text("Shifts Logged")')).not.toBeVisible();
+    await expect(cashierTable.locator('th:has-text("POS Transactions")')).not.toBeVisible();
+    await expect(cashierTable.locator('th:has-text("Volume Handled")')).toBeVisible();
+    await expect(cashierTable.locator('th:has-text("Total Compensation")')).toBeVisible();
+    await expect(cashierTable.locator('tbody button:has-text("Disburse")')).not.toBeVisible();
+    await expect(cashierTable.locator('tbody button:has-text("Payslip")')).not.toBeVisible();
+
+    // 8. Click cashier row and verify navigation directly to dedicated item profile / payslip page without modal flash
+    const firstCashierRow = cashierTable.locator('tbody tr').first();
+    await firstCashierRow.click();
+    await page.waitForURL(/.*payroll\/payslip.*/);
+    expect(page.url()).toContain('/payroll/payslip');
+    expect(page.url()).toContain('subtab=CASHIERS');
+
+    // 9. Verify dedicated profile page contains Disburse Settlement, Print Official Payslip, and Itemized Ledger
+    await expect(page.locator('button:has-text("Print Official Payslip")')).toBeVisible();
+    const disburseBtn = page.locator('button:has-text("Disburse Settlement"), span:has-text("Settlement Disbursed")');
+    await expect(disburseBtn.first()).toBeVisible();
+    await expect(page.locator('[data-testid="itemized-activity-ledger"]')).toBeVisible({ timeout: 10000 });
+
+    // 10. Click Back to Payroll and assert it returns directly to Commission & Payslips tab with Cashier table active
+    await page.locator('button:has-text("Back to Payroll")').first().click();
+    await page.waitForURL(/.*payroll\?tab=COMMISSIONS&subtab=CASHIERS/);
+    await expect(page.locator('[data-cashier-table="true"]')).toBeVisible({ timeout: 10000 });
+
+    // 11. Switch to Mechanics, open payslip, click Back, assert returns to Mechanics table
+    const mechanicToggle = page.locator('button:has-text("Mechanics")').first();
+    await mechanicToggle.click();
+    await expect(mechanicToggle).toHaveClass(/bg-emerald-600/);
+    const techRow = page.locator('[data-technician-table="true"] tbody tr').first();
+    await techRow.click();
+    await page.waitForURL(/.*payroll\/payslip.*/);
+    expect(page.url()).toContain('subtab=MECHANICS');
+    await page.locator('button:has-text("Back to Payroll")').first().click();
+    await page.waitForURL(/.*payroll\?tab=COMMISSIONS&subtab=MECHANICS/);
+    await expect(page.locator('[data-technician-table="true"]')).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Mobile view of Payroll page switches tabs, renders cards with chevron, and navigates without modal flash', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/payroll');
+    await page.waitForLoadState('networkidle');
+
+    // Switch to Commission & Payslips tab
+    await page.locator('button:has-text("Commission & Payslips")').first().click();
+
+    const techTable = page.locator('[data-technician-table="true"]');
+    await expect(techTable).toBeVisible({ timeout: 10000 });
+
+    // In mobile view, cards are rendered without colored buttons
+    const mobileCards = techTable.locator('.md\\:hidden > div');
+    await expect(mobileCards.first()).toBeVisible();
+    await expect(mobileCards.locator('button:has-text("Disburse")')).not.toBeVisible();
+
+    // Click card navigates directly to /payroll/payslip without modal flash
+    await mobileCards.first().click();
+    await page.waitForURL(/.*payroll\/payslip.*/);
+    expect(page.url()).toContain('/payroll/payslip');
+
+    // In mobile view of /payroll/payslip, floating action button opens sheet with Disburse Settlement & Print
+    const fab = page.locator('button[aria-label="Open document actions sheet"]');
+    await expect(fab).toBeVisible({ timeout: 10000 });
+    await fab.click();
+    await expect(page.locator('button:visible:has-text("Print Official Payslip")')).toBeVisible();
   });
 });
 

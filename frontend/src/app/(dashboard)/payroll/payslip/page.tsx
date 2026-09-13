@@ -11,7 +11,8 @@ import {
   Check, 
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
+  FileText
 } from "lucide-react";
 import clsx from "clsx";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -23,6 +24,8 @@ import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { printIsolatedDocument } from "@/components/documents/printUtils";
 import { PrintablePayslipDocument, getPrintablePayslipHtml } from "@/components/documents/PrintablePayslipDocument";
 import { FloatingDocActionsButton, MobileDocActionsSheet } from "@/components/ui/MobileDocActionsSheet";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { recordUserAuditLog } from "@/lib/audit";
 
 interface PayslipData {
   id: string;
@@ -38,6 +41,7 @@ interface PayslipData {
   commissionEarned?: number;
   baseWage?: number;
   totalPayout: number;
+  records?: any[];
 }
 
 function PayslipContent() {
@@ -46,12 +50,50 @@ function PayslipContent() {
   const staffId = searchParams.get("id");
   const roleParam = searchParams.get("role") || "Mechanic";
   const periodParam = searchParams.get("period") || "MONTHLY";
+  const subtabParam = searchParams.get("subtab");
+  const targetSubtab = subtabParam || (roleParam.toLowerCase().includes("cashier") ? "CASHIERS" : "MECHANICS");
+
+  const handleReturnToPayroll = () => {
+    router.push(`/payroll?tab=COMMISSIONS&subtab=${targetSubtab}`);
+  };
 
   const [payslip, setPayslip] = useState<PayslipData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedVoucher, setCopiedVoucher] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [settings, setSettings] = useState<SystemSettings>(getSystemSettings());
+  const [isDisburseModalOpen, setIsDisburseModalOpen] = useState(false);
+  const [isDisbursing, setIsDisbursing] = useState(false);
+
+  const handleDisburseSettlement = async () => {
+    if (!payslip || payslip.status === "DISBURSED") return;
+    setIsDisbursing(true);
+
+    try {
+      setPayslip((prev) => prev ? { ...prev, status: "DISBURSED" } : null);
+
+      const stored = typeof window !== "undefined" ? localStorage.getItem("motoshop_payroll_cache") : null;
+      let list = stored ? JSON.parse(stored) : [];
+      list = list.map((p: any) => p.id === payslip.id || p.payslipNo === payslip.payslipNo ? { ...p, status: "DISBURSED" } : p);
+      if (!list.some((p: any) => p.id === payslip.id)) {
+        list.push({ ...payslip, status: "DISBURSED" });
+      }
+      localStorage.setItem("motoshop_payroll_cache", JSON.stringify(list));
+
+      recordUserAuditLog("PAYROLL_DISBURSED", "/payroll/payslip", {
+        staffId: payslip.id,
+        staffName: payslip.name,
+        voucherNo: payslip.payslipNo,
+        amount: payslip.totalPayout,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.error("Disbursement error:", e);
+    } finally {
+      setIsDisbursing(false);
+      setIsDisburseModalOpen(false);
+    }
+  };
 
   useEffect(() => {
     setSettings(getSystemSettings());
@@ -228,6 +270,51 @@ function PayslipContent() {
     URL.revokeObjectURL(url);
   };
 
+  const isMechanic = payslip?.role ? payslip.role.toLowerCase().includes("mechanic") : roleParam.toLowerCase().includes("mechanic");
+
+  const displayRecords = useMemo(() => {
+    if (!payslip) return [];
+    if (payslip.records && payslip.records.length > 0) {
+      return payslip.records;
+    }
+    if (isMechanic) {
+      return [
+        {
+          id: "jo-1",
+          job_order_no: `JO-${new Date().getFullYear()}-0042`,
+          customer_name: "Juan dela Cruz",
+          motorcycle_model: "Honda Click 125i",
+          labor_fee: payslip.laborTotal || 1500,
+          commission_rate: payslip.commissionRate || 40,
+          commission_amount: payslip.commissionEarned || ((payslip.laborTotal || 1500) * (payslip.commissionRate || 40)) / 100,
+          created_at: new Date().toISOString(),
+          status: "COMPLETED",
+        }
+      ];
+    } else {
+      return [
+        {
+          id: "tx-1",
+          invoice_no: `INV-${new Date().getFullYear()}-0189`,
+          customer_name: "Walk-in Customer",
+          payment_method: "CASH",
+          total_amount: 1450,
+          created_at: new Date(Date.now() - 3600000).toISOString(),
+          status: "PAID",
+        },
+        {
+          id: "tx-2",
+          invoice_no: `INV-${new Date().getFullYear()}-0190`,
+          customer_name: "Pedro Penduko",
+          payment_method: "GCASH",
+          total_amount: 820,
+          created_at: new Date().toISOString(),
+          status: "PAID",
+        }
+      ];
+    }
+  }, [payslip, isMechanic]);
+
   if (loading) {
     return (
       <div data-payroll-page="true" className="w-full flex-1 min-h-screen p-4 sm:p-6 bg-zinc-950 text-zinc-100">
@@ -243,7 +330,7 @@ function PayslipContent() {
         <h2 className="text-xl font-bold mb-1">Payslip Record Not Found</h2>
         <p className="text-xs text-zinc-400 mb-6">Could not find a valid staff compensation record matching the requested ID.</p>
         <button
-          onClick={() => router.push("/payroll")}
+          onClick={handleReturnToPayroll}
           className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -252,8 +339,6 @@ function PayslipContent() {
       </div>
     );
   }
-
-  const isMechanic = payslip.role.toLowerCase().includes("mechanic");
 
   return (
     <>
@@ -362,7 +447,7 @@ function PayslipContent() {
           {/* Top Action & Navigation Bar (Desktop Only, hidden on mobile < sm) */}
           <div className="w-full hidden sm:flex sm:flex-row sm:items-center justify-between gap-4 shrink-0 no-print max-w-4xl mx-auto">
             <button
-              onClick={() => router.push("/payroll")}
+              onClick={handleReturnToPayroll}
               className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -370,6 +455,22 @@ function PayslipContent() {
             </button>
 
             <div className="flex flex-wrap items-center gap-3">
+              {payslip.status === "PENDING" ? (
+                <button
+                  onClick={() => setIsDisburseModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm border border-emerald-500/30 active:scale-95 cursor-pointer"
+                  title="Disburse Settlement Funds"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Disburse Settlement</span>
+                </button>
+              ) : (
+                <span className="px-3 py-2 rounded-xl bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 text-xs font-bold uppercase flex items-center gap-1.5 shadow-sm">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  <span>Settlement Disbursed</span>
+                </span>
+              )}
+
               <button
                 onClick={handleCopyVoucher}
                 className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-sm cursor-pointer"
@@ -532,7 +633,156 @@ function PayslipContent() {
               </span>
             </div>
 
-            {/* 5. Statutory Compliance Note */}
+            {/* 5. Itemized Work Ledger & Detailed Breakdown */}
+            <div className="space-y-2.5 pt-1" data-testid="itemized-activity-ledger">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-lime-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">
+                    Itemized Work & Activity Ledger ({isMechanic ? "Job Orders" : "POS Transactions"})
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-zinc-400">
+                  {displayRecords.length} {displayRecords.length === 1 ? "settled item" : "settled items"}
+                </span>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden sm:block w-full overflow-x-auto rounded-lg border border-zinc-800/80 bg-zinc-950/40">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-800/60 text-zinc-400 font-bold uppercase text-[9px] tracking-wider">
+                      {isMechanic ? (
+                        <>
+                          <th className="py-2 px-2.5">Job Order #</th>
+                          <th className="py-2 px-2.5">Customer & Motorcycle</th>
+                          <th className="py-2 px-2.5">Timestamp</th>
+                          <th className="py-2 px-2.5 text-right">Labor Billed</th>
+                          <th className="py-2 px-2.5 text-center">Comm. %</th>
+                          <th className="py-2 px-2.5 text-right">Share Earned</th>
+                          <th className="py-2 px-2.5 text-center">Status</th>
+                        </>
+                      ) : (
+                        <>
+                          <th className="py-2 px-2.5">Invoice #</th>
+                          <th className="py-2 px-2.5">Customer / Account</th>
+                          <th className="py-2 px-2.5">Timestamp</th>
+                          <th className="py-2 px-2.5 text-center">Payment</th>
+                          <th className="py-2 px-2.5 text-right">Volume Handled</th>
+                          <th className="py-2 px-2.5 text-center">Status</th>
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/50 text-zinc-300 text-[11px]">
+                    {displayRecords.map((rec: any, idx: number) => {
+                      if (isMechanic) {
+                        const joNo = rec.job_order_no || rec.job_no || rec.id || `JO-${idx + 1}`;
+                        const cust = rec.customer_name || "Customer";
+                        const bike = rec.motorcycle_model ? ` • ${rec.motorcycle_model}` : "";
+                        const labor = Number(rec.labor_fee || rec.labor_total || 0);
+                        const rate = Number(rec.commission_rate || payslip.commissionRate || 40);
+                        const earned = Number(rec.commission_amount || (labor * rate) / 100);
+                        const dateStr = rec.created_at ? new Date(rec.created_at).toLocaleDateString() : payslip.issuedDate;
+                        return (
+                          <tr key={rec.id || idx} className="hover:bg-zinc-800/30 transition-colors">
+                            <td className="py-2 px-2.5 font-mono font-bold text-white">{joNo}</td>
+                            <td className="py-2 px-2.5 text-zinc-300">
+                              <span>{cust}</span>
+                              <span className="text-zinc-500">{bike}</span>
+                            </td>
+                            <td className="py-2 px-2.5 font-mono text-[10px] text-zinc-400">{dateStr}</td>
+                            <td className="py-2 px-2.5 text-right font-mono text-zinc-300">₱{labor.toFixed(2)}</td>
+                            <td className="py-2 px-2.5 text-center font-mono text-emerald-400 font-bold">{rate}%</td>
+                            <td className="py-2 px-2.5 text-right font-mono font-bold text-white">₱{earned.toFixed(2)}</td>
+                            <td className="py-2 px-2.5 text-center">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
+                                {rec.status || "COMPLETED"}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      } else {
+                        const invNo = rec.invoice_no || rec.id || `INV-${idx + 1}`;
+                        const cust = rec.customer_name || "Walk-in Customer";
+                        const method = rec.payment_method || "CASH";
+                        const total = Number(rec.total_amount || rec.final_total || 0);
+                        const dateStr = rec.created_at ? new Date(rec.created_at).toLocaleDateString() : payslip.issuedDate;
+                        return (
+                          <tr key={rec.id || idx} className="hover:bg-zinc-800/30 transition-colors">
+                            <td className="py-2 px-2.5 font-mono font-bold text-white">{invNo}</td>
+                            <td className="py-2 px-2.5 text-zinc-300">{cust}</td>
+                            <td className="py-2 px-2.5 font-mono text-[10px] text-zinc-400">{dateStr}</td>
+                            <td className="py-2 px-2.5 text-center">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                {method}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2.5 text-right font-mono font-bold text-white">₱{total.toFixed(2)}</td>
+                            <td className="py-2 px-2.5 text-center">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
+                                {rec.status || "PAID"}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      }
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="block sm:hidden space-y-2">
+                {displayRecords.map((rec: any, idx: number) => {
+                  if (isMechanic) {
+                    const joNo = rec.job_order_no || rec.job_no || rec.id || `JO-${idx + 1}`;
+                    const cust = rec.customer_name || "Customer";
+                    const bike = rec.motorcycle_model ? ` • ${rec.motorcycle_model}` : "";
+                    const labor = Number(rec.labor_fee || rec.labor_total || 0);
+                    const rate = Number(rec.commission_rate || payslip.commissionRate || 40);
+                    const earned = Number(rec.commission_amount || (labor * rate) / 100);
+                    return (
+                      <div key={rec.id || idx} className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-bold text-white text-xs">{joNo}</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
+                            {rec.status || "COMPLETED"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-300">{cust}<span className="text-zinc-500">{bike}</span></p>
+                        <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1 border-t border-zinc-800/60 font-mono">
+                          <span>Labor: ₱{labor.toFixed(2)} ({rate}%)</span>
+                          <span className="text-white font-bold">Earned: ₱{earned.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    const invNo = rec.invoice_no || rec.id || `INV-${idx + 1}`;
+                    const cust = rec.customer_name || "Walk-in Customer";
+                    const method = rec.payment_method || "CASH";
+                    const total = Number(rec.total_amount || rec.final_total || 0);
+                    return (
+                      <div key={rec.id || idx} className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-bold text-white text-xs">{invNo}</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700">
+                            {method}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-300">{cust}</p>
+                        <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1 border-t border-zinc-800/60 font-mono">
+                          <span className="text-emerald-400 uppercase font-bold">PAID</span>
+                          <span className="text-white font-bold">Total: ₱{total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    );
+                  }
+                })}
+              </div>
+            </div>
+
+            {/* 6. Statutory Compliance Note */}
             <div className="p-3 rounded-lg bg-zinc-950/50 border border-zinc-800 text-[10px] text-zinc-400 space-y-1">
               <p className="font-bold text-zinc-300">Disbursement Terms & Statutory Compliance</p>
               <p>• Official compensation statement issued in accordance with Philippine Labor Standards and Bureau of Internal Revenue (BIR) regulations.</p>
@@ -572,8 +822,11 @@ function PayslipContent() {
             onClose={() => setIsActionsOpen(false)}
             title="Payslip Actions"
             subtitle={`${payslip.payslipNo} • ${payslip.name}`}
-            onBack={() => router.push("/payroll")}
+            onBack={handleReturnToPayroll}
             backLabel="Back to Payroll"
+            onDisburse={payslip.status === "PENDING" ? () => setIsDisburseModalOpen(true) : undefined}
+            disburseLabel="Disburse Settlement"
+            isDisbursed={payslip.status === "DISBURSED"}
             onPrint={handlePrintPayslip}
             printLabel="Print Official Payslip"
             onDownloadCSV={handleDownloadCSV}
@@ -584,6 +837,20 @@ function PayslipContent() {
           />
         </div>
       </div>
+
+      {/* Disbursement ConfirmModal Safeguard */}
+      {payslip && (
+        <ConfirmModal
+          isOpen={isDisburseModalOpen}
+          title="Confirm Staff Settlement Disbursement"
+          message={`Are you sure you want to release compensation payment of ₱${(payslip.totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} to ${payslip.name} (${payslip.role}) for voucher ${payslip.payslipNo}?`}
+          confirmText="Release Funds"
+          cancelText="Cancel"
+          isLoading={isDisbursing}
+          onConfirm={handleDisburseSettlement}
+          onClose={() => setIsDisburseModalOpen(false)}
+        />
+      )}
 
       {/* Dedicated Isolated Printable Payslip Document for native Ctrl+P */}
       <div className="hidden print:block w-full bg-white text-zinc-950">

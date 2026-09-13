@@ -286,27 +286,35 @@ test.describe("Executive Dashboard, Reports & Payroll Redesign Suite", () => {
     await expect(page.locator("text=Technician Commissions")).toBeVisible();
     await expect(page.locator("text=Cashier Shift Allowances")).toBeVisible();
 
-    // Verify Mechanic Accordion
-    await expect(page.locator("text=Mike Smith")).toBeVisible();
-    await expect(page.locator("text=35% Comm.")).toBeVisible();
+    // Switch to Commission & Payslips Tab
+    await page.locator('button:has-text("Commission & Payslips")').first().click();
 
-    // Open Payslip Dedicated Page
-    const payslipBtn = page.locator("button:has-text('Payslip')").first();
-    await payslipBtn.click();
+    // Verify Technician Commission DataTable
+    const techTable = page.locator('[data-technician-table="true"]');
+    await expect(techTable).toBeVisible();
+    await expect(techTable.locator('table').getByText("Mike Smith")).toBeVisible();
+    await expect(techTable.locator('table').getByText("35% Comm.")).toBeVisible();
 
-    // Verify Dedicated Page Navigation, Canvas & Header
+    // Open Payslip Dedicated Page via Table Row Click
+    await techTable.locator("tbody tr").first().click();
+
+    // Verify Dedicated Page Navigation, Canvas, Header, and Itemized Ledger
     await page.waitForURL(/.*payroll\/payslip.*/);
     await page.waitForLoadState("networkidle");
     await expect(page.locator("[data-payslip-canvas='true']").getByText(/VERSIKLO MOTORCYCLE PARTS/i)).toBeVisible();
     await expect(page.locator("[data-payslip-canvas='true']").getByText(/BIR Registered TIN/i)).toBeVisible();
     await expect(page.locator("text=Print Official Payslip").first()).toBeVisible();
+    await expect(page.locator("[data-testid='itemized-activity-ledger']")).toBeVisible();
 
     // Capture Payslip Screenshot
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, "payroll-payslip.png") });
 
-    // Navigate back to Payroll list
+    // Navigate back to Payroll list (returns to exact tab and subtab)
     await page.locator("button:has-text('Back to Payroll')").first().click();
-    await page.waitForURL(/.*payroll$/);
+    await page.waitForURL(/.*payroll(\?.*)?$/);
+
+    // Switch back to Overview tab for Mass Disbursement check
+    await page.locator('button:has-text("Overview")').first().click();
 
     // Verify Mass Disbursement ConfirmModal Safeguard
     const disburseAllBtn = page.locator("button:has-text('Disburse All Pending')");

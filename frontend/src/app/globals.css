@@ -50,6 +50,16 @@
   color-scheme: dark;
 }
 
+::selection {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+::-moz-selection {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+
 html.dark,
 :root.dark,
 [data-mode="dark"] {

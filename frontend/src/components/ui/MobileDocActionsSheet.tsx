@@ -10,6 +10,7 @@ import {
   Check, 
   ArrowLeft, 
   Ban, 
+  CheckCircle,
   X 
 } from "lucide-react";
 import clsx from "clsx";
@@ -68,6 +69,9 @@ export interface MobileDocActionsSheetProps {
   onCopy?: () => void;
   copyLabel?: string;
   isCopied?: boolean;
+  onDisburse?: () => void;
+  disburseLabel?: string;
+  isDisbursed?: boolean;
   onVoid?: () => void;
   voidLabel?: string;
   isVoidDisabled?: boolean;
@@ -89,6 +93,9 @@ export function MobileDocActionsSheet({
   onCopy,
   copyLabel = "Copy Document Number",
   isCopied = false,
+  onDisburse,
+  disburseLabel = "Disburse Settlement",
+  isDisbursed = false,
   onVoid,
   voidLabel = "Void Transaction",
   isVoidDisabled = false,
@@ -156,6 +163,21 @@ export function MobileDocActionsSheet({
 
         {/* Actions List */}
         <div className="p-4 space-y-2.5 overflow-y-auto">
+          {/* Disburse Settlement Action (If provided) */}
+          {onDisburse && !isDisbursed && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onDisburse();
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/50 transition-all border border-emerald-500/30 active:scale-[0.98] cursor-pointer"
+            >
+              <CheckCircle className="w-4 h-4 text-white" />
+              <span>{disburseLabel}</span>
+            </button>
+          )}
+
           {/* Print / Save PDF (Primary Action) */}
           {onPrint && (
             <button
@@ -164,9 +186,9 @@ export function MobileDocActionsSheet({
                 onClose();
                 onPrint();
               }}
-              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/50 transition-all border border-emerald-500/30 active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-zinc-800/90 hover:bg-zinc-800 active:bg-zinc-700 text-zinc-200 border border-zinc-700/60 font-semibold text-xs flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
             >
-              <Printer className="w-4 h-4 text-white" />
+              <Printer className="w-4 h-4 text-emerald-400" />
               <span>{printLabel}</span>
             </button>
           )}

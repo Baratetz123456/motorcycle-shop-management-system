@@ -193,8 +193,8 @@ export default function UserProfilePage() {
   const isSelf = user?.id === currentUserId;
   const isAdmin = currentUserRole === "admin";
 
-  const getRoleBadgeColor = (r: string) => {
-    switch (r.toLowerCase()) {
+  const getRoleBadgeColor = (r?: string | null) => {
+    switch ((r || "").toLowerCase()) {
       case "admin": return "bg-lime-100 text-lime-800 border-lime-300 font-bold";
       case "manager": return "bg-purple-100 text-purple-800 border-purple-300 font-bold";
       case "cashier": return "bg-emerald-100 text-emerald-800 border-emerald-300 font-bold";
