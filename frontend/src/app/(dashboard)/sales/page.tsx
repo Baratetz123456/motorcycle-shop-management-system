@@ -203,8 +203,8 @@ export default function SalesManagementPage() {
                   className={clsx(
                     "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap",
                     statusFilter === st
-                      ? "bg-lime-500 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 font-bold shadow-sm"
-                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-700/50"
+                      ? "bg-emerald-600 text-white font-bold shadow-sm"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-700/50"
                   )}
                 >
                   {st}
@@ -234,8 +234,8 @@ export default function SalesManagementPage() {
                     className={clsx(
                       "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
                       isSelected
-                        ? "bg-lime-500 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 border border-lime-600 shadow-sm font-bold"
-                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white dark:hover:bg-zinc-700/50 border border-transparent"
+                        ? "bg-emerald-600 text-white shadow-sm font-bold"
+                        : "text-zinc-400 hover:text-white hover:bg-zinc-700/50 border border-transparent"
                     )}
                   >
                     {labels[preset]}
@@ -335,8 +335,8 @@ export default function SalesManagementPage() {
                 className={clsx(
                   "py-2.5 px-3 rounded-xl text-xs font-bold transition-all border",
                   statusFilter === st
-                    ? "bg-lime-500 text-zinc-950 border-lime-600 shadow-sm"
-                    : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700"
+                    ? "bg-emerald-600 text-white border-emerald-500/30 shadow-sm font-bold"
+                    : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
                 )}
               >
                 {st}
@@ -365,8 +365,8 @@ export default function SalesManagementPage() {
                   className={clsx(
                     "py-2.5 px-3 rounded-xl text-xs font-semibold transition-all border text-center",
                     isSelected
-                      ? "bg-lime-500 text-zinc-950 border-lime-600 shadow-sm font-bold"
-                      : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700"
+                      ? "bg-emerald-600 text-white border-emerald-500/30 shadow-sm font-bold"
+                      : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
                   )}
                 >
                   {labels[preset]}

@@ -342,10 +342,10 @@ function LoginForm() {
               id="login-button"
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 group disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 group disabled:bg-zinc-850 disabled:text-zinc-500 disabled:border-zinc-800 disabled:cursor-not-allowed mt-2 border border-emerald-500/30"
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Sign In</span>

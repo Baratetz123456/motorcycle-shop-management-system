@@ -19,7 +19,7 @@ test.describe("Executive Dashboard, Reports & Payroll Redesign Suite", () => {
           user_id: "usr-admin-01",
           first_name: "Admin",
           last_name: "Commander",
-          display_mode: "light",
+          display_mode: "dark",
         }),
       });
     });

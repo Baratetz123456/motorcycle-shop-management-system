@@ -218,37 +218,15 @@ export function resolveEffectiveMode(mode: AppMode): "dark" | "light" {
 }
 
 export function getAppMode(userId?: string | null): AppMode {
-  if (typeof window === "undefined") return "light";
-  try {
-    const userKey = getUserModeKey(userId);
-    let stored = localStorage.getItem(userKey) as AppMode;
-    if (!stored && userKey !== MODE_STORAGE_KEY) {
-      stored = localStorage.getItem(MODE_STORAGE_KEY) as AppMode;
-    }
-    if (!stored) {
-      stored = getClientCookie("motoshop_mode") as AppMode;
-    }
-    if (stored && ["dark", "light", "system"].includes(stored)) {
-      return stored;
-    }
-    return "light";
-  } catch {
-    return "light";
-  }
+  return "dark";
 }
 
-export function applyModeToDocument(mode: AppMode): void {
+export function applyModeToDocument(mode: AppMode = "dark"): void {
   if (typeof document === "undefined") return;
-  const effective = resolveEffectiveMode(mode);
-  document.documentElement.setAttribute("data-mode", effective);
-  document.documentElement.setAttribute("data-theme-mode", mode);
-  if (effective === "light") {
-    document.documentElement.classList.remove("dark");
-    document.documentElement.classList.add("light");
-  } else {
-    document.documentElement.classList.remove("light");
-    document.documentElement.classList.add("dark");
-  }
+  document.documentElement.setAttribute("data-mode", "dark");
+  document.documentElement.setAttribute("data-theme-mode", "dark");
+  document.documentElement.classList.remove("light");
+  document.documentElement.classList.add("dark");
 }
 
 export function saveAppMode(mode: AppMode, userId?: string | null): void {
@@ -311,14 +289,11 @@ export function toggleAppMode(userId?: string | null): AppMode {
 }
 
 export function useTheme() {
-  const [themeMode, setThemeModeState] = useState<AppMode>("light");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [themeMode, setThemeModeState] = useState<AppMode>("dark");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
-    const current = getAppMode();
-    setThemeModeState(current);
-    setResolvedTheme(resolveEffectiveMode(current));
-    applyModeToDocument(current);
+    applyModeToDocument("dark");
 
     const handleModeUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<{ mode: AppMode }>;

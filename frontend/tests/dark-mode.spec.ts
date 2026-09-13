@@ -18,6 +18,30 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
       });
     });
 
+    // Mock commissions endpoint so /payroll renders mechanics
+    await page.route('**/commissions**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'comm-1',
+            job_order_id: 'job-1',
+            jo_number: 'JO-1001',
+            customer_name: 'Roberto Dela Cruz',
+            motorcycle_name: 'Yamaha NMAX 155',
+            mechanic_id: 'mech-1',
+            mechanic_name: 'Alex Reyes',
+            labor_base: 1500,
+            rate_percentage: 40,
+            amount_earned: 600,
+            status: 'PENDING',
+            created_at: new Date().toISOString(),
+          },
+        ]),
+      });
+    });
+
     // Provide initial localStorage auth role
     await page.addInitScript(() => {
       localStorage.setItem('user_role', 'admin');
@@ -26,7 +50,7 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     });
   });
 
-  test('Page loads and Sun/Moon toggle switches between light and dark modes', async ({ page }) => {
+  test('App defaults permanently to Dark Mode and header toggle is removed', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
@@ -34,26 +58,36 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     const header = page.locator('header').first();
     await expect(header).toBeVisible({ timeout: 10000 });
 
-    // Check for header mode toggle button
+    // Verify Sun/Moon toggle button has been removed from the header
     const toggleBtn = page.locator('.header-mode-toggle');
-    await expect(toggleBtn).toBeVisible();
+    await expect(toggleBtn).toHaveCount(0);
 
-    // Read initial mode
-    const isInitiallyDark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    // Verify application is permanently locked to dark mode
+    const isDark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    expect(isDark).toBe(true);
 
-    // Click toggle button
-    await toggleBtn.click();
-    await page.waitForTimeout(300);
+    const dataMode = await page.evaluate(() => document.documentElement.getAttribute('data-mode'));
+    expect(dataMode).toBe('dark');
+  });
 
-    // Verify mode flipped
-    const isDarkAfterToggle = await page.evaluate(() => document.documentElement.classList.contains('dark'));
-    expect(isDarkAfterToggle).toBe(!isInitiallyDark);
+  test('Buttons strictly enforce zero black text invariant across all states', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    // Switch back or ensure dark mode class is toggleable
-    await toggleBtn.click();
-    await page.waitForTimeout(300);
-    const finalDarkState = await page.evaluate(() => document.documentElement.classList.contains('dark'));
-    expect(finalDarkState).toBe(isInitiallyDark);
+    // Inspect application buttons on the page (excluding third-party / Next.js internal overlays)
+    const buttons = await page.locator('header button:visible, main button:visible, [role="navigation"] button:visible').all();
+    for (const btn of buttons.slice(0, 10)) {
+      const info = await btn.evaluate((el) => ({
+        tag: el.tagName,
+        text: el.textContent?.trim() || '',
+        cls: el.className,
+        color: window.getComputedStyle(el).color,
+      }));
+      console.log('Button inspected:', info);
+      // Ensure text is light/white, never black (rgb(0,0,0) or rgb(9,9,11))
+      expect(info.color).not.toBe('rgb(0, 0, 0)');
+      expect(info.color).not.toBe('rgb(9, 9, 11)');
+    }
   });
 
   test('Primary action buttons maintain high-contrast styling', async ({ page }) => {
@@ -69,7 +103,7 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     await expect(inventoryHeading).toBeVisible({ timeout: 10000 });
   });
 
-  test('Receipt view enforces pure white canvas invariant in dark mode', async ({ page }) => {
+  test('Unified Invoice Document renders dark in-app (no white background) and pure white in print with zero motoshop', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('motoshop_app_mode', 'dark');
       localStorage.setItem('motoshop_sales_logs', JSON.stringify([{
@@ -92,8 +126,80 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     const receiptCanvas = page.locator('.printable-receipt, [data-invoice-canvas="true"]').first();
     await expect(receiptCanvas).toBeVisible({ timeout: 10000 });
 
-    // Verify background color of receipt is white (rgb(255, 255, 255))
-    const bgColor = await receiptCanvas.evaluate((el) => window.getComputedStyle(el).backgroundColor);
-    expect(bgColor).toBe('rgb(255, 255, 255)');
+    // 1. Verify in-app on-screen background is strictly NOT white (dark canvas in app)
+    const screenBgColor = await receiptCanvas.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(screenBgColor).not.toBe('rgb(255, 255, 255)');
+    expect(['rgb(24, 24, 27)', 'rgb(18, 18, 21)', 'rgb(9, 9, 11)']).toContain(screenBgColor);
+
+    // 2. Verify zero occurrences of the word "motoshop" inside the document canvas
+    const canvasText = await receiptCanvas.innerText();
+    expect(canvasText.toLowerCase()).not.toContain('motoshop');
+
+    // 3. Emulate print media and verify it flips strictly to pure white canvas (rgb(255, 255, 255))
+    await page.emulateMedia({ media: 'print' });
+    const printBgColor = await receiptCanvas.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(printBgColor).toBe('rgb(255, 255, 255)');
+  });
+
+  test('Unified Payslip Document renders dark in-app (no white background) and pure white in print with zero motoshop', async ({ page }) => {
+    await page.goto('/payroll');
+    await page.waitForLoadState('networkidle');
+
+    // Click payslip button for first employee in the list
+    const payslipBtn = page.locator('button:has-text("Payslip")').first();
+    await expect(payslipBtn).toBeVisible({ timeout: 10000 });
+    await payslipBtn.click();
+
+    // Verify payslip modal canvas is displayed
+    const payslipCanvas = page.locator('.printable-payslip, [data-payslip-canvas="true"]').first();
+    await expect(payslipCanvas).toBeVisible({ timeout: 10000 });
+
+    // 1. Verify in-app on-screen background is strictly NOT white (dark canvas in app)
+    const screenBgColor = await payslipCanvas.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(screenBgColor).not.toBe('rgb(255, 255, 255)');
+    expect(['rgb(24, 24, 27)', 'rgb(18, 18, 21)', 'rgb(9, 9, 11)']).toContain(screenBgColor);
+
+    // 2. Verify zero occurrences of the word "motoshop" inside the payslip document
+    const payslipText = await payslipCanvas.innerText();
+    expect(payslipText.toLowerCase()).not.toContain('motoshop');
+
+    // 3. Emulate print media and verify it flips strictly to pure white canvas (rgb(255, 255, 255))
+    await page.emulateMedia({ media: 'print' });
+    const printBgColor = await payslipCanvas.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(printBgColor).toBe('rgb(255, 255, 255)');
+  });
+
+  test('Inventory item profile page has no duplicate action buttons on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+      localStorage.setItem('motoshop_app_mode', 'dark');
+      localStorage.setItem('user_role', 'admin');
+      localStorage.setItem('motoshop_custom_inventory', JSON.stringify([{
+        id: 'inv-item-test-1',
+        name: 'Motul 7100 4T 10W-40 Synthetic Oil',
+        brand: 'Motul',
+        sku: 'SKU-MOTUL-7100',
+        item_type: 'PRODUCT',
+        category: 'Fluids & Lubricants',
+        cost_price: 450,
+        selling_price: 650,
+        current_stock: 12,
+        reorder_level: 4,
+      }]));
+    });
+
+    await page.goto('/inventory/inv-item-test-1');
+    await page.waitForLoadState('networkidle');
+
+    // Verify item heading is rendered
+    const itemHeading = page.locator('h1:has-text("Motul 7100")');
+    await expect(itemHeading).toBeVisible({ timeout: 10000 });
+
+    // Ensure Edit Details and Delete buttons appear exactly once in the entire page on mobile
+    const editButtons = page.locator('button:has-text("Edit Details")');
+    await expect(editButtons).toHaveCount(1);
+
+    const deleteButtons = page.locator('button:has-text("Delete")');
+    await expect(deleteButtons).toHaveCount(1);
   });
 });

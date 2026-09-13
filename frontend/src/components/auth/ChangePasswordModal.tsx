@@ -153,10 +153,10 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full sm:w-auto px-5 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold rounded-xl transition-all shadow-sm border border-lime-600 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm border border-emerald-500/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
-              <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               "Update Password"
             )}

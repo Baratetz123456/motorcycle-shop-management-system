@@ -209,7 +209,7 @@ export function MobileBottomNav() {
         {/* Drawer Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-lime-500 text-zinc-950 flex items-center justify-center font-bold shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
               <Grid className="w-4 h-4 stroke-[2.5]" />
             </div>
             <div>
@@ -261,7 +261,7 @@ export function MobileBottomNav() {
                     <div className={clsx(
                       "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
                       isActive 
-                        ? "bg-lime-500 text-zinc-950 font-black shadow-xs" 
+                        ? "bg-emerald-600 text-white font-black shadow-xs" 
                         : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700"
                     )}>
                       <Icon className="w-4 h-4" />
@@ -371,7 +371,7 @@ export function MobileBottomNav() {
                 <div className={clsx(
                   "flex items-center justify-center transition-all duration-200",
                   isActive
-                    ? "w-12 h-8 rounded-xl bg-lime-500 text-zinc-950 font-black shadow-md shadow-lime-500/25 ring-1 ring-lime-600/30"
+                    ? "w-12 h-8 rounded-xl bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/25 ring-1 ring-emerald-500/40"
                     : "w-10 h-7 rounded-lg text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-100 group-hover:bg-slate-100 dark:group-hover:bg-zinc-900"
                 )}>
                   <Icon className={clsx("transition-transform duration-200", isActive ? "w-4 h-4 stroke-[2.5]" : "w-5 h-5")} />
@@ -381,7 +381,7 @@ export function MobileBottomNav() {
                 <span className={clsx(
                   "text-[10px] tracking-tight mt-1 transition-all duration-150 leading-none truncate max-w-full font-medium",
                   isActive
-                    ? "font-black text-lime-700 dark:text-lime-400"
+                    ? "font-black text-emerald-400"
                     : "text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-200"
                 )}>
                   {item.shortLabel}
@@ -403,7 +403,7 @@ export function MobileBottomNav() {
               <div className={clsx(
                 "flex items-center justify-center transition-all duration-200",
                 isMoreActive
-                  ? "w-12 h-8 rounded-xl bg-lime-500 text-zinc-950 font-black shadow-md shadow-lime-500/25 ring-1 ring-lime-600/30"
+                  ? "w-12 h-8 rounded-xl bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/25 ring-1 ring-emerald-500/40"
                   : "w-10 h-7 rounded-lg text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-100 group-hover:bg-slate-100 dark:group-hover:bg-zinc-900"
               )}>
                 <Grid className={clsx("transition-transform duration-200", isMoreActive ? "w-4 h-4 stroke-[2.5]" : "w-5 h-5")} />
@@ -413,7 +413,7 @@ export function MobileBottomNav() {
               <span className={clsx(
                 "text-[10px] tracking-tight mt-1 transition-all duration-150 leading-none truncate max-w-full font-medium",
                 isMoreActive
-                  ? "font-black text-lime-700 dark:text-lime-400"
+                  ? "font-black text-emerald-400"
                   : "text-slate-500 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-zinc-200"
               )}>
                 More

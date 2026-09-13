@@ -7,13 +7,12 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { ChevronDown, LogOut, User, Lock, Settings, Sun, Moon } from "lucide-react";
+import { ChevronDown, LogOut, User, Lock, Settings } from "lucide-react";
 import { getSystemSettings } from "@/lib/settings";
 import { UserAvatar } from "@/lib/avatars";
 import { tokenStore } from "@/lib/auth-token";
 import { apiClient } from "@/lib/api-client";
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
-import { useTheme } from "@/lib/theme";
 
 export default function DashboardLayout({
   children,
@@ -33,7 +32,6 @@ export default function DashboardLayout({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  const { resolvedTheme, toggleTheme } = useTheme();
   const popoverRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -132,63 +130,49 @@ export default function DashboardLayout({
   return (
     <ProtectedRoute>
       <div className="min-h-screen w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans relative flex flex-col">
-        {/* Full-Width Colored Top Navbar (Kawasaki Racing Lime Green) */}
-        <header className="fixed top-0 left-0 right-0 h-16 bg-lime-500 z-40 px-4 sm:px-6 flex items-center justify-between border-b border-lime-600/30 shadow-xs select-none">
+        {/* Full-Width Top Navbar (Dark Canvas with Emerald Accent) */}
+        <header className="fixed top-0 left-0 right-0 h-16 bg-zinc-900 border-b border-zinc-800 z-40 px-4 sm:px-6 flex items-center justify-between shadow-xs select-none">
           {/* Left: Branding & Shop Metadata */}
           <Link href="/reports" className="flex items-center gap-3 group">
             <BrandLogo size="md" variant="lime-on-dark" />
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="font-black text-lg sm:text-xl text-zinc-950 tracking-tight leading-none">
+                <span className="font-black text-lg sm:text-xl text-white tracking-tight leading-none">
                   {appName}
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full bg-lime-400/50 text-[10px] font-bold text-zinc-950 border border-lime-600/20">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-300 border border-zinc-700">
                   {shopDescription}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-lime-950 font-bold uppercase tracking-wider mt-0.5">
+              <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider mt-0.5">
                 Precision Workshop OS
               </span>
             </div>
           </Link>
 
-          {/* Right: Quick Sun/Moon Toggle & User Profile Button */}
+          {/* Right: User Profile Button */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="header-mode-toggle p-2 sm:px-2.5 sm:py-2 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-              title={resolvedTheme === "dark" ? "Switch to Daylight Mode" : "Switch to Dark Mode"}
-              aria-label="Toggle theme appearance mode"
-            >
-              {resolvedTheme === "dark" ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-zinc-950" />
-              )}
-            </button>
-
             <div className="relative">
               <button
                 ref={profileButtonRef}
                 type="button"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
-                className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-lime-400/40 hover:bg-lime-400/70 text-zinc-950 border border-lime-600/30 transition-all active:scale-95 shadow-xs cursor-pointer"
+                className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 border border-zinc-700/60 transition-all active:scale-95 shadow-xs cursor-pointer"
                 aria-expanded={isProfileOpen}
                 aria-haspopup="true"
                 aria-label="User profile and settings menu"
               >
-                <UserAvatar avatarId={userAvatar} className="w-8 h-8 rounded-full border border-zinc-950/20 shadow-xs" />
+                <UserAvatar avatarId={userAvatar} className="w-8 h-8 rounded-full border border-zinc-700 shadow-xs" />
                 <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-black text-zinc-950 leading-tight truncate max-w-[120px]">
+                  <span className="text-xs font-bold text-white leading-tight truncate max-w-[120px]">
                     {userName}
                   </span>
-                  <span className="header-role-badge text-[10px] font-mono font-bold uppercase text-lime-950">
+                  <span className="header-role-badge text-[10px] font-mono font-bold uppercase text-emerald-400">
                     {userRole}
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-zinc-950 transition-transform duration-200 ${
+                  className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
                     isProfileOpen ? "rotate-180" : ""
                   }`}
                 />

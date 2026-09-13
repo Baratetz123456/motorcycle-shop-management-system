@@ -24,36 +24,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light" data-theme="lime" data-mode="light" suppressHydrationWarning>
+    <html lang="en" className="dark" data-theme="emerald" data-mode="dark" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  function getCookie(name) {
-                    var m = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-                    return m ? decodeURIComponent(m[3]) : null;
-                  }
-                  var uid = localStorage.getItem('user_id');
-                  var mode = (uid ? localStorage.getItem('motoshop_app_mode_' + uid) : null) || localStorage.getItem('motoshop_app_mode') || localStorage.getItem('motoshop_theme_mode') || getCookie('motoshop_mode') || 'light';
-                  var theme = (uid ? localStorage.getItem('motoshop_app_theme_' + uid) : null) || localStorage.getItem('motoshop_app_theme') || getCookie('motoshop_theme');
-                  if (theme) {
-                    document.documentElement.setAttribute('data-theme', theme);
-                  }
-                  var resolved = mode;
-                  if (mode === 'system') {
-                    resolved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-                  }
-                  if (resolved === 'dark') {
-                    document.documentElement.classList.remove('light');
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.setAttribute('data-mode', 'dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                    document.documentElement.classList.add('light');
-                    document.documentElement.setAttribute('data-mode', 'light');
-                  }
+                  document.documentElement.classList.remove('light');
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.setAttribute('data-mode', 'dark');
+                  document.cookie = 'motoshop_mode=dark; path=/; max-age=31536000';
+                  localStorage.setItem('motoshop_theme_mode', 'dark');
+                  localStorage.setItem('motoshop_app_mode', 'dark');
                 } catch(e) {}
 
                 // Suppress upstream Chromium DevTools injected Live Metrics / web-vitals bug (Chromium Issue 543499029)

@@ -451,7 +451,7 @@ export default function POSPage() {
               className={clsx(
                 "flex-1 sm:flex-none px-4 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2",
                 activeView === "catalog"
-                  ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm"
                   : "text-zinc-400 hover:text-white"
               )}
             >
@@ -473,7 +473,7 @@ export default function POSPage() {
                 !selectedRepair
                   ? "opacity-50 cursor-not-allowed text-zinc-500 hover:text-zinc-500"
                   : activeView === "cart"
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                    ? "bg-emerald-600 text-white font-bold shadow-sm"
                     : "text-zinc-400 hover:text-white"
               )}
               title={!selectedRepair ? "Please select an active customer bike to review order" : undefined}
@@ -485,7 +485,7 @@ export default function POSPage() {
               )}
               <span>Review Order</span>
               {selectedRepair && itemCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-zinc-950 font-mono text-[10px] font-black shadow-sm">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-mono text-[10px] font-black shadow-sm">
                   {itemCount}
                 </span>
               )}
@@ -551,7 +551,7 @@ export default function POSPage() {
                     </button>
                     <button
                       onClick={() => setActiveView("cart")}
-                      className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold transition-all flex items-center gap-2"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-2 border border-emerald-500/30 shadow-sm"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" />
                       <span>View Cart ({itemCount})</span>
@@ -641,8 +641,8 @@ export default function POSPage() {
                                 className={clsx(
                                   "w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
                                   isSelected
-                                    ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/30"
-                                    : "bg-zinc-800 text-zinc-300 group-hover:bg-cyan-600 group-hover:text-white"
+                                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                                    : "bg-zinc-800 text-zinc-300 group-hover:bg-zinc-700 group-hover:text-white"
                                 )}
                               >
                                 {isSelected ? (
@@ -939,7 +939,7 @@ export default function POSPage() {
             <div className="fixed bottom-0 inset-x-0 p-3 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/10 z-30 lg:hidden shadow-2xl">
               <button
                 onClick={() => setActiveView("cart")}
-                className="w-full py-3 px-5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm transition-all flex items-center justify-between"
+                className="w-full py-3 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm transition-all flex items-center justify-between border border-emerald-500/30 shadow-sm"
               >
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-4 h-4" />
@@ -1019,7 +1019,7 @@ export default function POSPage() {
               </div>
               <button
                 onClick={() => setActiveView("catalog")}
-                className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs shrink-0"
+                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shrink-0 border border-amber-500/30 shadow-sm"
               >
                 Select Customer
               </button>
@@ -1051,7 +1051,7 @@ export default function POSPage() {
                 </p>
                 <button
                   onClick={() => setActiveView("catalog")}
-                  className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-xs transition-all mt-2"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all mt-2 border border-emerald-500/30 shadow-sm"
                 >
                   Browse Catalog
                 </button>
@@ -1212,7 +1212,7 @@ export default function POSPage() {
                 <button
                   onClick={handleProceedToCheckout}
                   disabled={!selectedRepair}
-                  className="px-8 py-4 rounded-2xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-black text-sm transition-all flex items-center justify-center gap-3 active:scale-95 shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+                  className="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-sm transition-all flex items-center justify-center gap-3 active:scale-95 shadow-sm disabled:bg-zinc-800 disabled:border-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed border border-emerald-500/30"
                 >
                   <span>Go to Payment</span>
                   <ArrowRight className="w-5 h-5" />

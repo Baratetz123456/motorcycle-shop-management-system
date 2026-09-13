@@ -562,10 +562,10 @@ export default function SystemLogsPage() {
           <button
             onClick={handleExport}
             disabled={isExporting || filteredLogs.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-lime-500 hover:bg-lime-400 text-zinc-950 rounded-xl font-bold transition-all text-xs shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl font-bold transition-all text-xs shadow-sm border border-emerald-500/30 disabled:bg-zinc-800 disabled:border-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed"
           >
             {isExporting ? (
-              <div className="w-3.5 h-3.5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
                 <Download className="w-3.5 h-3.5" />
@@ -602,8 +602,8 @@ export default function SystemLogsPage() {
                   className={clsx(
                     "px-2.5 py-1 rounded-lg font-semibold transition-all text-xs flex items-center gap-1 whitespace-nowrap shrink-0",
                     selectedPage === f.value
-                      ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                      : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                      ? "bg-emerald-600 text-white font-bold shadow-sm"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                   )}
                 >
                   {f.label}
@@ -974,7 +974,7 @@ export default function SystemLogsPage() {
                 className={clsx(
                   "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                   selectedPage === f.value
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
                     : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
                 )}
               >
@@ -996,7 +996,7 @@ export default function SystemLogsPage() {
                 className={clsx(
                   "px-2.5 py-2 rounded-xl text-xs font-semibold capitalize text-center transition-all",
                   roleFilter === r
-                    ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                    ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
                     : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
                 )}
               >
@@ -1020,7 +1020,7 @@ export default function SystemLogsPage() {
                   className={clsx(
                     "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                     datePreset === p
-                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                      ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
                       : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
                   )}
                 >

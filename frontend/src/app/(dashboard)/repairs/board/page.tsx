@@ -1011,7 +1011,7 @@ export default function RepairBoardPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-5 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm transition-colors flex items-center gap-2"
+            className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm transition-colors flex items-center gap-2 border border-emerald-500/30 shadow-sm"
           >
             <Plus className="w-5 h-5" />
             <span>New Job Card</span>
@@ -1065,8 +1065,8 @@ export default function RepairBoardPage() {
                 className={clsx(
                   "flex items-center gap-2 px-3.5 py-2.5 rounded-2xl font-bold text-xs whitespace-nowrap transition-all shrink-0 border",
                   isActive
-                    ? "bg-lime-500 text-zinc-950 border-lime-600 shadow-sm scale-[1.02]"
-                    : "bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-800 hover:text-slate-950 dark:hover:text-zinc-100 hover:bg-slate-200 dark:hover:bg-zinc-800"
+                    ? "bg-emerald-600 text-white border-emerald-500/30 shadow-sm scale-[1.02]"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800"
                 )}
               >
                 <span>{col.title}</span>
@@ -1074,8 +1074,8 @@ export default function RepairBoardPage() {
                   className={clsx(
                     "px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold",
                     isActive
-                      ? "bg-zinc-950 text-lime-400"
-                      : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700"
+                      ? "bg-zinc-900 text-white"
+                      : "bg-zinc-800 text-zinc-300 border border-zinc-700"
                   )}
                 >
                   {count}
@@ -1116,7 +1116,7 @@ export default function RepairBoardPage() {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-zinc-950 transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-xs font-bold text-white transition-colors flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Create Job Card</span>
@@ -1790,11 +1790,11 @@ export default function RepairBoardPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-all border border-lime-600 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all border border-emerald-500/30 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Saving...</span>
                 </>
               ) : (
@@ -1868,7 +1868,7 @@ export default function RepairBoardPage() {
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all border border-lime-600 shadow-sm active:scale-[0.98]"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all border border-emerald-500/30 shadow-sm active:scale-[0.98]"
                 >
                   Save Changes
                 </button>

@@ -249,7 +249,7 @@ export default function ExecutiveDashboardPage() {
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={() => router.push("/pos")}
-            className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold border border-lime-600 text-xs transition-all flex items-center gap-2 shadow-sm active:scale-[0.98]"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold border border-emerald-500/30 text-xs transition-all flex items-center gap-2 shadow-sm active:scale-[0.98]"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>New Sale (POS)</span>
@@ -386,8 +386,8 @@ export default function ExecutiveDashboardPage() {
               className={clsx(
                 "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0",
                 isActive
-                  ? "bg-lime-500 text-zinc-950 border border-lime-600 shadow-sm"
-                  : "text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800"
+                  ? "bg-emerald-600 text-white font-bold border border-emerald-500/40 shadow-sm"
+                  : "text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800"
               )}
             >
               <Icon className="w-3.5 h-3.5" />

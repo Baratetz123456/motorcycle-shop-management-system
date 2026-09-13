@@ -712,7 +712,7 @@ function SettingsContent() {
                   {isSelected && (
                     <div className={clsx(
                       "w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-md",
-                      isThemeDirty ? "bg-amber-400 text-zinc-950" : "bg-cyan-500 text-zinc-950"
+                      isThemeDirty ? "bg-amber-500 text-white font-bold" : "bg-emerald-600 text-white font-bold"
                     )}>
                       {isThemeDirty ? (
                         <Sparkles className="w-3 h-3 stroke-[2.5]" />
@@ -798,8 +798,8 @@ function SettingsContent() {
               className={clsx(
                 "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                 activeTab === "general"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                  : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
               )}
             >
               {isAdmin ? <Globe className="w-4 h-4 shrink-0" /> : <Palette className="w-4 h-4 shrink-0" />}
@@ -812,8 +812,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "roles"
-                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                 )}
               >
                 <Sliders className="w-4 h-4 shrink-0" />
@@ -827,8 +827,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "users"
-                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                 )}
               >
                 <Users className="w-4 h-4 shrink-0" />
@@ -841,8 +841,8 @@ function SettingsContent() {
               className={clsx(
                 "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                 activeTab === "profile"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                  : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
               )}
             >
               <User className="w-4 h-4 shrink-0" />
@@ -855,8 +855,8 @@ function SettingsContent() {
                 className={clsx(
                   "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
                   activeTab === "logs"
-                    ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
-                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-700/60"
+                    ? "bg-emerald-600 text-white font-bold shadow-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                 )}
               >
                 <FileText className="w-4 h-4 shrink-0" />
@@ -1249,7 +1249,7 @@ function SettingsContent() {
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs flex items-center justify-center gap-2 bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600 shadow-sm active:scale-[0.98] transition-all"
+                  className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 shadow-sm active:scale-[0.98] transition-all"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Store Settings</span>
@@ -1276,18 +1276,18 @@ function SettingsContent() {
                   </div>
                 </div>
 
-                {/* Display Mode Single Canonical Source Notice */}
-                <div className="p-4 rounded-2xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-4">
+                {/* Permanent Dark Mode Standard Notice */}
+                <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-lime-500/15 border border-lime-500/30 flex items-center justify-center text-lime-700 dark:text-lime-400 shrink-0">
-                      <Sun className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                      <Moon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-200">
-                        Display Appearance Mode
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">
+                        High-Octane Dark Mode Active
                       </h4>
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                        Dark and Daylight modes are controlled globally via the 1-click Sun/Moon toggle in the top navigation header bar.
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        The application is permanently calibrated to High-Octane Dark Mode with zero-contrast-fatigue typography.
                       </p>
                     </div>
                   </div>
@@ -1318,7 +1318,7 @@ function SettingsContent() {
               <button
                 type="button"
                 onClick={handleSaveAppearanceOnly}
-                className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-lime-500 hover:bg-lime-400 text-zinc-950 shadow-sm"
+                className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 shadow-sm"
               >
                 <Save className="w-4 h-4" />
                 <span>Save Appearance Preferences</span>
@@ -1593,7 +1593,7 @@ function SettingsContent() {
                 <button
                   type="button"
                   onClick={handleSaveRoles}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold border border-lime-600 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold border border-emerald-500/30 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Permissions</span>
@@ -1620,7 +1620,7 @@ function SettingsContent() {
 
               <Link
                 href="/users/register"
-                className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0 shadow-sm"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>+ Add Staff</span>
@@ -1907,7 +1907,7 @@ function SettingsContent() {
                       className={clsx(
                         "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                         staffRoleFilter === opt.value
-                          ? "bg-cyan-500 text-zinc-950 font-bold shadow-md shadow-cyan-500/20"
+                          ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20"
                           : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
                       )}
                     >
@@ -2143,12 +2143,12 @@ function SettingsContent() {
                   className={clsx(
                     "w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]",
                     isProfileDirty
-                      ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 border border-amber-600 ring-2 ring-amber-400/50 scale-[1.02]"
-                      : "bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600"
+                      ? "bg-amber-600 hover:bg-amber-500 text-white border border-amber-500/40 ring-2 ring-amber-500/50 scale-[1.02]"
+                      : "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30"
                   )}
                 >
                   {isUpdatingProfile ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
@@ -2198,7 +2198,7 @@ function SettingsContent() {
 
                 <Link
                   href="/audit-logs"
-                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shrink-0"
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shrink-0 border border-emerald-500/30 shadow-sm"
                 >
                   <span>View Full Log</span>
                   <ArrowRight className="w-4 h-4" />

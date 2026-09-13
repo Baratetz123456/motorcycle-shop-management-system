@@ -12,7 +12,7 @@ export const TYPOGRAPHY = {
 
   // Action Buttons
   primaryButton:
-    "px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm transition-colors flex items-center gap-2 shadow-sm",
+    "px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm transition-colors flex items-center gap-2 border border-emerald-500/30 shadow-sm",
   secondaryButton:
     "px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-md",
 

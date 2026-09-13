@@ -404,7 +404,7 @@ function POSCheckoutContent() {
               <button
                 type="button"
                 onClick={handleReturnToPOS}
-                className="flex-1 py-3.5 px-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm rounded-2xl transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm rounded-2xl transition-all flex items-center justify-center gap-2 border border-emerald-500/30 shadow-sm"
               >
                 <span>Return to POS Checkout</span>
                 <ArrowRight className="w-4 h-4" />
@@ -685,7 +685,7 @@ function POSCheckoutContent() {
                   type="button"
                   onClick={handleExecutePayment}
                   disabled={isCheckingOut || cart.length === 0 || isCashInsufficient}
-                  className="w-full py-4 bg-lime-500 hover:bg-lime-400 text-zinc-950 text-base font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed active:scale-95"
+                  className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-base font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm disabled:bg-zinc-800 disabled:border-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed active:scale-95 border border-emerald-500/30"
                 >
                   {isCheckingOut ? (
                     <>

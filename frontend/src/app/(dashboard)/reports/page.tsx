@@ -234,8 +234,8 @@ export default function BusinessReportsPage() {
                 className={clsx(
                   "px-3 py-1.5 rounded-lg font-bold transition-all text-xs",
                   period === tab.id
-                    ? "bg-lime-500 text-zinc-950 shadow-xs"
-                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-zinc-400 hover:text-white"
                 )}
               >
                 {tab.label}
@@ -245,7 +245,7 @@ export default function BusinessReportsPage() {
 
           <button
             onClick={() => router.push("/reports/extract")}
-            className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all flex items-center gap-2 border border-lime-600 shadow-sm active:scale-[0.98]"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-2 border border-emerald-500/30 shadow-sm active:scale-[0.98]"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Financial Ledger & CSV</span>
@@ -554,7 +554,7 @@ export default function BusinessReportsPage() {
             </button>
             <button
               onClick={() => router.push("/payroll")}
-              className="flex-1 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all border border-lime-600 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all border border-emerald-500/30 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               <DollarSign className="w-4 h-4" />
               <span>Payroll Hub</span>

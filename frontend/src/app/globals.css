@@ -2,28 +2,22 @@
 @plugin "tailwindcss-animate";
 
 :root {
-  --background: #ffffff;
-  --foreground: #18181b;
+  --background: #09090b;
+  --foreground: #f4f4f5;
 
-  /* ==========================================================================
-     High-Octane Minimalist Light Palette (Kawasaki Racing Lime Green Engine)
-     Pure white canvas (#ffffff) paired with metallic hairline borders (#e2e8f0),
-     carbon fiber deep-slate typography (#18181b), and electric racing lime green.
-     ========================================================================== */
-
-  /* Surface & Canvas Scale (Remapped from dark zinc to pure white architecture) */
-  --color-zinc-950: #ffffff !important; /* Pure White Canvas */
-  --color-zinc-900: #ffffff !important; /* Pure White Panel & Card Surfaces */
-  --color-zinc-850: #f8fafc !important; /* Subtle Off-Canvas Tint */
-  --color-zinc-800: #f1f5f9 !important; /* Slate-100 Input & Action Surfaces */
-  --color-zinc-700: #e2e8f0 !important; /* Slate-200 Hairline Metallic Borders */
-  --color-zinc-600: #64748b !important; /* Slate-500 Secondary Metadata */
-  --color-zinc-500: #475569 !important; /* Slate-600 Muted Captions */
-  --color-zinc-400: #334155 !important; /* Slate-700 Standard Body Text */
-  --color-zinc-300: #1e293b !important; /* Slate-800 Emphasized Body */
-  --color-zinc-200: #0f172a !important; /* Slate-900 Section Headings */
-  --color-zinc-100: #020617 !important; /* Slate-950 Bold Titles */
-  --color-zinc-50: #000000 !important;  /* Pure Carbon Black */
+  /* Surface & Canvas Scale - High-Octane Permanent Dark Palette */
+  --color-zinc-950: #09090b !important; /* Deep Canvas */
+  --color-zinc-900: #121215 !important; /* Panel & Card Surfaces */
+  --color-zinc-850: #18181b !important; /* Elevated Surfaces */
+  --color-zinc-800: #27272a !important; /* Input & Action Surfaces */
+  --color-zinc-700: #3f3f46 !important; /* Hairline Metallic Borders */
+  --color-zinc-600: #71717a !important; /* Secondary Metadata */
+  --color-zinc-500: #a1a1aa !important; /* Muted Captions */
+  --color-zinc-400: #d4d4d8 !important; /* Standard Body Text */
+  --color-zinc-300: #e4e4e7 !important; /* Emphasized Body */
+  --color-zinc-200: #f4f4f5 !important; /* Section Headings */
+  --color-zinc-100: #fafafa !important; /* Bold Titles */
+  --color-zinc-50: #ffffff !important;  /* Pure White */
 
   /* Electric Kawasaki Racing Lime Green Scale */
   --color-lime-200: #d9f99d !important;
@@ -53,7 +47,7 @@
   --color-indigo-500: #65a30d !important;
   --color-indigo-600: #4d7c0f !important;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html.dark,
@@ -176,86 +170,63 @@ html.dark body {
 }
 
 /* ==========================================================================
-   High-Contrast Lime Action Button Standard (WCAG AAA Invariant)
-   Light Mode: Solid lime buttons MUST use carbon black text (#09090b) for > 12:1 contrast.
-   Dark Mode: Primary action buttons use dark carbon (#18181b) with lime border and neon lime text (#bef264).
+   Unified Action Button Standard & Zero Black Text Invariant
+   All buttons across enabled, hover, active, and disabled states must use
+   crisp light/white typography. Black text on buttons is strictly prohibited.
    ========================================================================== */
-html:not(.dark) button[class*="bg-cyan-500"],
-html:not(.dark) button[class*="bg-cyan-400"],
-html:not(.dark) button[class*="bg-lime-500"],
-html:not(.dark) button[class*="bg-lime-400"],
-html:not(.dark) a[class*="bg-cyan-500"],
-html:not(.dark) a[class*="bg-cyan-400"],
-html:not(.dark) a[class*="bg-lime-500"],
-html:not(.dark) a[class*="bg-lime-400"],
-html:not(.dark) .btn-primary {
-  background-color: #84cc16 !important;
-  color: #09090b !important;
+button[class*="bg-emerald"],
+a[class*="bg-emerald"],
+.btn-primary {
+  color: #ffffff !important;
   font-weight: 700 !important;
 }
 
-html:not(.dark) button[class*="bg-cyan-500"] *,
-html:not(.dark) button[class*="bg-cyan-400"] *,
-html:not(.dark) button[class*="bg-lime-500"] *,
-html:not(.dark) button[class*="bg-lime-400"] *,
-html:not(.dark) a[class*="bg-cyan-500"] *,
-html:not(.dark) a[class*="bg-cyan-400"] *,
-html:not(.dark) a[class*="bg-lime-500"] *,
-html:not(.dark) a[class*="bg-lime-400"] *,
-html:not(.dark) .btn-primary * {
-  color: #09090b !important;
+button[class*="bg-emerald"] *,
+a[class*="bg-emerald"] *,
+.btn-primary * {
+  color: #ffffff !important;
 }
 
-html:not(.dark) button[class*="bg-cyan-500"]:hover,
-html:not(.dark) button[class*="bg-cyan-400"]:hover,
-html:not(.dark) button[class*="bg-lime-500"]:hover,
-html:not(.dark) button[class*="bg-lime-400"]:hover,
-html:not(.dark) .btn-primary:hover:not(:disabled) {
-  background-color: #65a30d !important;
+button[class*="bg-rose"],
+button[class*="bg-red"],
+a[class*="bg-rose"],
+a[class*="bg-red"] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
-/* Primary Action Buttons in Dark Mode (Solid Vibrant Lime with Bold Carbon Text - WCAG AAA > 12:1) */
-html.dark button[class*="bg-cyan-500"],
-html.dark button[class*="bg-cyan-400"],
+button[class*="bg-rose"] *,
+button[class*="bg-red"] *,
+a[class*="bg-rose"] *,
+a[class*="bg-red"] * {
+  color: #ffffff !important;
+}
+
+/* Disabled buttons strictly use muted light zinc (#71717a), never black */
+button:disabled,
+button[disabled],
+button:disabled *,
+button[disabled] * {
+  color: #71717a !important;
+  cursor: not-allowed !important;
+}
+
+/* Overwrite any leftover lime button text to bold white in dark mode */
 html.dark button[class*="bg-lime-500"],
 html.dark button[class*="bg-lime-400"],
-html.dark a[class*="bg-cyan-500"],
-html.dark a[class*="bg-cyan-400"],
 html.dark a[class*="bg-lime-500"],
-html.dark a[class*="bg-lime-400"],
-html.dark .btn-primary {
-  background-color: #84cc16 !important;
-  border: 1px solid #65a30d !important;
-  color: #09090b !important;
+html.dark a[class*="bg-lime-400"] {
+  background-color: #059669 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #ffffff !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 10px -2px rgba(132, 204, 22, 0.35) !important;
 }
 
-html.dark button[class*="bg-cyan-500"] *,
-html.dark button[class*="bg-cyan-400"] *,
 html.dark button[class*="bg-lime-500"] *,
 html.dark button[class*="bg-lime-400"] *,
-html.dark a[class*="bg-cyan-500"] *,
-html.dark a[class*="bg-cyan-400"] *,
 html.dark a[class*="bg-lime-500"] *,
-html.dark a[class*="bg-lime-400"] *,
-html.dark .btn-primary * {
-  color: #09090b !important;
-}
-
-html.dark button[class*="bg-cyan-500"]:hover:not(:disabled),
-html.dark button[class*="bg-cyan-400"]:hover:not(:disabled),
-html.dark button[class*="bg-lime-500"]:hover:not(:disabled),
-html.dark button[class*="bg-lime-400"]:hover:not(:disabled),
-html.dark a[class*="bg-cyan-500"]:hover,
-html.dark a[class*="bg-cyan-400"]:hover,
-html.dark a[class*="bg-lime-500"]:hover,
-html.dark a[class*="bg-lime-400"]:hover,
-html.dark .btn-primary:hover:not(:disabled) {
-  background-color: #a3e635 !important;
-  border-color: #84cc16 !important;
-  color: #09090b !important;
-  box-shadow: 0 4px 14px -2px rgba(132, 204, 22, 0.45) !important;
+html.dark a[class*="bg-lime-400"] * {
+  color: #ffffff !important;
 }
 
 /* Light Mode Top Header Navbar Invariant */
@@ -911,11 +882,11 @@ html.dark [class*="bg-blue-500/10"] {
 }
 
 /* Dark Card Surfaces, Panels & Responsive Backgrounds */
-html.dark [class*="bg-white"],
-html.dark [class*="bg-slate-50"],
-html.dark [class*="bg-slate-100"],
-html.dark [class*="bg-zinc-900"],
-html.dark [class*="bg-zinc-950"] {
+html.dark [class*="bg-white"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-slate-50"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-slate-100"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-zinc-900"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-zinc-950"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) {
   background-color: #121215 !important;
   border-color: #27272a !important;
   color: #f4f4f5;
@@ -927,13 +898,13 @@ html.dark .bg-zinc-800 {
   border-color: #3f3f46 !important;
 }
 
-html.dark [class*="border-slate-"],
-html.dark [class*="border-zinc-800"],
-html.dark [class*="border-zinc-700"] {
+html.dark [class*="border-slate-"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="border-zinc-800"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="border-zinc-700"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) {
   border-color: #27272a !important;
 }
 
-html.dark [class*="divide-slate-"] > * {
+html.dark [class*="divide-slate-"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) > * {
   border-color: #27272a !important;
 }
 
@@ -1147,152 +1118,6 @@ html.dark .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
 }
 
 
-/* ==========================================================================
-   OFFICIAL COMMERCIAL RECEIPT WHITE CANVAS INVARIANT
-   Must strictly remain 100% pure white canvas with high-contrast dark text
-   in BOTH light mode and dark mode (screen preview and printed paper).
-   Placed AFTER dark mode rules to ensure absolute override priority.
-   ========================================================================== */
-html.dark .printable-receipt,
-html.dark .printable-receipt *,
-html.dark [data-invoice-canvas="true"],
-html.dark [data-invoice-canvas="true"] *,
-.printable-receipt,
-.printable-receipt *,
-[data-invoice-canvas="true"],
-[data-invoice-canvas="true"] * {
-  color-scheme: light !important;
-}
-
-html.dark .printable-receipt,
-html.dark [data-invoice-canvas="true"],
-.printable-receipt,
-[data-invoice-canvas="true"] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  color: #09090b !important;
-}
-
-html.dark .printable-receipt [class*="bg-white"],
-html.dark [data-invoice-canvas="true"] [class*="bg-white"],
-.printable-receipt [class*="bg-white"],
-[data-invoice-canvas="true"] [class*="bg-white"] {
-  background-color: #ffffff !important;
-}
-
-html.dark .printable-receipt [class*="bg-slate-50"],
-html.dark [data-invoice-canvas="true"] [class*="bg-slate-50"],
-.printable-receipt [class*="bg-slate-50"],
-[data-invoice-canvas="true"] [class*="bg-slate-50"] {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.dark .printable-receipt [class*="border-slate-"],
-html.dark [data-invoice-canvas="true"] [class*="border-slate-"],
-.printable-receipt [class*="border-slate-"],
-[data-invoice-canvas="true"] [class*="border-slate-"] {
-  border-color: #e2e8f0 !important;
-}
-
-html.dark .printable-receipt [class*="divide-slate-"] > *,
-html.dark [data-invoice-canvas="true"] [class*="divide-slate-"] > *,
-.printable-receipt [class*="divide-slate-"] > *,
-[data-invoice-canvas="true"] [class*="divide-slate-"] > * {
-  border-color: #f1f5f9 !important;
-}
-
-html.dark .printable-receipt .text-slate-900,
-html.dark .printable-receipt [class*="text-slate-900"],
-html.dark [data-invoice-canvas="true"] .text-slate-900,
-html.dark [data-invoice-canvas="true"] [class*="text-slate-900"],
-.printable-receipt .text-slate-900,
-.printable-receipt [class*="text-slate-900"],
-[data-invoice-canvas="true"] .text-slate-900,
-[data-invoice-canvas="true"] [class*="text-slate-900"] {
-  color: #0f172a !important;
-}
-
-html.dark .printable-receipt .text-slate-700,
-html.dark .printable-receipt [class*="text-slate-700"],
-html.dark [data-invoice-canvas="true"] .text-slate-700,
-html.dark [data-invoice-canvas="true"] [class*="text-slate-700"],
-.printable-receipt .text-slate-700,
-.printable-receipt [class*="text-slate-700"],
-[data-invoice-canvas="true"] .text-slate-700,
-[data-invoice-canvas="true"] [class*="text-slate-700"] {
-  color: #334155 !important;
-}
-
-html.dark .printable-receipt .text-slate-600,
-html.dark .printable-receipt [class*="text-slate-600"],
-html.dark [data-invoice-canvas="true"] .text-slate-600,
-html.dark [data-invoice-canvas="true"] [class*="text-slate-600"],
-.printable-receipt .text-slate-600,
-.printable-receipt [class*="text-slate-600"],
-[data-invoice-canvas="true"] .text-slate-600,
-[data-invoice-canvas="true"] [class*="text-slate-600"] {
-  color: #475569 !important;
-}
-
-html.dark .printable-receipt .text-slate-500,
-html.dark .printable-receipt [class*="text-slate-500"],
-html.dark [data-invoice-canvas="true"] .text-slate-500,
-html.dark [data-invoice-canvas="true"] [class*="text-slate-500"],
-.printable-receipt .text-slate-500,
-.printable-receipt [class*="text-slate-500"],
-[data-invoice-canvas="true"] .text-slate-500,
-[data-invoice-canvas="true"] [class*="text-slate-500"] {
-  color: #64748b !important;
-}
-
-html.dark .printable-receipt .text-slate-400,
-html.dark .printable-receipt [class*="text-slate-400"],
-html.dark [data-invoice-canvas="true"] .text-slate-400,
-html.dark [data-invoice-canvas="true"] [class*="text-slate-400"],
-.printable-receipt .text-slate-400,
-.printable-receipt [class*="text-slate-400"],
-[data-invoice-canvas="true"] .text-slate-400,
-[data-invoice-canvas="true"] [class*="text-slate-400"] {
-  color: #94a3b8 !important;
-}
-
-html.dark .printable-receipt table,
-html.dark .printable-receipt tbody,
-html.dark .printable-receipt tr,
-html.dark .printable-receipt td,
-html.dark [data-invoice-canvas="true"] table,
-html.dark [data-invoice-canvas="true"] tbody,
-html.dark [data-invoice-canvas="true"] tr,
-html.dark [data-invoice-canvas="true"] td,
-.printable-receipt table,
-.printable-receipt tbody,
-.printable-receipt tr,
-.printable-receipt td,
-[data-invoice-canvas="true"] table,
-[data-invoice-canvas="true"] tbody,
-[data-invoice-canvas="true"] tr,
-[data-invoice-canvas="true"] td {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #f1f5f9 !important;
-}
-
-html.dark .printable-receipt table th,
-html.dark [data-invoice-canvas="true"] table th,
-.printable-receipt table th,
-[data-invoice-canvas="true"] table th {
-  background-color: #f8fafc !important;
-  color: #334155 !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-}
-
-html.dark .printable-receipt table tr:hover td,
-html.dark [data-invoice-canvas="true"] table tr:hover td,
-.printable-receipt table tr:hover td,
-[data-invoice-canvas="true"] table tr:hover td {
-  background-color: #f8fafc !important;
-}
 
 
 /* ==========================================================================

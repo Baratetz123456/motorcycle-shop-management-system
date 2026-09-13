@@ -339,59 +339,60 @@ export default function ItemProfilePage() {
   const isOptimalStock = isProduct && item.current_stock > item.reorder_level;
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 bg-slate-50">
+    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100">
       <div className="w-full space-y-8 animate-profile-enter">
         {/* Top Action & Navigation Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <button
-          onClick={() => router.push("/inventory")}
-          className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-sm"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Inventory</span>
-        </button>
+        <div className="flex flex-row items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => router.push("/inventory")}
+            className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-xs active:scale-[0.98]"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden xs:inline">Back to Inventory</span>
+            <span className="xs:hidden">Back</span>
+          </button>
 
-        {/* Action Controls */}
-        {canManage && (
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={openEditModal}
-              className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold border border-lime-600 text-xs transition-all flex items-center gap-2 shadow-sm active:scale-[0.98]"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Edit Details</span>
-            </button>
-            <button
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-800/50 dark:text-rose-400 dark:hover:bg-rose-900/40 text-xs font-semibold transition-all flex items-center gap-2 shadow-xs active:scale-[0.98]"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete Item</span>
-            </button>
-          </div>
-        )}
-      </div>
+          {/* Action Controls */}
+          {canManage && (
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <button
+                onClick={openEditModal}
+                className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold border border-emerald-500/30 text-xs transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm active:scale-[0.98]"
+              >
+                <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Edit Details</span>
+              </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm active:scale-[0.98]"
+              >
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Delete Item</span>
+              </button>
+            </div>
+          )}
+        </div>
 
       {/* Item Title & Breadcrumb Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-          <Link href="/inventory" className="hover:text-lime-700 font-medium transition-colors">
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 mb-1">
+          <Link href="/inventory" className="hover:text-emerald-400 font-medium transition-colors">
             Inventory
           </Link>
           <span>/</span>
-          <span className="text-slate-400">{isProduct ? "Parts & Products" : "Labor & Services"}</span>
+          <span className="text-slate-400 dark:text-zinc-500">{isProduct ? "Parts & Products" : "Labor & Services"}</span>
           <span>/</span>
-          <span className="text-slate-800 font-semibold truncate max-w-xs">{item.name}</span>
+          <span className="text-slate-800 dark:text-zinc-200 font-semibold truncate max-w-xs">{item.name}</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
           {item.name}
         </h1>
       </div>
 
       {/* Success Notification Banner */}
       {success && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-3 animate-in fade-in shadow-sm">
-          <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm flex items-center gap-3 animate-in fade-in shadow-sm">
+          <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span className="font-medium">{success}</span>
         </div>
       )}
@@ -399,7 +400,7 @@ export default function ItemProfilePage() {
         {/* ============ MOBILE CARD-FREE TABBED CANVAS (< md) ============ */}
         <div className="block md:hidden space-y-5 pb-20">
           {/* Edge-to-Edge Sticky Tab Navigation Bar */}
-          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md -mx-4 px-4 py-2.5 border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-sm">
+          <div className="sticky top-0 z-20 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md -mx-4 px-4 py-2.5 border-b border-slate-200 dark:border-zinc-800 flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-sm">
             {[
               { id: "overview", label: "Overview", icon: isProduct ? Package : Wrench },
               { id: "stock", label: "Stock & Inventory", icon: Boxes },
@@ -416,8 +417,8 @@ export default function ItemProfilePage() {
                   className={clsx(
                     "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0",
                     isActive
-                      ? "bg-lime-500 text-zinc-950 border border-lime-600 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900 bg-slate-100"
+                      ? "bg-emerald-600 text-white font-bold shadow-sm"
+                      : "text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800"
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -431,20 +432,20 @@ export default function ItemProfilePage() {
           {mobileTab === "overview" && (
             <div className="space-y-6 animate-in fade-in duration-150">
               {/* Selling Price Banner */}
-              <div className="py-2 border-b border-slate-200 flex items-center justify-between">
+              <div className="py-2 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold block">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-bold block">
                     Selling Retail Price
                   </span>
-                  <div className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                  <div className="text-3xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
                     ₱{Number(item.selling_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold block">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-bold block">
                     Est. Margin
                   </span>
-                  <span className="text-sm font-bold font-mono text-emerald-700">
+                  <span className="text-sm font-bold font-mono text-emerald-700 dark:text-emerald-400">
                     +{marginPercent.toFixed(1)}%
                   </span>
                 </div>
@@ -452,92 +453,72 @@ export default function ItemProfilePage() {
 
               {/* Edge-to-edge Key-Value List Rows */}
               <div className="space-y-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">
                   Item Identity
                 </h3>
 
                 {/* SKU */}
-                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                  <span className="text-xs text-slate-500 flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-lime-600" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800/80">
+                  <span className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-emerald-500" />
                     SKU / Code
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono font-bold text-slate-900">{item.sku}</span>
+                    <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">{item.sku}</span>
                     <button
                       onClick={handleCopySku}
-                      className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition-colors"
+                      className="p-1 hover:bg-slate-200 dark:hover:bg-zinc-800 rounded text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
                       title="Copy SKU"
                     >
-                      {copiedSku ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedSku ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
 
                 {/* Classification */}
-                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                  <span className="text-xs text-slate-500 flex items-center gap-2">
-                    {isProduct ? <Package className="w-4 h-4 text-lime-600" /> : <Wrench className="w-4 h-4 text-lime-600" />}
+                <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800/80">
+                  <span className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                    {isProduct ? <Package className="w-4 h-4 text-emerald-500" /> : <Wrench className="w-4 h-4 text-emerald-500" />}
                     Classification
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border bg-lime-50 text-lime-800 border-lime-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                     {item.item_type}
                   </span>
                 </div>
 
                 {/* Category */}
-                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                  <span className="text-xs text-slate-500 flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-slate-400" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800/80">
+                  <span className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
                     Category
                   </span>
-                  <span className="text-sm font-bold text-slate-800">{item.category}</span>
+                  <span className="text-sm font-bold text-slate-800 dark:text-zinc-200">{item.category}</span>
                 </div>
 
                 {/* Brand */}
                 {item.brand && (
-                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                    <span className="text-xs text-slate-500 flex items-center gap-2">
+                  <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800/80">
+                    <span className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-amber-500" />
                       Brand
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                    <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
                       {item.brand}
                     </span>
                   </div>
                 )}
 
                 {/* Catalog Status */}
-                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                  <span className="text-xs text-slate-500 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800/80">
+                  <span className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     Catalog Status
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                     Active in Catalog
                   </span>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              {canManage && (
-                <div className="pt-2 flex items-center gap-2.5">
-                  <button
-                    onClick={openEditModal}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98] shadow-sm"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    <span>Edit Details</span>
-                  </button>
-                  <button
-                    onClick={() => setIsDeleteModalOpen(true)}
-                    className="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -721,24 +702,11 @@ export default function ItemProfilePage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                  <span className="text-xs text-slate-500">Audit Tracking</span>
-                  <span className="text-xs font-semibold text-slate-700">Enabled (Immutable)</span>
+                <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800/80">
+                  <span className="text-xs text-slate-500 dark:text-zinc-400">Audit Tracking</span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Enabled (Immutable)</span>
                 </div>
               </div>
-
-              {/* Danger Zone */}
-              {canManage && (
-                <div className="pt-4 space-y-2">
-                  <button
-                    onClick={() => setIsDeleteModalOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>Delete Catalog Item</span>
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -1122,11 +1090,11 @@ export default function ItemProfilePage() {
             <button
               type="submit"
               disabled={isSubmittingEdit}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-all border border-lime-600 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all border border-emerald-500/30 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmittingEdit ? (
                 <>
-                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Saving...</span>
                 </>
               ) : (

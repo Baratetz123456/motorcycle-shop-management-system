@@ -442,10 +442,10 @@ export default function RegisterUserPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full sm:w-auto px-6 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-2 border border-lime-600 shadow-sm active:scale-[0.98]"
+                className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-2 border border-emerald-500/30 shadow-sm active:scale-[0.98]"
               >
                 {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />

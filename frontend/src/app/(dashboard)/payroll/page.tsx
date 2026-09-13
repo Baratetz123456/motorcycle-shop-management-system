@@ -10,20 +10,14 @@ import {
   Printer, 
   CheckCircle, 
   Clock, 
-  ShieldCheck, 
   ShieldAlert,
   ChevronDown, 
   ChevronRight,
   TrendingUp,
   FileText,
-  Calendar, 
   CalendarDays, 
   ArrowLeft,
-  Settings,
-  Sparkles,
-  Percent,
-  Check,
-  AlertCircle
+  Filter
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -31,6 +25,8 @@ import { recordUserAuditLog } from "@/lib/audit";
 import { fetchStaffCompensationFromDB } from "@/lib/compensation";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { getSystemSettings, SystemSettings } from "@/lib/settings";
 
 interface CommissionRecord {
   id: string;
@@ -83,6 +79,7 @@ export default function PayrollPage() {
   const [expandedMechanic, setExpandedMechanic] = useState<string | null>(null);
   const [disbursing, setDisbursing] = useState<boolean>(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [settings, setSettings] = useState<SystemSettings>(getSystemSettings());
 
   // Disbursement Confirmation Modal State
   const [disburseConfirmTarget, setDisburseConfirmTarget] = useState<{
@@ -98,6 +95,7 @@ export default function PayrollPage() {
   };
 
   useEffect(() => {
+    setSettings(getSystemSettings());
     // 1. Role verification: Restricted to admin and manager
     const role = localStorage.getItem("user_role");
     setUserRole(role);
@@ -299,21 +297,21 @@ export default function PayrollPage() {
   // Role Access Guard Screen
   if (!checkingAuth && userRole !== "admin" && userRole !== "manager") {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 p-8 flex flex-col items-center justify-center font-sans text-slate-900 dark:text-zinc-100">
-        <div className="max-w-md w-full border border-red-200 dark:border-red-500/20 rounded-2xl p-8 bg-white dark:bg-zinc-900 text-center space-y-5 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto">
+      <div className="min-h-screen bg-zinc-950 p-8 flex flex-col items-center justify-center font-sans text-zinc-100">
+        <div className="max-w-md w-full border border-red-500/30 rounded-2xl p-8 bg-zinc-900 text-center space-y-5 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Access Restricted</h2>
-            <p className="text-sm text-slate-600 dark:text-zinc-400 mt-2 leading-relaxed">
-              The Payroll & Commissions ledger contains confidential compensation figures accessible exclusively to <span className="text-lime-600 dark:text-lime-400 font-semibold">Shop Administrators</span> and <span className="text-lime-600 dark:text-lime-400 font-semibold">Managers</span>.
+            <h2 className="text-2xl font-black text-white">Access Restricted</h2>
+            <p className="text-sm text-zinc-400 mt-2 leading-relaxed">
+              The Payroll & Commissions ledger contains confidential compensation figures accessible exclusively to <span className="text-emerald-400 font-semibold">Shop Administrators</span> and <span className="text-emerald-400 font-semibold">Managers</span>.
             </p>
           </div>
           <div className="pt-2">
             <button
               onClick={() => router.push(userRole === "cashier" ? "/pos" : "/repairs/board")}
-              className="w-full py-3 rounded-xl bg-slate-900 dark:bg-zinc-800 hover:bg-slate-800 dark:hover:bg-zinc-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-zinc-700"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Return to Assigned Station</span>
@@ -325,21 +323,21 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50 dark:bg-zinc-950 p-4 sm:p-6 lg:p-8 flex flex-col font-sans text-slate-900 dark:text-zinc-100 overflow-y-auto w-full">
+    <div className="min-h-full bg-zinc-950 p-4 sm:p-6 lg:p-8 flex flex-col font-sans text-zinc-100 overflow-y-auto w-full">
       
       {/* Top Header */}
-      <div className="pb-6 border-b border-slate-200 dark:border-zinc-800 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="pb-6 border-b border-zinc-800 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5 tracking-tight">
-              <DollarSign className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+            <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
+              <DollarSign className="w-7 h-7 text-emerald-400" />
               Staff Compensation & Payroll
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-lime-500/10 text-lime-700 dark:text-lime-400 border border-lime-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               Confidential P&L
             </span>
           </div>
-          <p className="text-slate-500 dark:text-zinc-400 mt-1 text-xs sm:text-sm">
+          <p className="text-zinc-400 mt-1 text-xs sm:text-sm">
             Automated technician labor commissions, cashier daily allowances, and official payslip disbursements.
           </p>
         </div>
@@ -352,7 +350,7 @@ export default function PayrollPage() {
               count: mechanicList.filter(m => m.pending_amount > 0).length + filteredCashiers.filter(c => c.status === "PENDING").length
             })}
             disabled={disbursing || totalPendingPayroll === 0}
-            className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs shadow-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 disabled:bg-zinc-800/60 disabled:text-zinc-500 disabled:border-zinc-700/40 disabled:cursor-not-allowed border border-emerald-500/30"
           >
             <CheckCircle className="w-4 h-4" />
             <span>{disbursing ? "Disbursing..." : "Disburse All Pending"}</span>
@@ -361,13 +359,13 @@ export default function PayrollPage() {
       </div>
 
       {/* Period Filter Toolbar (Directly on Canvas, Hairline Dividers) */}
-      <div className="pb-6 border-b border-slate-200 dark:border-zinc-800 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400">
-          <CalendarDays className="w-4 h-4 text-lime-600 dark:text-lime-400" />
-          <span className="font-semibold">Settlement Period:</span>
+      <div className="pb-6 border-b border-zinc-800 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+          <CalendarDays className="w-4 h-4 text-emerald-400" />
+          <span className="font-semibold text-zinc-300">Settlement Period:</span>
         </div>
 
-        <div className="flex bg-slate-200/60 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300/80 dark:border-zinc-800 text-xs overflow-x-auto no-scrollbar w-fit">
+        <div className="flex bg-zinc-900 p-1 rounded-xl border border-zinc-800 text-xs overflow-x-auto no-scrollbar w-fit">
           {[
             { key: "WEEKLY", label: "Weekly View (7d)" },
             { key: "MONTHLY", label: "Monthly View (30d)" },
@@ -380,8 +378,8 @@ export default function PayrollPage() {
               className={clsx(
                 "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap",
                 selectedPeriod === item.key
-                  ? "bg-lime-500 text-zinc-950 shadow-sm"
-                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
               )}
             >
               {item.label}
@@ -391,59 +389,59 @@ export default function PayrollPage() {
       </div>
 
       {/* CARD-FREE KPI FINANCIAL RIBBON (Open Canvas Strip with Subtle Hairline Dividers) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 py-5 border-y border-slate-200 dark:border-zinc-800 mb-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-zinc-800">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 py-5 border-y border-zinc-800 mb-8 divide-y sm:divide-y-0 sm:divide-x divide-zinc-800">
         
         {/* Metric 1: Total Payroll Liability */}
         <div className="px-4 py-3 sm:py-0 first:pl-0">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block mb-1">
+          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
             Total Payroll Liability
           </span>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-white font-mono">
             ₱{grandTotalPayroll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">
+          <span className="text-[11px] text-zinc-400 mt-1 block">
             Combined staff labor & cashier allowances
           </span>
         </div>
 
         {/* Metric 2: Mechanic Commissions */}
         <div className="px-4 py-3 sm:py-0">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block mb-1">
+          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
             Technician Commissions
           </span>
-          <div className="text-2xl sm:text-3xl font-black text-lime-600 dark:text-lime-400 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
             ₱{totalMechanicCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">
+          <span className="text-[11px] text-zinc-400 mt-1 block">
             {mechanicList.length} mechanics ({filteredCommissions.length} job orders)
           </span>
         </div>
 
         {/* Metric 3: Cashier Wages */}
         <div className="px-4 py-3 sm:py-0">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block mb-1">
+          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
             Cashier Shift Allowances
           </span>
-          <div className="text-2xl sm:text-3xl font-black text-cyan-600 dark:text-cyan-400 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-cyan-400 font-mono">
             ₱{totalCashierPayroll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">
+          <span className="text-[11px] text-zinc-400 mt-1 block">
             {filteredCashiers.length} cashier shift settlements
           </span>
         </div>
 
         {/* Metric 4: Pending Payout */}
         <div className="px-4 py-3 sm:py-0 last:pr-0">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block mb-1">
+          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
             Unsettled Pending Pay
           </span>
           <div className={clsx(
             "text-2xl sm:text-3xl font-black font-mono",
-            totalPendingPayroll > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
+            totalPendingPayroll > 0 ? "text-amber-400" : "text-emerald-400"
           )}>
             ₱{totalPendingPayroll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">
+          <span className="text-[11px] text-zinc-400 mt-1 block">
             {totalPendingPayroll > 0 ? "Awaiting executive release" : "All accounts up to date"}
           </span>
         </div>
@@ -451,14 +449,14 @@ export default function PayrollPage() {
       </div>
 
       {/* Segmented Staff Category Tabs */}
-      <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-900 p-1 rounded-xl border border-slate-300/80 dark:border-zinc-800 text-xs w-fit mb-6">
+      <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800 text-xs w-fit mb-6">
         <button
           onClick={() => setActiveTab("MECHANICS")}
           className={clsx(
             "px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2",
             activeTab === "MECHANICS"
-              ? "bg-lime-500 text-zinc-950 shadow-sm"
-              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
           )}
         >
           <Wrench className="w-4 h-4" />
@@ -470,8 +468,8 @@ export default function PayrollPage() {
           className={clsx(
             "px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2",
             activeTab === "CASHIERS"
-              ? "bg-lime-500 text-zinc-950 shadow-sm"
-              : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/60"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
           )}
         >
           <UserCheck className="w-4 h-4" />
@@ -479,27 +477,27 @@ export default function PayrollPage() {
         </button>
       </div>
 
-      {/* TABULAR LEDGERS */}
+      {/* TABULAR & CARD LEDGERS */}
 
       {/* TAB 1: MECHANICS COMMISSION LEDGER */}
       {activeTab === "MECHANICS" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-lime-600 dark:text-lime-400" />
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-emerald-400" />
               <span>Technician Commission Accounts ({mechanicList.length})</span>
             </h3>
-            <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono hidden sm:inline-block">
+            <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline-block">
               Click row to inspect itemized job orders
             </span>
           </div>
 
           {mechanicList.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 dark:text-zinc-400 border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">
+            <div className="p-8 text-center text-zinc-400 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/40">
               No mechanic commission logs match the active timeframe.
             </div>
           ) : (
-            <div className="divide-y divide-slate-200 dark:divide-zinc-800 border-y border-slate-200 dark:border-zinc-800">
+            <div className="divide-y divide-zinc-800 border-y border-zinc-800">
               {mechanicList.map((m) => {
                 const isExpanded = expandedMechanic === m.name;
                 const isAllDisbursed = m.pending_amount === 0 && m.records.length > 0;
@@ -512,28 +510,28 @@ export default function PayrollPage() {
                         onClick={() => setExpandedMechanic(isExpanded ? null : m.name)}
                         className="flex items-center gap-3 cursor-pointer group flex-1"
                       >
-                        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">
+                        <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 group-hover:text-emerald-400 transition-colors">
                           {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">
+                            <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors">
                               {m.name}
                             </span>
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-lime-50 dark:bg-lime-500/10 text-lime-700 dark:text-lime-400 border border-lime-200 dark:border-lime-500/20">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                               {m.assignedRate}% Comm.
                             </span>
                             {isAllDisbursed ? (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                                 Disbursed
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                                 Unsettled
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] text-slate-500 dark:text-zinc-400 block mt-0.5 font-mono">
+                          <span className="text-[11px] text-zinc-400 block mt-0.5 font-mono">
                             {m.jobs_count} completed jobs • Labor Billed: ₱{m.total_labor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </div>
@@ -542,12 +540,12 @@ export default function PayrollPage() {
                       {/* Financials & Actions */}
                       <div className="flex items-center gap-4 justify-between sm:justify-end">
                         <div className="text-right font-mono">
-                          <span className="font-bold text-slate-900 dark:text-white text-base block">
+                          <span className="font-bold text-white text-base block">
                             ₱{m.total_earned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           <span className={clsx(
-                            "text-[10px] block",
-                            m.pending_amount > 0 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-emerald-600 dark:text-emerald-400"
+                            "text-[10px] block font-semibold",
+                            m.pending_amount > 0 ? "text-amber-400" : "text-emerald-400"
                           )}>
                             {m.pending_amount > 0 ? `₱${m.pending_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pending` : "Fully cleared"}
                           </span>
@@ -563,7 +561,7 @@ export default function PayrollPage() {
                                 count: m.records.filter((r: any) => r.status === "PENDING").length
                               })}
                               disabled={disbursing}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm border border-emerald-500/30"
                             >
                               <CheckCircle className="w-3.5 h-3.5" />
                               <span>Disburse</span>
@@ -581,47 +579,82 @@ export default function PayrollPage() {
                               itemsProcessed: m.jobs_count,
                               status: isAllDisbursed ? "DISBURSED" : "PENDING"
                             })}
-                            className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-colors flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs transition-colors flex items-center gap-1.5"
                           >
-                            <Printer className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400" />
+                            <Printer className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Payslip</span>
                           </button>
                         </div>
                       </div>
                     </div>
 
-                    {/* Expandable Itemized Job Orders Table */}
+                    {/* Expandable Itemized Job Orders */}
                     {isExpanded && (
-                      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-zinc-800 overflow-x-auto">
-                        <table className="w-full text-left text-xs">
-                          <thead>
-                            <tr className="border-b border-slate-200 dark:border-zinc-800 bg-slate-100/50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 uppercase text-[10px]">
-                              <th className="p-2.5">Job Order #</th>
-                              <th className="p-2.5">Customer & Bike</th>
-                              <th className="p-2.5">Completion Date</th>
-                              <th className="p-2.5">Labor Billed</th>
-                              <th className="p-2.5">Commission Rate</th>
-                              <th className="p-2.5 text-right">Earned (PHP)</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-slate-700 dark:text-zinc-300 font-mono">
-                            {m.records.map((r: CommissionRecord) => (
-                              <tr key={r.id} className="hover:bg-slate-100/40 dark:hover:bg-zinc-800/30">
-                                <td className="p-2.5 font-bold text-lime-600 dark:text-lime-400">{r.jo_number}</td>
-                                <td className="p-2.5 font-sans">
-                                  <span className="text-slate-900 dark:text-white block font-medium">{r.customer_name}</span>
-                                  <span className="text-[10px] text-slate-500 dark:text-zinc-400">{r.motorcycle_name}</span>
-                                </td>
-                                <td className="p-2.5 text-slate-500 dark:text-zinc-400 text-[11px]">
-                                  {new Date(r.created_at).toLocaleDateString()}
-                                </td>
-                                <td className="p-2.5">₱{r.labor_base.toFixed(2)}</td>
-                                <td className="p-2.5 text-slate-500 dark:text-zinc-400">{r.rate_percentage}%</td>
-                                <td className="p-2.5 text-right font-bold text-emerald-600 dark:text-emerald-400">₱{r.amount_earned.toFixed(2)}</td>
+                      <div className="mt-4 pt-3 border-t border-zinc-800">
+                        {/* 1. Desktop Table View (>= md) */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead>
+                              <tr className="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 uppercase text-[10px]">
+                                <th className="p-2.5">Job Order #</th>
+                                <th className="p-2.5">Customer & Bike</th>
+                                <th className="p-2.5">Completion Date</th>
+                                <th className="p-2.5">Labor Billed</th>
+                                <th className="p-2.5">Commission Rate</th>
+                                <th className="p-2.5 text-right">Earned (PHP)</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-800 text-zinc-300 font-mono">
+                              {m.records.map((r: CommissionRecord) => (
+                                <tr key={r.id} className="hover:bg-zinc-900/50">
+                                  <td className="p-2.5 font-bold text-emerald-400">{r.jo_number}</td>
+                                  <td className="p-2.5 font-sans">
+                                    <span className="text-white block font-medium">{r.customer_name}</span>
+                                    <span className="text-[10px] text-zinc-400">{r.motorcycle_name}</span>
+                                  </td>
+                                  <td className="p-2.5 text-zinc-400 text-[11px]">
+                                    {new Date(r.created_at).toLocaleDateString()}
+                                  </td>
+                                  <td className="p-2.5 text-zinc-300">₱{r.labor_base.toFixed(2)}</td>
+                                  <td className="p-2.5 text-zinc-400">{r.rate_percentage}%</td>
+                                  <td className="p-2.5 text-right font-bold text-emerald-400">₱{r.amount_earned.toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* 2. Mobile Master-Detail Card View (< md) */}
+                        <div className="md:hidden space-y-2.5">
+                          <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block mb-1">
+                            Itemized Job Orders ({m.records.length})
+                          </span>
+                          {m.records.map((r: CommissionRecord) => (
+                            <div 
+                              key={r.id} 
+                              className="p-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800/80 space-y-2 font-sans"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-mono text-xs font-bold text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded border border-emerald-800/40">
+                                  {r.jo_number}
+                                </span>
+                                <span className="font-mono font-bold text-sm text-emerald-400">
+                                  +₱{r.amount_earned.toFixed(2)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-start text-xs pt-1 border-t border-zinc-800/50">
+                                <div>
+                                  <span className="text-white font-medium block">{r.customer_name}</span>
+                                  <span className="text-[11px] text-zinc-400 block">{r.motorcycle_name}</span>
+                                </div>
+                                <div className="text-right text-[11px] text-zinc-400 font-mono">
+                                  <span>{new Date(r.created_at).toLocaleDateString()}</span>
+                                  <span className="block text-zinc-500 mt-0.5">Labor: ₱{r.labor_base.toFixed(0)} @ {r.rate_percentage}%</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -635,87 +668,171 @@ export default function PayrollPage() {
       {/* TAB 2: CASHIERS SHIFT PAY LEDGER */}
       {activeTab === "CASHIERS" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <UserCheck className="w-4 h-4 text-cyan-400" />
               <span>Cashier Shift Pay & Performance Ledger ({filteredCashiers.length})</span>
             </h3>
-            <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono hidden sm:inline-block">
+            <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline-block">
               Daily wage base + POS checkout volume
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-zinc-800 bg-slate-100/50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 uppercase text-[10px]">
-                  <th className="p-3">Cashier Name</th>
-                  <th className="p-3">Email Address</th>
-                  <th className="p-3">Shifts Logged</th>
-                  <th className="p-3">Daily Base Rate</th>
-                  <th className="p-3">POS Transactions</th>
-                  <th className="p-3">Total Volume</th>
-                  <th className="p-3 text-right">Total Pay (PHP)</th>
-                  <th className="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 text-slate-700 dark:text-zinc-300">
-                {filteredCashiers.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-6 text-center text-slate-500 dark:text-zinc-400">
-                      No cashier shift records logged in the active period.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCashiers.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-100/40 dark:hover:bg-zinc-800/30">
-                      <td className="p-3 font-semibold text-slate-900 dark:text-white">{c.cashier_name}</td>
-                      <td className="p-3 font-mono text-slate-500 dark:text-zinc-400 text-[11px]">{c.cashier_email}</td>
-                      <td className="p-3 font-mono">{c.shifts_count} shifts</td>
-                      <td className="p-3 font-mono text-slate-600 dark:text-zinc-400">₱{c.base_daily_rate.toFixed(2)}/day</td>
-                      <td className="p-3 font-mono text-lime-600 dark:text-lime-400 font-bold">{c.transactions_processed} txs</td>
-                      <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">₱{c.total_volume_handled.toFixed(2)}</td>
-                      <td className="p-3 text-right font-mono font-bold text-cyan-600 dark:text-cyan-400 text-sm">
-                        ₱{c.total_pay.toFixed(2)}
-                      </td>
-                      <td className="p-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {c.status === "PENDING" && (
-                            <button
-                              onClick={() => setDisburseConfirmTarget({
-                                type: "CASHIER",
-                                targetName: c.cashier_name,
-                                amount: c.total_pay,
-                                count: c.shifts_count
-                              })}
-                              disabled={disbursing}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition-colors shadow-sm"
-                            >
-                              Disburse
-                            </button>
-                          )}
-                          <button
-                            onClick={() => openPayslip({
-                              name: c.cashier_name,
-                              role: "Cashier",
-                              baseWage: c.base_daily_rate,
-                              totalPayout: c.total_pay,
-                              itemsProcessed: c.transactions_processed,
-                              status: c.status
-                            })}
-                            className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 font-semibold text-[11px] transition-colors flex items-center gap-1"
-                          >
-                            <Printer className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400" />
-                            <span>Payslip</span>
-                          </button>
-                        </div>
-                      </td>
+          {filteredCashiers.length === 0 ? (
+            <div className="p-8 text-center text-zinc-400 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/40">
+              No cashier shift records logged in the active period.
+            </div>
+          ) : (
+            <>
+              {/* 1. Desktop Table View (>= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 uppercase text-[10px]">
+                      <th className="p-3">Cashier Name</th>
+                      <th className="p-3">Email Address</th>
+                      <th className="p-3">Shifts Logged</th>
+                      <th className="p-3">Daily Base Rate</th>
+                      <th className="p-3">POS Transactions</th>
+                      <th className="p-3">Total Volume</th>
+                      <th className="p-3 text-right">Total Pay (PHP)</th>
+                      <th className="p-3 text-right">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800 text-zinc-300">
+                    {filteredCashiers.map((c) => (
+                      <tr key={c.id} className="hover:bg-zinc-900/50">
+                        <td className="p-3 font-semibold text-white">{c.cashier_name}</td>
+                        <td className="p-3 font-mono text-zinc-400 text-[11px]">{c.cashier_email}</td>
+                        <td className="p-3 font-mono text-zinc-200">{c.shifts_count} shifts</td>
+                        <td className="p-3 font-mono text-zinc-400">₱{c.base_daily_rate.toFixed(2)}/day</td>
+                        <td className="p-3 font-mono text-emerald-400 font-bold">{c.transactions_processed} txs</td>
+                        <td className="p-3 font-mono font-bold text-white">₱{c.total_volume_handled.toFixed(2)}</td>
+                        <td className="p-3 text-right font-mono font-bold text-cyan-400 text-sm">
+                          ₱{c.total_pay.toFixed(2)}
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {c.status === "PENDING" && (
+                              <button
+                                onClick={() => setDisburseConfirmTarget({
+                                  type: "CASHIER",
+                                  targetName: c.cashier_name,
+                                  amount: c.total_pay,
+                                  count: c.shifts_count
+                                })}
+                                disabled={disbursing}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition-colors border border-emerald-500/30"
+                              >
+                                Disburse
+                              </button>
+                            )}
+                            <button
+                              onClick={() => openPayslip({
+                                name: c.cashier_name,
+                                role: "Cashier",
+                                baseWage: c.base_daily_rate,
+                                totalPayout: c.total_pay,
+                                itemsProcessed: c.transactions_processed,
+                                status: c.status
+                              })}
+                              className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-[11px] transition-colors flex items-center gap-1"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Payslip</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 2. Mobile Master-Detail Card View (< md) */}
+              <div className="md:hidden space-y-3">
+                {filteredCashiers.map((c) => (
+                  <div 
+                    key={c.id} 
+                    className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3 font-sans shadow-xs"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">{c.cashier_name}</h4>
+                        <span className="text-[11px] text-zinc-400 font-mono block">{c.cashier_email}</span>
+                      </div>
+                      <span className={clsx(
+                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                        c.status === "DISBURSED" 
+                          ? "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40" 
+                          : "bg-amber-950/40 text-amber-400 border border-amber-800/40"
+                      )}>
+                        {c.status}
+                      </span>
+                    </div>
+
+                    {/* 2x2 Metric Grid */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-zinc-950/70 border border-zinc-800/70 text-xs font-mono">
+                      <div>
+                        <span className="text-[10px] text-zinc-400 uppercase block">Shifts Logged</span>
+                        <span className="font-bold text-zinc-200">{c.shifts_count} shifts</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-400 uppercase block">Daily Rate</span>
+                        <span className="font-bold text-zinc-200">₱{c.base_daily_rate.toFixed(0)}/day</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-400 uppercase block">POS Transactions</span>
+                        <span className="font-bold text-emerald-400">{c.transactions_processed} txs</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-400 uppercase block">Volume Handled</span>
+                        <span className="font-bold text-white">₱{c.total_volume_handled.toFixed(0)}</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Row */}
+                    <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
+                      <div>
+                        <span className="text-[10px] text-zinc-400 uppercase block font-mono">Total Payout</span>
+                        <span className="text-base font-black text-cyan-400 font-mono">₱{c.total_pay.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {c.status === "PENDING" && (
+                          <button
+                            onClick={() => setDisburseConfirmTarget({
+                              type: "CASHIER",
+                              targetName: c.cashier_name,
+                              amount: c.total_pay,
+                              count: c.shifts_count
+                            })}
+                            disabled={disbursing}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs border border-emerald-500/30"
+                          >
+                            Disburse
+                          </button>
+                        )}
+                        <button
+                          onClick={() => openPayslip({
+                            name: c.cashier_name,
+                            role: "Cashier",
+                            baseWage: c.base_daily_rate,
+                            totalPayout: c.total_pay,
+                            itemsProcessed: c.transactions_processed,
+                            status: c.status
+                          })}
+                          className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs flex items-center gap-1"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Payslip</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -743,153 +860,323 @@ export default function PayrollPage() {
         />
       )}
 
+      {/* Complete Single-Page Official Payslip Print Stylesheet */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 8mm;
+          }
+          *, *::before, *::after {
+            box-shadow: none !important;
+            text-shadow: none !important;
+          }
+          html, body, #__next, div, main, section, article {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            position: static !important;
+            background: #ffffff !important;
+          }
+          body {
+            background: #ffffff !important;
+            color: #09090b !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            font-size: 10pt !important;
+          }
+          nav, aside, header, [role="navigation"], button, .no-print, .modal-backdrop, [role="dialog"] > div:first-child, [data-modal-header="true"], [data-modal-footer="true"] {
+            display: none !important;
+          }
+          html.dark .printable-payslip,
+          html.dark [data-payslip-canvas="true"],
+          .printable-payslip,
+          [data-payslip-canvas="true"] {
+            display: block !important;
+            color: #09090b !important;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          html.dark .printable-payslip *,
+          html.dark [data-payslip-canvas="true"] *,
+          .printable-payslip * {
+            color: #09090b !important;
+            border-color: #e4e4e7 !important;
+            background-color: transparent !important;
+          }
+          html.dark .printable-payslip table,
+          html.dark [data-payslip-canvas="true"] table,
+          .printable-payslip table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+          }
+          html.dark .printable-payslip th,
+          html.dark .printable-payslip td,
+          .printable-payslip th, .printable-payslip td {
+            border: 1px solid #e4e4e7 !important;
+            padding: 4px 6px !important;
+            color: #09090b !important;
+            font-size: 9pt !important;
+          }
+          html.dark .printable-payslip th,
+          .printable-payslip th {
+            background-color: #f4f4f5 !important;
+            background: #f4f4f5 !important;
+            font-weight: 700 !important;
+            color: #09090b !important;
+          }
+          html.dark .printable-payslip tr,
+          .printable-payslip tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+          }
+          html.dark .printable-payslip .print-pill,
+          .printable-payslip .print-pill {
+            background-color: #f4f4f5 !important;
+            color: #09090b !important;
+            border-color: #d4d4d8 !important;
+          }
+        }
+      `}</style>
+
       {/* OFFICIAL PRINTABLE PAYSLIP MODAL */}
       <Modal
         isOpen={!!selectedPayslip}
         onClose={() => setSelectedPayslip(null)}
         size="lg"
       >
-        <ModalHeader
-          icon={Receipt}
-          iconVariant="lime"
-          title="Official Staff Compensation Voucher"
-          subtitle={`Disbursement record for ${selectedPayslip?.name}`}
-          onClose={() => setSelectedPayslip(null)}
-        />
+        <div data-modal-header="true">
+          <ModalHeader
+            icon={Receipt}
+            iconVariant="emerald"
+            title="Official Staff Compensation Voucher"
+            subtitle={`Disbursement record for ${selectedPayslip?.name}`}
+            onClose={() => setSelectedPayslip(null)}
+          />
+        </div>
 
-        <ModalBody className="space-y-6 text-xs font-sans">
-          {/* Printable Voucher Canvas */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-5 text-slate-900 dark:text-zinc-100 printable-payslip">
+        <ModalBody className="space-y-4 text-xs font-sans p-3 sm:p-6 bg-zinc-950">
+          {/* UNIFIED SINGLE-PAGE DOCUMENT TEMPLATE (Dark In-App, Pure White in Print) */}
+          <div 
+            data-payslip-canvas="true" 
+            className="printable-payslip w-full bg-zinc-900 text-zinc-100 border border-zinc-800 shadow-xl rounded-xl p-5 sm:p-7 space-y-4 relative"
+          >
             
-            {/* Store Header */}
-            <div className="flex justify-between items-start border-b border-slate-200 dark:border-zinc-800 pb-4">
-              <div>
-                <span className="font-black text-lg text-slate-900 dark:text-white tracking-tight block">
-                  VERSIKLO MOTORCYCLE PARTS & SERVICES
-                </span>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400 block font-mono">
-                  BIR Registered TIN: 442-891-003-000 Non-VAT
-                </span>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400 block">
-                  Official Staff Payroll & Commission Statement
-                </span>
+            {/* 1. Official Letterhead Header (Dynamic Brand Info & TIN) */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-zinc-800">
+              <div className="flex items-start gap-3.5">
+                <BrandLogo size="md" variant="monochrome" className="shrink-0 mt-0.5" />
+                <div>
+                  <h1 className="text-xl font-black tracking-tight text-white uppercase leading-none">
+                    {settings.appName ? `${settings.appName.toUpperCase()} ${settings.shopDescription === "Shop Floor" ? "MOTORCYCLE PARTS & SERVICES" : settings.shopDescription.toUpperCase()}` : "VERSIKLO MOTORCYCLE PARTS & SERVICES"}
+                  </h1>
+                  <p className="text-[11px] text-zinc-400 mt-1 leading-tight">
+                    {settings.shopAddress || "123 Rizal Ave, Brgy. San Antonio, Pasig City, Metro Manila"}
+                  </p>
+                  <p className="text-[10px] text-zinc-400 mt-0.5 font-mono">
+                    BIR Registered TIN: {settings.shopTin || "442-891-003-000 Non-VAT"}
+                  </p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">
+                    Tel: {settings.contactPhone || "+63 (02) 8123-4567"} • Email: {settings.contactEmail || "compliance@versiklo.ph"}
+                  </p>
+                </div>
               </div>
-              <div className="text-right font-mono">
-                <span className="text-lime-600 dark:text-lime-400 font-bold text-sm block">
+
+              <div className="text-left sm:text-right space-y-0.5 shrink-0">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                  Official Staff Payslip
+                </span>
+                <span className="font-mono text-lg font-black text-white block leading-tight">
                   {selectedPayslip?.payslipNo}
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  {selectedPayslip?.issuedDate}
-                </span>
-              </div>
-            </div>
-
-            {/* Recipient Profile */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="text-slate-500 dark:text-zinc-400 block uppercase text-[10px] font-bold">
-                  Employee Details:
-                </span>
-                <span className="font-bold text-slate-900 dark:text-white text-base">
-                  {selectedPayslip?.name}
-                </span>
-                <span className="text-slate-600 dark:text-zinc-400 block">
-                  Role: {selectedPayslip?.role} Technician / Staff
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="text-slate-500 dark:text-zinc-400 block uppercase text-[10px] font-bold">
-                  Settlement Period:
-                </span>
-                <span className="font-mono font-bold text-slate-700 dark:text-zinc-300">
-                  {selectedPayslip?.payPeriod}
-                </span>
-                <div className="mt-1.5">
+                <div className="text-[11px] text-zinc-400 font-mono">
+                  <span>Period: </span>
+                  <span className="font-semibold text-zinc-200">{selectedPayslip?.payPeriod}</span>
+                </div>
+                <div className="text-[10px] text-zinc-500 font-mono">
+                  Issued: {selectedPayslip?.issuedDate}
+                </div>
+                <div className="pt-0.5">
                   <span className={clsx(
-                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                    "print-pill inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase",
                     selectedPayslip?.status === "DISBURSED" 
-                      ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20" 
-                      : "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20"
+                      ? "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40" 
+                      : "bg-amber-950/40 text-amber-400 border border-amber-800/40"
                   )}>
-                    {selectedPayslip?.status}
+                    {selectedPayslip?.status === "DISBURSED" ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                    Status: {selectedPayslip?.status}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Compensation Ledger Breakdown */}
-            <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 space-y-2.5 font-mono text-xs">
-              {selectedPayslip?.role === "Mechanic" ? (
-                <>
-                  <div className="flex justify-between text-slate-700 dark:text-zinc-300">
-                    <span>Job Orders Completed:</span>
-                    <span className="font-bold">{selectedPayslip?.itemsProcessed} orders</span>
-                  </div>
-                  <div className="flex justify-between text-slate-700 dark:text-zinc-300">
-                    <span>Gross Customer Labor Billed:</span>
-                    <span>₱{Number(selectedPayslip?.laborTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-lime-600 dark:text-lime-400 font-bold">
-                    <span>Assigned Commission Rate:</span>
-                    <span>{selectedPayslip?.commissionRate}%</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between text-slate-700 dark:text-zinc-300">
-                    <span>POS Transactions Processed:</span>
-                    <span className="font-bold">{selectedPayslip?.itemsProcessed} tickets</span>
-                  </div>
-                  <div className="flex justify-between text-slate-700 dark:text-zinc-300">
-                    <span>Daily Shift Base Wage:</span>
-                    <span>₱{Number(selectedPayslip?.baseWage || 0).toFixed(2)}/day</span>
-                  </div>
-                </>
-              )}
-
-              {/* Total Payout */}
-              <div className="flex justify-between text-base font-black text-emerald-600 dark:text-emerald-400 pt-3 border-t border-slate-200 dark:border-zinc-800">
-                <span>Total Net Payout:</span>
-                <span className="text-lg">
-                  ₱{Number(selectedPayslip?.totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {/* 2. Employee Profile & Settlement Details (Card-Free Flat Layout with Hairline Dividers) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-zinc-800 border-b border-zinc-800 pb-3 text-xs">
+              {/* Employee Details */}
+              <div className="pr-4 space-y-1">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                  Employee Details
                 </span>
+                <p className="font-bold text-white text-sm">{selectedPayslip?.name}</p>
+                <p className="text-zinc-400 text-[11px]">Role: {selectedPayslip?.role} Technician / Staff</p>
+              </div>
+
+              {/* Settlement Period */}
+              <div className="py-2 md:py-0 md:px-4 space-y-1">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                  Settlement Details
+                </span>
+                <p className="font-bold text-white text-sm font-mono">{selectedPayslip?.payPeriod}</p>
+                <p className="text-zinc-400 text-[11px]">Voucher: {selectedPayslip?.payslipNo}</p>
+              </div>
+
+              {/* Authorization */}
+              <div className="pt-2 md:pt-0 md:pl-4 space-y-1">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                  Authorization
+                </span>
+                <p className="text-zinc-300 text-[11px]">
+                  <span className="text-zinc-500">Disbursed By:</span> <strong className="text-white">Shop Manager / Admin</strong>
+                </p>
+                <p className="text-zinc-300 text-[11px]">
+                  <span className="text-zinc-500">Date Issued:</span> <strong className="text-white">{selectedPayslip?.issuedDate}</strong>
+                </p>
               </div>
             </div>
 
-            {/* Signatures & Acknowledgement */}
-            <div className="border-t border-slate-200 dark:border-zinc-800 pt-6 grid grid-cols-2 gap-8 text-[11px]">
-              <div>
-                <div className="border-b border-slate-300 dark:border-zinc-700 h-8 mb-1"></div>
-                <span className="font-semibold text-slate-700 dark:text-zinc-300 block">Approved & Disbursed By</span>
-                <span className="text-[10px] text-slate-500 dark:text-zinc-400">Shop Manager / Admin</span>
+            {/* 3. Compensation Ledger Table (Border-collapsed, Condensed Single-Page Format) */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+                Compensation Breakdown & Earnings Ledger
+              </span>
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-y border-zinc-800 bg-zinc-800/60 text-zinc-400 font-bold uppercase text-[10px]">
+                      <th className="py-1.5 px-2">Earning Description / Activity</th>
+                      <th className="py-1.5 px-2 w-32 text-center">Volume / Shifts</th>
+                      <th className="py-1.5 px-2 w-32 text-right">Base / Billed</th>
+                      <th className="py-1.5 px-2 w-28 text-center">Rate / Share</th>
+                      <th className="py-1.5 px-2 w-32 text-right">Payout Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+                    {selectedPayslip?.role === "Mechanic" ? (
+                      <tr>
+                        <td className="py-2 px-2 font-medium text-white">
+                          Workshop Repair Labor Commission
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-zinc-300">
+                          {selectedPayslip?.itemsProcessed} orders
+                        </td>
+                        <td className="py-2 px-2 text-right font-mono text-zinc-300">
+                          ₱{Number(selectedPayslip?.laborTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-emerald-400 font-bold">
+                          {selectedPayslip?.commissionRate}%
+                        </td>
+                        <td className="py-2 px-2 text-right font-mono font-bold text-white">
+                          ₱{Number(selectedPayslip?.totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <td className="py-2 px-2 font-medium text-white">
+                          Cashier Daily Shift Base Allowance & POS Tickets
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-zinc-300">
+                          {selectedPayslip?.itemsProcessed} tickets
+                        </td>
+                        <td className="py-2 px-2 text-right font-mono text-zinc-300">
+                          ₱{Number(selectedPayslip?.baseWage || 0).toFixed(2)}/day
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono text-zinc-300 font-medium">
+                          100%
+                        </td>
+                        <td className="py-2 px-2 text-right font-mono font-bold text-white">
+                          ₱{Number(selectedPayslip?.totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <div>
-                <div className="border-b border-slate-300 dark:border-zinc-700 h-8 mb-1"></div>
-                <span className="font-semibold text-slate-700 dark:text-zinc-300 block">Received in Full By</span>
-                <span className="text-[10px] text-slate-500 dark:text-zinc-400">Employee Signature & Date</span>
+            </div>
+
+            {/* 4. Financial Total Squeezed Summary */}
+            <div className="flex justify-between items-center py-2 px-3 bg-zinc-950/60 border border-zinc-800 rounded text-xs">
+              <span className="font-bold text-zinc-400 uppercase tracking-wider text-[11px]">
+                Net Compensation Payable:
+              </span>
+              <span className="font-mono text-base font-black text-emerald-400">
+                ₱{Number(selectedPayslip?.totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+
+            {/* 5. Statutory Terms & Acknowledgement */}
+            <div className="py-2 border-y border-zinc-800 text-[10px] text-zinc-400 space-y-0.5">
+              <p className="font-bold text-zinc-300">Disbursement Terms & Statutory Compliance</p>
+              <p>• Official compensation statement issued in accordance with Philippine Labor Standards and Bureau of Internal Revenue (BIR) regulations.</p>
+              <p>• Net disbursement has been credited and settled in accordance with shop payroll records and agreed commission schedule.</p>
+            </div>
+
+            {/* 6. Dual Physical Signatures */}
+            <div className="pt-3 grid grid-cols-2 gap-10 text-xs">
+              <div className="text-center space-y-1">
+                <div className="border-b border-zinc-700 h-6 mx-auto w-3/4" />
+                <p className="font-bold text-zinc-200 text-[11px]">Approved & Disbursed By</p>
+                <p className="text-[10px] text-zinc-500">Shop Manager / Admin</p>
               </div>
+              <div className="text-center space-y-1">
+                <div className="border-b border-zinc-700 h-6 mx-auto w-3/4" />
+                <p className="font-bold text-zinc-200 text-[11px]">Received in Full By</p>
+                <p className="text-[10px] text-zinc-500">Employee Signature & Date</p>
+              </div>
+            </div>
+
+            {/* 7. Audit Footnote */}
+            <div className="pt-2 text-center text-[10px] text-zinc-500 space-y-0.5 border-t border-zinc-800/60">
+              <p>Certified Official Compensation Voucher • Generated: {new Date().toLocaleString()}</p>
+              <p className="font-mono">Reference ID: {selectedPayslip?.payslipNo} • Official Record • {settings.appName || "Versiklo"} Operations</p>
             </div>
 
           </div>
         </ModalBody>
 
-        <ModalFooter>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print Official Payslip</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedPayslip(null)}
-            className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all"
-          >
-            Close
-          </button>
-        </ModalFooter>
+        <div data-modal-footer="true">
+          <ModalFooter>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm border border-emerald-500/30"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Print Official Payslip</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedPayslip(null)}
+              className="px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-all"
+            >
+              Close
+            </button>
+          </ModalFooter>
+        </div>
       </Modal>
 
       {/* Floating Filter FAB (Mobile Only) */}
@@ -907,7 +1194,7 @@ export default function PayrollPage() {
         onReset={handleResetAllFilters}
       >
         <div className="space-y-3">
-          <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">Settlement Interval</label>
+          <label className="text-xs font-bold text-zinc-300">Settlement Interval</label>
           <div className="grid grid-cols-2 gap-2.5">
             {[
               { key: "WEEKLY", label: "Weekly View (7d)" },
@@ -925,8 +1212,8 @@ export default function PayrollPage() {
                 className={clsx(
                   "px-3 py-3 rounded-xl text-xs font-bold text-center transition-all",
                   selectedPeriod === item.key
-                    ? "bg-lime-500 text-zinc-950 shadow-md shadow-lime-500/20"
-                    : "bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-800"
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/50"
+                    : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800"
                 )}
               >
                 {item.label}

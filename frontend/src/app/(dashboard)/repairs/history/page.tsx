@@ -286,8 +286,8 @@ export default function CustomerRepairHistoryPage() {
                     className={clsx(
                       "px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
                       isSelected
-                        ? "bg-lime-500 text-zinc-950 shadow-sm font-bold"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                        ? "bg-emerald-600 text-white shadow-sm font-bold"
+                        : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
                     )}
                   >
                     {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
@@ -319,8 +319,8 @@ export default function CustomerRepairHistoryPage() {
                     className={clsx(
                       "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
                       isSelected
-                        ? "bg-lime-500 text-zinc-950 border border-lime-600 shadow-sm font-bold"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white border border-transparent"
+                        ? "bg-emerald-600 text-white border border-emerald-500/30 shadow-sm font-bold"
+                        : "text-zinc-400 hover:text-white hover:bg-zinc-700/60 border border-transparent"
                     )}
                   >
                     {labels[preset]}
@@ -594,8 +594,8 @@ export default function CustomerRepairHistoryPage() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 filterTab === "ALL"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
-                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm border border-emerald-500/30"
+                  : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
               )}
             >
               All Records
@@ -606,8 +606,8 @@ export default function CustomerRepairHistoryPage() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 filterTab === "ACTIVE"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
-                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm border border-emerald-500/30"
+                  : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
               )}
             >
               On Bench
@@ -618,8 +618,8 @@ export default function CustomerRepairHistoryPage() {
               className={clsx(
                 "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                 filterTab === "PAST"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
-                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm border border-emerald-500/30"
+                  : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
               )}
             >
               Completed
@@ -641,8 +641,8 @@ export default function CustomerRepairHistoryPage() {
                   className={clsx(
                     "px-3 py-2 rounded-xl text-xs font-semibold text-center transition-all",
                     datePreset === p
-                      ? "bg-lime-500 text-zinc-950 font-bold shadow-sm border border-lime-600"
-                      : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                      ? "bg-emerald-600 text-white font-bold shadow-sm border border-emerald-500/30"
+                      : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700"
                   )}
                 >
                   {labels[p]}

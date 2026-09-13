@@ -498,7 +498,7 @@ export default function FinancialAndSalesExtractPage() {
 
           <button
             onClick={() => window.print()}
-            className="px-4 py-2 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold text-xs transition-all flex items-center gap-2 shadow-sm active:scale-95"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-2 border border-emerald-500/30 shadow-sm active:scale-95"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Download / Print PDF</span>
@@ -521,8 +521,8 @@ export default function FinancialAndSalesExtractPage() {
               className={clsx(
                 "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
                 reportType === item.key
-                  ? "bg-lime-500 text-zinc-950 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
               )}
             >
               {item.label}
@@ -577,7 +577,7 @@ export default function FinancialAndSalesExtractPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-lime-500 flex items-center justify-center text-zinc-950 font-black text-xs">
+                <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-black text-xs">
                   VK
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 print:text-black">
@@ -1041,7 +1041,7 @@ export default function FinancialAndSalesExtractPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-colors flex items-center gap-2 shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-colors flex items-center gap-2 border border-emerald-500/30 shadow-sm"
             >
               Save Expense
             </button>
@@ -1078,8 +1078,8 @@ export default function FinancialAndSalesExtractPage() {
                 className={clsx(
                   "px-3 py-2.5 rounded-xl text-xs font-bold text-center transition-all",
                   reportType === item.key
-                    ? "bg-lime-500 text-zinc-950 shadow-sm"
-                    : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white"
                 )}
               >
                 {item.label}

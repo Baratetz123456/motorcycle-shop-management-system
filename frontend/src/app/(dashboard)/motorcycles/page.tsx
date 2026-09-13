@@ -331,7 +331,7 @@ export default function MotorcycleProfilesPage() {
               setFormCategory("Scooter");
               setIsRegisterModalOpen(true);
             }}
-            className="bg-lime-500 hover:bg-lime-400 text-zinc-950 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-sm"
+            className="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-sm border border-emerald-500/30"
           >
             <Plus className="w-4 h-4" />
             + Add Bike Model
@@ -761,7 +761,7 @@ export default function MotorcycleProfilesPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm border border-emerald-500/30"
             >
               {isSubmitting ? "Saving..." : "Save Bike Model"}
             </button>
@@ -866,11 +866,11 @@ export default function MotorcycleProfilesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 text-xs font-bold transition-all border border-lime-600 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all border border-emerald-500/30 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       <span>Saving...</span>
                     </>
                   ) : (

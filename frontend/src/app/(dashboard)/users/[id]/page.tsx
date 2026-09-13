@@ -247,7 +247,7 @@ export default function UserProfilePage() {
           <div className="flex items-center gap-3">
             <button
               onClick={openEditModal}
-              className="px-4 py-2.5 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold border border-lime-600 rounded-xl text-xs transition-all flex items-center gap-2 shadow-sm active:scale-[0.98]"
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold border border-emerald-500/30 rounded-xl text-xs transition-all flex items-center gap-2 shadow-sm active:scale-[0.98]"
             >
               <Edit3 className="w-4 h-4" />
               <span>Edit Profile</span>
@@ -556,11 +556,11 @@ export default function UserProfilePage() {
             <button
               type="submit"
               disabled={isUpdating}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600 text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/30 text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
             >
               {isUpdating ? (
                 <>
-                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Saving...</span>
                 </>
               ) : (

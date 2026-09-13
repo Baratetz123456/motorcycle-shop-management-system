@@ -20,7 +20,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "Workshop Floor",
     bgGradient: "from-cyan-500 via-sky-500 to-blue-600",
     borderColor: "border-cyan-500/40",
-    badgeColor: "bg-cyan-500 text-zinc-950",
+    badgeColor: "bg-cyan-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         {/* Background Plate */}
@@ -100,7 +100,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "POS & Billing",
     bgGradient: "from-emerald-500 via-teal-500 to-green-600",
     borderColor: "border-emerald-500/40",
-    badgeColor: "bg-emerald-500 text-zinc-950",
+    badgeColor: "bg-emerald-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         <circle cx="24" cy="24" r="23" fill="#064e3b" />
@@ -142,7 +142,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "Dyno & Engine",
     bgGradient: "from-amber-500 via-orange-500 to-red-600",
     borderColor: "border-amber-500/40",
-    badgeColor: "bg-amber-500 text-zinc-950",
+    badgeColor: "bg-amber-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         <circle cx="24" cy="24" r="23" fill="#7c2d12" />
@@ -269,7 +269,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "Inventory & OEM",
     bgGradient: "from-teal-500 via-cyan-500 to-emerald-600",
     borderColor: "border-teal-500/40",
-    badgeColor: "bg-teal-500 text-zinc-950",
+    badgeColor: "bg-teal-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         <circle cx="24" cy="24" r="23" fill="#134e4a" />
@@ -310,7 +310,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "ECU & Telemetry",
     bgGradient: "from-amber-400 via-yellow-500 to-amber-600",
     borderColor: "border-amber-400/40",
-    badgeColor: "bg-amber-400 text-zinc-950",
+    badgeColor: "bg-amber-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         <circle cx="24" cy="24" r="23" fill="#713f12" />
@@ -386,7 +386,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "Telemetry & Dyno",
     bgGradient: "from-sky-400 via-cyan-500 to-blue-600",
     borderColor: "border-sky-400/40",
-    badgeColor: "bg-sky-400 text-zinc-950",
+    badgeColor: "bg-sky-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         <circle cx="24" cy="24" r="23" fill="#082f49" />
@@ -421,7 +421,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
     department: "Wiring & Harness",
     bgGradient: "from-yellow-500 via-amber-500 to-orange-600",
     borderColor: "border-yellow-500/40",
-    badgeColor: "bg-yellow-500 text-zinc-950",
+    badgeColor: "bg-amber-600 text-white font-bold",
     renderFace: () => (
       <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
         <circle cx="24" cy="24" r="23" fill="#451a03" />

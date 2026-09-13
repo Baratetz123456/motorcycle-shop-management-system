@@ -123,7 +123,7 @@ export function LegalHub({ initialTab = "privacy" }: LegalHubProps) {
               className={clsx(
                 "px-4 py-1.5 rounded-xl font-bold transition-all flex items-center gap-2",
                 activeTab === "privacy"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm"
                   : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
               )}
             >
@@ -140,7 +140,7 @@ export function LegalHub({ initialTab = "privacy" }: LegalHubProps) {
               className={clsx(
                 "px-4 py-1.5 rounded-xl font-bold transition-all flex items-center gap-2",
                 activeTab === "terms"
-                  ? "bg-lime-500 text-zinc-950 font-bold shadow-sm"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm"
                   : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
               )}
             >

@@ -34,15 +34,15 @@ export function FloatingFilterButton({
         bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)",
       }}
       className={clsx(
-        "fixed right-4 z-40 md:hidden flex items-center gap-2 px-4 py-3 bg-lime-500 hover:bg-lime-400 text-zinc-950 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-lime-400 dark:border-lime-500/60 font-bold rounded-full shadow-2xl shadow-lime-500/30 active:scale-95 transition-all text-xs border border-lime-600/40 ring-2 ring-lime-500/20 backdrop-blur-md",
+        "fixed right-4 z-40 md:hidden flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-full shadow-2xl shadow-emerald-950/50 active:scale-95 transition-all text-xs border border-emerald-400/30 ring-2 ring-emerald-500/20 backdrop-blur-md",
         className
       )}
       aria-label="Open filters drawer"
     >
-      <Filter className="w-4 h-4 text-zinc-950 dark:text-lime-400" />
-      <span className="font-extrabold tracking-wide">{label}</span>
+      <Filter className="w-4 h-4 text-white" />
+      <span className="font-bold tracking-wide text-white">{label}</span>
       {activeCount > 0 && (
-        <span className="w-5 h-5 rounded-full bg-zinc-950 text-lime-400 dark:bg-lime-500 dark:text-zinc-950 text-[11px] font-bold flex items-center justify-center border border-lime-500/50 shadow-inner">
+        <span className="w-5 h-5 rounded-full bg-zinc-950 text-emerald-400 text-[11px] font-bold flex items-center justify-center border border-emerald-500/50 shadow-inner">
           {activeCount}
         </span>
       )}
@@ -158,7 +158,7 @@ export function MobileFilterSheet({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 bg-lime-500 hover:bg-lime-400 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 border border-emerald-500/30"
           >
             <span>Apply & View Results</span>
           </button>

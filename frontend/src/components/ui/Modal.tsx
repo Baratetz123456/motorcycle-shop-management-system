@@ -32,12 +32,12 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
 };
 
 const ICON_VARIANT_CLASSES: Record<ModalVariant, string> = {
-  lime: "bg-lime-50 border-lime-200 text-lime-700",
-  cyan: "bg-lime-50 border-lime-200 text-lime-700",
-  purple: "bg-purple-50 border-purple-200 text-purple-700",
-  emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
-  amber: "bg-amber-50 border-amber-200 text-amber-700",
-  rose: "bg-rose-50 border-rose-200 text-rose-700",
+  lime: "bg-lime-50 dark:bg-lime-950/40 border-lime-200 dark:border-lime-800/60 text-lime-700 dark:text-lime-400",
+  cyan: "bg-lime-50 dark:bg-lime-950/40 border-lime-200 dark:border-lime-800/60 text-lime-700 dark:text-lime-400",
+  purple: "bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-400",
+  emerald: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400",
+  amber: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-400",
+  rose: "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400",
 };
 
 function renderModalIcon(icon: ModalIconProp) {
@@ -294,7 +294,7 @@ export function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={isLoading}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 text-xs font-semibold transition-all shadow-xs active:scale-[0.98]"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-700 hover:border-zinc-600 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-all shadow-xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {cancelText}
         </button>
@@ -303,12 +303,12 @@ export function ConfirmModal({
           onClick={onConfirm}
           disabled={isLoading}
           className={clsx(
-            "w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
+            "w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm disabled:bg-zinc-800/60 disabled:text-zinc-500 disabled:border-zinc-700/40 disabled:cursor-not-allowed",
             confirmVariant === "danger"
-              ? "bg-rose-600 hover:bg-rose-700 text-white border border-rose-700 dark:border-rose-600"
+              ? "bg-rose-600 hover:bg-rose-500 border border-rose-500/30"
               : confirmVariant === "warning"
-              ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 border border-amber-600"
-              : "bg-lime-500 hover:bg-lime-400 text-zinc-950 border border-lime-600"
+              ? "bg-amber-600 hover:bg-amber-500 border border-amber-500/30"
+              : "bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/30"
           )}
         >
           {isLoading ? (

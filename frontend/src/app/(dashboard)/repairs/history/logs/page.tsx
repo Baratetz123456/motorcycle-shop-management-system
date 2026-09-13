@@ -209,7 +209,7 @@ function CustomerRepairHistoryLogsContent() {
             ) : (
               <button
                 onClick={() => handleResumeRepair(customer)}
-                className="px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-zinc-950 dark:bg-zinc-900 dark:border dark:border-lime-500/60 dark:text-lime-400 dark:hover:bg-zinc-800 font-bold text-xs transition-colors flex items-center gap-2 shadow-sm active:scale-[0.98]"
+                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm border border-emerald-500/30 active:scale-[0.98]"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>Start Job</span>
