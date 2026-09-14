@@ -143,7 +143,7 @@ export function ModalHeader({
   return (
     <div
       className={clsx(
-        "px-6 py-5 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between shrink-0",
+        "px-6 py-5 border-b border-emerald-500/30 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white flex items-center justify-between shrink-0 shadow-sm",
         className
       )}
     >
@@ -154,7 +154,7 @@ export function ModalHeader({
           {icon && (
             <div
               className={clsx(
-                "w-10 h-10 rounded-xl border border-zinc-700 bg-zinc-800 text-zinc-300 flex items-center justify-center shrink-0",
+                "w-10 h-10 rounded-xl border border-emerald-400/30 bg-emerald-800/60 text-white flex items-center justify-center shrink-0 shadow-sm",
                 ICON_VARIANT_CLASSES[iconVariant]
               )}
             >
@@ -162,8 +162,8 @@ export function ModalHeader({
             </div>
           )}
           <div>
-            {title && <h2 className="text-lg font-bold text-zinc-100 tracking-tight">{title}</h2>}
-            {subtitle && <p className="text-xs text-zinc-400 mt-0.5">{subtitle}</p>}
+            {title && <h2 className="text-lg font-bold text-white tracking-tight">{title}</h2>}
+            {subtitle && <p className="text-xs text-emerald-100 mt-0.5">{subtitle}</p>}
           </div>
         </div>
       )}
@@ -171,11 +171,11 @@ export function ModalHeader({
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors ml-auto shrink-0"
+          className="p-2 rounded-xl text-emerald-100 hover:text-white hover:bg-emerald-500/50 transition-colors ml-auto shrink-0"
           title="Close dialog (Esc)"
           aria-label="Close dialog"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 text-white" />
         </button>
       )}
     </div>
@@ -295,7 +295,14 @@ export function ConfirmModal({
           type="button"
           onClick={onConfirm}
           disabled={isLoading}
-          className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={clsx(
+            "w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-[0.98]",
+            confirmVariant === "danger"
+              ? "bg-rose-600 hover:bg-rose-500 border border-rose-500/60"
+              : confirmVariant === "warning"
+              ? "bg-amber-600 hover:bg-amber-500 border border-amber-500/60"
+              : "bg-emerald-600 hover:bg-emerald-500 border border-emerald-500/60"
+          )}
         >
           {isLoading ? (
             <span>Processing...</span>

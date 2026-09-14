@@ -38,6 +38,7 @@ import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/components/ui/Modal";
 import { recordUserAuditLog } from "@/lib/audit";
 import { RepairBoardSkeleton } from "@/components/repairs/RepairBoardSkeleton";
+import { CustomerBikeCardBanner } from "@/components/pos/CustomerBikeCardBanner";
 
 export type RepairStatus = "PENDING" | "ONGOING" | "COMPLETED" | "RELEASED";
 
@@ -124,6 +125,7 @@ export default function RepairBoardPage() {
     targetStatus: RepairStatus;
     label: string;
     direction: "forward" | "backward";
+    isUnpaidRelease?: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -1131,26 +1133,32 @@ export default function RepairBoardPage() {
                   key={job.id}
                   onClick={() => router.push(`/repairs/jobs/${job.id}`)}
                   className={clsx(
-                    "bg-white dark:bg-zinc-900 border rounded-2xl p-4 space-y-3 shadow-sm transition-all relative cursor-pointer active:scale-[0.99]",
+                    "bg-zinc-900 border rounded-2xl overflow-hidden shadow-sm transition-all relative cursor-pointer active:scale-[0.99]",
                     isPaid
-                      ? "border-emerald-300 dark:border-emerald-500/40"
-                      : "border-slate-200 dark:border-zinc-800 hover:border-lime-500"
+                      ? "border-emerald-500/40 hover:border-emerald-500/60"
+                      : "border-zinc-800 hover:border-zinc-700"
                   )}
                 >
-                  {/* Header: JO# + Payment Status Tag + 3-Dots Action Menu */}
-                  <div className="flex items-center justify-between gap-2">
+                  {/* Motorcycle Photographic Top Banner */}
+                  <div className="w-full relative">
+                    <CustomerBikeCardBanner motorcycleName={job.motorcycle} />
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    {/* Header: JO# + Payment Status Tag + 3-Dots Action Menu */}
+                    <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
                         {job.jo_number}
                       </span>
                       {isPaid ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1 uppercase tracking-wider">
-                          <CheckCircle className="w-3.5 h-3.5 text-zinc-400" />
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 flex items-center gap-1 uppercase tracking-wider">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
                           PAID
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 uppercase tracking-wider">
-                          Unpaid Cart
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700 uppercase tracking-wider">
+                          UNPAID
                         </span>
                       )}
                     </div>
@@ -1342,36 +1350,23 @@ export default function RepairBoardPage() {
                           <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
                           <span>Revert</span>
                         </button>
-                        {isPaid ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmMoveJob({
-                                job,
-                                targetStatus: "RELEASED",
-                                label: "Release & Handover to Customer",
-                                direction: "forward"
-                              });
-                            }}
-                            className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                          >
-                            <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                            <span>Release & Handover</span>
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/pos/checkout?job_id=${job.id}&jo_number=${encodeURIComponent(job.jo_number)}`);
-                            }}
-                            className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                          >
-                            <DollarSign className="w-3.5 h-3.5 text-white" />
-                            <span>Bill at POS</span>
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmMoveJob({
+                              job,
+                              targetStatus: "RELEASED",
+                              label: isPaid ? "Release & Handover to Customer" : "Release Job Order (Unpaid Warning)",
+                              direction: "forward",
+                              isUnpaidRelease: !isPaid,
+                            });
+                          }}
+                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/50 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-[0.98]"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                          <span>Release</span>
+                        </button>
                       </>
                     )}
 
@@ -1422,7 +1417,8 @@ export default function RepairBoardPage() {
                     </button>
                   </div>
                 </div>
-              );
+              </div>
+            );
             })
           )}
         </div>
@@ -1534,83 +1530,90 @@ export default function RepairBoardPage() {
                         style={{ touchAction: "manipulation" }}
                         title="Double-click or double-tap to open Job Card profile • Drag to move or drag to bottom to delete"
                         className={clsx(
-                          "bg-zinc-900 border rounded-xl p-4 space-y-3 relative group transition-colors duration-150 hover:border-zinc-700 cursor-grab active:cursor-grabbing select-none",
-                          isPaid ? "border-zinc-700" : "border-zinc-800",
+                          "bg-zinc-900 border rounded-2xl overflow-hidden relative group transition-colors duration-150 cursor-grab active:cursor-grabbing select-none shadow-sm",
+                          isPaid ? "border-emerald-500/30 hover:border-emerald-500/50" : "border-zinc-800 hover:border-zinc-700",
                           isBeingDragged && "opacity-30 border-zinc-500 border-dashed",
                           draggedJobId && !isBeingDragged && "pointer-events-none"
                         )}
                       >
-                        {/* JO Badge & Payment Status Tag */}
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
-                            {job.jo_number}
-                          </span>
-
-                          {isPaid ? (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1 uppercase tracking-wider">
-                              <CheckCircle className="w-3 h-3 text-zinc-400" />
-                              PAID
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 uppercase tracking-wider">
-                              Unpaid Cart
-                            </span>
-                          )}
+                        {/* Motorcycle Silhouette SVG Top Banner */}
+                        <div className="w-full relative">
+                          <CustomerBikeCardBanner motorcycleName={job.motorcycle} />
                         </div>
 
-                        {/* Customer & Motorcycle Info */}
-                        <div>
-                          <h4 className="text-base font-bold text-white flex items-center gap-2">
-                            <User className="w-4 h-4 text-zinc-400 shrink-0" />
-                            {job.customer}
-                          </h4>
-                          <p className="text-xs text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
-                            <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                            {job.motorcycle}
-                          </p>
-                        </div>
-
-                        {/* Mechanic Diagnosis Notes */}
-                        {job.mechanic_notes && (
-                          <div className="p-2.5 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
-                              <FileText className="w-3 h-3 text-zinc-400" /> Diagnosis Notes:
+                        <div className="p-4 space-y-3">
+                          {/* JO Badge & Payment Status Tag */}
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800/90 px-2.5 py-1 rounded-lg border border-zinc-700/80">
+                              {job.jo_number}
                             </span>
-                            <p className="text-xs text-zinc-300 italic line-clamp-2">
-                              "{job.mechanic_notes}"
+
+                            {isPaid ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 flex items-center gap-1 uppercase tracking-wider">
+                                <CheckCircle className="w-3 h-3 text-emerald-400" />
+                                PAID
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800/90 text-zinc-400 border border-zinc-700/80 uppercase tracking-wider">
+                                UNPAID
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Customer & Motorcycle Info */}
+                          <div>
+                            <h4 className="text-base font-bold text-white flex items-center gap-2">
+                              <User className="w-4 h-4 text-zinc-400 shrink-0" />
+                              {job.customer}
+                            </h4>
+                            <p className="text-xs text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
+                              <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                              {job.motorcycle}
                             </p>
                           </div>
-                        )}
 
-                        {/* Assigned Mechanic */}
-                        <div className="flex justify-between items-center text-xs pt-2 border-t border-zinc-800 text-zinc-400">
-                          <span className="flex items-center gap-1.5 font-semibold text-zinc-300">
-                            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
-                            {job.mechanic}
-                          </span>
-                        </div>
+                          {/* Mechanic Diagnosis Notes */}
+                          {job.mechanic_notes && (
+                            <div className="p-2.5 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
+                                <FileText className="w-3 h-3 text-zinc-400" /> Diagnosis Notes:
+                              </span>
+                              <p className="text-xs text-zinc-300 italic line-clamp-2">
+                                "{job.mechanic_notes}"
+                              </p>
+                            </div>
+                          )}
 
-                        {/* Card Footer Bar: Double-Click Instruction & Drag Handle */}
-                        <div className="pt-2.5 border-t border-zinc-800 flex items-center justify-between gap-2 select-none">
-                          <div
-                            className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-300 transition-colors pointer-events-none"
-                            title="Double-click or double-tap this card to open its full profile"
-                          >
-                            <MousePointerClick className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                            <span>Double-click to open</span>
+                          {/* Assigned Mechanic */}
+                          <div className="flex justify-between items-center text-xs pt-2 border-t border-zinc-800 text-zinc-400">
+                            <span className="flex items-center gap-1.5 font-semibold text-zinc-300">
+                              <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
+                              {job.mechanic}
+                            </span>
                           </div>
 
-                          {/* Draggable Indicator Badge / Mobile Touch Grip */}
-                          <div
-                            onTouchStart={(e) => {
-                              e.stopPropagation();
-                              handleCardTouchStart(e, job, true);
-                            }}
-                            className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-800 px-2 py-1 rounded-lg border border-zinc-700 font-medium select-none cursor-grab active:cursor-grabbing hover:text-white transition-colors"
-                            title="Drag this card into another column to change status, or drag to bottom trash can to delete"
-                          >
-                            <GripVertical className="w-3 h-3 text-zinc-400" />
-                            <span>Drag</span>
+                          {/* Card Footer Bar: Double-Click Instruction & Drag Handle */}
+                          <div className="pt-2.5 border-t border-zinc-800 flex items-center justify-between gap-2 select-none">
+                            <div
+                              className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-300 transition-colors pointer-events-none"
+                              title="Double-click or double-tap this card to open its full profile"
+                            >
+                              <MousePointerClick className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                              <span>Double-click to open</span>
+                            </div>
+
+                            {/* Draggable Indicator Badge / Mobile Touch Grip */}
+                            <div
+                              onTouchStart={(e) => {
+                                e.stopPropagation();
+                                handleCardTouchStart(e, job, true);
+                              }}
+                              className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-800 px-2 py-1 rounded-lg border border-zinc-700 font-medium select-none cursor-grab active:cursor-grabbing hover:text-white transition-colors"
+                              title="Drag this card into another column to change status, or drag to bottom trash can to delete"
+                            >
+                              <GripVertical className="w-3 h-3 text-zinc-400" />
+                              <span>Drag</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1958,9 +1961,31 @@ export default function RepairBoardPage() {
             executeMoveJob(job.id, targetStatus);
           }
         }}
-        title={confirmMoveJob?.direction === "backward" ? "Revert Job Order Stage?" : "Advance Job Order Stage?"}
-        confirmText={confirmMoveJob?.direction === "backward" ? "Confirm Revert" : "Confirm Stage Move"}
-        confirmVariant={confirmMoveJob?.direction === "backward" ? "warning" : "primary"}
+        title={
+          confirmMoveJob?.direction === "backward"
+            ? "Revert Job Order Stage?"
+            : confirmMoveJob?.isUnpaidRelease
+            ? "Release Unpaid Job Order?"
+            : confirmMoveJob?.targetStatus === "RELEASED"
+            ? "Release & Handover Bike?"
+            : "Advance Job Order Stage?"
+        }
+        confirmText={
+          confirmMoveJob?.direction === "backward"
+            ? "Confirm Revert"
+            : confirmMoveJob?.isUnpaidRelease
+            ? "Confirm Release (Unpaid)"
+            : confirmMoveJob?.targetStatus === "RELEASED"
+            ? "Confirm Handover"
+            : "Confirm Stage Move"
+        }
+        confirmVariant={
+          confirmMoveJob?.direction === "backward"
+            ? "warning"
+            : confirmMoveJob?.isUnpaidRelease
+            ? "warning"
+            : "primary"
+        }
         message={
           confirmMoveJob ? (
             <div className="space-y-3">
@@ -1973,6 +1998,15 @@ export default function RepairBoardPage() {
                   {confirmMoveJob.targetStatus}
                 </span>
               </div>
+              {confirmMoveJob.isUnpaidRelease && (
+                <div className="p-3 rounded-xl bg-amber-950/60 border border-amber-500/50 text-amber-200 text-xs flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+                  <div>
+                    <strong className="font-bold block">Unpaid Job Order Notice:</strong>
+                    This job order has not yet been processed for payment at the POS cashier. Releasing will mark the motorcycle as handed over to the customer.
+                  </div>
+                </div>
+              )}
               {confirmMoveJob.direction === "backward" && (
                 <p className="text-[11px] text-zinc-300 bg-zinc-800 p-2.5 rounded-xl border border-zinc-700">
                   Reverting this job order will send it back to the previous workshop bench stage.

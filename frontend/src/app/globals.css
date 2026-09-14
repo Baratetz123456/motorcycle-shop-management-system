@@ -972,31 +972,31 @@ html.dark main {
 
 /* Dark Sidebar */
 html.dark aside {
-  background-color: #121215 !important;
+  background-color: #09090b !important;
   border-right: 1px solid #27272a !important;
 }
 
 html.dark aside a.nav-active-item,
 html.dark aside a[data-active="true"] {
-  background-color: rgba(132, 204, 22, 0.15) !important;
-  border-color: rgba(132, 204, 22, 0.35) !important;
-  color: #bef264 !important;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #34d399 !important;
   font-weight: 700 !important;
 }
 
 html.dark aside a.nav-active-item *,
 html.dark aside a[data-active="true"] * {
-  color: #bef264 !important;
+  color: #34d399 !important;
 }
 
 html.dark aside a.nav-active-item .nav-active-bar,
 html.dark aside a[data-active="true"] .nav-active-bar {
-  background-color: #84cc16 !important;
+  background-color: #10b981 !important;
 }
 
 html.dark aside a.nav-active-item svg,
 html.dark aside a[data-active="true"] svg {
-  color: #84cc16 !important;
+  color: #10b981 !important;
 }
 
 html.dark aside a:not([data-active="true"]) {

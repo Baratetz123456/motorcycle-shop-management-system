@@ -187,7 +187,7 @@ export function Sidebar() {
       </nav>
 
       {/* Footer System Status & Legal Links */}
-      <div className="shrink-0 p-3.5 border-t border-zinc-800 bg-zinc-900 space-y-2">
+      <div className="shrink-0 p-3.5 border-t border-zinc-800 bg-zinc-950 space-y-2">
         <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1">
           <div className="flex items-center gap-1.5 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
