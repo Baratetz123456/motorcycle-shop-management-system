@@ -1,0 +1,203 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  MotoShop POS - Zero-Cost Serverless Backend
+  FastAPI microservices on AWS Lambda with HTTP API Gateway and AWS SQS
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL connection string from Supabase (e.g. postgresql+asyncpg://postgres:[PASS]@[HOST]:5432/postgres)
+  RedisUrl:
+    Type: String
+    NoEcho: true
+    Description: Redis connection string from Upstash (e.g. rediss://default:[PASS]@[HOST]:6379)
+  JwtSecretKey:
+    Type: String
+    NoEcho: true
+    Default: "change-me-in-production-super-secret-jwt-key"
+    Description: Secret key for signing and verifying JWT tokens
+  CookieSecure:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: Set to true for production HTTPS cookies
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        DATABASE_URL: !Ref DatabaseUrl
+        REDIS_URL: !Ref RedisUrl
+        JWT_SECRET_KEY: !Ref JwtSecretKey
+        COOKIE_SECURE: !Ref CookieSecure
+        SQS_QUEUE_URL: !Ref PosEventsQueue
+        PYTHONPATH: /var/task
+
+Resources:
+  # ===========================================================================
+  # SQS Queue for Saga Pattern Asynchronous Events
+  # ===========================================================================
+  PosEventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: motoshop-pos-events
+      MessageRetentionPeriod: 86400 # 1 day retention
+      VisibilityTimeout: 60
+
+  # ===========================================================================
+  # AWS HTTP API Gateway ($1/million requests; first 1M requests/mo free)
+  # ===========================================================================
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: motoshop-http-api
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+          - Idempotency-Key
+          - Cookie
+          - Accept
+          - X-Forwarded-For
+        MaxAge: 3600
+
+  # ===========================================================================
+  # 1. Auth Service Lambda
+  # ===========================================================================
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["auth_service.main.handler"]
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt PosEventsQueue.QueueName
+      Events:
+        AuthApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/auth
+            Method: ANY
+        AuthApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/auth/{proxy+}
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: auth-latest
+
+  # ===========================================================================
+  # 2. Inventory Service Lambda
+  # ===========================================================================
+  InventoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["inventory_service.main.handler"]
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt PosEventsQueue.QueueName
+      Events:
+        InventoryApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/inventory
+            Method: ANY
+        InventoryApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/inventory/{proxy+}
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: inventory-latest
+
+  # ===========================================================================
+  # 3. Sales Service Lambda
+  # ===========================================================================
+  SalesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["sales_service.main.handler"]
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt PosEventsQueue.QueueName
+      Events:
+        SalesApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/sales
+            Method: ANY
+        SalesApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/sales/{proxy+}
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: sales-latest
+
+  # ===========================================================================
+  # 4. Repairs Service Lambda
+  # ===========================================================================
+  RepairsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["repairs_service.main.handler"]
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt PosEventsQueue.QueueName
+      Events:
+        RepairsApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/repairs
+            Method: ANY
+        RepairsApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/repairs/{proxy+}
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: repairs-latest
+
+Outputs:
+  HttpApiUrl:
+    Description: "Base URL for the AWS HTTP API Gateway"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  SqsQueueUrl:
+    Description: "URL of the Saga events SQS queue"
+    Value: !Ref PosEventsQueue
