@@ -156,9 +156,28 @@ const availableCategories = useMemo(() => {
 }, [catalogItems, activeType]);
 ```
 
-#### D. Photorealistic Mechanical & Bike Category Banners
-- **CategoryCardBanner**: Renders 3D-styled SVGs with multi-stop metallic linear/radial gradients (`rotor-steel`, `oil-amber`, `pulley-metal`, `spring-cyan`, `piston-crown`).
-  - Strict precedence: evaluate `isBrake` before `isOil` to prevent "Brake Fluid" from matching oil bottles.
-- **CustomerBikeCardBanner**: Automatically identifies bike category from motorcycle name/brand (`Maxi-Scooter`, `Sportbike`, `Naked Street`, `Hyper Underbone`, `Adventure Touring`, `Cruiser Classic`).
-  - Displays workshop grid floor pattern, horizon studio lighting line, brand watermark pill (top-left), and category badge (bottom-right).
+#### D. Photorealistic Motorcycle Banners & Philippine Market Hardware Standards
+- **100% Motorcycle-Only Asset Rule (Strictly Zero Cars)**:
+  - All catalog cards (`CategoryCardBanner.tsx`), service operations, and repair board customer cards (`CustomerBikeCardBanner.tsx`) must strictly portray motorcycle hardware and workshop mechanics. No car or passenger vehicle assets are permitted.
+- **Service Categories & Required Visual Mechanics**:
+  - **Brake Services**: High-performance motorcycle front wheel with ventilated wave floating rotor, red Racing Boy (RCB) multi-piston caliper, and stainless steel braided brake line.
+  - **Engine Overhaul**: Motorcycle single-cylinder engine block with machined cooling fins, honed cylinder bore, brand new forged piston kit with compression rings, cylinder head with valves, and copper gasket.
+  - **Oil & Flush**: 4T synthetic motorcycle oil bottle (Motul 7100) pouring through funnel into the motorcycle engine crankcase filler port, with visible clutch cover and circular oil level sight glass.
+  - **Filter Service**: Motorcycle airbox housing with red performance washable air filter element installation and oil filter cartridge with O-ring.
+  - **Electrical Service**: Motorcycle stator magneto coil with 12 copper windings, complete motorcycle frame wiring harness, battery, and digital multimeter reading ~13.6-14.4V DC.
+  - **PMS / Maintenance**: Modern sport motorcycle elevated on a red hydraulic scissor lift in a multi-bay workshop, diagnosed with a handheld electronic OBD diagnostic tablet.
+  - **Tire Service**: Backlit digital tire pressure gauge reading ~32-33 PSI on a 90° CNC valve stem of an alloy motorcycle wheel, with tread depth gauge, swingarm, and drive chain.
+  - **CVT / Drivetrain**: Open scooter CVT crankcase showing variator pulley, drive belt, flyball rollers, and clutch bell.
+- **Philippine Market Parts & Model Mapping**:
+  - Products reference top aftermarket brands in the Philippines: RCB (Racing Boy), Uma Racing, JVT / MTRT, Motul 7100, Maxxis, and Pirelli.
+  - Customer cards classify top Philippine market motorcycles into distinct silhouettes:
+    - Scooter: Yamaha NMAX 155, Honda Click 125i/160, Yamaha Aerox, PCX 160.
+    - Underbone: Suzuki Raider R150 Fi, Yamaha Sniper 155, Honda Winner X, Wave 125.
+    - Sportbike: Yamaha YZF-R15 V4, Kawasaki Ninja 400.
+    - Naked Street: Yamaha MT-15, CFMOTO 300NK, Bajaj Dominar 400.
+    - Adventure: Honda ADV 160, Honda CRF300L.
+    - Cruiser: Honda Rebel 500.
+- **Customer Card Surface Invariants**:
+  - **Zero Name Tag Overlay**: Prohibit rendering the motorcycle name watermark tag on customer cards.
+  - **Monochrome Dark Theme Badge**: Category badges must strictly use `bg-zinc-950/90 text-zinc-100 border-zinc-700/90 font-mono` with crisp white text.
 
