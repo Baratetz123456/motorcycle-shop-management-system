@@ -2,10 +2,15 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { tokenStore } from './auth-token';
 
-const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_GATEWAY_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? '/api/v1'
+    : 'http://localhost:8000/api/v1');
 
 export const apiClient = axios.create({
   baseURL: API_GATEWAY_URL,
+
   withCredentials: true, // Enables browser to send and receive HttpOnly session cookies
   headers: {
     'Content-Type': 'application/json',
@@ -17,6 +22,60 @@ let failedQueue: Array<{
   resolve: (token: string) => void;
   reject: (err: any) => void;
 }> = [];
+
+let activeRefreshPromise: Promise<{
+  access_token: string;
+  role?: string;
+  user_id?: string;
+  first_name?: string;
+  last_name?: string;
+  avatar?: string;
+}> | null = null;
+
+export async function refreshTokenOnce(): Promise<{
+  access_token: string;
+  role?: string;
+  user_id?: string;
+  first_name?: string;
+  last_name?: string;
+  avatar?: string;
+}> {
+  if (activeRefreshPromise) {
+    return activeRefreshPromise;
+  }
+
+  activeRefreshPromise = (async () => {
+    try {
+      const response = await axios.post(
+        `${apiClient.defaults.baseURL}/auth/refresh`,
+        {},
+        { withCredentials: true }
+      );
+      const data = response.data;
+      if (data.access_token) {
+        tokenStore.setToken(data.access_token);
+      }
+      if (data.role) {
+        localStorage.setItem('user_role', data.role);
+      }
+      if (data.user_id) {
+        localStorage.setItem('user_id', data.user_id);
+      }
+      if (data.first_name || data.last_name) {
+        const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ');
+        localStorage.setItem('user_name', fullName);
+      }
+      if (data.avatar) {
+        localStorage.setItem('user_avatar', data.avatar);
+      }
+      return data;
+    } finally {
+      activeRefreshPromise = null;
+    }
+  })();
+
+  return activeRefreshPromise;
+}
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -99,18 +158,9 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Attempt standard silent refresh using HttpOnly session cookie
-        const { data } = await apiClient.post('/auth/refresh');
+        // Attempt standard silent refresh using HttpOnly session cookie through mutex
+        const data = await refreshTokenOnce();
         const newToken = data.access_token;
-        tokenStore.setToken(newToken);
-
-        if (data.role) {
-          localStorage.setItem('user_role', data.role);
-        }
-        if (data.user_id) {
-          localStorage.setItem('user_id', data.user_id);
-        }
-
         processQueue(null, newToken);
         originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
         return apiClient(originalRequest);
@@ -150,7 +200,8 @@ apiClient.interceptors.response.use(
 
           // Only redirect if not already on the login page
           if (!window.location.pathname.startsWith('/login')) {
-            window.location.href = '/login?expired=1';
+            const currentPath = window.location.pathname + window.location.search;
+            window.location.href = `/login?returnUrl=${encodeURIComponent(currentPath)}&expired=1`;
           }
         }
 

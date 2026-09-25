@@ -3,10 +3,10 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, refreshTokenOnce } from "@/lib/api-client";
 import { tokenStore } from "@/lib/auth-token";
 import { recordUserAuditLog } from "@/lib/audit";
-import { UserRole, getEffectiveLandingPage, getRouteFriendlyName } from "@/lib/permissions";
+import { UserRole, getEffectiveLandingPage, getRouteFriendlyName, isRouteAllowed } from "@/lib/permissions";
 import { syncUserPreferences, getAppTheme, applyThemeToDocument, getAppMode, applyModeToDocument } from "@/lib/theme";
 import { 
   KeyRound, 
@@ -56,13 +56,12 @@ function LoginForm() {
       }
 
       try {
-        const { data } = await apiClient.post("/auth/refresh");
+        const data = await refreshTokenOnce();
         if (data.access_token && data.role) {
-          tokenStore.setToken(data.access_token);
-          localStorage.setItem("user_role", data.role);
-          if (data.user_id) localStorage.setItem("user_id", data.user_id);
-          if (data.avatar) localStorage.setItem("user_avatar", data.avatar);
-          const target = getEffectiveLandingPage(data.role as UserRole);
+          const userRole = data.role as UserRole;
+          const returnUrl = searchParams.get("returnUrl");
+          const effectiveLanding = getEffectiveLandingPage(userRole);
+          const target = returnUrl && isRouteAllowed(returnUrl, userRole) ? returnUrl : (effectiveLanding || "/reports");
           if (target) {
             router.push(target);
           }
@@ -143,7 +142,8 @@ function LoginForm() {
 
       recordUserAuditLog("USER_LOGIN", "/login", { email: email, role: userRole });
 
-      const landingPage = effectiveLanding || "/reports";
+      const returnUrl = searchParams.get("returnUrl");
+      const landingPage = returnUrl && isRouteAllowed(returnUrl, userRole) ? returnUrl : (effectiveLanding || "/reports");
       const friendlyName = getRouteFriendlyName(landingPage);
       setSuccess(`Authenticated as ${userRole.toUpperCase()}! Redirecting to ${friendlyName}...`);
       

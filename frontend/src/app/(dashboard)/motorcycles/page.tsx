@@ -519,28 +519,30 @@ export default function MotorcycleProfilesPage() {
         </div>
       </div>
 
-      {/* Motorcycles Data Container */}
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
+      {/* Motorcycles Data Container (Aligned with Customer Records Table) */}
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none">
         <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
-          {/* Mobile View: Modern Dark Zinc Cards with Photo Previews */}
-          <div className="block md:hidden px-1 space-y-3 pb-24">
+          {/* Mobile View: Borderless Edge-to-Edge Motorcycle Rows */}
+          <div className="block md:hidden px-1 divide-y divide-zinc-800/80 pb-24">
             {loading ? (
               Array.from({ length: 5 }).map((_, idx) => (
-                <div key={idx} className="p-4 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-3">
-                  <div className="flex justify-between items-center">
-                    <Skeleton className="h-5 w-28 rounded-lg bg-zinc-800" />
-                    <Skeleton className="h-5 w-16 rounded-md bg-zinc-800" />
+                <div key={idx} className="py-3.5 px-2 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-14 h-12 rounded-xl bg-zinc-800 shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-4 w-32 rounded bg-zinc-800" />
+                      <Skeleton className="h-3 w-20 rounded bg-zinc-800" />
+                    </div>
                   </div>
-                  <Skeleton className="h-4 w-40 rounded bg-zinc-800" />
                   <div className="flex justify-between items-center pt-1">
-                    <Skeleton className="h-4 w-24 rounded bg-zinc-800" />
-                    <Skeleton className="h-4 w-20 rounded bg-zinc-800" />
+                    <Skeleton className="h-3 w-20 rounded bg-zinc-800" />
+                    <Skeleton className="h-3 w-16 rounded bg-zinc-800" />
                   </div>
                 </div>
               ))
             ) : filteredAndSortedProfiles.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500">
-                <Bike className="w-8 h-8 mx-auto text-zinc-600 mb-2" />
+              <div className="text-center py-16 text-zinc-500">
+                <Bike className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
                 <p className="font-semibold text-zinc-300 text-sm">No motorcycle profiles found.</p>
                 <p className="text-xs text-zinc-500 mt-1">
                   {search || selectedBrand !== "ALL" || selectedCategory !== "ALL"
@@ -550,7 +552,7 @@ export default function MotorcycleProfilesPage() {
                 {(search || selectedBrand !== "ALL" || selectedCategory !== "ALL") && (
                   <button
                     onClick={handleResetAllFilters}
-                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 border border-zinc-700 text-xs font-semibold text-zinc-200 hover:text-white transition-all shadow-xs"
+                    className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-800 border border-zinc-700 text-xs font-semibold text-zinc-200 hover:text-white transition-all shadow-xs"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Reset All Filters</span>
@@ -561,12 +563,8 @@ export default function MotorcycleProfilesPage() {
               filteredAndSortedProfiles.map((p) => (
                 <div
                   key={p.id}
-                  onClick={() => {
-                    if (isAdmin) {
-                      openEditModal(p);
-                    }
-                  }}
-                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3.5 hover:border-zinc-700 transition-all cursor-pointer space-y-3 group shadow-sm"
+                  onClick={() => openEditModal(p)}
+                  className="py-3.5 px-2 hover:bg-zinc-850 active:bg-zinc-800 transition-colors cursor-pointer space-y-2 group"
                 >
                   <div className="flex items-center gap-3">
                     {/* Realistic Photographic Bike Thumbnail */}
@@ -581,7 +579,7 @@ export default function MotorcycleProfilesPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors truncate">
+                        <span className="font-bold text-sm text-zinc-100 group-hover:text-emerald-400 transition-colors truncate">
                           {p.model}
                         </span>
                         <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60 shrink-0">
@@ -594,43 +592,19 @@ export default function MotorcycleProfilesPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-zinc-400 pt-1 border-t border-zinc-800/60">
-                    <span className="inline-flex items-center gap-1.5 text-zinc-300">
+                  <div className="flex items-center justify-between text-xs text-zinc-400 pt-1">
+                    <span className="inline-flex items-center gap-1.5 text-zinc-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                       {p.category || "General"}
                     </span>
-                    <span className="flex items-center gap-1.5 text-zinc-300 font-mono font-medium">
-                      <Wrench className="w-3.5 h-3.5 text-emerald-400" />
-                      {p.service_frequency} {p.service_frequency === 1 ? "Visit" : "Visits"}
-                    </span>
-                  </div>
-
-                  {isAdmin && (
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(p);
-                        }}
-                        className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded-lg transition-all"
-                        title="Edit Profile"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openDeleteModal(p);
-                        }}
-                        className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-all"
-                        title="Archive Profile"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-[11px] font-mono font-medium text-zinc-300">
+                        <Wrench className="w-3.5 h-3.5 text-emerald-400" />
+                        {p.service_frequency} {p.service_frequency === 1 ? "Visit" : "Visits"}
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
-                  )}
+                  </div>
                 </div>
               ))
             )}
@@ -640,14 +614,14 @@ export default function MotorcycleProfilesPage() {
           <table className="hidden md:table w-full text-left text-sm text-zinc-300 whitespace-nowrap">
             <thead className="text-xs uppercase bg-zinc-950 text-zinc-400 border-b border-zinc-800 sticky top-0 z-10 font-bold tracking-wider">
               <tr>
-                <th className="px-6 py-4">Brand & Model</th>
-                <th className="px-6 py-4">Model Year</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4 text-center">Service Frequency</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4 font-bold">Brand & Model</th>
+                <th className="px-6 py-4 font-bold">Model Year</th>
+                <th className="px-6 py-4 font-bold">Category</th>
+                <th className="px-6 py-4 font-bold text-center">Service Frequency</th>
+                <th className="px-6 py-4 font-bold text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/80">
+            <tbody className="divide-y divide-zinc-800/80 bg-zinc-900/40">
               {loading ? (
                 Array.from({ length: 7 }).map((_, rIdx) => (
                   <tr key={rIdx} className="hover:bg-zinc-800/40">
@@ -699,12 +673,8 @@ export default function MotorcycleProfilesPage() {
                 filteredAndSortedProfiles.map((p) => (
                   <tr
                     key={p.id}
-                    onClick={() => {
-                      if (isAdmin) {
-                        openEditModal(p);
-                      }
-                    }}
-                    className="hover:bg-zinc-800/60 transition-colors cursor-pointer group"
+                    onClick={() => openEditModal(p)}
+                    className="hover:bg-zinc-800/40 transition-all cursor-pointer group"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -718,7 +688,7 @@ export default function MotorcycleProfilesPage() {
                           />
                         </div>
                         <div>
-                          <div className="font-bold text-white group-hover:text-emerald-400 transition-colors">
+                          <div className="font-bold text-zinc-100 group-hover:text-emerald-400 transition-colors">
                             {p.model}
                           </div>
                           <div className="text-xs text-zinc-400">
@@ -745,26 +715,9 @@ export default function MotorcycleProfilesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                        {isAdmin && (
-                          <>
-                            <button
-                              onClick={() => openEditModal(p)}
-                              title="Edit Profile"
-                              className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded-lg transition-all"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => openDeleteModal(p)}
-                              title="Archive Profile (Soft Delete)"
-                              className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-all"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 transition-colors ml-1" />
+                      <div className="inline-flex items-center text-xs text-zinc-500 group-hover:text-emerald-400 transition-colors font-semibold">
+                        <span className="hidden group-hover:inline mr-1">{isAdmin ? "Edit Profile" : "View Profile"}</span>
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </td>
                   </tr>
@@ -772,6 +725,14 @@ export default function MotorcycleProfilesPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Footer (Matching Customer Records) */}
+        <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs text-zinc-500 shrink-0">
+          <div>Showing {filteredAndSortedProfiles.length} motorcycle profile(s)</div>
+          <div className="flex gap-4 items-center text-zinc-500">
+            <span>• Accessible by Admin, Manager, and Mechanic</span>
+          </div>
         </div>
       </div>
 
@@ -954,31 +915,48 @@ export default function MotorcycleProfilesPage() {
                 </div>
               </ModalBody>
 
-              <ModalFooter>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditModalOpen(false);
-                    setSelectedProfile(null);
-                  }}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all shadow-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all border border-emerald-500/30 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <span>Save Changes</span>
-                  )}
-                </button>
+              <ModalFooter className="sm:justify-between">
+                {isAdmin ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditModalOpen(false);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-rose-900/60 hover:border-rose-700 bg-rose-950/40 hover:bg-rose-900/50 active:bg-rose-900/70 text-rose-300 hover:text-rose-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Archive Profile</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+                <div className="flex flex-col-reverse sm:flex-row items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditModalOpen(false);
+                      setSelectedProfile(null);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition-all shadow-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold transition-all border border-emerald-500/30 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <span>Save Changes</span>
+                    )}
+                  </button>
+                </div>
               </ModalFooter>
             </form>
           </>

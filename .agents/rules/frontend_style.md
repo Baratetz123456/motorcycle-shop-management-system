@@ -35,6 +35,17 @@ When generating or modifying React components in this project, you MUST adhere t
 - **Stage Movement Confirmation & Revert Options**: Mobile job cards must provide dual forward (advance) and backward (revert) stage action buttons, and MUST prompt an explicit `ConfirmModal` before modifying job stage to prevent accidental taps.
 - **Card-Free Profile Canvas**: Mobile detail and profile views (`/repairs/jobs/[id]`) must never use heavy boxed card containers (`rounded-3xl border p-6 bg-zinc-900/60`). Standardize on an edge-to-edge canvas with clean borderless list rows, subtle dividers (`border-b border-white/5`), high-contrast typography, and a sticky horizontal tab menu (`Overview`, `Diagnosis`, `Parts & Services`, `History`).
 
+## 2.4. Master Directory Table & Row Interaction Invariants
+- **Clean Table Rows (Chevron-Only)**: In master directory and registry tables (Bike Registry, Customer Records, Inventory, Users), do NOT place inline action icon buttons (Pencil, Trash2) in table row cells. Rows must be entirely clickable, ending in a subtle `ChevronRight` indicator with hover slide animation (`group-hover:translate-x-1`) and hover label (`{isAdmin ? "Edit Profile" : "View Profile"}`).
+- **Modal-Housed Destructive Actions**: Destructive operations (Archive, Delete, Deactivate) must be placed inside the entity's Edit modal footer:
+  - **Desktop (`sm:`)**: Aligned to the far left (`sm:justify-between`) with a rose border/tint (`border-rose-900/60 bg-rose-950/40 text-rose-300`), while `Cancel` and `Save Changes` are grouped on the right.
+  - **Mobile (`< sm`)**: Full-width stacked buttons with clear visual hierarchy (`Save Changes` primary on top, `Cancel` in the middle, `Archive Profile` danger button at the bottom).
+  - Must prompt the standard `ConfirmModal` danger safeguard before execution.
+- **Master Directory Mobile & Desktop Parity**:
+  - **Mobile (< md)**: Borderless edge-to-edge list rows with `divide-y divide-zinc-800/80 pb-24` (no boxed card enclosures).
+  - **Desktop**: Sticky header, `bg-zinc-900/40` row backgrounds with `hover:bg-zinc-800/40`, and a fixed bottom footer with record counter and role accessibility notice.
+- **Strict UTF-8 Encoding Guardrail**: Always preserve UTF-8 encoding. Philippine Peso currency must strictly render as `₱` (never `Γé▒`), and em-dashes as `—` (never `ΓÇö`).
+
 ## 3. State Management & Lifecycle Safety
 - Use **Zustand** for local, client-side state (like POS Cart or UI toggles).
 - **Snapshot Before Store Reset**: When completing multi-step operations like checkout or order creation, always snapshot transaction data into a local component state (`receiptSummary`) before clearing the global store (`clearCart()`). Wiping the store resets reactive calculations to zero.

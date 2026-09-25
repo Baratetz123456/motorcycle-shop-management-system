@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isRouteAllowed, getEffectiveLandingPage, getRouteFriendlyName, UserRole } from "@/lib/permissions";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, refreshTokenOnce } from "@/lib/api-client";
 import { tokenStore } from "@/lib/auth-token";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { ShieldAlert, ArrowRight, LogOut } from "lucide-react";
@@ -30,22 +30,13 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     let token = tokenStore.getToken();
     let role = localStorage.getItem("user_role") as UserRole | null;
 
-    // 1. If in-memory token is absent, attempt silent refresh using HttpOnly session cookie
+    // 1. If in-memory token is absent, attempt silent refresh using HttpOnly session cookie via singleton mutex
     if (!token) {
       try {
-        const { data } = await apiClient.post("/auth/refresh");
+        const data = await refreshTokenOnce();
         token = data.access_token;
-        tokenStore.setToken(token);
         if (data.role) {
           role = data.role as UserRole;
-          localStorage.setItem("user_role", data.role);
-        }
-        if (data.user_id) {
-          localStorage.setItem("user_id", data.user_id);
-        }
-        if (data.first_name || data.last_name) {
-          const fullName = [data.first_name, data.last_name].filter(Boolean).join(" ");
-          localStorage.setItem("user_name", fullName);
         }
       } catch (err) {
         // 2. Transitional fallback: check if user has a legacy localStorage token to upgrade
@@ -79,7 +70,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("user_id");
       localStorage.removeItem("user_email");
       localStorage.removeItem("user_name");
-      router.push("/login");
+      const currentDest = pathname ? `/login?returnUrl=${encodeURIComponent(pathname)}` : "/login";
+      router.push(currentDest);
       return;
     }
 

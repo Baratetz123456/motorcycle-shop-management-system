@@ -1,18 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  MotoShop POS - Zero-Cost Serverless Backend
-  FastAPI microservices on AWS Lambda with HTTP API Gateway and AWS SQS
+  MotoShop POS - Zero-Cost Serverless Architecture (5 Users)
+  FastAPI Modular Monolith on AWS Lambda + CloudFront CDN + S3 Static SPA
 
 Parameters:
   DatabaseUrl:
     Type: String
     NoEcho: true
-    Description: PostgreSQL connection string from Supabase (e.g. postgresql+asyncpg://postgres:[PASS]@[HOST]:5432/postgres)
-  RedisUrl:
-    Type: String
-    NoEcho: true
-    Description: Redis connection string from Upstash (e.g. rediss://default:[PASS]@[HOST]:6379)
+    Description: PostgreSQL connection string for RDS (postgresql+asyncpg://...)
   JwtSecretKey:
     Type: String
     NoEcho: true
@@ -31,25 +27,13 @@ Globals:
     Environment:
       Variables:
         DATABASE_URL: !Ref DatabaseUrl
-        REDIS_URL: !Ref RedisUrl
         JWT_SECRET_KEY: !Ref JwtSecretKey
         COOKIE_SECURE: !Ref CookieSecure
-        SQS_QUEUE_URL: !Ref PosEventsQueue
         PYTHONPATH: /var/task
 
 Resources:
   # ===========================================================================
-  # SQS Queue for Saga Pattern Asynchronous Events
-  # ===========================================================================
-  PosEventsQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: motoshop-pos-events
-      MessageRetentionPeriod: 86400 # 1 day retention
-      VisibilityTimeout: 60
-
-  # ===========================================================================
-  # AWS HTTP API Gateway ($1/million requests; first 1M requests/mo free)
+  # 1. AWS HTTP API Gateway ($1/million requests; 1M requests/mo free)
   # ===========================================================================
   HttpApi:
     Type: AWS::Serverless::HttpApi
@@ -75,129 +59,175 @@ Resources:
         MaxAge: 3600
 
   # ===========================================================================
-  # 1. Auth Service Lambda
+  # 2. Consolidated Modular Monolith Lambda
   # ===========================================================================
-  AuthFunction:
+  MonolithFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
       ImageConfig:
-        Command: ["auth_service.main.handler"]
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt PosEventsQueue.QueueName
+        Command: ["app.main.handler"]
       Events:
-        AuthApiRoot:
+        ApiRoot:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /api/v1/auth
+            Path: /api/v1
             Method: ANY
-        AuthApiProxy:
+        ApiProxy:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /api/v1/auth/{proxy+}
+            Path: /api/v1/{proxy+}
             Method: ANY
     Metadata:
       Dockerfile: Dockerfile.lambda
       DockerContext: ./backend
-      DockerTag: auth-latest
+      DockerTag: monolith-latest
 
   # ===========================================================================
-  # 2. Inventory Service Lambda
+  # 3. Dedicated VPC Migration Lambda (Invoked during GitHub Actions CI/CD)
   # ===========================================================================
-  InventoryFunction:
+  MigrationFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
       ImageConfig:
-        Command: ["inventory_service.main.handler"]
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt PosEventsQueue.QueueName
-      Events:
-        InventoryApiRoot:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/v1/inventory
-            Method: ANY
-        InventoryApiProxy:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/v1/inventory/{proxy+}
-            Method: ANY
+        Command: ["app.migrations.runner.handler"]
+      Timeout: 120
+      MemorySize: 512
     Metadata:
       Dockerfile: Dockerfile.lambda
       DockerContext: ./backend
-      DockerTag: inventory-latest
+      DockerTag: migration-latest
 
   # ===========================================================================
-  # 3. Sales Service Lambda
+  # 4. Amazon S3 Bucket for Static SPA Frontend
   # ===========================================================================
-  SalesFunction:
-    Type: AWS::Serverless::Function
+  FrontendBucket:
+    Type: AWS::S3::Bucket
     Properties:
-      PackageType: Image
-      ImageConfig:
-        Command: ["sales_service.main.handler"]
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt PosEventsQueue.QueueName
-      Events:
-        SalesApiRoot:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/v1/sales
-            Method: ANY
-        SalesApiProxy:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/v1/sales/{proxy+}
-            Method: ANY
-    Metadata:
-      Dockerfile: Dockerfile.lambda
-      DockerContext: ./backend
-      DockerTag: sales-latest
+      BucketName: !Sub "motoshop-frontend-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 
   # ===========================================================================
-  # 4. Repairs Service Lambda
+  # 5. CloudFront Origin Access Control (OAC)
   # ===========================================================================
-  RepairsFunction:
-    Type: AWS::Serverless::Function
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
     Properties:
-      PackageType: Image
-      ImageConfig:
-        Command: ["repairs_service.main.handler"]
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt PosEventsQueue.QueueName
-      Events:
-        RepairsApiRoot:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/v1/repairs
-            Method: ANY
-        RepairsApiProxy:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/v1/repairs/{proxy+}
-            Method: ANY
-    Metadata:
-      Dockerfile: Dockerfile.lambda
-      DockerContext: ./backend
-      DockerTag: repairs-latest
+      OriginAccessControlConfig:
+        Name: motoshop-frontend-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ===========================================================================
+  # 6. S3 Bucket Policy allowing CloudFront OAC Read Access
+  # ===========================================================================
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipalReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+
+  # ===========================================================================
+  # 7. Unified Amazon CloudFront Distribution (Always Free Tier)
+  # ===========================================================================
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Comment: MotoShop POS Zero-Cost Distribution
+        Origins:
+          - Id: S3FrontendOrigin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+            S3OriginConfig: {}
+          - Id: ApiGatewayOrigin
+            DomainName: !Sub "${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+        DefaultCacheBehavior:
+          TargetOriginId: S3FrontendOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: ApiGatewayOrigin
+            ViewerProtocolPolicy: https-only
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - POST
+              - PATCH
+              - DELETE
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: all
+              Headers:
+                - Authorization
+                - Idempotency-Key
+                - Accept
+                - Content-Type
+            DefaultTTL: 0
+            MinTTL: 0
+            MaxTTL: 0
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
 
 Outputs:
+  CloudFrontUrl:
+    Description: "Public HTTPS URL for MotoShop POS"
+    Value: !Sub "https://${CloudFrontDistribution.DomainName}"
   HttpApiUrl:
-    Description: "Base URL for the AWS HTTP API Gateway"
+    Description: "Direct Base URL for AWS HTTP API Gateway"
     Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
-  SqsQueueUrl:
-    Description: "URL of the Saga events SQS queue"
-    Value: !Ref PosEventsQueue
+  FrontendBucketName:
+    Description: "S3 Bucket Name for Frontend SPA Deployment"
+    Value: !Ref FrontendBucket
+  CloudFrontDistributionId:
+    Description: "CloudFront Distribution ID for Invalidation"
+    Value: !Ref CloudFrontDistribution
+  MigrationFunctionName:
+    Description: "Lambda function name for VPC database migrations"
+    Value: !Ref MigrationFunction
+

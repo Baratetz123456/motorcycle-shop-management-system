@@ -1,201 +1,152 @@
-# 🏍️ Motorcycle Shop Management System
+# 🏍️ MotoShop: Motorcycle Shop Management System
+> Modern, Enterprise-Grade Point of Sale, Repair Workshop & Inventory Management System
 
-Welcome to the Motorcycle Shop Management System! This is a cloud-native, microservices-based enterprise application designed to manage POS transactions, motorcycle repairs, inventory tracking, and operational reporting.
+[![Next.js](https://img.shields.io/badge/Next.js-16%20Turbopack-black?logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Modular%20Monolith-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20Multi--Schema-4169E1?logo=postgresql)](https://www.postgresql.org/)
+[![AWS Serverless](https://img.shields.io/badge/AWS-Zero--Cost%20Serverless-FF9900?logo=amazon-aws)](https://aws.amazon.com/)
+
+---
 
 ## 🏗️ Architecture Overview
 
-- **Frontend**: Next.js 15 (App Router), React, Zustand (State), TanStack Query, Tailwind CSS v4.
-- **Backend Microservices**: FastAPI (Python), SQLAlchemy, Pydantic.
-  - `auth_service`: JWT Authentication and RBAC.
-  - `inventory_service`: Stock management.
-  - `sales_service`: POS Transactions.
-  - `repairs_service`: Job Orders and Mechanic Commissions.
-- **API Gateway**: KrakenD (Handles routing, CORS, and Rate Limiting).
-- **Data & Brokers**: PostgreSQL (Supabase schema), Redis (Caching & Idempotency), RabbitMQ (Saga Pattern messaging).
+MotoShop is engineered under a **Dual-Parity Operating Model**:
+
+1. **Local Development (2-Container Docker Stack)**:
+   - **Backend**: Single consolidated **FastAPI Modular Monolith** (`motoshop-backend` on port `8000`) with live code reloading.
+   - **Database**: Single **PostgreSQL 16** instance (`motoshop-db` on port `5432`) with 5 isolated domain schemas (`auth`, `inventory`, `sales`, `repairs`, `audit`).
+   - **Frontend**: **Next.js 16 (Turbopack)** dev server on port `3000` with reactive Zustand state and dark/light dynamic theming.
+2. **Production Cloud Deployment ($0.00 / month Base Cost)**:
+   - **Frontend**: 100% Static Single-Page Application (SPA) hosted on **Amazon S3** and globally distributed via **AWS CloudFront** edge caching.
+   - **Backend**: Containerized FastAPI Modular Monolith executed as an on-demand **AWS Lambda** function via the `Mangum` ASGI adapter behind AWS HTTP API Gateway.
+   - **Database**: Managed **AWS RDS PostgreSQL** (`db.t4g.micro`, 20GB gp3 storage) within a private VPC, qualifying under the AWS Free Tier.
+
+```mermaid
+flowchart TD
+    subgraph Local_Dev [Local Development Environment]
+        Browser_Dev([Browser: localhost:3000]) --> NextDev[Next.js Dev Server]
+        NextDev -.->|API: localhost:8000/api/v1| FastApi_Dev[FastAPI Modular Monolith: Port 8000]
+        FastApi_Dev --> Postgres_Dev[(PostgreSQL 16 Container: Port 5432)]
+    end
+
+    subgraph AWS_Production [AWS Zero-Cost Serverless Production]
+        User_Prod([Browser / POS Terminal]) --> CloudFront[AWS CloudFront CDN]
+        CloudFront -->|Default: /*| S3[AWS S3 Bucket: Static SPA]
+        CloudFront -->|API: /api/*| ApiGw[AWS HTTP API Gateway]
+        ApiGw --> Lambda[AWS Lambda: FastAPI + Mangum]
+        Lambda --> RDS[(AWS RDS PostgreSQL: Private VPC Subnet)]
+    end
+```
 
 ---
 
-## 🚀 Setup & Launch Guide
-
-Follow these steps to set up the local development environment.
+## 🚀 Quickstart Guide
 
 ### Prerequisites
-- [Docker & Docker Compose](https://www.docker.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running with WSL2 on Windows or Docker Engine on Linux/macOS)
 - [Node.js](https://nodejs.org/) (v18+ recommended)
-- [Python 3.12+](https://www.python.org/)
 
-### 1. Start Infrastructure Services
-The system relies on a local database, Redis, and RabbitMQ. 
-1. Open a terminal in the root directory (`d:\POS`).
-2. Run the following command to start the infrastructure and API Gateway:
-   ```bash
-   docker-compose up -d
-   ```
-3. Ensure the Postgres container initializes with the `init.sql` schema script.
+### 1. Launch Backend & Database (Docker)
+In the project root directory, run:
+```bash
+docker compose up -d
+```
+This automatically starts:
+- `motoshop-db`: PostgreSQL 16 on port `5432`, initialized with all 5 schemas (`init.sql`) and seeded with operational catalog products, bikes, and staff users (`backend/seed_operational_data.sql`).
+- `motoshop-backend`: FastAPI Modular Monolith on port `8000` with live code reload.
 
-### 2. Start Backend Microservices
-Each service needs to be running. For local development, you can run them directly via Python or configure Docker to build them.
+Verify backend health:
+```bash
+curl http://localhost:8000/api/v1/health
+# Returns: {"status":"healthy","database":"connected"}
+```
 
-**Using Python/Uvicorn (Recommended for Dev):**
-1. Navigate to the backend directory: `cd backend`
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Open separate terminal windows and start each service on its designated port:
-   ```bash
-   # Auth Service (Port 8000)
-   uvicorn auth_service.main:app --port 8000 --reload
-   
-   # Inventory Service (Port 8002)
-   uvicorn inventory_service.main:app --port 8002 --reload
-   
-   # Sales Service (Port 8003)
-   uvicorn sales_service.main:app --port 8003 --reload
-   
-   # Repairs Service (Port 8004)
-   uvicorn repairs_service.main:app --port 8004 --reload
-   ```
-*(Note: KrakenD is configured to look for these services on these ports.)*
+### 2. Launch Frontend (Next.js)
+Open a new terminal window:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-### 3. Start the Next.js Frontend
-1. Navigate to the frontend directory: `cd frontend`
-2. Install dependencies (if not already done):
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-4. Access the application at **http://localhost:3000**.
+---
 
-### 📍 Application Entry Points
-| Service | Entry Point URL | Description |
+## 📍 Key System URLs
+
+| Service / Tool | URL | Description |
 |---|---|---|
-| **Web App (Frontend)** | [`http://localhost:3000`](http://localhost:3000) | Main Portal (Redirects to `/login`) |
-| **Login Page** | [`http://localhost:3000/login`](http://localhost:3000/login) | Interactive JWT Login UI |
-| **API Gateway (KrakenD)** | `http://localhost:8080/api/v1` | Unified Microservices Gateway |
-| **Auth Service** | `http://localhost:8001` | JWT Auth & Seeding Service |
-| **RabbitMQ Dashboard** | `http://localhost:15672` | Messaging & Event Monitoring (`guest`/`guest`) |
+| **Web Application** | [http://localhost:3000](http://localhost:3000) | POS, Workshop, Inventory & Admin Portal |
+| **Login Page** | [http://localhost:3000/login](http://localhost:3000/login) | Card-Free Split-Screen JWT Login |
+| **API Base URL** | `http://localhost:8000/api/v1` | Consolidated Modular Monolith API |
+| **Swagger UI (Interactive API Docs)** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive OpenAPI documentation & test runner |
+| **OpenAPI Specification** | [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) | Raw OpenAPI v3 schema JSON |
 
 ---
 
-## 🔐 Authentication & Onboarding Guide
+## 🔐 Default Demo Accounts
 
-The system uses JWT-based Role-Based Access Control (RBAC) powered by `auth_service` and routed through the KrakenD API Gateway.
+The database comes pre-seeded with role-provisioned accounts for testing:
 
-### Supported Roles
-- **`admin`**: Full administrative access across all management modules.
-- **`cashier`**: Default role for POS checkout and sales handling.
-- **`mechanic`**: Assigned to repair job orders to earn labor commissions.
+| Role | Email | Password | Primary Responsibilities |
+|---|---|---|---|
+| **Admin** | `admin@motoshop.com` | `admin123` | Full system access, staff provisioning, system settings, void invoices |
+| **Cashier** | `cashier@motoshop.com` | `admin123` | Fast POS terminal, transaction checkout, receipt inspections |
+| **Mechanic** | `dave.johnson@motoshop.com` | `admin123` | Workshop job cards, repair board, parts usage, commission tracking |
+| **Manager** | `manager@motoshop.com` | `admin123` | Operational reporting, stock movements, bike registry, audit logs |
 
-### 1. Seed Initial Admin Account
-Before logging in for the first time, seed the initial administrator account:
+---
 
-**PowerShell:**
-```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:8001/seed-admin
-```
+## 📦 Core Domain Modules
 
-**Curl:**
+The backend Modular Monolith is organized into cleanly bounded modules under `backend/app/modules/`:
+
+1. **Auth & Identity (`/api/v1/auth`)**:
+   - Ephemeral in-memory access tokens with HttpOnly browser session refresh cookies.
+   - Refresh Token Rotation (RTR) with a 15-second grace window to protect against React StrictMode concurrency.
+   - User administration, daily wage configuration, and labor commission rates.
+2. **Inventory & Stock Management (`/api/v1/inventory`)**:
+   - Real-time catalog of motorcycle products (parts, tires, oils) and workshop services.
+   - Stock level tracking with automated low-stock warnings and reorder thresholds.
+   - Immutable stock movement audit trail.
+3. **Repairs & Workshop Operations (`/api/v1/repairs`)**:
+   - Bike Registry (`/motorcycles`) with photographic model catalogs.
+   - Workshop Kanban & mobile tabbed job cards (`/repairs/board`).
+   - Customer Repair History logs (`/repairs/history` and `/repairs/history/logs`).
+   - Automatic 40% mechanic labor commission tracking and settlement.
+4. **Sales & POS Checkout (`/api/v1/sales`)**:
+   - 2-step POS checkout terminal with integrated repair job cart settlement.
+   - ACID transaction integrity with immediate stock decrement.
+   - 10-section official commercial invoice receipt (`/sales/receipt`) complying with statutory requirements and BIR 12% VAT calculations.
+5. **System Audit Trail (`/api/v1/audit`)**:
+   - Consolidated audit logs recording sensitive user mutations, logins, price updates, and transaction voids.
+
+---
+
+## 📚 Spec-Driven Development (SDD) Documentation
+
+All architectural decisions, schemas, API contracts, and operational guidelines are strictly governed by the Specification Suite in `docs/specs/`:
+
+- [SPEC-001: System Requirements & Scope](file:///d:/POS/motorcycle-shop-management-system/docs/specs/01-system-requirements-spec.md)
+- [SPEC-002: Database Schema & State Management](file:///d:/POS/motorcycle-shop-management-system/docs/specs/02-database-and-state-spec.md)
+- [SPEC-003: Unified API Specification](file:///d:/POS/motorcycle-shop-management-system/docs/specs/03-unified-api-spec.md)
+- [SPEC-004: Cloud Infrastructure & Serverless CI/CD](file:///d:/POS/motorcycle-shop-management-system/docs/specs/04-infrastructure-and-cicd-spec.md)
+- [SPEC-005: Frontend Client Architecture & Static SPA](file:///d:/POS/motorcycle-shop-management-system/docs/specs/05-frontend-client-architecture-spec.md)
+- [SPEC-006: Automated Testing & Quality Assurance](file:///d:/POS/motorcycle-shop-management-system/docs/specs/06-testing-and-verification-spec.md)
+- [SPEC-007: Operational Runbook & Disaster Recovery](file:///d:/POS/motorcycle-shop-management-system/docs/specs/07-operational-runbook-and-disaster-recovery-spec.md)
+- [Master Index & Requirements Traceability Matrix (RTM)](file:///d:/POS/motorcycle-shop-management-system/docs/specs/README.md)
+
+---
+
+## 🛠️ Testing & Verification
+
+Run the automated test suites:
+
 ```bash
-curl.exe -X POST http://localhost:8001/seed-admin
+# Frontend static build & TypeScript verification (must return exit code 0)
+cd frontend
+npm run build
+
+# Backend asynchronous API integration tests
+docker exec motoshop-backend python -m pytest tests/
 ```
-
-**Response:**
-```json
-{
-  "msg": "Admin user created",
-  "email": "admin@motoshop.com",
-  "password": "admin123"
-}
-```
-
-### 2. Login & Token Authentication
-Authenticate via the KrakenD API Gateway (`http://localhost:8080/api/v1/auth/login`) or direct auth service (`http://localhost:8001/login`):
-
-**PowerShell:**
-```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/auth/login -ContentType "application/json" -Body '{"email":"admin@motoshop.com","password":"admin123"}'
-```
-
-**Curl:**
-```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@motoshop.com","password":"admin123"}'
-```
-
-**Response:**
-```json
-{
-  "access_token": "<JWT_BEARER_TOKEN>",
-  "token_type": "bearer",
-  "user_id": "<USER_UUID>",
-  "role": "admin"
-}
-```
-
-### 3. Registering & Provisioning Users with Roles
-Users are stored in PostgreSQL under `auth.users`. Passwords are encrypted using **bcrypt**:
-
-**SQL Insertion Example:**
-```sql
--- Connect to Postgres (port 5432, db: motorcycle_shop, user: postgres)
-INSERT INTO auth.users (email, password_hash, role)
-VALUES (
-  'cashier1@motoshop.com',
-  '$2b$12$eImiTXuWVxfM37uY4JANjO...', -- Bcrypt hash of password
-  'cashier'
-);
-```
-
----
-
-## 📖 Operation Guide
-
-Once the system is fully launched, navigate to `http://localhost:3000` to interact with the system.
-
-### Point of Sale (POS) Checkout
-- **URL**: `/pos`
-- **How to use**: 
-  1. Click on products in the grid to add them to your cart. 
-  2. Adjust quantities using the `+` and `-` buttons in the cart sidebar.
-  3. Click **Charge**.
-  4. Select a payment method (Cash/Card) and confirm.
-  5. *Under the hood*: The system initiates a distributed Saga. The UI locks, polling the API Gateway. The Sales service asks the Inventory service to deduct stock. If stock is available, it resolves as `COMPLETED`. If not, it rolls back and resolves as `VOIDED`.
-
-### Inventory Management
-- **URL**: `/inventory`
-- **How to use**: 
-  - View current stock levels, cost, and selling prices.
-  - The grid visually alerts you (Orange `Reorder` pill) if a product's stock falls below its reorder threshold.
-  - Profit margins are automatically calculated and displayed.
-
-### Repairs Kanban Board
-- **URL**: `/repairs/board`
-- **How to use**: 
-  - Represents mechanic Job Orders.
-  - Drag and drop cards between `Pending`, `In Progress`, `Completed`, and `Released` columns.
-  - *Under the hood*: Moving a card to `Completed` automatically triggers the backend to calculate the mechanic's commission (e.g., 40% of the labor charge) and records it to the database.
-
-### Executive Dashboard
-- **URL**: `/reports`
-- **How to use**: 
-  - View high-level metrics like Total Revenue, Net Profit, and Completed Repairs.
-  - Charts are fully interactive; hover over the Area and Bar charts to see daily/weekly breakdowns.
-
----
-
-## 🧪 Running Tests
-To run the automated integration tests for the Saga transactions and Rate Limiting:
-1. Ensure the system is running.
-2. In the `backend` directory, install test requirements:
-   ```bash
-   pip install -r requirements-dev.txt
-   ```
-3. Run pytest:
-   ```bash
-   pytest tests/
-   ```
