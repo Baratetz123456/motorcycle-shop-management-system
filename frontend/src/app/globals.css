@@ -314,19 +314,24 @@ html.dark header .header-brand-sub {
   color: #a1a1aa !important;
 }
 
-/* Header User Profile & Mode Controls */
-html.dark header button[aria-label="User profile and settings menu"] {
-  background-color: #18181b !important;
-  border: 1px solid #3f3f46 !important;
-  color: #f4f4f5 !important;
+/* Header User Profile Trigger - 100% Borderless & Transparent Invariant */
+html.dark header button[aria-label="User profile and settings menu"],
+html:not(.dark) header button[aria-label="User profile and settings menu"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
-html.dark header button[aria-label="User profile and settings menu"] * {
-  color: #f4f4f5 !important;
-}
-
-html.dark header button[aria-label="User profile and settings menu"] .header-role-badge {
-  color: #bef264 !important;
+html.dark header button[aria-label="User profile and settings menu"]:focus,
+html.dark header button[aria-label="User profile and settings menu"]:focus-visible,
+html:not(.dark) header button[aria-label="User profile and settings menu"]:focus,
+html:not(.dark) header button[aria-label="User profile and settings menu"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
 }
 
 html.dark .header-mode-toggle {
@@ -354,13 +359,15 @@ html:not(.dark) .header-mode-toggle:hover {
 
 /* Profile Popover Component (Dark Mode & Light Mode Scoped) */
 html.dark .profile-popover {
-  background-color: #121215 !important;
-  border-color: #27272a !important;
+  background-color: #18181b !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
   color: #f4f4f5 !important;
 }
 
 html.dark .profile-popover * {
-  color: #f4f4f5 !important;
+  color: inherit;
 }
 
 html.dark .profile-popover svg {
@@ -369,13 +376,13 @@ html.dark .profile-popover svg {
 
 html.dark .profile-popover a:hover,
 html.dark .profile-popover button:hover {
-  background-color: #27272a !important;
-  color: #bef264 !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #6ee7b7 !important;
 }
 
 html.dark .profile-popover a:hover *,
 html.dark .profile-popover button:hover * {
-  color: #bef264 !important;
+  color: #6ee7b7 !important;
 }
 
 html.dark .profile-popover button[class*="text-rose"],

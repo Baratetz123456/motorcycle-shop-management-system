@@ -286,7 +286,7 @@ export default function UserProfilePage() {
           {/* Top Banner with Avatar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-zinc-800">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl border border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden bg-zinc-800">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
                 {user.avatar ? (
                   <UserAvatar avatarId={user.avatar} className="w-16 h-16" />
                 ) : (
@@ -428,7 +428,7 @@ export default function UserProfilePage() {
       >
         <ModalHeader
           icon={Edit3}
-          iconVariant="lime"
+          iconVariant="emerald"
           title="Edit Staff Profile"
           subtitle="Modify staff details, role, and compensation"
           onClose={() => setIsEditModalOpen(false)}

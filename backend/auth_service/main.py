@@ -718,6 +718,34 @@ async def patch_user(
 
     return db_user
 
+@app.get("/users/{user_id}", response_model=schemas.UserResponse)
+async def get_user_by_id(
+    request: Request,
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    try:
+        user_uuid = UUID(str(user_id))
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    stmt = select(models.User).where(models.User.id == user_uuid)
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    caller_role = current_user.get("role")
+    is_admin_or_mgr = caller_role in ("admin", "manager")
+    is_self = str(user_uuid) == str(current_user.get("user_id"))
+
+    if not is_admin_or_mgr and not is_self:
+        raise HTTPException(status_code=403, detail="Forbidden: You can only view your own profile")
+
+    return db_user
+
 @app.delete("/users/{user_id}")
 async def delete_user(
     request: Request,
@@ -801,7 +829,7 @@ async def get_audit_logs(
     search: Optional[str] = Query(None),
     mutations_only: bool = Query(True),
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1, le=250),
     current_user: dict = Depends(require_roles(["admin"])),
     session: AsyncSession = Depends(get_db)
 ):

@@ -927,11 +927,71 @@ export default function RepairBoardPage() {
     setIsCreateModalOpen(false);
   };
 
+  const STAGE_THEMES: Record<
+    RepairStatus,
+    {
+      titleColor: string;
+      bannerBg: string;
+      columnBg: string;
+      countBadge: string;
+      dropActive: string;
+      cardBg: string;
+      joBadge: string;
+      mobileTabActive: string;
+      indicatorDot: string;
+    }
+  > = {
+    PENDING: {
+      titleColor: "text-zinc-950",
+      bannerBg: "bg-emerald-500 text-zinc-950 border-b border-emerald-600/40",
+      columnBg: "bg-zinc-800 border border-zinc-700",
+      countBadge: "bg-zinc-950/20 text-zinc-950",
+      dropActive: "bg-zinc-700/80 ring-2 ring-emerald-400 border border-emerald-400",
+      cardBg: "bg-zinc-950 border border-zinc-800 hover:border-zinc-700",
+      joBadge: "bg-zinc-900 text-emerald-400 font-mono font-bold",
+      mobileTabActive: "bg-emerald-500 text-zinc-950 font-extrabold shadow-none border border-emerald-400",
+      indicatorDot: "bg-zinc-950",
+    },
+    ONGOING: {
+      titleColor: "text-zinc-950",
+      bannerBg: "bg-emerald-500 text-zinc-950 border-b border-emerald-600/40",
+      columnBg: "bg-zinc-800 border border-zinc-700",
+      countBadge: "bg-zinc-950/20 text-zinc-950",
+      dropActive: "bg-zinc-700/80 ring-2 ring-emerald-400 border border-emerald-400",
+      cardBg: "bg-zinc-950 border border-zinc-800 hover:border-zinc-700",
+      joBadge: "bg-zinc-900 text-emerald-400 font-mono font-bold",
+      mobileTabActive: "bg-emerald-500 text-zinc-950 font-extrabold shadow-none border border-emerald-400",
+      indicatorDot: "bg-zinc-950",
+    },
+    COMPLETED: {
+      titleColor: "text-zinc-950",
+      bannerBg: "bg-emerald-500 text-zinc-950 border-b border-emerald-600/40",
+      columnBg: "bg-zinc-800 border border-zinc-700",
+      countBadge: "bg-zinc-950/20 text-zinc-950",
+      dropActive: "bg-zinc-700/80 ring-2 ring-emerald-400 border border-emerald-400",
+      cardBg: "bg-zinc-950 border border-zinc-800 hover:border-zinc-700",
+      joBadge: "bg-zinc-900 text-emerald-400 font-mono font-bold",
+      mobileTabActive: "bg-emerald-500 text-zinc-950 font-extrabold shadow-none border border-emerald-400",
+      indicatorDot: "bg-zinc-950",
+    },
+    RELEASED: {
+      titleColor: "text-zinc-950",
+      bannerBg: "bg-emerald-500 text-zinc-950 border-b border-emerald-600/40",
+      columnBg: "bg-zinc-800 border border-zinc-700",
+      countBadge: "bg-zinc-950/20 text-zinc-950",
+      dropActive: "bg-zinc-700/80 ring-2 ring-emerald-400 border border-emerald-400",
+      cardBg: "bg-zinc-950 border border-zinc-800 hover:border-zinc-700",
+      joBadge: "bg-zinc-900 text-emerald-400 font-mono font-bold",
+      mobileTabActive: "bg-emerald-500 text-zinc-950 font-extrabold shadow-none border border-emerald-400",
+      indicatorDot: "bg-zinc-950",
+    },
+  };
+
   const columns: { title: string; status: RepairStatus; color: string; bg: string }[] = [
-    { title: settings.boardPendingTitle || "New", status: "PENDING", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
-    { title: settings.boardOngoingTitle || "In Progress", status: "ONGOING", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
-    { title: settings.boardCompletedTitle || "Completed", status: "COMPLETED", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
-    { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: "text-zinc-300", bg: "bg-zinc-900 border-zinc-800" },
+    { title: settings.boardPendingTitle || "New", status: "PENDING", color: STAGE_THEMES.PENDING.titleColor, bg: STAGE_THEMES.PENDING.columnBg },
+    { title: settings.boardOngoingTitle || "In Progress", status: "ONGOING", color: STAGE_THEMES.ONGOING.titleColor, bg: STAGE_THEMES.ONGOING.columnBg },
+    { title: settings.boardCompletedTitle || "Completed", status: "COMPLETED", color: STAGE_THEMES.COMPLETED.titleColor, bg: STAGE_THEMES.COMPLETED.columnBg },
+    { title: settings.boardReleasedTitle || "Invoiced", status: "RELEASED", color: STAGE_THEMES.RELEASED.titleColor, bg: STAGE_THEMES.RELEASED.columnBg },
   ];
 
   const getStageCount = (status: RepairStatus) => {
@@ -996,7 +1056,7 @@ export default function RepairBoardPage() {
   }
 
   return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col font-sans overflow-visible md:overflow-hidden">
+    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col font-sans overflow-visible md:overflow-y-auto">
       
       {/* Top Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
@@ -1047,6 +1107,7 @@ export default function RepairBoardPage() {
           {columns.map((col) => {
             const count = getStageCount(col.status);
             const isActive = activeMobileTab === col.status;
+            const stageTheme = STAGE_THEMES[col.status];
             return (
               <button
                 key={col.status}
@@ -1056,19 +1117,27 @@ export default function RepairBoardPage() {
                   setMenuOpenJobId(null);
                 }}
                 className={clsx(
-                  "flex items-center gap-2 px-3.5 py-2.5 rounded-2xl font-bold text-xs whitespace-nowrap transition-all shrink-0 border",
+                  "flex items-center gap-2 px-3.5 py-2.5 rounded-2xl font-bold text-xs whitespace-nowrap transition-all shrink-0",
                   isActive
-                    ? "bg-emerald-600 text-white border-emerald-500/30 shadow-sm scale-[1.02]"
-                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800"
+                    ? stageTheme.mobileTabActive
+                    : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:bg-zinc-850 hover:border-zinc-700"
                 )}
               >
+                <span
+                  className={clsx(
+                    "w-2 h-2 rounded-full shrink-0",
+                    isActive
+                      ? "bg-zinc-950"
+                      : "bg-zinc-600"
+                  )}
+                />
                 <span>{col.title}</span>
                 <span
                   className={clsx(
-                    "px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold",
+                    "px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold border-0",
                     isActive
-                      ? "bg-zinc-900 text-white"
-                      : "bg-zinc-800 text-zinc-300 border border-zinc-700"
+                      ? "bg-zinc-950/20 text-zinc-950"
+                      : "bg-zinc-800 text-zinc-300"
                   )}
                 >
                   {count}
@@ -1078,10 +1147,10 @@ export default function RepairBoardPage() {
           })}
         </div>
 
-        {/* Active Stage Job Cards List */}
-        <div className="flex-1 space-y-3 pb-24">
+        {/* Active Stage Job Cards List - Mobile 2-Column Grid */}
+        <div className="flex-1 grid grid-cols-2 gap-2.5 sm:gap-3 pb-24 items-start content-start">
           {filteredMobileJobs.length === 0 ? (
-            <div className="text-center py-12 px-4 rounded-3xl border border-dashed border-white/10 bg-zinc-900/30 flex flex-col items-center justify-center">
+            <div className="col-span-2 text-center py-12 px-4 rounded-3xl border border-dashed border-white/10 bg-zinc-900/30 flex flex-col items-center justify-center">
               <div className="p-3.5 rounded-2xl bg-zinc-800/80 text-zinc-400 mb-3 border border-white/5">
                 <Wrench className="w-6 h-6 text-zinc-500" />
               </div>
@@ -1128,304 +1197,302 @@ export default function RepairBoardPage() {
               const isMenuOpen = menuOpenJobId === job.id;
               const canDelete = !isPaid && userRole !== "cashier";
 
+              const stageTheme = STAGE_THEMES[job.status];
               return (
                 <div
                   key={job.id}
                   onClick={() => router.push(`/repairs/jobs/${job.id}`)}
-                  className={clsx(
-                    "bg-zinc-900 border rounded-2xl overflow-hidden shadow-sm transition-all relative cursor-pointer active:scale-[0.99]",
-                    isPaid
-                      ? "border-emerald-500/40 hover:border-emerald-500/60"
-                      : "border-zinc-800 hover:border-zinc-700"
-                  )}
+                  className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-none transition-all relative cursor-pointer active:scale-[0.99] hover:bg-zinc-900 hover:border-zinc-700"
                 >
                   {/* Motorcycle Photographic Top Banner */}
                   <div className="w-full relative">
                     <CustomerBikeCardBanner motorcycleName={job.motorcycle} />
                   </div>
 
-                  <div className="p-4 space-y-3">
+                  <div className="p-3 sm:p-3.5 space-y-2.5">
                     {/* Header: JO# + Payment Status Tag + 3-Dots Action Menu */}
-                    <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className={clsx("font-mono font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-md border-0 shrink-0", stageTheme.joBadge)}>
                         {job.jo_number}
                       </span>
-                      {isPaid ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 flex items-center gap-1 uppercase tracking-wider">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                          PAID
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700 uppercase tracking-wider">
-                          UNPAID
-                        </span>
-                      )}
-                    </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isPaid ? (
+                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500 text-zinc-950 border-0 flex items-center gap-0.5 uppercase tracking-wider">
+                            <CheckCircle className="w-2.5 h-2.5 text-zinc-950" />
+                            PAID
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-zinc-800 text-zinc-300 border-0 uppercase tracking-wider">
+                            UNPAID
+                          </span>
+                        )}
 
-                    {/* 3-Dots Action Menu */}
-                    <div className="relative" data-job-menu="true">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMenuOpenJobId(isMenuOpen ? null : job.id);
-                        }}
-                        className="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-                        aria-label="More options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                        {/* 3-Dots Action Menu */}
+                        <div className="relative" data-job-menu="true">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenJobId(isMenuOpen ? null : job.id);
+                            }}
+                            className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                            aria-label="More options"
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
 
-                      {isMenuOpen && (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-8 z-30 w-52 bg-zinc-900 border border-zinc-700 rounded-xl p-1.5 space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMenuOpenJobId(null);
-                              router.push(`/repairs/jobs/${job.id}`);
-                            }}
-                            className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-zinc-400" />
-                            <span>View Job Details</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMenuOpenJobId(null);
-                              handleOpenEditModal(job);
-                            }}
-                            className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
-                          >
-                            <Edit3 className="w-3.5 h-3.5 text-zinc-400" />
-                            <span>Edit Diagnosis</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMenuOpenJobId(null);
-                              setStatusPickerJob(job);
-                            }}
-                            className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
-                          >
-                            <Activity className="w-3.5 h-3.5 text-zinc-400" />
-                            <span>Move to Stage...</span>
-                          </button>
-                          {canDelete && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setMenuOpenJobId(null);
-                                setDeleteConfirmJob(job);
-                              }}
-                              className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
+                          {isMenuOpen && (
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-0 top-7 z-30 w-48 bg-zinc-900 border border-zinc-800 shadow-2xl rounded-xl p-1.5 space-y-1 text-xs animate-in fade-in zoom-in-95 duration-150"
                             >
-                              <Trash2 className="w-3.5 h-3.5 text-zinc-400" />
-                              <span>Delete Job Card</span>
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpenJobId(null);
+                                  router.push(`/repairs/jobs/${job.id}`);
+                                }}
+                                className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
+                              >
+                                <FileText className="w-3.5 h-3.5 text-zinc-400" />
+                                <span>View Job Details</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpenJobId(null);
+                                  handleOpenEditModal(job);
+                                }}
+                                className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
+                              >
+                                <Edit3 className="w-3.5 h-3.5 text-zinc-400" />
+                                <span>Edit Diagnosis</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpenJobId(null);
+                                  setStatusPickerJob(job);
+                                }}
+                                className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
+                              >
+                                <Activity className="w-3.5 h-3.5 text-zinc-400" />
+                                <span>Move to Stage...</span>
+                              </button>
+                              {canDelete && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMenuOpenJobId(null);
+                                    setDeleteConfirmJob(job);
+                                  }}
+                                  className="w-full px-3 py-2 rounded-lg text-left text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 font-medium"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-zinc-400" />
+                                  <span>Delete Job Card</span>
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Customer & Motorcycle */}
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-tight flex items-center gap-1.5 truncate">
+                        <User className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
+                        <span className="truncate">{job.customer}</span>
+                      </h4>
+                      <p className="text-[11px] text-zinc-300 font-semibold flex items-center gap-1 truncate">
+                        <Bike className="w-3 h-3 text-zinc-400 shrink-0" />
+                        <span className="truncate">{job.motorcycle}</span>
+                      </p>
+                    </div>
+
+                    {/* Creation Date Meta */}
+                    <div className="text-[10px] text-zinc-400 flex items-center gap-1 font-medium pt-0.5">
+                      <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
+                      <span>{new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                    </div>
+
+                    {/* Action Bar: Compact 2-Column Responsive Sizing */}
+                    <div className="pt-1.5 flex items-center gap-1.5">
+                      {/* Stage 1: PENDING */}
+                      {job.status === "PENDING" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "ONGOING",
+                                label: "Start Repair (Move to Ongoing)",
+                                direction: "forward"
+                              });
+                            }}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+                          >
+                            <Play className="w-3 h-3 text-white" />
+                            <span>Start</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/repairs/jobs/${job.id}`);
+                            }}
+                            className="py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-[11px] font-semibold flex items-center justify-center transition-colors"
+                            title="View Details"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Stage 2: ONGOING */}
+                      {job.status === "ONGOING" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "PENDING",
+                                label: "Revert to Pending Stage",
+                                direction: "backward"
+                              });
+                            }}
+                            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white border border-zinc-700 transition-colors"
+                            title="Revert back to Pending stage"
+                          >
+                            <ArrowLeft className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "COMPLETED",
+                                label: "Complete Repair (Move to Completed)",
+                                direction: "forward"
+                              });
+                            }}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+                          >
+                            <CheckCircle className="w-3 h-3 text-white" />
+                            <span>Done</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/repairs/jobs/${job.id}`);
+                            }}
+                            className="py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-[11px] font-semibold flex items-center justify-center transition-colors"
+                            title="View Details"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Stage 3: COMPLETED */}
+                      {job.status === "COMPLETED" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "ONGOING",
+                                label: "Revert to Ongoing Repair",
+                                direction: "backward"
+                              });
+                            }}
+                            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white border border-zinc-700 transition-colors"
+                            title="Revert back to Ongoing stage"
+                          >
+                            <ArrowLeft className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "RELEASED",
+                                label: isPaid ? "Release & Handover to Customer" : "Release Job Order (Unpaid Warning)",
+                                direction: "forward",
+                                isUnpaidRelease: !isPaid,
+                              });
+                            }}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors shadow-sm active:scale-[0.98]"
+                          >
+                            <ShieldCheck className="w-3 h-3 text-white" />
+                            <span>Release</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/repairs/jobs/${job.id}`);
+                            }}
+                            className="py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-[11px] font-semibold flex items-center justify-center transition-colors"
+                            title="View Details"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Stage 4: RELEASED */}
+                      {job.status === "RELEASED" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmMoveJob({
+                                job,
+                                targetStatus: "COMPLETED",
+                                label: "Revert Invoiced Job to Completed",
+                                direction: "backward"
+                              });
+                            }}
+                            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white border border-zinc-700 transition-colors"
+                            title="Revert back to Completed stage"
+                          >
+                            <ArrowLeft className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/repairs/jobs/${job.id}`);
+                            }}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+                          >
+                            <span>Details</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
-
-                  {/* Customer & Motorcycle */}
-                  <div>
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <User className="w-4 h-4 text-zinc-400 shrink-0" />
-                      {job.customer}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
-                      <Bike className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
-                      {job.motorcycle}
-                    </p>
-                  </div>
-
-                  {/* Mechanic Diagnosis Notes (if present) */}
-                  {job.mechanic_notes && (
-                    <div className="p-2.5 bg-zinc-950/70 rounded-xl border border-white/5 space-y-0.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1">
-                        <FileText className="w-3 h-3" /> Diagnosis:
-                      </span>
-                      <p className="text-xs text-zinc-300 italic line-clamp-2">
-                        "{job.mechanic_notes}"
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Assigned Mechanic & Quick Meta */}
-                  <div className="flex justify-between items-center text-xs pt-1 border-t border-zinc-800 text-zinc-400">
-                    <span className="flex items-center gap-1.5 font-semibold text-zinc-300">
-                      <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
-                      {job.mechanic}
-                    </span>
-                    <span className="text-[11px] text-zinc-500 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-zinc-500" />
-                      {new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                    </span>
-                  </div>
-
-                  {/* Action Bar: Forward & Backward Movement */}
-                  <div className="pt-2 border-t border-zinc-800 flex items-center gap-2">
-                    {/* Stage 1: PENDING */}
-                    {job.status === "PENDING" && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmMoveJob({
-                            job,
-                            targetStatus: "ONGOING",
-                            label: "Start Repair (Move to Ongoing)",
-                            direction: "forward"
-                          });
-                        }}
-                        className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        <Play className="w-3.5 h-3.5 text-white" />
-                        <span>Start Repair</span>
-                      </button>
-                    )}
-
-                    {/* Stage 2: ONGOING */}
-                    {job.status === "ONGOING" && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmMoveJob({
-                              job,
-                              targetStatus: "PENDING",
-                              label: "Revert to Pending Stage",
-                              direction: "backward"
-                            });
-                          }}
-                          className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
-                          title="Revert back to Pending stage"
-                        >
-                          <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>Revert</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmMoveJob({
-                              job,
-                              targetStatus: "COMPLETED",
-                              label: "Complete Repair (Move to Completed)",
-                              direction: "forward"
-                            });
-                          }}
-                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5 text-white" />
-                          <span>Complete Repair</span>
-                        </button>
-                      </>
-                    )}
-
-                    {/* Stage 3: COMPLETED */}
-                    {job.status === "COMPLETED" && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmMoveJob({
-                              job,
-                              targetStatus: "ONGOING",
-                              label: "Revert to Ongoing Repair",
-                              direction: "backward"
-                            });
-                          }}
-                          className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
-                          title="Revert back to Ongoing stage"
-                        >
-                          <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>Revert</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmMoveJob({
-                              job,
-                              targetStatus: "RELEASED",
-                              label: isPaid ? "Release & Handover to Customer" : "Release Job Order (Unpaid Warning)",
-                              direction: "forward",
-                              isUnpaidRelease: !isPaid,
-                            });
-                          }}
-                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500/50 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-[0.98]"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                          <span>Release</span>
-                        </button>
-                      </>
-                    )}
-
-                    {/* Stage 4: RELEASED */}
-                    {job.status === "RELEASED" && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmMoveJob({
-                              job,
-                              targetStatus: "COMPLETED",
-                              label: "Revert Invoiced Job to Completed",
-                              direction: "backward"
-                            });
-                          }}
-                          className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
-                          title="Revert back to Completed stage"
-                        >
-                          <ArrowLeft className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>Revert</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/repairs/jobs/${job.id}`);
-                          }}
-                          className="flex-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-zinc-400" />
-                          <span>View Details</span>
-                        </button>
-                      </>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/repairs/jobs/${job.id}`);
-                      }}
-                      className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 text-xs font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <span>Details</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
                 </div>
-              </div>
-            );
+              );
             })
           )}
         </div>
       </div>
 
       {/* Desktop-Only Kanban Board Columns Grid (>= md) */}
-      <div className="hidden md:grid md:overflow-hidden md:flex-1 md:min-h-0 grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="hidden md:grid md:flex-1 md:min-h-0 grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:overflow-y-auto">
         {columns.map((col) => {
           let colJobs = jobs.filter((j) => j.status === col.status);
 
@@ -1451,6 +1518,7 @@ export default function RepairBoardPage() {
               localStorage.getItem(`motoshop_job_paid_${activeDraggedCard.id}`) === "true"
             );
 
+          const stageTheme = STAGE_THEMES[col.status];
           return (
             <div
               key={col.status}
@@ -1462,24 +1530,31 @@ export default function RepairBoardPage() {
               onDragOver={(e) => handleDragOver(e, col.status)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
+              onWheel={(e) => {
+                const body = e.currentTarget.querySelector('[data-column-cards="true"]');
+                if (body && e.target !== body && !body.contains(e.target as Node)) {
+                  body.scrollTop += e.deltaY;
+                }
+              }}
               className={clsx(
-                "border rounded-2xl p-4 sm:p-5 flex flex-col overflow-visible md:overflow-hidden transition-colors duration-150 md:min-h-0",
+                "rounded-2xl flex flex-col overflow-hidden transition-all duration-200 md:min-h-0 shadow-none",
                 isOver && isUnpaidAndTargetReleased
-                  ? "bg-zinc-800 border-zinc-600"
+                  ? "bg-rose-950/40 ring-2 ring-rose-500/50"
                   : isOver
-                  ? "bg-zinc-800 border-zinc-500"
-                  : "bg-zinc-900 border-zinc-800"
+                  ? stageTheme.dropActive
+                  : stageTheme.columnBg
               )}
             >
-              {/* Column Header */}
-              <div className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950 mb-4 flex items-center justify-between shrink-0">
+              {/* Column Banner - Solid Flat Color Flush Attached to Top */}
+              <div className={clsx("px-4 py-3.5 flex items-center justify-between shrink-0 shadow-none", stageTheme.bannerBg)}>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm uppercase tracking-wider text-zinc-300">
+                  <span className={clsx("w-2.5 h-2.5 rounded-full shrink-0", stageTheme.indicatorDot)} />
+                  <span className="font-black text-sm uppercase tracking-wider text-zinc-950">
                     {col.title}
                   </span>
                   {col.status === "RELEASED" && (
                     <span 
-                      className="text-[10px] text-zinc-400 font-normal bg-zinc-900 px-2 py-0.5 rounded-md border border-zinc-800" 
+                      className="text-[10px] text-zinc-950 font-bold bg-zinc-950/20 px-2 py-0.5 rounded-md border-0" 
                       title="Retention period configured in Shop Settings"
                     >
                       {settings.boardRetentionDays === "all" ? "All Time" : `${settings.boardRetentionDays || 7}d`}
@@ -1488,20 +1563,20 @@ export default function RepairBoardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {isOver && isUnpaidAndTargetReleased && (
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-rose-950 uppercase tracking-wider bg-rose-400 px-2 py-0.5 rounded-md border-0">
                       Unpaid
                     </span>
                   )}
-                  <span className="bg-zinc-900 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-800">
+                  <span className={clsx("px-2.5 py-0.5 rounded-full text-xs font-mono font-black border-0", stageTheme.countBadge)}>
                     {colJobs.length}
                   </span>
                 </div>
               </div>
 
               {/* Job Order Cards Column Body */}
-              <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto space-y-4 pr-0 md:pr-1 touch-pan-y overscroll-contain scrollbar-compact">
+              <div data-column-cards="true" className="p-3.5 sm:p-4 md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto space-y-3.5 pr-0 md:pr-2 touch-pan-y scrollbar-compact">
                 {colJobs.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-600 text-xs italic border border-dashed border-zinc-800 rounded-xl p-4">
+                  <div className="text-center py-12 text-zinc-400 text-xs italic bg-zinc-900/50 rounded-xl p-4 border-0">
                     No job cards in this stage.
                   </div>
                 ) : (
@@ -1515,6 +1590,7 @@ export default function RepairBoardPage() {
                     );
                     const isBeingDragged = draggedJobId === job.id;
                     const canDelete = !isPaid;
+                    const jobStageTheme = STAGE_THEMES[job.status];
 
                     return (
                       <div
@@ -1530,9 +1606,8 @@ export default function RepairBoardPage() {
                         style={{ touchAction: "manipulation" }}
                         title="Double-click or double-tap to open Job Card profile • Drag to move or drag to bottom to delete"
                         className={clsx(
-                          "bg-zinc-900 border rounded-2xl overflow-hidden relative group transition-colors duration-150 cursor-grab active:cursor-grabbing select-none shadow-sm",
-                          isPaid ? "border-emerald-500/30 hover:border-emerald-500/50" : "border-zinc-800 hover:border-zinc-700",
-                          isBeingDragged && "opacity-30 border-zinc-500 border-dashed",
+                          "bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden relative group transition-all duration-150 cursor-grab active:cursor-grabbing select-none shadow-none hover:bg-zinc-900 hover:border-zinc-700",
+                          isBeingDragged && "opacity-30 border-2 border-zinc-500 border-dashed",
                           draggedJobId && !isBeingDragged && "pointer-events-none"
                         )}
                       >
@@ -1544,17 +1619,17 @@ export default function RepairBoardPage() {
                         <div className="p-4 space-y-3">
                           {/* JO Badge & Payment Status Tag */}
                           <div className="flex items-center justify-between">
-                            <span className="font-mono font-bold text-xs text-zinc-300 bg-zinc-800/90 px-2.5 py-1 rounded-lg border border-zinc-700/80">
+                            <span className={clsx("font-mono font-bold text-xs px-2.5 py-1 rounded-lg border-0", jobStageTheme.joBadge)}>
                               {job.jo_number}
                             </span>
 
                             {isPaid ? (
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 flex items-center gap-1 uppercase tracking-wider">
-                                <CheckCircle className="w-3 h-3 text-emerald-400" />
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-zinc-950 border-0 flex items-center gap-1 uppercase tracking-wider">
+                                <CheckCircle className="w-3 h-3 text-zinc-950" />
                                 PAID
                               </span>
                             ) : (
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800/90 text-zinc-400 border border-zinc-700/80 uppercase tracking-wider">
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-300 border-0 uppercase tracking-wider">
                                 UNPAID
                               </span>
                             )}
@@ -1562,43 +1637,29 @@ export default function RepairBoardPage() {
 
                           {/* Customer & Motorcycle Info */}
                           <div>
-                            <h4 className="text-base font-bold text-white flex items-center gap-2">
-                              <User className="w-4 h-4 text-zinc-400 shrink-0" />
+                            <h4 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
+                              <User className="w-4 h-4 text-zinc-300 shrink-0" />
                               {job.customer}
                             </h4>
-                            <p className="text-xs text-zinc-400 font-medium flex items-center gap-1.5 mt-1">
-                              <Bike className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                            <p className="text-xs text-zinc-200 font-semibold flex items-center gap-1.5 mt-1">
+                              <Bike className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                               {job.motorcycle}
                             </p>
                           </div>
 
-                          {/* Mechanic Diagnosis Notes */}
-                          {job.mechanic_notes && (
-                            <div className="p-2.5 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
-                                <FileText className="w-3 h-3 text-zinc-400" /> Diagnosis Notes:
-                              </span>
-                              <p className="text-xs text-zinc-300 italic line-clamp-2">
-                                "{job.mechanic_notes}"
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Assigned Mechanic */}
-                          <div className="flex justify-between items-center text-xs pt-2 border-t border-zinc-800 text-zinc-400">
-                            <span className="flex items-center gap-1.5 font-semibold text-zinc-300">
-                              <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
-                              {job.mechanic}
-                            </span>
+                          {/* Creation Date Meta */}
+                          <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-medium pt-0.5">
+                            <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                            <span>{new Date(job.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
                           </div>
 
                           {/* Card Footer Bar: Double-Click Instruction & Drag Handle */}
-                          <div className="pt-2.5 border-t border-zinc-800 flex items-center justify-between gap-2 select-none">
+                          <div className="pt-2 flex items-center justify-between gap-2 select-none">
                             <div
-                              className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium group-hover:text-zinc-300 transition-colors pointer-events-none"
+                              className="flex items-center gap-1.5 text-[11px] text-zinc-300 font-medium group-hover:text-white transition-colors pointer-events-none"
                               title="Double-click or double-tap this card to open its full profile"
                             >
-                              <MousePointerClick className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                              <MousePointerClick className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
                               <span>Double-click to open</span>
                             </div>
 
@@ -1608,7 +1669,7 @@ export default function RepairBoardPage() {
                                 e.stopPropagation();
                                 handleCardTouchStart(e, job, true);
                               }}
-                              className="flex items-center gap-1 text-[10px] text-zinc-400 bg-zinc-800 px-2 py-1 rounded-lg border border-zinc-700 font-medium select-none cursor-grab active:cursor-grabbing hover:text-white transition-colors"
+                              className="flex items-center gap-1 text-[10px] text-zinc-300 bg-zinc-800/90 px-2 py-1 rounded-lg border-0 font-medium select-none cursor-grab active:cursor-grabbing hover:text-white transition-colors"
                               title="Drag this card into another column to change status, or drag to bottom trash can to delete"
                             >
                               <GripVertical className="w-3 h-3 text-zinc-400" />

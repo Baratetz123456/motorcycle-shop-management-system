@@ -60,7 +60,7 @@ async def get_audit_logs(
     search: Optional[str] = Query(None),
     mutations_only: bool = Query(True),
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1, le=250),
     current_user: dict = Depends(require_roles(["admin"])),
     session: AsyncSession = Depends(get_db)
 ):

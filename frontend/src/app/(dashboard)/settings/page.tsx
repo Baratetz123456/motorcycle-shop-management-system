@@ -770,7 +770,7 @@ function SettingsContent() {
             <select
               value={activeTab}
               onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
-              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-lime-500/50 cursor-pointer"
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer"
             >
               <option value="general">{isAdmin ? "🌐 General Preferences" : "🎨 Appearance & Theme"}</option>
               {isAdmin && <option value="roles">🎛️ Role Access Matrix</option>}
@@ -1905,10 +1905,10 @@ function SettingsContent() {
                         <button
                           type="button"
                           onClick={() => setIsAvatarPopoverOpen(!isAvatarPopoverOpen)}
-                          className="relative group p-0.5 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-zinc-500 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                          className="relative group rounded-full overflow-hidden focus:outline-none transition-transform active:scale-95"
                           title="Click to select staff avatar"
                         >
-                          <div className="w-16 h-16 rounded-full bg-zinc-950 flex items-center justify-center p-1 overflow-hidden">
+                          <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center">
                             {(AVATAR_PRESETS.find((p) => p.id === selectedAvatar) || AVATAR_PRESETS[0]).renderFace()}
                           </div>
                           <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
@@ -1916,7 +1916,7 @@ function SettingsContent() {
                           </div>
                         </button>
 
-                        {/* Minimalist Popover Dropdown (12 Avatar Circles, Zero Text Context) */}
+                        {/* Minimalist Popover Dropdown (Borderless Avatar Circles) */}
                         {isAvatarPopoverOpen && (
                           <>
                             <div 
@@ -1926,9 +1926,9 @@ function SettingsContent() {
                             <div className="absolute left-0 top-full mt-2 z-40 p-3 bg-zinc-950 border border-zinc-800 rounded-2xl w-64 animate-in fade-in zoom-in-95 duration-150">
                               <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80 mb-3">
                                 <span className="text-[11px] font-bold text-zinc-300">Choose Avatar</span>
-                                <span className="text-[10px] text-zinc-500 font-mono">12 styles</span>
+                                <span className="text-[10px] text-zinc-500 font-mono">{AVATAR_PRESETS.length} styles</span>
                               </div>
-                              <div className="grid grid-cols-4 gap-2">
+                              <div className="grid grid-cols-3 gap-3">
                                 {AVATAR_PRESETS.map((preset) => {
                                   const isSelected = selectedAvatar === preset.id;
                                   return (
@@ -1940,13 +1940,14 @@ function SettingsContent() {
                                         setIsAvatarPopoverOpen(false);
                                       }}
                                       className={clsx(
-                                        "w-12 h-12 rounded-full p-0.5 border transition-colors flex items-center justify-center relative group",
+                                        "w-14 h-14 rounded-full overflow-hidden transition-all flex items-center justify-center relative group active:scale-95 cursor-pointer",
                                         isSelected
-                                          ? "border-emerald-500 ring-1 ring-emerald-500/40"
-                                          : "border-zinc-800 hover:border-zinc-600 bg-zinc-900/60"
+                                          ? "ring-2 ring-emerald-400 scale-105"
+                                          : "opacity-80 hover:opacity-100 hover:scale-105"
                                       )}
+                                      title={`${preset.name} - ${preset.roleHint}`}
                                     >
-                                      <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center overflow-hidden p-0.5">
+                                      <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
                                         {preset.renderFace()}
                                       </div>
                                     </button>

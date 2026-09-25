@@ -157,62 +157,54 @@ export default function DashboardLayout({
                 ref={profileButtonRef}
                 type="button"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
-                className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 border border-zinc-700/60 transition-all active:scale-95 shadow-xs cursor-pointer"
+                className="flex items-center gap-1.5 p-0 bg-transparent border-0 ring-0 outline-none focus:outline-none focus:ring-0 shadow-none text-zinc-100 hover:opacity-85 transition-all active:scale-95 cursor-pointer"
                 aria-expanded={isProfileOpen}
                 aria-haspopup="true"
                 aria-label="User profile and settings menu"
               >
-                <UserAvatar avatarId={userAvatar} className="w-8 h-8 rounded-full border border-zinc-700 shadow-xs" />
-                <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-bold text-white leading-tight truncate max-w-[120px]">
-                    {userName}
-                  </span>
-                  <span className="header-role-badge text-[10px] font-mono font-bold uppercase text-emerald-400">
-                    {userRole}
-                  </span>
-                </div>
+                <UserAvatar avatarId={userAvatar} className="w-8 h-8" />
                 <ChevronDown
-                  className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
+                  className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${
                     isProfileOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
-              {/* Profile Popover Card */}
+              {/* Profile Popover Card - Ultra-Minimalist Borderless Design with Emerald Accents */}
               {isProfileOpen && (
                 <div
                   ref={popoverRef}
-                  className="profile-popover absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 space-y-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="profile-popover absolute right-0 top-full mt-2 w-64 bg-zinc-900 rounded-2xl border-0 shadow-2xl shadow-black/95 p-3.5 space-y-3 z-50 animate-in fade-in zoom-in-95 duration-150"
                 >
                   {/* User Identity Header */}
-                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800">
-                    <UserAvatar avatarId={userAvatar} className="w-11 h-11 rounded-full border border-slate-200 dark:border-zinc-700 shadow-xs" />
+                  <div className="flex items-center gap-3 pb-3 border-b border-zinc-800/70">
+                    <UserAvatar avatarId={userAvatar} className="w-10 h-10" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{userName}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate font-mono">{userEmail}</p>
-                      <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-lime-50 dark:bg-lime-950/40 border border-lime-200 dark:border-lime-700/50 text-[10px] font-bold text-lime-800 dark:text-lime-400 uppercase tracking-wider">
+                      <p className="text-xs font-bold text-zinc-100 truncate leading-tight">{userName}</p>
+                      <p className="text-[10px] text-zinc-400 truncate font-mono mt-0.5">{userEmail}</p>
+                      <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
                         {userRole}
                       </span>
                     </div>
                   </div>
 
                   {/* Quick Action Navigation */}
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <Link
                       href="/settings?tab=profile"
                       onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
+                      className="group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-zinc-300 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
                     >
-                      <User className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                      <User className="w-3.5 h-3.5 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
                       <span>My Profile</span>
                     </Link>
 
                     <Link
                       href="/settings"
                       onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors"
+                      className="group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-zinc-300 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
                     >
-                      <Settings className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                      <Settings className="w-3.5 h-3.5 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
                       <span>{userRole === "admin" || userRole === "manager" ? "Shop Settings" : "Appearance & Settings"}</span>
                     </Link>
 
@@ -222,21 +214,21 @@ export default function DashboardLayout({
                         setIsProfileOpen(false);
                         setIsPasswordModalOpen(true);
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors text-left cursor-pointer"
+                      className="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-zinc-300 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors text-left cursor-pointer"
                     >
-                      <Lock className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                      <Lock className="w-3.5 h-3.5 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
                       <span>Change Password</span>
                     </button>
                   </div>
 
-                  {/* Sign Out Button (High Contrast) */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
+                  {/* Sign Out Button (Minimalist Danger) */}
+                  <div className="pt-2 border-t border-zinc-800/70">
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/50 transition-all shadow-xs active:scale-95 cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition-all cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                      <LogOut className="w-3.5 h-3.5 text-rose-400" />
                       <span>Sign Out</span>
                     </button>
                   </div>

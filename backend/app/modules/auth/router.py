@@ -609,3 +609,77 @@ async def patch_user(
 
     return db_user
 
+@router.get("/users/{user_id}", response_model=schemas.UserResponse)
+async def get_user_by_id(
+    request: Request,
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    try:
+        user_uuid = UUID(str(user_id))
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    stmt = select(models.User).where(models.User.id == user_uuid)
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    caller_role = current_user.get("role")
+    is_admin_or_mgr = caller_role in ("admin", "manager")
+    is_self = str(user_uuid) == str(current_user.get("user_id"))
+
+    if not is_admin_or_mgr and not is_self:
+        raise HTTPException(status_code=403, detail="Forbidden: You can only view your own profile")
+
+    return db_user
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    request: Request,
+    user_id: str,
+    current_user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_db)
+):
+    try:
+        user_uuid = UUID(str(user_id))
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    is_self = str(user_uuid) == str(current_user.get("user_id"))
+    if is_self:
+        raise HTTPException(status_code=400, detail="Admin cannot delete their own account")
+
+    stmt = select(models.User).where(models.User.id == user_uuid)
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    target_email = db_user.email
+    target_role = db_user.role
+
+    await session.delete(db_user)
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="DELETE_USER",
+        resource=f"/api/v1/auth/users/{user_id}",
+        user_id=current_user.get("user_id"),
+        user_role=current_user.get("role"),
+        details={
+            "deleted_user_id": str(user_id),
+            "deleted_email": target_email,
+            "deleted_role": target_role
+        },
+        ip_address=client_ip
+    )
+
+    await session.commit()
+    return {"status": "success", "message": f"User {target_email} deleted successfully"}
+
