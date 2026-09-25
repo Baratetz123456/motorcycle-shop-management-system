@@ -30,6 +30,9 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { v4 as uuidv4 } from "uuid";
+import { getSystemSettings } from "@/lib/settings";
+import { getInvoiceDocumentHtml } from "@/components/documents/PrintableInvoiceDocument";
+import { printIsolatedDocument } from "@/components/documents/printUtils";
 
 interface ReceiptSummary {
   invoiceNo: string;
@@ -261,6 +264,37 @@ function POSCheckoutContent() {
     }
   };
 
+  const handlePrintReceipt = () => {
+    if (!receiptSummary) return;
+    const docHtml = getInvoiceDocumentHtml({
+      invoiceNo: receiptSummary.invoiceNo,
+      jobOrderNumber: jobId || undefined,
+      createdAt: new Date().toISOString(),
+      status: "COMPLETED",
+      customerName: receiptSummary.customerName,
+      customerPhone: undefined,
+      motorcycleName: receiptSummary.motorcycleName,
+      plateNumber: undefined,
+      cashierName: undefined,
+      mechanicName: receiptSummary.mechanicName,
+      paymentMethod: receiptSummary.paymentMethod,
+      items: receiptSummary.items.map((it) => ({
+        name: it.name,
+        qty: it.qty,
+        price: it.price
+      })),
+      subtotal: receiptSummary.grossSubtotal,
+      discountPercentage: receiptSummary.discountPercent,
+      discountAmount: receiptSummary.discountAmount,
+      total: receiptSummary.netTotalDue,
+      amountPaid: receiptSummary.netAmountPaid,
+      cashReceived: receiptSummary.cashReceivedVal,
+      cashChange: receiptSummary.cashChange,
+      settings: getSystemSettings()
+    });
+    printIsolatedDocument(`Invoice-${receiptSummary.invoiceNo}`, docHtml);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
       
@@ -391,7 +425,7 @@ function POSCheckoutContent() {
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={handlePrintReceipt}
                 className="flex-1 py-3.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm rounded-xl border border-white/10 transition-colors flex items-center justify-center gap-2"
               >
                 <Printer className="w-4 h-4 text-cyan-400" />

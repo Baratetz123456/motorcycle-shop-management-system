@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { 
   Receipt, 
   Search, 
@@ -11,7 +11,9 @@ import {
   History,
   ChevronRight,
   Calendar,
-  X
+  X,
+  Printer,
+  Download
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -19,6 +21,16 @@ import { UserRole } from "@/lib/permissions";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { getSystemSettings, SystemSettings } from "@/lib/settings";
+import { 
+  PrintableSalesReportDocument, 
+  getSalesReportDocumentHtml 
+} from "@/components/documents/PrintableSalesReportDocument";
+import { 
+  buildEnterpriseReportCsv, 
+  downloadCsvFile, 
+  printIsolatedDocument 
+} from "@/components/documents/reportExportUtils";
 
 export interface TransactionRecord {
   id: string;
@@ -174,11 +186,102 @@ export default function SalesManagementPage() {
     datePreset !== "ALL" || startDate || endDate ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
 
+  const [settings, setSettings] = useState<SystemSettings>(getSystemSettings());
+
+  useEffect(() => {
+    setSettings(getSystemSettings());
+  }, []);
+
+  const { totalSales, totalVatable, totalVat, paymentBreakdown } = useMemo(() => {
+    const completed = filteredTransactions.filter((tx) => tx.status === "COMPLETED");
+    const total = completed.reduce((acc, tx) => acc + (Number(tx.total) || 0), 0);
+    const vatable = total / 1.12;
+    const vat = total - vatable;
+    const breakdown: Record<string, { count: number; total: number }> = {};
+
+    completed.forEach((tx) => {
+      const m = (tx.payment_method || "CASH").toUpperCase();
+      if (!breakdown[m]) breakdown[m] = { count: 0, total: 0 };
+      breakdown[m].count += 1;
+      breakdown[m].total += Number(tx.total) || 0;
+    });
+
+    return { totalSales: total, totalVatable: vatable, totalVat: vat, paymentBreakdown: breakdown };
+  }, [filteredTransactions]);
+
+  const periodLabel = useMemo(() => {
+    if (datePreset === "TODAY") return `Today (${new Date().toLocaleDateString()})`;
+    if (datePreset === "WEEK") return "Past 7 Days";
+    if (datePreset === "MONTH") return "Past 30 Days";
+    if (startDate && endDate) return `${startDate} to ${endDate}`;
+    return "All Time";
+  }, [datePreset, startDate, endDate]);
+
+  const handleExportSalesCsv = () => {
+    const csvContent = buildEnterpriseReportCsv(
+      {
+        appName: settings.appName || "Versiklo",
+        shopDescription: settings.shopDescription || "Motorcycle Parts & Services",
+        shopAddress: settings.shopAddress,
+        shopTin: settings.shopTin,
+        reportTitle: "Sales Performance & End-of-Day Audit Report",
+        periodLabel,
+        generatedBy: `${localStorage.getItem("user_email") || "staff"} (${role.toUpperCase()})`,
+        generatedDate: new Date().toLocaleString()
+      },
+      {
+        headers: ["Invoice #", "Customer", "Motorcycle", "Date", "Tender", "Status", "Total (PHP)"],
+        rows: filteredTransactions.map((tx) => [
+          tx.invoice_no,
+          tx.customer_name || "Walk-in Customer",
+          tx.motorcycle_name || "N/A",
+          tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "",
+          tx.payment_method || "CASH",
+          tx.status,
+          Number(tx.total || 0).toFixed(2)
+        ]),
+        summaryRows: [
+          ["Total Settled Sales Volume", "", "", "", "", "", Number(totalSales).toFixed(2)],
+          ["BIR 12% Output VAT", "", "", "", "", "", Number(totalVat).toFixed(2)],
+          ["Net Vatable Sales", "", "", "", "", "", Number(totalVatable).toFixed(2)]
+        ]
+      }
+    );
+    downloadCsvFile(`sales_report_${datePreset.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`, csvContent);
+  };
+
+  const handlePrintSalesReport = () => {
+    const docHtml = getSalesReportDocumentHtml({
+      settings,
+      periodLabel,
+      reportRef: `REP-SALES-${Date.now().toString().slice(-6)}`,
+      generatedBy: `${localStorage.getItem("user_email") || "staff"} (${role.toUpperCase()})`,
+      generatedDate: new Date().toLocaleString(),
+      totalSales,
+      totalVatable,
+      totalVat,
+      transactionCount: filteredTransactions.filter((tx) => tx.status === "COMPLETED").length,
+      paymentBreakdown,
+      transactions: filteredTransactions.map((tx) => ({
+        invoice_no: tx.invoice_no,
+        customer_name: tx.customer_name,
+        motorcycle_name: tx.motorcycle_name,
+        created_at: tx.created_at,
+        payment_method: tx.payment_method,
+        subtotal: tx.subtotal,
+        total: tx.total,
+        status: tx.status
+      }))
+    });
+    printIsolatedDocument(`Sales-Report-${periodLabel.replace(/[^a-zA-Z0-9]/g, "-")}`, docHtml);
+  };
+
   return (
-    <div 
-      data-invoice-page="true"
-      className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-zinc-100"
-    >
+    <>
+      <div 
+        data-invoice-page="true"
+        className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-zinc-100 print:hidden"
+      >
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
         <div>
@@ -189,6 +292,27 @@ export default function SalesManagementPage() {
           <p className="text-zinc-400 mt-1 text-sm">
             Completed sales receipts, open customer invoices, and audit logs.
           </p>
+        </div>
+
+        {/* Action Buttons for Report & Export */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleExportSalesCsv}
+            className="px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm"
+            title="Export filtered transactions as RFC 4180 CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={handlePrintSalesReport}
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-2 border border-emerald-500/30 shadow-sm active:scale-95"
+            title="Generate official white-canvas printable report"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Sales Report</span>
+          </button>
         </div>
       </div>
 
@@ -606,7 +730,33 @@ export default function SalesManagementPage() {
           </div>
         </div>
       </div>
-
     </div>
+
+      {/* Native Print Container */}
+      <div className="hidden print:block w-full bg-white text-zinc-950">
+        <PrintableSalesReportDocument
+          settings={settings}
+          periodLabel={periodLabel}
+          reportRef={`REP-SALES-${Date.now().toString().slice(-6)}`}
+          generatedBy={`${localStorage.getItem("user_email") || "staff"} (${role.toUpperCase()})`}
+          generatedDate={new Date().toLocaleString()}
+          totalSales={totalSales}
+          totalVatable={totalVatable}
+          totalVat={totalVat}
+          transactionCount={filteredTransactions.filter((tx) => tx.status === "COMPLETED").length}
+          paymentBreakdown={paymentBreakdown}
+          transactions={filteredTransactions.map((tx) => ({
+            invoice_no: tx.invoice_no,
+            customer_name: tx.customer_name,
+            motorcycle_name: tx.motorcycle_name,
+            created_at: tx.created_at,
+            payment_method: tx.payment_method,
+            subtotal: tx.subtotal,
+            total: tx.total,
+            status: tx.status
+          }))}
+        />
+      </div>
+    </>
   );
 }

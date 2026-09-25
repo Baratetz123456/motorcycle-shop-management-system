@@ -20,13 +20,24 @@ import {
   Lock,
   ChevronRight,
   ShieldCheck,
-  Bike
+  Bike,
+  Download
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { CustomerHistoryRecord } from "../page";
 import { DetailViewSkeleton } from "@/components/ui/DetailViewSkeleton";
 import { FloatingProfileActionsButton, MobileProfileActionsSheet } from "@/components/ui/MobileProfileActionsSheet";
+import { getSystemSettings, SystemSettings } from "@/lib/settings";
+import { 
+  PrintableRepairReportDocument, 
+  getRepairReportDocumentHtml 
+} from "@/components/documents/PrintableRepairReportDocument";
+import { 
+  buildEnterpriseReportCsv, 
+  downloadCsvFile, 
+  printIsolatedDocument 
+} from "@/components/documents/reportExportUtils";
 
 function CustomerRepairHistoryLogsContent() {
   const router = useRouter();
@@ -36,6 +47,85 @@ function CustomerRepairHistoryLogsContent() {
   const [customer, setCustomer] = useState<CustomerHistoryRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
+  const [settings, setSettings] = useState<SystemSettings>(getSystemSettings());
+
+  useEffect(() => {
+    setSettings(getSystemSettings());
+  }, []);
+
+  const handlePrintServiceRecord = (selectedJob?: any) => {
+    if (!customer) return;
+    const targetJob = selectedJob || customer.past_jobs[0] || {
+      jo_number: "SVC-LOG",
+      mechanic_notes: "General inspection and maintenance",
+      mechanic_name: "Shop Tech",
+      labor_charge: 0,
+      parts_charge: 0,
+      total_billed: 0,
+      items_used: []
+    };
+
+    const docHtml = getRepairReportDocumentHtml({
+      settings,
+      jobNumber: targetJob.jo_number || targetJob.job_id || "JO-101",
+      customerName: customer.customer_name,
+      customerPhone: customer.contact_number,
+      motorcycleName: customer.motorcycle_model,
+      plateNumber: (customer as any).plate_number || "NCR-XXXX",
+      leadMechanic: targetJob.mechanic_name || (targetJob as any).lead_mechanic || "Lead Technician",
+      serviceAdvisor: (targetJob as any).service_advisor || "Service Advisor",
+      status: targetJob.status || "COMPLETED",
+      initialDiagnosis: targetJob.mechanic_notes || (targetJob as any).complaint || "Customer requested inspection",
+      workPerformed: (targetJob as any).work_done || targetJob.mechanic_notes || "Standard repair procedures executed",
+      partsUsed: (targetJob.items_used || []).filter((it: any) => !((it.name || "").toLowerCase().includes("labor") || (it.name || "").toLowerCase().includes("service"))),
+      laborCharges: (targetJob.items_used || []).filter((it: any) => ((it.name || "").toLowerCase().includes("labor") || (it.name || "").toLowerCase().includes("service"))).map((it: any) => ({
+        name: it.name,
+        amount: Number(it.price || targetJob.labor_charge || 0)
+      })),
+      totalParts: targetJob.parts_charge || 0,
+      totalLabor: targetJob.labor_charge || 0,
+      grandTotal: targetJob.total_billed || ((targetJob.parts_charge || 0) + (targetJob.labor_charge || 0)),
+      releasedAt: targetJob.date_repaired || undefined,
+      generatedBy: localStorage.getItem("user_email") || "Service Advisor",
+      generatedDate: new Date().toLocaleString()
+    });
+
+    printIsolatedDocument(`Service-Record-${customer.customer_name.replace(/[^a-zA-Z0-9]/g, "-")}`, docHtml);
+  };
+
+  const handleExportRepairCsv = () => {
+    if (!customer) return;
+    const totalSpent = customer.past_jobs.reduce((sum, j) => sum + (j.total_billed || (j.parts_charge + j.labor_charge) || 0), 0);
+    const csvContent = buildEnterpriseReportCsv(
+      {
+        appName: settings.appName || "Versiklo",
+        shopDescription: settings.shopDescription || "Motorcycle Parts & Services",
+        shopAddress: settings.shopAddress,
+        shopTin: settings.shopTin,
+        reportTitle: `Customer Repair History - ${customer.customer_name}`,
+        periodLabel: `Motorcycle: ${customer.motorcycle_model} (${(customer as any).plate_number || "NCR-XXXX"})`,
+        generatedBy: localStorage.getItem("user_email") || "Service Advisor",
+        generatedDate: new Date().toLocaleString()
+      },
+      {
+        headers: ["JO #", "Date", "Status", "Mechanic", "Complaint / Diagnosis", "Parts Fee (PHP)", "Labor Fee (PHP)", "Total Settlement (PHP)"],
+        rows: customer.past_jobs.map((job) => [
+          job.jo_number || job.job_id,
+          job.date_repaired || "",
+          job.status,
+          job.mechanic_name || (job as any).lead_mechanic || "N/A",
+          job.mechanic_notes || (job as any).complaint || "",
+          Number(job.parts_charge || 0).toFixed(2),
+          Number(job.labor_charge || 0).toFixed(2),
+          Number(job.total_billed || (job.parts_charge + job.labor_charge) || 0).toFixed(2)
+        ]),
+        summaryRows: [
+          ["Total Customer Lifetime Expenditure", "", "", "", "", "", "", Number(totalSpent).toFixed(2)]
+        ]
+      }
+    );
+    downloadCsvFile(`repair_history_${customer.customer_name.toLowerCase().replace(/[^a-z0-9]/g, "_")}.csv`, csvContent);
+  };
 
   useEffect(() => {
     loadCustomerLog();
@@ -179,7 +269,8 @@ function CustomerRepairHistoryLogsContent() {
   const isActive = customer.active_status === "ACTIVE_REPAIR";
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y bg-zinc-950 text-zinc-100">
+    <>
+      <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-24 touch-pan-y bg-zinc-950 text-zinc-100 print:hidden">
       <div className="w-full space-y-6 md:space-y-8 animate-profile-enter">
         
         {/* Top Action & Navigation Bar (Preserved on Desktop >= md, Hidden on Mobile < md) */}
@@ -194,7 +285,16 @@ function CustomerRepairHistoryLogsContent() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => window.print()}
+              onClick={handleExportRepairCsv}
+              className="px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-none active:scale-[0.98]"
+              title="Export repair logs as RFC 4180 CSV"
+            >
+              <Download className="w-4 h-4 text-emerald-400" />
+              <span>Export CSV</span>
+            </button>
+
+            <button
+              onClick={() => handlePrintServiceRecord()}
               className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-2 text-xs font-bold shadow-none active:scale-[0.98]"
             >
               <Printer className="w-4 h-4 text-emerald-400" />
@@ -502,14 +602,51 @@ function CustomerRepairHistoryLogsContent() {
             }
           ] : []),
           {
+            id: "export-csv",
+            label: "Export CSV",
+            icon: <Download className="w-4 h-4" />,
+            onClick: () => handleExportRepairCsv(),
+          },
+          {
             id: "print",
             label: "Print Service Record",
             icon: <Printer className="w-4 h-4" />,
-            onClick: () => window.print(),
+            onClick: () => handlePrintServiceRecord(),
           }
         ]}
       />
-    </div>
+      </div>
+
+      {/* Native Print Fallback Container */}
+      {customer && (
+        <div className="hidden print:block w-full bg-white text-zinc-950">
+          <PrintableRepairReportDocument
+            settings={settings}
+            jobNumber={customer.past_jobs[0]?.jo_number || customer.past_jobs[0]?.job_id || "JO-101"}
+            customerName={customer.customer_name}
+            customerPhone={customer.contact_number}
+            motorcycleName={customer.motorcycle_model}
+            plateNumber={(customer as any).plate_number || "NCR-XXXX"}
+            leadMechanic={customer.past_jobs[0]?.mechanic_name || (customer.past_jobs[0] as any)?.lead_mechanic || "Lead Technician"}
+            serviceAdvisor={(customer.past_jobs[0] as any)?.service_advisor || "Service Advisor"}
+            status={customer.past_jobs[0]?.status || "COMPLETED"}
+            initialDiagnosis={customer.past_jobs[0]?.mechanic_notes || (customer.past_jobs[0] as any)?.complaint || "Customer requested inspection"}
+            workPerformed={(customer.past_jobs[0] as any)?.work_done || customer.past_jobs[0]?.mechanic_notes || "Standard repair procedures executed"}
+            partsUsed={(customer.past_jobs[0]?.items_used || []).filter((it: any) => !((it.name || "").toLowerCase().includes("labor") || (it.name || "").toLowerCase().includes("service")))}
+            laborCharges={(customer.past_jobs[0]?.items_used || []).filter((it: any) => ((it.name || "").toLowerCase().includes("labor") || (it.name || "").toLowerCase().includes("service"))).map((it: any) => ({
+              name: it.name,
+              amount: Number(it.price || customer.past_jobs[0]?.labor_charge || 0)
+            }))}
+            totalParts={customer.past_jobs[0]?.parts_charge || 0}
+            totalLabor={customer.past_jobs[0]?.labor_charge || 0}
+            grandTotal={customer.past_jobs[0]?.total_billed || ((customer.past_jobs[0]?.parts_charge || 0) + (customer.past_jobs[0]?.labor_charge || 0))}
+            releasedAt={customer.past_jobs[0]?.date_repaired || undefined}
+            generatedBy={localStorage.getItem("user_email") || "Service Advisor"}
+            generatedDate={new Date().toLocaleString()}
+          />
+        </div>
+      )}
+    </>
   );
 }
 

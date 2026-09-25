@@ -139,6 +139,29 @@ async def main():
         assert audit_data["total"] > 0
         print(f"✅ Audit logging verified: {audit_data['total']} immutable records logged.")
 
+        print("\n--- 9. Testing Client-Recorded Audit Log (POST /api/v1/audit-logs) ---")
+        client_audit_res = await client.post("/api/v1/audit-logs", json={
+            "action": "CLIENT_RECORDED_TEST",
+            "resource": "/dashboard",
+            "details": {"source": "verify_async"},
+            "user_role": "admin"
+        })
+        assert client_audit_res.status_code == 201, f"Post audit failed: {client_audit_res.text}"
+        assert client_audit_res.json()["status"] == "recorded"
+        print("✅ Client audit logging (POST /api/v1/audit-logs) verified successfully.")
+
+        print("\n--- 10. Testing User Profile Partial Update (PATCH /api/v1/auth/users/{id}) ---")
+        user_id = token_data["user_id"]
+        patch_res = await client.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
+            "theme": "emerald",
+            "display_mode": "dark"
+        })
+        assert patch_res.status_code == 200, f"Patch user failed: {patch_res.text}"
+        patched_user = patch_res.json()
+        assert patched_user["theme"] == "emerald"
+        assert patched_user["display_mode"] == "dark"
+        print(f"✅ User profile patch verified: theme={patched_user['theme']}, mode={patched_user['display_mode']}")
+
     print("\n=======================================================")
     print("🎉 ALL MODULAR MONOLITH INTEGRATION TESTS PASSED (100%)")
     print("=======================================================")

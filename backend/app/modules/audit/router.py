@@ -3,7 +3,7 @@ import io
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Request, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func, or_
@@ -13,10 +13,44 @@ from app.core.audit import log_audit_event
 from app.core.security import require_roles, get_client_ip
 from app.modules.audit.models import AuditLog
 from app.modules.auth.models import User
+from app.modules.audit import schemas
 
-router = APIRouter(prefix="/audit", tags=["Audit"])
+router = APIRouter(tags=["Audit"])
 
-@router.get("/logs")
+@router.post("/audit-logs", status_code=status.HTTP_201_CREATED)
+@router.post("/audit/logs", status_code=status.HTTP_201_CREATED)
+async def create_audit_log(
+    request: Request,
+    payload: schemas.AuditLogCreate,
+    session: AsyncSession = Depends(get_db)
+):
+    client_ip = get_client_ip(request)
+    
+    uid = None
+    if payload.user_id:
+        try:
+            uid = UUID(str(payload.user_id))
+        except (ValueError, TypeError):
+            stmt = select(User.id).where(User.email == str(payload.user_id))
+            res = await session.execute(stmt)
+            uid = res.scalar_one_or_none()
+
+    event = AuditLog(
+        user_id=uid,
+        user_role=payload.user_role or "cashier",
+        action=payload.action,
+        resource=payload.resource,
+        details=payload.details,
+        ip_address=client_ip
+    )
+    session.add(event)
+    await session.commit()
+    await session.refresh(event)
+
+    return {"status": "recorded", "id": str(event.id)}
+
+@router.get("/audit-logs")
+@router.get("/audit/logs")
 async def get_audit_logs(
     request: Request,
     start_date: Optional[str] = Query(None),
@@ -108,7 +142,8 @@ async def get_audit_logs(
         "total_pages": (total_count + page_size - 1) // page_size
     }
 
-@router.get("/logs/export")
+@router.get("/audit-logs/export")
+@router.get("/audit/logs/export")
 async def export_audit_logs(
     request: Request,
     mutations_only: bool = Query(True),
@@ -119,7 +154,7 @@ async def export_audit_logs(
     await log_audit_event(
         session=session,
         action="AUDIT_EXPORT",
-        resource="/api/v1/audit/logs/export",
+        resource="/api/v1/audit-logs/export",
         user_id=current_user.get("user_id"),
         user_role=current_user.get("role"),
         details={"exported_by": current_user.get("email")},

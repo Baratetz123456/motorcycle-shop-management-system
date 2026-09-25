@@ -26,7 +26,8 @@ The unified FastAPI Modular Monolith serves all endpoints directly under `/api/v
 | `POST` | `/api/v1/auth/change-password` | Update user password, increment token_version | Yes |
 | `GET` | `/api/v1/auth/users` | List all users (staff accounts) | Admin |
 | `POST` | `/api/v1/auth/users` | Create new staff user | Admin |
-| `PUT` | `/api/v1/auth/users/{user_id}`| Update user details, role, wage, commission | Admin |
+| `PUT` | `/api/v1/auth/users/{user_id}`| Full update user details, role, wage, commission | Admin |
+| `PATCH` | `/api/v1/auth/users/{user_id}`| Partially update user profile (theme, display_mode, avatar, email, name) | Self/Admin |
 
 ---
 
@@ -111,11 +112,13 @@ The unified FastAPI Modular Monolith serves all endpoints directly under `/api/v
 
 ---
 
-### 2.5 Audit Module (`/api/v1/audit`)
+### 2.5 Audit Module (`/api/v1/audit` & `/api/v1/audit-logs`)
 
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `GET` | `/api/v1/audit/logs` | Fetch paginated immutable audit log events | Admin |
+| `GET` | `/api/v1/audit/logs` (alias: `/api/v1/audit-logs`) | Fetch paginated immutable audit log events | Admin |
+| `POST` | `/api/v1/audit/logs` (alias: `/api/v1/audit-logs`) | Record client-initiated or operational audit log event | Yes (or authenticated client) |
+| `GET` | `/api/v1/audit/logs/export` (alias: `/api/v1/audit-logs/export`) | Stream filtered audit log events as CSV export | Admin |
 
 ---
 

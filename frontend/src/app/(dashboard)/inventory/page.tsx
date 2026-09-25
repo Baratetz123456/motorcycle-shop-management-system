@@ -16,7 +16,9 @@ import {
   Boxes, 
   Activity, 
   ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  Printer,
+  Download
 } from "lucide-react";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
@@ -25,6 +27,16 @@ import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { getSystemSettings, SystemSettings } from "@/lib/settings";
+import { 
+  PrintableInventoryReportDocument, 
+  getInventoryReportDocumentHtml 
+} from "@/components/documents/PrintableInventoryReportDocument";
+import { 
+  buildEnterpriseReportCsv, 
+  downloadCsvFile, 
+  printIsolatedDocument 
+} from "@/components/documents/reportExportUtils";
 
 export interface CatalogItem {
   id: string;
@@ -358,32 +370,146 @@ function InventoryContent() {
     }
   };
 
-  return (
-    <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-zinc-100">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <Boxes className="w-8 h-8 text-emerald-500" />
-            Parts & Stock Catalog
-          </h1>
-          <p className="text-zinc-400 mt-1 text-sm">
-            Monitor inventory quantities, reorder thresholds, and showroom service pricing.
-          </p>
-        </div>
+  const [settings, setSettings] = useState<SystemSettings>(getSystemSettings());
 
-        <div className="flex items-center gap-3">
-          {canManage && (
-            <button
-              onClick={() => handleOpenModal(activeTab)}
-              className="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-xs border border-emerald-500"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ Add Item</span>
-            </button>
-          )}
+  useEffect(() => {
+    setSettings(getSystemSettings());
+  }, []);
+
+  const inventoryValuationData = useMemo(() => {
+    const productItems = items.filter((it) => it.item_type === "PRODUCT");
+    const totalStockUnits = productItems.reduce((acc, it) => acc + (Number(it.current_stock) || 0), 0);
+    const totalWholesaleValue = productItems.reduce((acc, it) => acc + ((Number(it.current_stock) || 0) * (Number(it.cost_price) || 0)), 0);
+    const totalRetailValue = productItems.reduce((acc, it) => acc + ((Number(it.current_stock) || 0) * (Number(it.selling_price) || 0)), 0);
+    const projectedProfit = totalRetailValue - totalWholesaleValue;
+    const lowStockCount = productItems.filter((it) => (Number(it.current_stock) || 0) <= (Number(it.reorder_level) || 5)).length;
+
+    const categorySummary: Record<string, { count: number; stock: number; wholesaleValue: number; retailValue: number }> = {};
+    productItems.forEach((it) => {
+      const cat = it.category || "GENERAL";
+      if (!categorySummary[cat]) {
+        categorySummary[cat] = { count: 0, stock: 0, wholesaleValue: 0, retailValue: 0 };
+      }
+      categorySummary[cat].count += 1;
+      categorySummary[cat].stock += Number(it.current_stock) || 0;
+      categorySummary[cat].wholesaleValue += (Number(it.current_stock) || 0) * (Number(it.cost_price) || 0);
+      categorySummary[cat].retailValue += (Number(it.current_stock) || 0) * (Number(it.selling_price) || 0);
+    });
+
+    return {
+      totalItems: productItems.length,
+      totalStockUnits,
+      totalWholesaleValue,
+      totalRetailValue,
+      projectedProfit,
+      lowStockCount,
+      categorySummary,
+      items: productItems
+    };
+  }, [items]);
+
+  const handleExportInventoryCsv = () => {
+    const periodLabel = `Physical Inventory: ${new Date().toLocaleDateString()}`;
+    const csvContent = buildEnterpriseReportCsv(
+      {
+        appName: settings.appName || "Versiklo",
+        shopDescription: settings.shopDescription || "Motorcycle Parts & Services",
+        shopAddress: settings.shopAddress,
+        shopTin: settings.shopTin,
+        reportTitle: "Inventory Stock Valuation & Asset Report",
+        periodLabel,
+        generatedBy: `${localStorage.getItem("user_email") || "admin"} (${userRole?.toUpperCase() || "MANAGER"})`,
+        generatedDate: new Date().toLocaleString()
+      },
+      {
+        headers: ["SKU", "Item Description", "Category", "On Hand", "Reorder Level", "Wholesale Cost (PHP)", "Retail SRP (PHP)", "Stock Status"],
+        rows: inventoryValuationData.items.map((it) => [
+          it.sku || "N/A",
+          it.name,
+          it.category,
+          it.current_stock,
+          it.reorder_level,
+          Number(it.cost_price || 0).toFixed(2),
+          Number(it.selling_price || 0).toFixed(2),
+          it.current_stock <= (it.reorder_level || 5) ? "RESTOCK NEEDED" : "HEALTHY"
+        ]),
+        summaryRows: [
+          ["Total Warehouse Wholesale Cost", "", "", "", "", Number(inventoryValuationData.totalWholesaleValue).toFixed(2), "", ""],
+          ["Total Retail Valuation", "", "", "", "", "", Number(inventoryValuationData.totalRetailValue).toFixed(2), ""],
+          ["Projected Gross Retail Profit", "", "", "", "", "", Number(inventoryValuationData.projectedProfit).toFixed(2), ""]
+        ]
+      }
+    );
+    downloadCsvFile(`inventory_valuation_${new Date().toISOString().slice(0, 10)}.csv`, csvContent);
+  };
+
+  const handlePrintInventoryReport = () => {
+    const periodLabel = `Physical Inventory: ${new Date().toLocaleDateString()}`;
+    const docHtml = getInventoryReportDocumentHtml({
+      settings,
+      periodLabel,
+      reportRef: `REP-INV-${Date.now().toString().slice(-6)}`,
+      generatedBy: `${localStorage.getItem("user_email") || "admin"} (${userRole?.toUpperCase() || "MANAGER"})`,
+      generatedDate: new Date().toLocaleString(),
+      totalItems: inventoryValuationData.totalItems,
+      totalStockUnits: inventoryValuationData.totalStockUnits,
+      totalWholesaleValue: inventoryValuationData.totalWholesaleValue,
+      totalRetailValue: inventoryValuationData.totalRetailValue,
+      projectedProfit: inventoryValuationData.projectedProfit,
+      lowStockCount: inventoryValuationData.lowStockCount,
+      categorySummary: inventoryValuationData.categorySummary,
+      items: inventoryValuationData.items
+    });
+    printIsolatedDocument(`Inventory-Valuation-${new Date().toISOString().slice(0, 10)}`, docHtml);
+  };
+
+  return (
+    <>
+      <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans text-zinc-100 print:hidden">
+        {/* Top Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+              <Boxes className="w-8 h-8 text-emerald-500" />
+              Parts & Stock Catalog
+            </h1>
+            <p className="text-zinc-400 mt-1 text-sm">
+              Monitor inventory quantities, reorder thresholds, and showroom service pricing.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {canManage && (
+              <>
+                <button
+                  onClick={handleExportInventoryCsv}
+                  className="px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm"
+                  title="Export inventory valuation dataset as RFC 4180 CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Export CSV</span>
+                </button>
+
+                <button
+                  onClick={handlePrintInventoryReport}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm active:scale-95"
+                  title="Generate official white-canvas inventory valuation report"
+                >
+                  <Printer className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Print Valuation Report</span>
+                </button>
+
+                <button
+                  onClick={() => handleOpenModal(activeTab)}
+                  className="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-xs border border-emerald-500 active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add Item</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
       {/* Deleted Item Notification Banner */}
       {deletedNotice && (
@@ -1030,7 +1156,27 @@ function InventoryContent() {
           </div>
         </div>
       </MobileFilterSheet>
-    </div>
+      </div>
+
+      {/* Native Print Fallback Container */}
+      <div className="hidden print:block w-full bg-white text-zinc-950">
+        <PrintableInventoryReportDocument
+          settings={settings}
+          periodLabel={`Physical Inventory: ${new Date().toLocaleDateString()}`}
+          reportRef={`REP-INV-${Date.now().toString().slice(-6)}`}
+          generatedBy={`${localStorage.getItem("user_email") || "admin"} (${userRole?.toUpperCase() || "MANAGER"})`}
+          generatedDate={new Date().toLocaleString()}
+          totalItems={inventoryValuationData.totalItems}
+          totalStockUnits={inventoryValuationData.totalStockUnits}
+          totalWholesaleValue={inventoryValuationData.totalWholesaleValue}
+          totalRetailValue={inventoryValuationData.totalRetailValue}
+          projectedProfit={inventoryValuationData.projectedProfit}
+          lowStockCount={inventoryValuationData.lowStockCount}
+          categorySummary={inventoryValuationData.categorySummary}
+          items={inventoryValuationData.items}
+        />
+      </div>
+    </>
   );
 }
 

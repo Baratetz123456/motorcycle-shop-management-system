@@ -476,12 +476,17 @@ async def register_user(
 @router.put("/users/{user_id}", response_model=schemas.UserResponse)
 async def update_user(
     request: Request,
-    user_id: UUID,
+    user_id: str,
     update_data: schemas.UserUpdateRequest,
     current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_db)
 ):
-    stmt = select(models.User).where(models.User.id == user_id)
+    try:
+        user_uuid = UUID(str(user_id))
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    stmt = select(models.User).where(models.User.id == user_uuid)
     result = await session.execute(stmt)
     db_user = result.scalar_one_or_none()
 
@@ -490,7 +495,7 @@ async def update_user(
 
     caller_role = current_user.get("role")
     is_admin = caller_role == "admin"
-    is_self = str(user_id) == str(current_user.get("user_id"))
+    is_self = str(user_uuid) == str(current_user.get("user_id"))
 
     if not is_admin and not is_self:
         raise HTTPException(status_code=403, detail="Forbidden: You can only update your own profile")
@@ -526,3 +531,81 @@ async def update_user(
     await session.commit()
     await session.refresh(db_user)
     return db_user
+
+@router.patch("/users/{user_id}", response_model=schemas.UserResponse)
+async def patch_user(
+    request: Request,
+    user_id: str,
+    update_data: schemas.UserProfileUpdateRequest,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    try:
+        user_uuid = UUID(str(user_id))
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    stmt = select(models.User).where(models.User.id == user_uuid)
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    caller_role = current_user.get("role")
+    is_admin = caller_role == "admin"
+    is_self = str(user_uuid) == str(current_user.get("user_id"))
+
+    if not is_admin and not is_self:
+        ip = get_client_ip(request)
+        await log_audit_event(
+            session=session,
+            action="ACCESS_DENIED",
+            resource=f"/api/v1/auth/users/{user_id}",
+            user_id=current_user.get("user_id"),
+            user_role=caller_role,
+            details={
+                "target_user_id": str(user_id),
+                "reason": "Forbidden: You can only update your own profile"
+            },
+            ip_address=ip
+        )
+        raise HTTPException(status_code=403, detail="Forbidden: You can only update your own profile")
+
+    if update_data.email and update_data.email != db_user.email:
+        email_check = select(models.User).where(models.User.email == update_data.email)
+        check_res = await session.execute(email_check)
+        if check_res.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Email is already in use by another account.")
+        db_user.email = update_data.email
+
+    if update_data.first_name is not None:
+        db_user.first_name = update_data.first_name
+    if update_data.last_name is not None:
+        db_user.last_name = update_data.last_name
+    if update_data.avatar is not None:
+        db_user.avatar = update_data.avatar
+    if update_data.theme is not None:
+        db_user.theme = update_data.theme
+    if update_data.display_mode is not None:
+        db_user.display_mode = update_data.display_mode
+
+    await session.commit()
+    await session.refresh(db_user)
+
+    client_ip = get_client_ip(request)
+    await log_audit_event(
+        session=session,
+        action="UPDATE_USER_PROFILE",
+        resource=f"/api/v1/auth/users/{user_id}",
+        user_id=current_user.get("user_id"),
+        user_role=caller_role,
+        details={
+            "target_user_id": str(user_id),
+            "updated_fields": {k: v for k, v in update_data.model_dump(exclude_unset=True).items()}
+        },
+        ip_address=client_ip
+    )
+
+    return db_user
+

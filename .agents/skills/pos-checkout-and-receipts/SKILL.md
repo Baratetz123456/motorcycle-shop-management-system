@@ -18,7 +18,7 @@ flowchart TD
     E --> F[Clear Global Zustand Cart]
     F --> G[Render Payment Completed Screen]
     G --> H[View Receipt Page /sales/receipt?id=...]
-    H --> I[Print Official Receipt / window.print]
+    H --> I[Print Official Receipt / printIsolatedDocument]
 ```
 
 ## Critical Implementation Guidelines

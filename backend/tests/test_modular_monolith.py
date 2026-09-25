@@ -121,3 +121,50 @@ async def test_inventory_and_checkout_acid():
         # Stock should STILL be 18 (not deducted twice!)
         check_item_res2 = await ac.get(f"/api/v1/inventory/items/{item_id}", headers=headers)
         assert check_item_res2.json()["current_stock"] == 18
+
+@pytest.mark.asyncio
+async def test_user_profile_patch_and_audit_logs():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        # 1. Post audit log directly via /api/v1/audit-logs
+        post_audit = await ac.post("/api/v1/audit-logs", json={
+            "action": "CLIENT_TEST_EVENT",
+            "resource": "/test-page",
+            "details": {"client": True},
+            "user_role": "admin"
+        })
+        assert post_audit.status_code == 201
+        audit_data = post_audit.json()
+        assert audit_data["status"] == "recorded"
+        assert "id" in audit_data
+
+        # 2. Login to get token and user_id
+        login_res = await ac.post("/api/v1/auth/login", json={
+            "email": "admin@motoshop.com",
+            "password": "admin123"
+        })
+        assert login_res.status_code == 200
+        token = login_res.json()["access_token"]
+        user_id = str(login_res.json()["user_id"])
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 3. Test PATCH /api/v1/auth/users/{user_id} with theme
+        patch_theme_res = await ac.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
+            "theme": "emerald"
+        })
+        assert patch_theme_res.status_code == 200
+        assert patch_theme_res.json()["theme"] == "emerald"
+
+        # 4. Test PATCH /api/v1/auth/users/{user_id} with display_mode
+        patch_mode_res = await ac.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
+            "display_mode": "dark"
+        })
+        assert patch_mode_res.status_code == 200
+        assert patch_mode_res.json()["display_mode"] == "dark"
+
+        # 5. Test GET /api/v1/audit-logs
+        get_audit_res = await ac.get("/api/v1/audit-logs?page=1&page_size=10", headers=headers)
+        assert get_audit_res.status_code == 200
+        logs = get_audit_res.json()
+        assert "items" in logs
+        assert logs["total"] >= 1
+

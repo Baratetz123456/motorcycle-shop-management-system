@@ -937,11 +937,11 @@ html.dark [class*="bg-blue-500/10"] {
 }
 
 /* Dark Card Surfaces, Panels & Responsive Backgrounds */
-html.dark [class*="bg-white"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
-html.dark [class*="bg-slate-50"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
-html.dark [class*="bg-slate-100"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
-html.dark [class*="bg-zinc-900"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
-html.dark [class*="bg-zinc-950"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) {
+html.dark [class*="bg-white"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-slate-50"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-slate-100"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-zinc-900"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="bg-zinc-950"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) {
   background-color: #121215 !important;
   border-color: #27272a !important;
   color: #f4f4f5;
@@ -953,13 +953,13 @@ html.dark .bg-zinc-800 {
   border-color: #3f3f46 !important;
 }
 
-html.dark [class*="border-slate-"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
-html.dark [class*="border-zinc-800"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
-html.dark [class*="border-zinc-700"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) {
+html.dark [class*="border-slate-"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="border-zinc-800"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)),
+html.dark [class*="border-zinc-700"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) {
   border-color: #27272a !important;
 }
 
-html.dark [class*="divide-slate-"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) > * {
+html.dark [class*="divide-slate-"]:not(:where(.printable-receipt, .printable-receipt *, .printable-payslip, .printable-payslip *, .printable-report-document, .printable-report-document *, [data-printable-document="true"], [data-printable-document="true"] *, [data-invoice-canvas="true"], [data-invoice-canvas="true"] *, [data-payslip-canvas="true"], [data-payslip-canvas="true"] *)) > * {
   border-color: #27272a !important;
 }
 
@@ -1407,10 +1407,14 @@ main, [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-
 
   html.dark .printable-receipt,
   html.dark .printable-payslip,
+  html.dark .printable-report-document,
+  html.dark [data-printable-document="true"],
   html.dark [data-invoice-canvas="true"],
   html.dark [data-payslip-canvas="true"],
   .printable-receipt,
   .printable-payslip,
+  .printable-report-document,
+  [data-printable-document="true"],
   [data-invoice-canvas="true"],
   [data-payslip-canvas="true"] {
     display: block !important;
@@ -1432,10 +1436,14 @@ main, [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-
 
   html.dark .printable-receipt *,
   html.dark .printable-payslip *,
+  html.dark .printable-report-document *,
+  html.dark [data-printable-document="true"] *,
   html.dark [data-invoice-canvas="true"] *,
   html.dark [data-payslip-canvas="true"] *,
   .printable-receipt *,
   .printable-payslip *,
+  .printable-report-document *,
+  [data-printable-document="true"] *,
   [data-invoice-canvas="true"] *,
   [data-payslip-canvas="true"] * {
     color: #09090b !important;
