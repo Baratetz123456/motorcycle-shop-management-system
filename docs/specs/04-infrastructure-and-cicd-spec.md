@@ -156,3 +156,33 @@ Resources:
 1. **Private S3 via OAC**: S3 bucket blocks 100% of direct public access. Only CloudFront with valid SigV4 signature can read frontend artifacts.
 2. **Private VPC RDS**: RDS instance has `PubliclyAccessible: false`. No public IPv4 address is assigned, saving ~$3.60/month in AWS IPv4 charges.
 3. **Internal Migration Lambda**: CI/CD invokes `MigrationFunction` through `aws lambda invoke`. Lambda executes `alembic upgrade head` from inside the private subnet, eliminating bastion hosts and NAT gateways.
+
+---
+
+## 3. CI/CD Pipeline & Automated Security Gate
+
+### 3.1 Continuous Integration Workflow (`.github/workflows/ci.yml`)
+1. **Frontend Checks (`frontend-checks`)**:
+   - Compiles all 29 routes as standalone static Next.js assets (`npm run build`).
+   - Runs TypeScript static checking (`tsc --noEmit`) and ESLint (`eslint .`).
+   - Strict `npm audit --audit-level=high` (must return 0 vulnerabilities).
+2. **Backend Domain Tests (`backend-tests`)**:
+   - Provisions an isolated `postgres:16-alpine` service container with health checks.
+   - Automatically initializes schemas via `init.sql` and loads `seed_operational_data.sql`.
+   - Executes 43 domain tests across Auth, Inventory, Repairs, Sales, Audit, and RBAC Security with Python 3.12.
+3. **Security Analysis & Secret Scanning (`security-scans`)**:
+   - **Gitleaks**: Scans commit history against `.gitleaks.toml` to prevent credential leaks.
+   - **Bandit SAST**: Scans `backend/app/` for Medium and High severity security vulnerabilities.
+   - **pip-audit**: Validates Python dependencies against known CVEs.
+4. **Container Build & Trivy Image Scanning (`docker-build-and-trivy`)**:
+   - Builds `motoshop-frontend:ci` and `motoshop-backend:ci`.
+   - Runs Trivy container scans with `exit-code: 1` on any `HIGH` or `CRITICAL` findings.
+
+### 3.2 Continuous Deployment Workflow (`.github/workflows/deploy-serverless.yml`)
+- Triggered on push to `main` branch.
+- Prerequisite: Must pass all 4 jobs of `.github/workflows/ci.yml`.
+- Deploys `MonolithFunction` via `sam deploy` to AWS Lambda.
+- Invokes `MigrationFunction` to apply pending Alembic migrations.
+- Builds static SPA and syncs to S3 bucket (`aws s3 sync frontend/out s3://${S3_BUCKET_NAME}`).
+- Invalidates CloudFront edge distribution (`aws cloudfront create-invalidation`).
+

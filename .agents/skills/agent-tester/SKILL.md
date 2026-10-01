@@ -19,7 +19,8 @@ The Testing Agent is authorized to spawn three specialized child testing subagen
   - Run `npm run build` in `frontend/`.
   - Assert **Exit Code 0** across all 26 static and dynamic routes.
   - Confirm zero TypeScript type errors and zero Next.js bundling/prerendering warnings.
-  - Run backend unit tests or linters where configured (`pytest`, `flake8`).
+  - Run backend unit/integration tests: `npm run test:backend` (or `pytest backend/tests`), asserting all async suites teardown connection pools with `engine.dispose()`.
+  - Run zero-tolerance security pre-flight checks: `npm run test:security` (Bandit SAST `-ll`, `pip-audit`, `npm audit --audit-level=high`, and Gitleaks secrets detection).
 
 ### B. `tester-gateway-integration`
 - **Focus**: Microservice API endpoints, Docker container health, and database persistence.

@@ -61,33 +61,45 @@ Ensures zero runtime JavaScript errors and verifies that all 29 routes compile a
   - All pages pre-rendered as `○ (Static)` or `● (SSG)` with fallback hydration parameters.
   - Zero unhandled dynamic server usage or missing asset imports.
 
-### 3.2 Tier 2: Backend Modular Monolith Integration Tests (`backend/tests/`)
-Verifies domain modules directly in memory via `httpx.AsyncClient` with `ASGITransport(app=app)` without requiring network socket overhead:
-* **Execution Command**:
+### 3.2 Tier 2: Backend Domain Integration Suite (43 Tests)
+Verifies domain modules against live PostgreSQL 16 schemas with an isolated connection pool lifecycle via `backend/tests/conftest.py`:
+* **Execution Commands**:
   ```bash
-  cd backend && pytest tests/test_modular_monolith.py -v
+  npm run test:backend
+  # Or: docker exec motoshop-backend pytest -v
   ```
-* **Core Assertions**:
-  1. `/api/v1/health` returns `200 OK` with service identifier `motoshop-modular-monolith`.
-  2. `/api/v1/auth/seed-admin` seeds default root credentials safely and idempotently.
-  3. `/api/v1/auth/login` sets `HttpOnly` refresh cookie and returns JWT with role claims.
-  4. `/api/v1/inventory/items` validates SKU uniqueness and stock levels.
-  5. `/api/v1/repairs/jobs` manages motorcycle status progressions.
+* **Domain Test Coverage**:
+  1. **Authentication & Session Lifecycle** (`test_auth.py` — 9 tests): Admin seeding, credential verification, invalid passwords, non-existent accounts, HttpOnly refresh cookie rotation, staff registration, duplicate email rejection (409), profile patching, staff directory listing.
+  2. **Catalog & Inventory** (`test_inventory.py` — 8 tests): Product item creation, service item creation, entity retrieval by UUID, 404 on missing item, price/stock atomic updates, soft/hard deletion, category filtering (`PRODUCT` vs `SERVICE`).
+  3. **Repairs & Workshop Jobs** (`test_repairs.py` — 6 tests): Job order creation with JO numbering, job listing, status lifecycle progression (`PENDING` $\to$ `ONGOING` $\to$ `COMPLETED`), unpaid release guard rejection (HTTP 400 when attempting to mark as `RELEASED` without payment), motorcycle profiles, repair cart line items.
+  4. **Sales & ACID POS Checkout** (`test_sales.py` — 5 tests): Atomic POS checkout with inventory stock deduction and audit logging, Idempotency-Key replay defense, multi-item cart with percentage discount, transaction lookup by invoice/UUID, void transaction safeguard.
+  5. **Audit Logs & CSV Export** (`test_audit.py` — 4 tests): Ingesting client-side audit actions, paginated log retrieval, action filtering, RFC 4180 CSV export with UTF-8 BOM.
+  6. **RBAC Security Boundaries** (`test_rbac_security.py` — 7 tests): Unauthenticated requests rejected (401), tampered bearer tokens rejected (401), Cashier forbidden from staff user creation (403), Cashier forbidden from audit log viewing (403), Mechanic forbidden from POS checkout (403), Mechanic forbidden from inventory creation (403), Admin full domain access.
+  7. **Modular Monolith E2E** (`test_modular_monolith.py` — 4 tests): Monolith `/health` endpoint, seed & admin login, full end-to-end checkout with stock balance verification, profile editing with audit log ingestion.
 
-### 3.3 Tier 3: Database Isolation & ACID Idempotency Suite
-Validates that sales checkout executes as a single atomic unit of work and deduplicates network retries:
-* **Idempotency Assertions**:
-  - Sending request #1 with `Idempotency-Key: <UUID>` yields `201 Created` with invoice `INV-XXXXXX`, deducts stock from `20` to `18`, and links commission.
-  - Resending request #2 with identical `Idempotency-Key` yields exact same `201 Created` and identical invoice number.
-  - **Stock Isolation Assertion**: Item stock remains strictly `18` (not deducted twice).
-* **Rollback Assertions**:
-  - An intentional constraint violation (e.g. purchasing `9999` units when stock is `5`) rolls back all changes, leaving transaction tables, payments, and stock movements unaltered.
+### 3.3 Tier 3: Isolated Engine Pool Lifecycle & Connection Safety (`conftest.py`)
+* **Engine Teardown Invariant**:
+  ```python
+  @pytest.fixture(autouse=True)
+  async def cleanup_db_connections():
+      yield
+      await engine.dispose()
+  ```
+  Prevents asyncpg event loop detachment errors (`Future attached to a different loop`) by disposing SQLAlchemy's connection pool before pytest closes each test function's asyncio loop.
+* **Role Fixtures**: Provides pre-authenticated headers (`admin_headers`, `cashier_headers`, `mechanic_headers`).
 
-### 3.4 Tier 4: Browser Interaction & Visual Verification
-Driven by Playwright to validate end-to-end user flows across desktop and mobile viewports:
-* **Mobile POS Invariant**: Viewport width `390px` (iPhone 14) renders active repair cards and product catalog in a responsive 2-column grid (`grid-cols-2`).
-* **Floating Filter FAB**: Verifies `FloatingFilterFab` renders directly above the cart FAB and opens the filter drawer.
-* **Print Sandbox Isolation**: Verifies in-app invoice view retains dark mode styling, and printing triggers `printIsolatedDocument` within an ephemeral iframe containing a pure `#ffffff` canvas.
+### 3.4 Tier 4: Pre-Flight Security Testing Gate (`npm run test:security`)
+* **Frontend Dependency Audit**: `npm audit --audit-level=high` enforces zero vulnerabilities.
+* **Python SAST**: `bandit -r backend/app/ -ll` enforces zero Medium and High severity code vulnerabilities.
+* **Dependency CVE Auditing**: `pip-audit -r backend/requirements.txt` validates Python packages against PyPA advisories.
+* **Secret Scanning**: Gitleaks enforces zero credential leakage against `.gitleaks.toml`.
+
+### 3.5 Tier 5: Browser Interaction, Mobile Usability & Visual Verification (40 Playwright Tests)
+Driven by Playwright (`npm run test:e2e`) across desktop (1440×900), tablet (768×1024), and mobile (375×812 / 390×844) viewports:
+* **Mobile POS Invariant**: Viewport width `375px` renders active repair cards and catalog in a responsive 2-column grid (`grid-cols-2`).
+* **Unified Floating Action Buttons (FAB)**: Validates 56×56px emerald Add FAB and Filter FAB portaled to `document.body` with safe-area insets (`env(safe-area-inset-bottom)`).
+* **Destructive Action Safeguards**: Danger `ConfirmModal` gating sales voiding and entity deletions.
+* **Print Sandbox Isolation**: In-app invoice view retains dark mode styling; printing triggers `printIsolatedDocument` within an ephemeral iframe containing a pure `#ffffff` canvas.
 * **WCAG AAA Text Contrast Invariant**: Validates lime green buttons (`bg-lime-500`) carry `#09090b` dark carbon text for a contrast ratio $> 12:1$.
 
 ---

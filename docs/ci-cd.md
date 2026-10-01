@@ -1,275 +1,163 @@
-# CI/CD Pipeline Documentation
+# CI/CD Pipeline & Security Enforcement Documentation
 
-## Architecture Overview
+## 1. Architecture Overview
 
-The MotoShop POS system uses GitHub Actions for Continuous Integration and Continuous Deployment to AWS ECS Fargate.
+MotoShop uses GitHub Actions for Continuous Integration (CI) and Continuous Deployment (CD) to an **AWS Zero-Cost Serverless Stack** (AWS Lambda + S3 + CloudFront + RDS PostgreSQL).
 
+```mermaid
+flowchart TD
+    subgraph CI_Pipeline [CI Pipeline: .github/workflows/ci.yml]
+        PR[PR / Push to develop or main] --> Job1[1. Frontend Checks]
+        PR --> Job2[2. Backend Tests]
+        PR --> Job3[3. Security Scans]
+
+        subgraph Job1_Detail [Job 1: Frontend Checks]
+            J1_Node[Node.js 20 & npm ci] --> J1_Lint[ESLint .]
+            J1_Lint --> J1_Tsc[TypeScript Type-check]
+            J1_Tsc --> J1_Build[Next.js Production Build]
+            J1_Build --> J1_Audit[Strict npm audit: 0 High/Critical]
+        end
+
+        subgraph Job2_Detail [Job 2: Backend Tests]
+            J2_Py[Python 3.12] --> J2_Pg[PostgreSQL 16 Alpine Service Container]
+            J2_Pg --> J2_Init[Load init.sql + seed_operational_data.sql]
+            J2_Init --> J2_Pytest[pytest tests/ -v: 43 Tests Passing]
+        end
+
+        subgraph Job3_Detail [Job 3: Security Scans]
+            J3_Git[Gitleaks Secret Scan with .gitleaks.toml]
+            J3_Bandit[Bandit SAST: High & Medium Code Flaws]
+            J3_Pip[pip-audit: Python Dependency CVEs]
+        end
+
+        Job1 --> Job4[4. Docker Build & Trivy Scan]
+        Job2 --> Job4
+        Job3 --> Job4
+
+        subgraph Job4_Detail [Job 4: Docker & Trivy]
+            J4_BldFront[Build motoshop-frontend:ci]
+            J4_BldBack[Build motoshop-backend:ci]
+            J4_TrivyFront[Trivy Scan Frontend: Exit 1 on HIGH/CRITICAL]
+            J4_TrivyBack[Trivy Scan Backend: Exit 1 on HIGH/CRITICAL]
+        end
+    end
+
+    subgraph CD_Pipeline [CD Pipeline: .github/workflows/deploy-serverless.yml]
+        PushMain[Push to main branch] --> RunCI[Execute CI Pipeline]
+        RunCI --> DeployBack[Deploy Backend: AWS SAM Deploy MonolithFunction]
+        DeployBack --> RunMigrate[Invoke VPC Migration Lambda: Schema Updates]
+        RunMigrate --> DeployFront[Deploy Frontend: Build Static SPA & Sync to S3]
+        DeployFront --> InvalidateCF[Invalidate CloudFront Edge Cache]
+    end
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    GitHub Actions                           │
-│                                                             │
-│  PR → develop/main     push → develop      push → main     │
-│  ┌─────────────┐      ┌──────────────┐   ┌──────────────┐  │
-│  │   CI Only   │      │   CI + CD    │   │  CI + CD     │  │
-│  │             │      │   Staging    │   │  Production  │  │
-│  │ • Lint      │      │   (auto)    │   │  (manual     │  │
-│  │ • Type-check│      │             │   │   approval)  │  │
-│  │ • Build     │      │             │   │              │  │
-│  │ • Test      │      │             │   │              │  │
-│  │ • Scan      │      │             │   │              │  │
-│  └─────────────┘      └──────┬───────┘   └──────┬───────┘  │
-│                              │                   │          │
-└──────────────────────────────┼───────────────────┼──────────┘
-                               │                   │
-                     ┌─────────▼───────────────────▼─────────┐
-                     │              AWS ECR                    │
-                     │  5 repos × 2 environments = 10 repos   │
-                     └─────────────────┬─────────────────────┘
-                                       │
-                     ┌─────────────────▼─────────────────────┐
-                     │           AWS ECS Fargate              │
-                     │                                        │
-                     │  ┌──────────┐    ┌──────────────────┐  │
-                     │  │ Staging  │    │   Production     │  │
-                     │  │ Cluster  │    │   Cluster        │  │
-                     │  └──────────┘    └──────────────────┘  │
-                     │                                        │
-                     │  Each cluster runs:                    │
-                     │  • Frontend (Next.js, port 3000)       │
-                     │  • Auth Service (FastAPI, port 8000)   │
-                     │  • Inventory Service (port 8000)       │
-                     │  • Sales Service (port 8000)           │
-                     │  • Repairs Service (port 8000)         │
-                     │  • KrakenD API Gateway (port 8080)     │
-                     └────────────────────────────────────────┘
-```
 
 ---
 
-## Pipeline Details
+## 2. CI Pipeline Specifications (`.github/workflows/ci.yml`)
 
-### CI Pipeline (`ci.yml`)
+**Trigger**: Pull requests and direct pushes targeting `develop` or `main`.  
+**Concurrency**: `group: ci-${{ github.ref }}`, `cancel-in-progress: true`.
 
-**Trigger:** Pull requests to `develop` or `main`
-
-| Job | Description | Duration (est.) |
-|-----|-------------|-----------------|
-| `frontend-checks` | ESLint, TypeScript type-check, Next.js build, npm audit | ~3 min |
-| `backend-tests` | Install Python deps, run pytest | ~2 min |
-| `docker-build` | Build all 5 Docker images (no push) | ~5 min |
-| `security-scan` | Trivy HIGH/CRITICAL scan on all images | ~4 min |
-
-All jobs run in parallel except `security-scan` which depends on `docker-build`.
-
-### CD Staging (`deploy-staging.yml`)
-
-**Trigger:** Push to `develop` (auto-deploy, no approval)
-
-1. Runs full CI checks
-2. Authenticates with AWS via secrets
-3. Builds and pushes 5 Docker images to ECR (tagged `staging-<sha>`)
-4. Renders ECS task definitions with new image URIs
-5. Deploys to staging ECS cluster
-6. Waits for service stability
-
-### CD Production (`deploy-production.yml`)
-
-**Trigger:** Push to `main` (requires manual approval)
-
-Same as staging but:
-- Uses GitHub Environment `production` with required reviewers
-- Tags images with `prod-<sha>` prefix
-- Deploys to production ECS cluster
+| Job Name | Steps Executed | Key Tools & Flags | Gate Criteria |
+| :--- | :--- | :--- | :--- |
+| **`frontend-checks`** | Node 20 setup, dependency install, static linting, typechecking, standalone compilation, dependency audit. | `npm ci`, `npx eslint .`, `npx tsc --noEmit`, `npm run build`, `npm audit --audit-level=high` | **Exit code 0** across all 29 routes. Zero High or Critical npm advisories. |
+| **`backend-tests`** | Python 3.12 setup, PostgreSQL 16 container, schema initialization, pytest suite. | `postgres:16-alpine`, `psql -f init.sql -f seed_operational_data.sql`, `pytest tests/ -v` | **43 / 43 tests passing** (100%). Zero connection leaks via `conftest.py` engine disposal. |
+| **`security-scans`** | Full repository history check for credentials, static Python code security analysis, Python dependency vulnerability audit. | `gitleaks-action@v2` with `.gitleaks.toml`, `bandit -r backend/app/ -ll`, `pip-audit -r backend/requirements.txt` | **Strict Zero-Tolerance Gate**: Build fails if any credential leaks, Bandit findings, or unpatched CVEs are detected. |
+| **`docker-build-and-trivy`** | Multi-stage Docker builds of active production images, followed by container vulnerability scanning. | `docker/build-push-action@v6`, `aquasecurity/trivy-action@master` (`severity: HIGH,CRITICAL`, `exit-code: 1`) | Images must compile and pass Trivy vulnerability scan with zero High or Critical OS/package CVEs. |
 
 ---
 
-## GitHub Secrets Configuration
+## 3. CD Serverless Deployment Pipeline (`.github/workflows/deploy-serverless.yml`)
 
-Navigate to your repository: **Settings → Secrets and variables → Actions → New repository secret**
+**Trigger**: Direct push to `main` branch.  
+**Concurrency**: `cancel-in-progress: false` (prevents aborting active CloudFormation deployments).
 
-| Secret Name | Description | Example Value |
-|-------------|-------------|---------------|
-| `AWS_ACCESS_KEY_ID` | IAM user access key | `AKIA...` |
-| `AWS_SECRET_ACCESS_KEY` | IAM user secret key | `wJal...` |
-| `STAGING_ECR_REGISTRY` | Staging ECR registry URL | `123456789.dkr.ecr.ap-southeast-1.amazonaws.com` |
-| `PROD_ECR_REGISTRY` | Production ECR registry URL | `123456789.dkr.ecr.ap-southeast-1.amazonaws.com` |
-| `STAGING_ECS_CLUSTER` | Staging ECS cluster name | `motoshop-staging` |
-| `PROD_ECS_CLUSTER` | Production ECS cluster name | `motoshop-production` |
-
-> **Note:** `STAGING_ECR_REGISTRY` and `PROD_ECR_REGISTRY` may be the same if you use a single AWS account. They differ if you use separate accounts for staging and production.
+### Step-by-Step Deployment Lifecycle:
+1. **CI Verification Gate**: Invokes `.github/workflows/ci.yml` as a prerequisite workflow call. Deployment halts immediately if any test or security check fails.
+2. **AWS SAM Backend Deployment**:
+   ```bash
+   sam build
+   sam deploy \
+     --no-confirm-changeset \
+     --no-fail-on-empty-changeset \
+     --stack-name motoshop-serverless \
+     --region ap-southeast-1 \
+     --capabilities CAPABILITY_IAM \
+     --resolve-image-repos \
+     --parameter-overrides \
+         DatabaseUrl="${{ secrets.DATABASE_URL }}" \
+         JwtSecretKey="${{ secrets.JWT_SECRET_KEY }}"
+   ```
+3. **Dedicated VPC Migration Lambda Execution**:
+   Invokes `MigrationFunction` directly within the private RDS VPC subnet, running database migrations without exposing the database to the public internet:
+   ```bash
+   aws lambda invoke \
+     --function-name <MigrationFunctionName> \
+     --payload '{}' \
+     migration_result.json
+   ```
+4. **Static SPA Frontend Deployment**:
+   Compiles Next.js SPA to static HTML/CSS/JS artifacts (`output: 'export'`) and synchronizes directly to the private S3 bucket behind CloudFront Origin Access Control (OAC):
+   ```bash
+   aws s3 sync frontend/out s3://${{ secrets.S3_BUCKET_NAME }} --delete
+   ```
+5. **CloudFront Edge Cache Invalidation**:
+   Clears edge caches globally so users immediately receive updated assets:
+   ```bash
+   aws cloudfront create-invalidation \
+     --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+     --paths "/*"
+   ```
 
 ---
 
-## GitHub Environment Setup
+## 4. GitHub Secrets Configuration Reference
 
-Navigate to: **Settings → Environments → New environment**
+Configure repository secrets under: **Settings → Secrets and variables → Actions → Repository secrets**
 
-1. Create an environment named `production`
-2. Enable **Required reviewers** and add the team members who can approve production deployments
-3. Optionally enable **Wait timer** (e.g., 5 minutes) for a cool-down period
+| Secret Name | Description | Example / Format | Required For |
+| :--- | :--- | :--- | :--- |
+| `AWS_ACCESS_KEY_ID` | IAM deployment user access key | `AKIA...` | CD Pipeline (SAM & S3) |
+| `AWS_SECRET_ACCESS_KEY` | IAM deployment user secret key | `wJalrXUtnFEMI...` | CD Pipeline (SAM & S3) |
+| `DATABASE_URL` | Production RDS PostgreSQL connection string | `postgresql+asyncpg://user:pass@rds-host:5432/motorcycle_shop` | Backend Lambda Runtime |
+| `JWT_SECRET_KEY` | Cryptographic secret for signing JWT access tokens | 64-char random hex string | Backend Lambda Runtime |
+| `S3_BUCKET_NAME` | Name of the private S3 bucket hosting frontend SPA | `motoshop-frontend-123456789012` | Static Frontend Sync |
+| `CLOUDFRONT_DISTRIBUTION_ID` | Distribution ID for the unified edge CDN | `E1A2B3C4D5E6F7` | Edge Cache Invalidation |
 
 ---
 
-## AWS Resources Checklist
+## 5. Local Pre-Flight Verification Commands
 
-### ECR Repositories (create 5 per environment)
+Developers should validate code and security gates locally before pushing changes:
 
 ```bash
-# Staging
-aws ecr create-repository --repository-name motoshop-frontend --region ap-southeast-1
-aws ecr create-repository --repository-name motoshop-auth --region ap-southeast-1
-aws ecr create-repository --repository-name motoshop-inventory --region ap-southeast-1
-aws ecr create-repository --repository-name motoshop-sales --region ap-southeast-1
-aws ecr create-repository --repository-name motoshop-repairs --region ap-southeast-1
-```
+# 1. Run all pre-flight security scanners (npm audit + Bandit SAST)
+npm run test:security
 
-### ECS Cluster
+# 2. Run full backend test suite (43 domain tests)
+npm run test:backend
 
-```bash
-aws ecs create-cluster --cluster-name motoshop-staging --region ap-southeast-1
-aws ecs create-cluster --cluster-name motoshop-production --region ap-southeast-1
-```
+# 3. Run frontend Playwright end-to-end suite (40 tests)
+npm run test:e2e
 
-### CloudWatch Log Groups
-
-```bash
-aws logs create-log-group --log-group-name /ecs/motoshop/frontend --region ap-southeast-1
-aws logs create-log-group --log-group-name /ecs/motoshop/auth-service --region ap-southeast-1
-aws logs create-log-group --log-group-name /ecs/motoshop/inventory-service --region ap-southeast-1
-aws logs create-log-group --log-group-name /ecs/motoshop/sales-service --region ap-southeast-1
-aws logs create-log-group --log-group-name /ecs/motoshop/repairs-service --region ap-southeast-1
-```
-
-### SSM Parameters (for backend service secrets)
-
-```bash
-aws ssm put-parameter \
-  --name "/motoshop/database-url" \
-  --type SecureString \
-  --value "postgresql+asyncpg://user:pass@rds-endpoint:5432/motorcycle_shop" \
-  --region ap-southeast-1
-
-aws ssm put-parameter \
-  --name "/motoshop/redis-url" \
-  --type SecureString \
-  --value "redis://elasticache-endpoint:6379" \
-  --region ap-southeast-1
-
-aws ssm put-parameter \
-  --name "/motoshop/rabbitmq-url" \
-  --type SecureString \
-  --value "amqp://user:pass@amazonmq-endpoint:5672/" \
-  --region ap-southeast-1
-```
-
-### IAM Roles
-
-**ECS Task Execution Role** (`ecsTaskExecutionRole`):
-- Managed policy: `AmazonECSTaskExecutionRolePolicy`
-- Additional permissions: `ssm:GetParameters` for the `/motoshop/*` parameters
-- Additional permissions: `ecr:GetAuthorizationToken`, `ecr:BatchGetImage`, `ecr:GetDownloadUrlForLayer`
-
-**ECS Task Role** (`ecsTaskRole`):
-- Any permissions your application code needs at runtime (e.g., S3 access, SES for emails)
-
-### ALB Configuration
-
-Create an Application Load Balancer with two target groups:
-
-| Target Group | Port | Health Check Path | Targets |
-|-------------|------|-------------------|---------|
-| `motoshop-frontend-tg` | 3000 | `/` | Frontend ECS service |
-| `motoshop-krakend-tg` | 8080 | `/__health` | KrakenD ECS service |
-
-**Listener Rules** (on port 443/HTTPS):
-
-| Priority | Condition | Action |
-|----------|-----------|--------|
-| 1 | Path pattern: `/api/*` | Forward to `motoshop-krakend-tg` |
-| Default | All other paths | Forward to `motoshop-frontend-tg` |
-
----
-
-## ECS Task Definitions
-
-Task definition templates are in the `ecs/` directory. The `ACCOUNT_ID` placeholder must be replaced with your actual AWS account ID.
-
-| File | Service | Container Port | CPU | Memory |
-|------|---------|---------------|-----|--------|
-| `task-def-frontend.json` | Frontend (Next.js) | 3000 | 256 | 512 MB |
-| `task-def-auth.json` | Auth Service | 8000 | 256 | 512 MB |
-| `task-def-inventory.json` | Inventory Service | 8000 | 256 | 512 MB |
-| `task-def-sales.json` | Sales Service | 8000 | 256 | 512 MB |
-| `task-def-repairs.json` | Repairs Service | 8000 | 256 | 512 MB |
-
-> **Important:** Replace `ACCOUNT_ID` in all task definition files with your actual AWS account ID before the first deployment.
-
----
-
-## Branching Workflow
-
-```
-feature/xyz  ──PR──▶  develop  ──merge──▶  main
-                        │                    │
-                   Auto-deploy           Manual approval
-                   to staging            then deploy
-                                         to production
-```
-
-1. Create feature branches from `develop`
-2. Open a PR to `develop` → CI runs automatically
-3. Merge to `develop` → auto-deploys to staging
-4. When staging is verified, merge `develop` to `main` → triggers production pipeline
-5. Approve the deployment in GitHub → deploys to production
-
----
-
-## Rollback Procedures
-
-### Quick Rollback (ECS)
-
-Re-deploy the previous task definition revision:
-
-```bash
-# List recent task definition revisions
-aws ecs list-task-definitions --family-prefix motoshop-frontend --sort DESC --max-items 5
-
-# Update service to use a previous revision
-aws ecs update-service \
-  --cluster motoshop-production \
-  --service frontend-service \
-  --task-definition motoshop-frontend:PREVIOUS_REVISION \
-  --force-new-deployment
-```
-
-### Image Rollback
-
-Deploy a specific known-good image tag:
-
-```bash
-# Find previous image tags
-aws ecr describe-images --repository-name motoshop-frontend --query 'sort_by(imageDetails,& imagePushedAt)[-5:].imageTags'
+# 4. Verify static SPA production compilation
+npm run build
 ```
 
 ---
 
-## Troubleshooting
+## 6. Security Invariant & Zero-Tolerance Policies
 
-### CI Failures
-
-| Issue | Solution |
-|-------|----------|
-| ESLint errors | Fix lint issues locally: `cd frontend && npx eslint . --fix` |
-| TypeScript errors | Fix types locally: `cd frontend && npx tsc --noEmit` |
-| pytest failures | Run tests locally: `cd backend && pytest tests/ -v` |
-| Docker build failure | Build locally: `docker build -f frontend/Dockerfile frontend/` |
-| Trivy HIGH/CRITICAL | Update base images or fix vulnerabilities in dependencies |
-
-### CD Failures
-
-| Issue | Solution |
-|-------|----------|
-| ECR push fails | Verify `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` secrets |
-| ECS deployment timeout | Check CloudWatch logs: `/ecs/motoshop/<service>` |
-| Service not stabilizing | Check health check endpoint is responding |
-| Task stopped immediately | Check container logs for startup errors |
+1. **Strict Dependency Health**:
+   - `frontend/package.json` must maintain **0 vulnerabilities** on `npm audit --audit-level=high`.
+   - `backend/requirements.txt` must pass `pip-audit` without unpatched CVEs.
+2. **Bandit Static Application Security Testing (SAST)**:
+   - Scans `backend/app/` with `-ll` (blocking on Medium and High severity issues).
+   - SQL injection, hardcoded secrets, weak cryptographic primitives, and shell execution are strictly prohibited.
+3. **Gitleaks Secret Scanning**:
+   - Evaluates full git commit history.
+   - Any commit introducing real API credentials, AWS secret keys, or database passwords triggers immediate build failure.
+   - Development test passwords (`POSTGRES_PASSWORD: "123"`, `admin123`) are explicitly isolated under [`.gitleaks.toml`](file:///d:/POS/motorcycle-shop-management-system/.gitleaks.toml).
+4. **Trivy Container Hardening**:
+   - Built container images are scanned prior to registry deployment.
+   - Fails build with exit code 1 if unpatched High or Critical base OS or package vulnerabilities are detected.

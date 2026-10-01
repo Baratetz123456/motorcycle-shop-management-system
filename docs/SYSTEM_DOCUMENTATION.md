@@ -1,8 +1,8 @@
-# Versiklo: Production-Grade System Architecture & Security Documentation
+# MotoShop: Production-Grade System Architecture & Security Documentation
 
-> **Product**: Versiklo — Motorcycle Shop Management System  
+> **Product**: MotoShop — Motorcycle Shop Management System  
 > **Classification**: Vertical Dealership & Shop Floor Management System (DMS / ERP)  
-> **System Architecture**: Event-Driven Microservices with API Gateway, Transactional Outbox, & Distributed Saga  
+> **System Architecture**: Consolidated FastAPI Modular Monolith & Zero-Cost AWS Serverless Architecture  
 > **Version**: 1.0.0-PROD  
 > **Documentation Target**: Technical Onboarding, Architectural Reference, Security Audit & Incident Runbook  
 
@@ -13,11 +13,11 @@
 2. [Tech Stack & Strategy](#2-tech-stack--strategy)
 3. [Critical Libraries & Dependencies](#3-critical-libraries--dependencies)
 4. [System Architecture](#4-system-architecture)
-5. [Microservices Inventory & Bounded Contexts](#5-microservices-inventory--bounded-contexts)
-6. [API Gateway (KrakenD)](#6-api-gateway-krakend)
+5. [Domain Modules Inventory & Bounded Contexts](#5-domain-modules-inventory--bounded-contexts)
+6. [API Routing & Wire Communication](#6-api-routing--wire-communication)
 7. [API Rate Limiting & Abuse Prevention](#7-api-rate-limiting--abuse-prevention)
 8. [Idempotency Strategy & Execution](#8-idempotency-strategy--execution)
-9. [Backend Architecture](#9-backend-architecture)
+9. [Backend Modular Monolith Architecture](#9-backend-modular-monolith-architecture)
 10. [Database Design & Schema Reference](#10-database-design--schema-reference)
 11. [Frontend Architecture](#11-frontend-architecture)
 12. [Frontend ↔ Backend Wire-Level Communication](#12-frontend--backend-wire-level-communication)
@@ -35,21 +35,18 @@
     - [13.11 Supply Chain & Dependency Security](#1311-supply-chain--dependency-security)
     - [13.12 Security Configuration Reference](#1312-security-configuration-reference)
     - [13.13 Security Gaps & Prioritized Recommendations](#1313-security-gaps--prioritized-recommendations)
-14. [UI/UX Design System](#14-uiux-design-system)
-15. [Full Operational Workflow](#15-full-operational-workflow)
-16. [User Journeys](#16-user-journeys)
-17. [Docker & Container Service Management](#17-docker--container-service-management)
-18. [Common Operational Scenarios & Incident Runbook](#18-common-operational-scenarios--incident-runbook)
-19. [Developer Onboarding Guide](#19-developer-onboarding-guide)
-20. [End-User Onboarding Guide](#20-end-user-onboarding-guide)
-21. [Appendices](#21-appendices)
+14. [UI/UX Design System & Mobile Touch Ergononics](#14-uiux-design-system--mobile-touch-ergononics)
+15. [Automated Testing & Multi-Tier QA](#15-automated-testing--multi-tier-qa)
+16. [Operational Scenarios & Incident Runbook](#16-operational-scenarios--incident-runbook)
+17. [Developer Onboarding Guide](#17-developer-onboarding-guide)
+18. [Appendices](#18-appendices)
 
 ---
 
 ## 1. Project Overview
 
 ### 1.1 Purpose & Mission
-**Versiklo** is an integrated vertical shop management platform engineered specifically for independent motorcycle repair shops, multi-bay service garages, and motorcycle dealerships. It replaces fragmented paper receipts, manual job whiteboards, and disjointed retail cash registers with an integrated shop floor mental model.
+**MotoShop** is an integrated vertical shop management platform engineered specifically for independent motorcycle repair shops, multi-bay service garages, and motorcycle dealerships. It replaces fragmented paper receipts, manual job whiteboards, and disjointed retail cash registers with an integrated shop floor mental model.
 
 ### 1.2 Target Personas
 1. **Shop Owners & General Managers**: Need real-time business visibility, gross revenue tracking, labor vs. parts margins, payroll commission disbursements, and tamper-resistant audit trails.
@@ -59,7 +56,7 @@
 
 ### 1.3 Core Value Proposition
 - **The "Shop Floor" Mental Model**: Eliminates software engineering jargon (*"ERP"*, *"DMS"*, *"data pipelines"*) in favor of physical workspace concepts: *Dashboard*, *Showroom Counter*, *Job Cards*, *Parts & Stock*, *Customer Records*, *Bike Registry*, *Invoices & Receipts*, and *Payroll*.
-- **Data Integrity via Asynchronous Outbox Saga**: Stock deductions and repair billing stay strictly consistent across microservices without distributed two-phase commit lockups.
+- **Data Integrity via Single-Transaction ACID Checkout**: Stock deductions, commission settlements, and invoice records commit atomically within a single PostgreSQL database transaction.
 - **Cryptographic Immutability**: Database-level PostgreSQL triggers prevent any mutation or deletion of audit logs, providing tamper-resistant legal and financial traceability.
 
 ---
@@ -68,18 +65,17 @@
 
 | Layer | Technology | Version | Purpose | Architectural Rationale |
 |---|---|---|---|---|
-| **Client Frontend** | Next.js (App Router) | `16.3.4` | Single Page Application & SSR | High performance, automatic static optimization, streaming SSR, built-in Turbopack bundler. |
+| **Client Frontend** | Next.js (App Router) | `^16.3.8` | Single Page Application & SSR | High performance, automatic static optimization, streaming SSR, built-in Turbopack bundler. |
 | **UI Framework** | React | `19.2.8` | Component Architecture | Concurrent rendering, declarative hooks, component-level state isolation. |
 | **Styling** | Tailwind CSS | `^4.0.0` | Atomic Styling & Theming | Zero-runtime CSS custom property resolution; allows dynamic theme palette switching without DOM re-renders. |
-| **API Gateway** | KrakenD Stateless Gateway | `2.6` | Unified Client Entrypoint | High-performance Go-based gateway (30k+ req/sec); handles CORS, rate limiting, request validation, and backend service decoupling. |
-| **Backend Services** | Python / FastAPI | `0.111.0` | Microservice APIs | High concurrency asynchronous ASGI framework with native Pydantic v2 data validation and OpenAPI doc generation. |
+| **Backend Monolith** | Python / FastAPI | `>= 0.115.0` | Consolidated Modular Monolith | High concurrency asynchronous ASGI framework with native Pydantic v2 data validation and OpenAPI doc generation. |
 | **ASGI Server** | Uvicorn (Standard) | `0.30.1` | Asynchronous Execution | Ultra-fast ASGI server implementation powered by `uvloop` and `httptools`. |
+| **Serverless Adapter** | Mangum | `0.17.0` | AWS Lambda ASGI Bridge | Bridges FastAPI ASGI requests to AWS API Gateway HTTP v2 events. |
 | **ORM / Data Layer** | SQLAlchemy | `2.0.31` | Relational Mapping & Async DB | Asyncio-first unit-of-work pattern; complete type annotations and strict schema qualification. |
 | **Database Driver** | asyncpg | `0.29.0` | PostgreSQL Driver | Direct async binary protocol driver for PostgreSQL; highest throughput Python driver available. |
 | **Primary Database** | PostgreSQL | `16-alpine` | Relational Persistence | Schema-level multi-tenancy (`auth`, `inventory`, `sales`, `repairs`, `audit`), ACID compliance, PL/pgSQL triggers. |
-| **Caching & Idempotency** | Redis | `7-alpine` | Distributed Cache & Locking | In-memory atomic store for sub-millisecond idempotency response caching and token blacklisting. |
-| **Message Broker** | RabbitMQ | `3-management-alpine` | Asynchronous Saga Queue | Reliable AMQP 0-9-1 topic exchange messaging for Transactional Outbox event consumers. |
-| **Containerization** | Docker & Compose | Compose v2 | Infrastructure Orchestration | Reproducible local and staging deployment with container healthchecks and internal network isolation. |
+| **Local Container Stack**| Docker & Compose | Compose v2 | Local Dev Orchestration | Streamlined 2-container local development (`motoshop-db` + `motoshop-backend`). |
+| **Production Cloud** | AWS Serverless | SAM | $0.00 Base Cloud Architecture | S3 Static SPA + CloudFront CDN + Lambda + RDS PostgreSQL. |
 
 ---
 
@@ -89,21 +85,21 @@
 
 | Library | Version | Category | Criticality | Where Used | Failure Impact if Removed |
 |---|---|---|---|---|---|
-| `fastapi` | `0.111.0` | API Framework | **Critical** | All 4 microservices `main.py` | Complete service failure; no HTTP endpoints can mount or receive requests. |
-| `pydantic` | `2.7.4` | Data Validation | **Critical** | `schemas.py` across all services | Unchecked JSON deserialization; mass assignment vulnerabilities, SQL errors on malformed types. |
-| `SQLAlchemy` | `2.0.31` | Database ORM | **Critical** | `shared/database.py`, all `models.py` | Total persistence failure; microservices lose all database querying capabilities. |
-| `asyncpg` | `0.29.0` | DB Driver | **Critical** | `shared/database.py` (via connection URL) | SQLAlchemy cannot establish async connections to PostgreSQL 16. |
-| `python-jose[cryptography]` | `3.3.0` | Auth & Tokens | **Security Critical** | `shared/security.py`, `auth_service/main.py` | Inability to sign, decode, or verify JWT authorization tokens. |
-| `passlib[bcrypt]` | `1.7.4` / `bcrypt` | Password Hashing | **Security Critical** | `auth_service/main.py` | Passwords cannot be salted or hashed; authentication is disabled. |
-| `aio-pika` | `9.4.1` | AMQP / RabbitMQ | **Critical** | `shared/outbox.py`, `inventory_service`, `sales_service` | Distributed Saga halts; inventory will not deduct on checkout and invoices will not settle. |
-| `redis` | `5.0.7` | Caching / Idempotency | **Critical** | `shared/idempotency.py` | Write endpoints lose replay protection; network retries result in duplicate customer charges. |
+| `fastapi` | `>= 0.115.0` | API Framework | **Critical** | `app/main.py`, all module routers | Complete service failure; no HTTP endpoints can mount or receive requests. |
+| `pydantic` | `>= 2.9.0` | Data Validation | **Critical** | `schemas.py` across all modules | Unchecked JSON deserialization; mass assignment vulnerabilities, SQL errors on malformed types. |
+| `SQLAlchemy` | `2.0.31` | Database ORM | **Critical** | `core/database.py`, all `models.py` | Total persistence failure; backend loses all database querying capabilities. |
+| `asyncpg` | `0.29.0` | DB Driver | **Critical** | `core/database.py` (via connection URL) | SQLAlchemy cannot establish async connections to PostgreSQL 16. |
+| `python-jose[cryptography]` | `>= 3.3.0` | Auth & Tokens | **Security Critical** | `core/security.py`, `modules/auth/` | Inability to sign, decode, or verify JWT authorization tokens. |
+| `passlib[bcrypt]` | `1.7.4` / `bcrypt` | Password Hashing | **Security Critical** | `core/security.py` | Passwords cannot be salted or hashed; authentication is disabled. |
+| `python-multipart` | `>= 0.0.20` | Form Parsing | **Security Critical** | OAuth2 password request parsing | Form parsing fails; secure password grant flow disabled. |
+| `mangum` | `0.17.0` | Serverless Adapter | **Critical** | `app/main.py` | AWS Lambda cannot handle API Gateway requests in production. |
 
 ### 3.2 Frontend Critical Libraries ([`frontend/package.json`](file:///d:/POS/motorcycle-shop-management-system/frontend/package.json))
 
 | Library | Version | Category | Criticality | Where Used | Failure Impact if Removed |
 |---|---|---|---|---|---|
-| `next` | `16.3.4` | App Framework | **Critical** | Entire `frontend/src/app` | Frontend build fails; routing, layout SSR, and page rendering collapse. |
-| `axios` | `^1.20.0` | HTTP Client | **Critical** | `frontend/src/lib/api-client.ts` | All API gateway communication fails; app cannot load or submit data. |
+| `next` | `^16.3.8` | App Framework | **Critical** | Entire `frontend/src/app` | Frontend build fails; routing, layout SSR, and page rendering collapse. |
+| `axios` | `^1.20.0` | HTTP Client | **Critical** | `frontend/src/lib/api-client.ts` | All API communication fails; app cannot load or submit data. |
 | `zustand` | `^5.0.15` | State Management | **Critical** | `frontend/src/lib/pos-store.ts` | Counter sales cart, customer selection, and active repair tracking break. |
 | `uuid` | `^14.0.2` | Key Generation | **Security Critical** | `frontend/src/lib/api-client.ts` | Idempotency headers cannot be attached; requests become non-idempotent. |
 | `lucide-react` | `^1.38.0` | Visual Iconography | Utility | All page components & headers | UI renders missing icon elements, degrading visual usability. |
@@ -113,145 +109,96 @@
 
 ## 4. System Architecture
 
-Versiklo employs an **Event-Driven Microservices Architecture** governed by an edge API gateway, decoupled backend microservices, an immutable append-only audit stream, and an asynchronous message broker implementing the **Transactional Outbox Saga Pattern**.
+## 4. System Architecture
+
+MotoShop operates under a **Dual-Parity Operating Model**:
+1. **Local Development (2-Container Docker Stack)**:
+   - **Backend**: Consolidated FastAPI Modular Monolith (`motoshop-backend` on port `8000`) with live code reloading.
+   - **Database**: PostgreSQL 16 container (`motoshop-db` on port `5432`) with 5 isolated domain schemas (`auth`, `inventory`, `sales`, `repairs`, `audit`).
+   - **Frontend**: Next.js 16 (Turbopack) on port `3000` with reactive Zustand state and dual dark/light themes.
+2. **Production Cloud Deployment ($0.00 / month Base Cost)**:
+   - **Frontend**: 100% Static Single-Page Application (SPA) on Amazon S3 and distributed via AWS CloudFront edge caching with Origin Access Control (OAC).
+   - **Backend**: Containerized FastAPI Modular Monolith executed as an on-demand AWS Lambda function via the `Mangum` ASGI adapter behind AWS HTTP API Gateway.
+   - **Database**: Managed AWS RDS PostgreSQL (`db.t4g.micro`, 20GB gp3 storage) within a private VPC, qualifying under AWS Free Tier.
 
 ```mermaid
 flowchart TD
-    subgraph External["Client Tier (External / Untrusted)"]
-        Browser["Next.js 16 Web Client\n(Port 3000)"]
+    subgraph Local_Dev [Local Development Environment]
+        Browser_Dev([Browser: localhost:3000]) --> NextDev[Next.js Dev Server]
+        NextDev -.->|API: localhost:8000/api/v1| FastApi_Dev[FastAPI Modular Monolith: Port 8000]
+        FastApi_Dev --> Postgres_Dev[(PostgreSQL 16 Container: Port 5432)]
     end
 
-    subgraph Edge["API Gateway Tier"]
-        KrakenD["KrakenD Gateway\n(Port 8080: /api/v1/*)\nStateless Router & CORS Guard"]
+    subgraph AWS_Production [AWS Zero-Cost Serverless Production]
+        User_Prod([Browser / POS Terminal]) --> CloudFront[AWS CloudFront CDN]
+        CloudFront -->|Default: /*| S3[AWS S3 Bucket: Static SPA]
+        CloudFront -->|API: /api/*| ApiGw[AWS HTTP API Gateway]
+        ApiGw --> Lambda[AWS Lambda: FastAPI + Mangum]
+        Lambda --> RDS[(AWS RDS PostgreSQL: Private VPC Subnet)]
     end
-
-    subgraph Services["Core Microservices Tier (Internal Network)"]
-        Auth["Auth Service\n(Port 8001 / Internal 8000)\nUsers, Roles, Token Revocation"]
-        Inventory["Inventory Service\n(Port 8002 / Internal 8000)\nParts, Stock Movements, Services"]
-        Sales["Sales Service\n(Port 8003 / Internal 8000)\nInvoices, Checkout, Payments"]
-        Repairs["Repairs Service\n(Port 8004 / Internal 8000)\nJob Cards, Bikes, Commissions"]
-    end
-
-    subgraph Data["Persistence & Messaging Tier"]
-        Postgres[("PostgreSQL 16 Engine\nSchemas: auth, inventory,\nsales, repairs, audit")]
-        Redis[("Redis 7 Cache\nIdempotency Store (TTL 24h)\nKey: idemp:{uuid}")]
-        RabbitMQ{{"RabbitMQ 3.9 Broker\nTopic Exchange: pos_events\nQueues: inventory_saga, sales_saga"}}
-    end
-
-    Browser -->|HTTP Bearer + Idempotency-Key| KrakenD
-    KrakenD -->|Route /api/v1/auth/*| Auth
-    KrakenD -->|Route /api/v1/inventory/*| Inventory
-    KrakenD -->|Route /api/v1/sales/*| Sales
-    KrakenD -->|Route /api/v1/repairs/*| Repairs
-
-    Auth -->|Direct Async Connection| Postgres
-    Inventory -->|Direct Async Connection| Postgres
-    Sales -->|Direct Async Connection| Postgres
-    Repairs -->|Direct Async Connection| Postgres
-
-    Inventory -.->|Idempotency Check/Set| Redis
-    Sales -.->|Idempotency Check/Set| Redis
-    Repairs -.->|Idempotency Check/Set| Redis
-
-    Sales -->|Transactional Outbox Insert| Postgres
-    Inventory -->|Transactional Outbox Insert| Postgres
-    Repairs -->|Transactional Outbox Insert| Postgres
-
-    Postgres -.->|Poll Outbox: SKIP LOCKED| Sales
-    Postgres -.->|Poll Outbox: SKIP LOCKED| Inventory
-    Postgres -.->|Poll Outbox: SKIP LOCKED| Repairs
-
-    Sales -->|Publish SaleCreated| RabbitMQ
-    RabbitMQ -->|Consume SaleCreated| Inventory
-    Inventory -->|Publish StockDeducted / Failed| RabbitMQ
-    RabbitMQ -->|Consume Stock Status| Sales
 ```
 
 ### 4.1 Architecture Style Justification
-- **Microservices with Schema Isolation**: Rather than maintaining 5 separate databases, Versiklo leverages PostgreSQL schemas (`auth`, `inventory`, `sales`, `repairs`, `audit`). This eliminates the infrastructure overhead of multiple DB engines while strictly maintaining logical bounded contexts and foreign key barriers.
-- **Decoupled Asynchronous Saga vs Two-Phase Locking**: Retail counters cannot tolerate downtime or distributed deadlocks. When a cashier completes an order, the `sales_service` commits locally and writes a `SaleCreated` event to `sales.outbox_events`. Even if RabbitMQ or Inventory is momentarily slow, the cashier is never blocked.
+- **Modular Monolith with Schema Isolation**: Rather than maintaining separate microservice deployments and distributed two-phase commits, MotoShop consolidates domain logic into cleanly bounded Python packages under `backend/app/modules/`. This eliminates inter-service network latency and serialization overhead while preserving clean domain separation through 5 PostgreSQL schemas (`auth`, `inventory`, `sales`, `repairs`, `audit`).
+- **Single-Transaction ACID Checkout**: When a cashier completes an order, transaction generation, stock deduction, and mechanic commission settlements commit atomically within a single database transaction. If any item is out of stock, the entire transaction rolls back cleanly, guaranteeing zero financial or stock inconsistency.
 
 ---
 
-## 5. Microservices
+## 5. Domain Modules Inventory & Bounded Contexts
 
-| Service Name | Bounded Context & Responsibility | Port (Host / Int) | Database Schema | Dependencies |
+| Module Name | Bounded Context & Responsibility | Primary Endpoints | Database Schema | Key Tables |
 |---|---|---|---|---|
-| **`auth_service`** | Authentication, user credential hashing, token issuance, live role revocation (`token_version`), audit log querying and CSV extraction. | `8001:8000` | `auth`, `audit` | PostgreSQL, Redis |
-| **`inventory_service`** | Parts catalog, stock movement logging, soft-deletion tracking, service labor pricing, Saga stock deduction. | `8002:8000` | `inventory`, `audit` | PostgreSQL, Redis, RabbitMQ |
-| **`sales_service`** | Order checkout, invoice generation, cashier payment processing, labor commission settlement, transaction voiding. | `8003:8000` | `sales`, `audit` | PostgreSQL, Redis, RabbitMQ |
-| **`repairs_service`** | Workshop Job Cards, bike registry, Kanban status drops, technician notes, mechanic commission calculations. | `8004:8000` | `repairs`, `audit` | PostgreSQL, Redis, RabbitMQ |
+| **`auth`** | User authentication, password hashing, token issuance, role-based access control, session refresh cookies, and staff directory. | `/api/v1/auth/*` | `auth` | `users`, `revoked_tokens`, `idempotency_keys` |
+| **`inventory`** | Parts and accessories catalog, workshop services, physical stock tracking, reorder levels, and immutable stock movement ledger. | `/api/v1/inventory/*` | `inventory` | `items`, `stock_movements` |
+| **`sales`** | Multi-step POS terminal checkout, invoice generation, payment processing, labor commission settlement, and sales voiding. | `/api/v1/sales/*` | `sales` | `transactions`, `transaction_items`, `payments` |
+| **`repairs`** | Workshop Job Cards, bike registry, Kanban & mobile tabbed boards, labor commissions, and customer repair history. | `/api/v1/repairs/*` | `repairs` | `job_orders`, `motorcycles`, `commissions`, `repair_cart_items` |
+| **`audit`** | Tamper-resistant audit log ingestion, paginated security log views, sensitive action tracking, and RFC 4180 CSV export. | `/api/v1/audit/*` | `audit` | `logs` |
 
 ---
 
-## 6. API Gateway (KrakenD)
+## 6. API Routing & Wire Communication
 
-The API Gateway is configured in [`krakend/krakend.json`](file:///d:/POS/motorcycle-shop-management-system/krakend/krakend.json). It acts as the single reverse proxy for the Next.js frontend, shielding the microservices from direct public exposure.
+All domain modules are mounted directly on FastAPI's root application router in [`backend/app/main.py`](file:///d:/POS/motorcycle-shop-management-system/backend/app/main.py) under the `/api/v1` prefix:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Next.js Web Client
-    participant GW as KrakenD Gateway (8080)
-    participant Auth as Auth Service (8001)
-    participant Sales as Sales Service (8003)
-
-    Client->>GW: POST /api/v1/auth/login
-    Note over GW: Validates CORS & Routes to backend
-    GW->>Auth: POST http://auth_service:8000/login
-    Auth-->>GW: 200 OK {access_token: "..."}
-    GW-->>Client: 200 OK {access_token: "..."}
-
-    Client->>GW: POST /api/v1/sales/transactions (Authorization: Bearer + Idempotency-Key)
-    GW->>Sales: POST http://sales_service:8000/transactions
-    Note over Sales: shared/security validates token<br/>shared/idempotency checks Redis
-    Sales-->>GW: 201 Created {invoice_no: "INV-..."}
-    GW-->>Client: 201 Created {invoice_no: "INV-..."}
+```python
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(inventory_router, prefix="/api/v1/inventory", tags=["Inventory"])
+app.include_router(sales_router, prefix="/api/v1/sales", tags=["Sales"])
+app.include_router(repairs_router, prefix="/api/v1/repairs", tags=["Repairs"])
+app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit"])
 ```
 
-### 6.1 Gateway Configuration Details
-- **Routing Rules**: Mapped under `/api/v1/*`. Internal Docker DNS names (`http://auth_service:8000`, `http://inventory_service:8000`, etc.) are resolved statically by KrakenD.
-- **Allowed Headers**: `["Authorization", "Content-Type", "Idempotency-Key", "X-Forwarded-For", "Accept"]` ([`krakend.json:9`](file:///d:/POS/motorcycle-shop-management-system/krakend/krakend.json#L9)).
-- **Query String Forwarding**: `input_query_strings: ["*"]` enables dynamic client-side filtering on logs and users without rigid gateway route redeployments.
+### 6.1 Client Communication Details
+- **Base URL**: `http://localhost:8000/api/v1` (Local Dev) or `https://<distribution>.cloudfront.net/api/v1` (Production).
+- **Allowed Headers**: `Authorization`, `Content-Type`, `Idempotency-Key`, `Cookie`, `Accept`.
+- **Session Tokens**: In-memory ephemeral JWT bearer access tokens with HttpOnly browser session refresh cookies (`refresh_token`).
+- **Interactive Documentation**: Swagger UI automatically hosted at `/docs` and OpenAPI JSON at `/openapi.json`.
 
 ---
 
-## 7. API Rate Limiting & Abuse Prevention
+## 7. API Protection & Security
 
-### 7.1 Current Rate Limiting Posture
-- **Edge Gateway (KrakenD)**: KrakenD contains built-in rate-limiting modules (`krakend-ratelimit`). In the current configuration file ([`krakend.json`](file:///d:/POS/motorcycle-shop-management-system/krakend/krakend.json)), explicit rate-limiting stanzas are currently **omitted** for local development flexibility.
-  > ⚠️ *Documented as Security Gap GAP-01 in Section 13.13.*
-- **Backend Service Throttling**: Microservice route handlers rely on asynchronous non-blocking I/O.
-- **Client IP Attribution**: Extracted in [`backend/shared/security.py:16`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/security.py#L16) via `get_client_ip(request)`, inspecting `X-Forwarded-For` and falling back to `request.client.host`.
+### 7.1 Security & Protection Posture
+- **Edge Gateway Throttling**: AWS HTTP API Gateway throttles incoming traffic to prevent denial-of-service spikes without incurring excess compute charges.
+- **Client IP Attribution**: Extracted via `get_client_ip(request)`, inspecting `X-Forwarded-For` and falling back to `request.client.host`.
+- **Role-Based Guards**: Protected endpoints enforce strict role hierarchies (`require_roles(["admin"])`, `require_roles(["admin", "cashier"])`, etc.).
 
 ---
 
 ## 8. Idempotency Strategy & Execution
 
 ### 8.1 Write Operations Requiring Idempotency
-- `POST /api/v1/sales/transactions`: Prevents double billing when a cashier clicks "Record Payment" twice or experiences a network timeout.
-- `POST /api/v1/sales/transactions/{id}/void`: Prevents double inventory rollback or redundant void events.
+- `POST /api/v1/sales/checkout`: Prevents double billing when a cashier clicks "Record Payment" multiple times or experiences network latency.
+- `POST /api/v1/sales/transactions/{id}/void`: Prevents double voiding or duplicate audit entries.
 - `POST /api/v1/inventory/items`: Prevents duplicate part SKU creation.
-- `POST /api/v1/repairs/jobs`: Prevents creating multiple job cards for the same customer bike check-in.
+- `POST /api/v1/repairs/jobs`: Prevents duplicate job card registration for the same customer bike check-in.
 
-### 8.2 Execution Mechanism ([`backend/shared/idempotency.py`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/idempotency.py))
-1. **Header**: The client generates a unique UUIDv4 and attaches it as `Idempotency-Key` ([`frontend/src/lib/api-client.ts:24`](file:///d:/POS/motorcycle-shop-management-system/frontend/src/lib/api-client.ts#L24)).
-2. **Lookup**: The `@idempotent` decorator checks Redis for the key `idemp:{idempotency_key}`.
-3. **Cache Hit**: If found, it immediately short-circuits the endpoint and returns the cached HTTP status code and response payload.
-4. **Cache Miss**: If absent, the endpoint executes. Upon returning an HTTP status code between 200 and 299, the response status and body are serialized and saved to Redis with a TTL of **86,400 seconds (24 hours)**.
+### 8.2 Execution Mechanism
+1. **Header**: The client generates a unique UUIDv4 and attaches it as `Idempotency-Key` ([`frontend/src/lib/api-client.ts`](file:///d:/POS/motorcycle-shop-management-system/frontend/src/lib/api-client.ts)).
+2. **Lookup**: The `@idempotent` decorator checks the database `auth.idempotency_keys` table for previous submissions with matching keys.
+3. **Cache Hit**: If found, it immediately returns the cached HTTP status code and response body without re-executing business logic.
+4. **Cache Miss**: If absent, the transaction executes. Upon returning HTTP 200–299, the response is persisted with a 24-hour expiration window.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Cashier POS Terminal
-    participant Decorator as @idempotent Decorator
-    participant Redis as Redis 7 Cache
-    participant Handler as FastAPI Route Handler
-    participant DB as PostgreSQL DB
-
-    Client->>Decorator: POST /sales/transactions (Idempotency-Key: "550e8400...")
-    Decorator->>Redis: GET idemp:550e8400...
-    alt Key Found in Redis (Duplicate Submission)
         Redis-->>Decorator: Cached JSON {status: 201, body: {...}}
         Decorator-->>Client: 201 Created (Instant Replay, No DB Mutation)
     else Key Not in Redis (First Request)
@@ -270,54 +217,51 @@ sequenceDiagram
 ## 9. Backend Architecture
 
 ### 9.1 Pattern & Folder Structure
-The backend follows a **Modular Clean Microservices Pattern** sharing a common infrastructure core located in `backend/shared/`.
+The backend follows a **FastAPI Modular Monolith Pattern** with cleanly bounded domain packages under `backend/app/modules/` and shared core infrastructure under `backend/app/core/`.
 
 ```
 backend/
-├── auth_service/               # Authentication & User Management
-│   ├── Dockerfile
-│   ├── main.py                # FastAPI routes & lifespan
-│   ├── models.py              # SQLAlchemy models (schema: auth)
-│   └── schemas.py             # Pydantic v2 DTOs
-├── inventory_service/          # Catalog & Stock Movements
-│   ├── Dockerfile
-│   ├── main.py                # REST endpoints & RabbitMQ consumer
-│   ├── models.py              # SQLAlchemy models (schema: inventory)
-│   └── schemas.py             # Pydantic v2 DTOs
-├── sales_service/              # Counter POS & Transactions
-│   ├── Dockerfile
-│   ├── main.py                # Invoice issuance & Saga consumer
-│   ├── models.py              # SQLAlchemy models (schema: sales)
-│   └── schemas.py             # Pydantic v2 DTOs
-├── repairs_service/            # Workshop Job Cards & Mechanics
-│   ├── Dockerfile
-│   ├── main.py                # Kanban board & commission logic
-│   ├── models.py              # SQLAlchemy models (schema: repairs)
-│   └── schemas.py             # Pydantic v2 DTOs
-├── shared/                     # Cross-Cutting Infrastructure Library
-│   ├── audit.py               # Immutable audit log models & helpers
-│   ├── database.py            # Async engine & session factories
-│   ├── idempotency.py         # Redis-backed @idempotent decorator
-│   ├── logger.py              # Structured console & file loggers
-│   ├── logging_middleware.py  # X-Correlation-ID & latency tracing
-│   └── security.py            # JWT verification & RBAC dependencies
-├── requirements.txt           # Unified dependency manifest
-└── docker-compose.yml          # Container configuration
+├── app/
+│   ├── core/                  # Database engine, security, middleware
+│   │   ├── database.py        # Async engine & session factories
+│   │   ├── security.py        # JWT verification, passwords, RBAC
+│   │   └── middleware.py      # Request logging & correlation IDs
+│   ├── modules/               # Cleanly bounded domain packages
+│   │   ├── auth/              # Router, models, schemas (schema: auth)
+│   │   ├── inventory/         # Router, models, schemas (schema: inventory)
+│   │   ├── sales/             # Router, models, schemas (schema: sales)
+│   │   ├── repairs/           # Router, models, schemas (schema: repairs)
+│   │   └── audit/             # Router, models, schemas (schema: audit)
+│   ├── migrations/            # Alembic migrations & schema runners
+│   └── main.py                # Unified FastAPI Modular Monolith entrypoint
+├── tests/                     # 43 domain tests with isolated conftest.py
+│   ├── conftest.py            # Async engine cleanup & authenticated headers
+│   ├── test_auth.py           # 9 tests: Login, refresh, registration, patching
+│   ├── test_inventory.py      # 8 tests: Products, services, stock updates
+│   ├── test_repairs.py        # 6 tests: Job cards, status lifecycle, unpaid guard
+│   ├── test_sales.py          # 5 tests: ACID POS checkout, idempotency, voids
+│   ├── test_audit.py          # 4 tests: Ingest events, pagination, CSV stream
+│   ├── test_rbac_security.py  # 7 tests: 401 unauth, 403 barriers per role
+│   └── test_modular_monolith.py # 4 tests: Monolith health, full checkout E2E
+├── Dockerfile                 # Python 3.12-slim production container
+├── pytest.ini                 # Pytest configuration & warning filters
+├── requirements.txt           # Production dependencies
+└── requirements-dev.txt       # Dev & test dependencies (bandit, pip-audit)
 ```
 
 ### 9.2 Request Middleware Chain
-Every request entering any microservice traverses:
-1. `RequestLoggingMiddleware` ([`shared/logging_middleware.py`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/logging_middleware.py)): Generates or extracts `X-Correlation-ID`, logs latency in milliseconds, client IP, and HTTP verb/path.
-2. `get_current_user` ([`shared/security.py:22`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/security.py#L22)): Decodes JWT token, queries database for active user existence, and verifies `token_version`.
-3. `require_roles` ([`shared/security.py:79`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/security.py#L79)): Compares user's database role against endpoint requirements. Automatically creates an `ACCESS_DENIED` entry in `audit.logs` if forbidden.
-4. `@idempotent` ([`shared/idempotency.py:23`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/idempotency.py#L23)): Evaluates idempotency key against Redis before invoking endpoint logic.
+Every request entering the modular monolith traverses:
+1. `RequestLoggingMiddleware`: Generates or extracts `X-Correlation-ID`, logs latency in milliseconds, client IP, and HTTP verb/path.
+2. `get_current_user`: Decodes JWT token, queries database for active user existence, and verifies `token_version`.
+3. `require_roles`: Compares user's database role against endpoint requirements. Automatically creates an `ACCESS_DENIED` entry in `audit.logs` if forbidden.
+4. `@idempotent`: Evaluates idempotency key against the database before invoking state-mutating transaction handlers.
 
 ---
 
 ## 10. Database Design
 
 ### 10.1 Engine Rationale
-Versiklo uses **PostgreSQL 16**. The shop environment requires relational integrity: sales receipts must link immutably to items and mechanics, stock movements must balance down to the integer unit, and audit logs require database-enforced immutability via procedural triggers.
+MotoShop uses **PostgreSQL 16**. The shop environment requires relational integrity: sales receipts must link immutably to items and mechanics, stock movements must balance down to the integer unit, and audit logs require database-enforced immutability via procedural triggers.
 
 ### 10.2 Entity-Relationship Diagram (ERD)
 
@@ -762,7 +706,7 @@ flowchart TD
 
 #### STRIDE Threat Classification Table
 
-| STRIDE Threat Category | Targeted Component | Existing Mitigation in Versiklo | Residual Risk & Gap Reference |
+| STRIDE Threat Category | Targeted Component | Existing Mitigation in MotoShop | Residual Risk & Gap Reference |
 |---|---|---|---|
 | **Spoofing** | Staff Identity & Login | Cryptographic JWT signed with HS256; passwords hashed with `bcrypt.gensalt()` ([`auth_service/main.py:33`](file:///d:/POS/motorcycle-shop-management-system/backend/auth_service/main.py#L33)). | Hardcoded fallback `JWT_SECRET_KEY` in source code. (See GAP-02). |
 | **Tampering** | Historical Audit Records | PL/pgSQL database trigger `trg_audit_logs_immutable` raises exception on `UPDATE` or `DELETE` ([`init.sql:215`](file:///d:/POS/motorcycle-shop-management-system/init.sql#L215)). | Database administrator with superuser privileges can drop the trigger. |
@@ -788,7 +732,7 @@ flowchart TD
 
 ### 13.3 Authorization & Access Control (RBAC)
 
-Versiklo strictly enforces **Role-Based Access Control (RBAC)** across four operational tiers:
+MotoShop strictly enforces **Role-Based Access Control (RBAC)** across four operational tiers:
 1. **Admin**: Unrestricted management; manages staff accounts, role matrices, model profiles, and store preferences.
 2. **Manager**: Full operational oversight; manages jobs, stock, inventory, and views business reports. Cannot modify user accounts or store configuration.
 3. **Cashier**: Point of Sale operation, customer check-in, payment collection, and viewing parts catalog. Forbidden from voiding transactions without management oversight.
@@ -840,7 +784,7 @@ Located in [`krakend/krakend.json:17-21`](file:///d:/POS/motorcycle-shop-managem
   "allow_headers": ["Origin", "Authorization", "Content-Type", "Idempotency-Key"]
 }
 ```
-> ⚠️ **Security Audit Finding**: KrakenD currently specifies `"allow_origins": ["*"]`. In production, this must be restricted to the verified frontend domain (e.g. `https://shop.versiklo.com`). Documented as GAP-05.
+> ⚠️ **Security Audit Finding**: CORS configuration must be restricted in production to the verified CloudFront frontend domain (e.g. `https://shop.motoshop.com`). Documented as GAP-05.
 
 ---
 
@@ -927,7 +871,7 @@ The `audit.logs` table acts as the cryptographic source of truth for all operati
 
 ## 14. UI/UX Design System
 
-Versiklo adheres to modern dark-mode aesthetic standards inspired by Linear, Stripe, and Vercel:
+MotoShop adheres to modern dark-mode aesthetic standards inspired by Linear, Stripe, and Vercel:
 
 - **Color Palette & Dynamic CSS Engine**: Tailored around high-contrast deep backgrounds (`bg-zinc-950`), semi-transparent surface cards (`bg-zinc-900/60`), and 4 runtime switchable accent themes:
   1. **Cyan Drift** (`cyan`): Electric Cyan (`#06b6d4`), Velocity Blue (`#3b82f6`).
@@ -1142,7 +1086,7 @@ docker compose exec rabbitmq rabbitmqctl list_queues
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/versiklo/motorcycle-shop-management-system.git
+   git clone https://github.com/motoshop/motorcycle-shop-management-system.git
    cd motorcycle-shop-management-system
    ```
 

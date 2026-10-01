@@ -138,15 +138,50 @@ All architectural decisions, schemas, API contracts, and operational guidelines 
 
 ---
 
-## 🛠️ Testing & Verification
+## 🛠️ Testing, Quality Assurance & Security
 
-Run the automated test suites:
+MotoShop features a multi-tier testing framework guaranteeing functional reliability, zero regression, and strict zero-tolerance security enforcement:
 
+### 1. Backend Domain Test Suite (43 Tests)
+Runs against live PostgreSQL schemas with isolated connection pool lifecycles across all 6 core business domains:
 ```bash
-# Frontend static build & TypeScript verification (must return exit code 0)
-cd frontend
-npm run build
+# Run from repository root or frontend/
+npm run test:backend
 
-# Backend asynchronous API integration tests
-docker exec motoshop-backend python -m pytest tests/
+# Or directly inside the running Docker container
+docker exec motoshop-backend pytest -v
 ```
+- **Auth & Session Lifecycle** (`test_auth.py`): 9 tests
+- **Catalog & Inventory** (`test_inventory.py`): 8 tests
+- **Repairs & Workshop Jobs** (`test_repairs.py`): 6 tests
+- **Sales & ACID POS Checkout** (`test_sales.py`): 5 tests
+- **Audit Logs & CSV Export** (`test_audit.py`): 4 tests
+- **RBAC Security Boundaries** (`test_rbac_security.py`): 7 tests
+- **Modular Monolith E2E** (`test_modular_monolith.py`): 4 tests
+
+### 2. Pre-Flight Security Gate
+Enforces strict zero-tolerance checks for known CVEs, code security flaws, and leaked credentials:
+```bash
+npm run test:security
+```
+- **Frontend Dependency Audit**: `npm audit --audit-level=high` (0 vulnerabilities).
+- **Backend SAST**: Bandit scanning `backend/app/` for Medium and High severity code flaws.
+- **Python Dependency Audit**: `pip-audit` validating `requirements.txt` against PyPA advisories.
+- **Secret Scanning**: Gitleaks configured via `.gitleaks.toml`.
+
+### 3. End-to-End & Mobile Usability Verification (40 Playwright Tests)
+Validates responsive layouts, mobile touch usability, WCAG AAA text contrast, and decoupled printing:
+```bash
+npm run test:e2e
+```
+- **Desktop & Mobile Breakpoints**: Responsive 2-column POS grid and edge-to-edge mobile list rows.
+- **Unified Floating Action Buttons (FAB)**: 56×56px emerald Add FAB and Filter FAB portaled to `document.body` with safe-area insets.
+- **Destructive Safeguards**: Danger `ConfirmModal` gating sales voiding and entity deletions.
+- **Decoupled A4 Print Sandbox**: Ephemeral iframe printing preventing dark mode styles from leaking onto official receipts.
+
+### 4. Production Static Build
+```bash
+npm run build
+```
+Compiles all 29 routes as static SPA pages with static params and client-side hydration.
+

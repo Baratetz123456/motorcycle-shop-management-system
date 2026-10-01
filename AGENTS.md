@@ -100,6 +100,15 @@ flowchart TD
     - Mobile (< md): Borderless edge-to-edge list rows with `divide-y divide-zinc-800/80 pb-24` (prohibiting boxed cards).
     - Desktop: Sticky header with zinc dividers (`divide-y divide-zinc-800/80 bg-zinc-900/40`), row hover highlighting (`hover:bg-zinc-800/40 cursor-pointer group`), and fixed table footer with real-time record count and role accessibility permissions.
   - Strict UTF-8 Encoding & Mojibake Prevention Invariant: All file edits and UI string constants must strictly enforce UTF-8 without Windows CP437/1252 codepage degradation. The Philippine Peso currency symbol must strictly render as `₱` (never `Γé▒`), em-dashes as `—` (never `ΓÇö`), and international characters properly preserved (e.g. `Akrapovič`).
+  - Pytest-Asyncio Engine Pool Teardown Invariant: In asynchronous backend test suites using `pytest-asyncio` and `asyncpg`, `conftest.py` MUST declare an `autouse=True` async fixture invoking `await engine.dispose()` in teardown. This prevents cross-test event loop collisions (`RuntimeError: Future attached to a different loop`) and connection leakage across isolated test executions.
+  - Unified Mobile Floating Add & Filter FAB Invariant: On mobile screens (`< md`), primary creation actions ("New / Add") and table filters must NOT occupy desktop header rows or inline button bars; desktop triggers must use `hidden md:flex`. Instead:
+    - Mobile views must mount floating action buttons portaled to `document.body` with `z-[60]` and `env(safe-area-inset-bottom)` offsets.
+    - Dual-action pages must stack the primary Add FAB at `bottom: calc(...) + 5.25rem` and the secondary Filter FAB at `bottom: calc(...) + 9.0rem`.
+    - Non-critical table footers (e.g. static role permissions, record counts) must be hidden on mobile (`hidden md:block` or `hidden md:flex`) to prevent visual overlap with floating actions.
+  - Strict Zero-Tolerance Security & Pre-Flight Script Invariant: All code additions, package updates, and architectural changes must pass zero-tolerance security verification with local parity:
+    - SAST (Bandit `-ll`), Python dependency audit (`pip-audit`), Node dependency audit (`npm audit --audit-level=high`), and secret scanning (Gitleaks) must exit code 0.
+    - Any task touching backend dependencies or frontend packages must verify local script parity using `npm run test:security` before handoff.
+    - Secret detection rules must maintain explicit allowlists for test fixtures in `.gitleaks.toml`.
 
 ### 3. Phase 3: Review (`.agents/rules/agent_reviewer.md` & [agent-reviewer](file:///d:/POS/motorcycle-shop-management-system/.agents/skills/agent-reviewer/SKILL.md))
 - Empowered to spawn `reviewer-security-rbac` and `reviewer-architecture-parity` child subagents at runtime.

@@ -13,12 +13,19 @@ When you are delegated to act as the **Testing Agent** by the Orchestrator, adop
 1. **Frontend Production Build**:
    - Always run `npm run build` in `frontend/` to ensure TypeScript compilation, route bundling, and prerendering pass with Exit Code 0 across all routes.
 
-2. **API Gateway & Microservice Tests**:
+2. **Backend Test Suite & Engine Teardown**:
+   - Run backend test suite via `pytest` or `npm run test:backend`.
+   - Ensure all async test suites use `engine.dispose()` fixtures in teardown to prevent event loop collision (`Future attached to a different loop`).
+
+3. **Zero-Tolerance Security Pre-Flight**:
+   - Run `npm run test:security` verifying Bandit SAST (`-ll`), `pip-audit`, `npm audit --audit-level=high`, and Gitleaks secrets detection with 0 failures before delivery.
+
+4. **API Gateway & Microservice Tests**:
    - Verify endpoints via the KrakenD API Gateway (`http://localhost:8080/api/v1/...`).
    - Test both happy paths and edge cases (e.g. invalid roles, missing fields).
    - Ensure containers have zero unhandled tracebacks (`docker logs <service> --tail 50`).
 
-3. **Database State Persistence**:
+5. **Database State Persistence**:
    - Query PostgreSQL tables directly to verify that inserted or updated records persist across re-queries and page reloads.
    - Confirm that data types stored match expectations (e.g. `is_paid` is true/false, not strings).
 
