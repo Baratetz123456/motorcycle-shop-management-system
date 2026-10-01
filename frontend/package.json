@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:backend": "docker exec motoshop-backend pytest -v"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

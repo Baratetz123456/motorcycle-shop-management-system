@@ -311,7 +311,7 @@ test.describe("Executive Dashboard, Reports & Payroll Redesign Suite", () => {
 
     // Navigate back to Payroll list (returns to exact tab and subtab)
     await page.locator("button:has-text('Back to Payroll')").first().click();
-    await page.waitForURL(/.*payroll(\?.*)?$/);
+    await page.waitForURL(/.*payroll\/?(\?.*)?$/);
 
     // Switch back to Overview tab for Mass Disbursement check
     await page.locator('button:has-text("Overview")').first().click();

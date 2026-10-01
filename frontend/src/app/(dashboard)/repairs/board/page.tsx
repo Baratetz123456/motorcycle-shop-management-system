@@ -31,6 +31,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
 import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -1070,7 +1071,7 @@ export default function RepairBoardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors flex items-center gap-2 border border-emerald-500"
@@ -2082,7 +2083,15 @@ export default function RepairBoardPage() {
       <FloatingFilterButton
         onClick={() => setIsMobileFilterOpen(true)}
         activeCount={activeFilterCount}
+        stacked={true}
         label="Filters"
+      />
+
+      {/* Floating Add Action Button on Mobile */}
+      <UnifiedFloatingAddFab
+        onClick={() => setIsCreateModalOpen(true)}
+        ariaLabel="New Job Card"
+        dataTestId="repairs-board-add-fab"
       />
 
       <MobileFilterSheet

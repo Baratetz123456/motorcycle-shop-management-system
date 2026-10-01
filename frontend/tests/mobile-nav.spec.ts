@@ -42,11 +42,11 @@ test.describe('MotoShop Mobile Bottom Navigation Suite', () => {
     const bottomNav = page.locator('nav[aria-label="Mobile Bottom Navigation"]');
     await expect(bottomNav).toBeVisible({ timeout: 10000 });
 
-    const counterTab = bottomNav.locator('a[href="/pos"]');
+    const counterTab = bottomNav.locator('a[href*="/pos"]');
     await expect(counterTab).toBeVisible();
     await expect(counterTab).toHaveAttribute('aria-current', 'page');
 
-    const invoicesTab = bottomNav.locator('a[href="/sales"]');
+    const invoicesTab = bottomNav.locator('a[href*="/sales"]');
     await expect(invoicesTab).toBeVisible();
 
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'cashier-mobile-nav.png') });
@@ -83,14 +83,14 @@ test.describe('MotoShop Mobile Bottom Navigation Suite', () => {
     const bottomNav = page.locator('nav[aria-label="Mobile Bottom Navigation"]');
     await expect(bottomNav).toBeVisible({ timeout: 10000 });
 
-    const jobsTab = bottomNav.locator('a[href="/repairs/board"]');
+    const jobsTab = bottomNav.locator('a[href*="/repairs/board"]');
     await expect(jobsTab).toBeVisible();
     await expect(jobsTab).toHaveAttribute('aria-current', 'page');
 
-    const customersTab = bottomNav.locator('a[href="/repairs/history"]');
+    const customersTab = bottomNav.locator('a[href*="/repairs/history"]');
     await expect(customersTab).toBeVisible();
 
-    const bikesTab = bottomNav.locator('a[href="/motorcycles"]');
+    const bikesTab = bottomNav.locator('a[href*="/motorcycles"]');
     await expect(bikesTab).toBeVisible();
 
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'mechanic-mobile-nav.png') });

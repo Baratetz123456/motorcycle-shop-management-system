@@ -899,8 +899,8 @@ export default function SystemLogsPage() {
       </table>
     </div>
 
-    {/* Pinned Bottom Pagination Footer */}
-    <div className="p-3.5 border-t border-zinc-800 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
+    {/* Pinned Bottom Pagination Footer (Desktop Only - Hidden on Mobile) */}
+    <div className="hidden md:flex p-3.5 border-t border-zinc-800 bg-zinc-950 flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
       <div className="text-center sm:text-left">
         Showing <span className="font-bold text-white">{paginatedLogs.length}</span> of{" "}
         <span className="font-bold text-white">{filteredLogs.length}</span> events (Page{" "}

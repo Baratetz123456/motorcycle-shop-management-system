@@ -722,8 +722,8 @@ export default function SalesManagementPage() {
           </table>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-zinc-800 bg-zinc-900 flex flex-col sm:flex-row gap-2 items-center justify-between text-xs text-zinc-400 shrink-0">
+        {/* Footer (Desktop Only - Hidden on Mobile) */}
+        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-900 flex-col sm:flex-row gap-2 items-center justify-between text-xs text-zinc-400 shrink-0">
           <div>Displaying {filteredTransactions.length} transaction record(s)</div>
           <div className="flex gap-4 items-center text-zinc-400 text-[11px] sm:text-xs">
             <span>• Commission rates are determined by each assigned mechanic</span>

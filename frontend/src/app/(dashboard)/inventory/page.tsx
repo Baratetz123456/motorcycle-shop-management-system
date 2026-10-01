@@ -27,6 +27,7 @@ import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
 import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { 
   PrintableInventoryReportDocument, 
@@ -501,7 +502,7 @@ function InventoryContent() {
 
                 <button
                   onClick={() => handleOpenModal(activeTab)}
-                  className="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-xs border border-emerald-500 active:scale-95"
+                  className="hidden md:flex bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all items-center gap-2 text-xs border border-emerald-500 active:scale-95"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ Add Item</span>
@@ -827,8 +828,8 @@ function InventoryContent() {
           </table>
         </div>
 
-        {/* Footer Info */}
-        <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400 shrink-0">
+        {/* Footer Info (Desktop Only - Hidden on Mobile) */}
+        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-950 flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400 shrink-0">
           <div>
             Displaying <span className="font-semibold text-white">{filteredItems.length}</span> {activeTab === "PRODUCT" ? "product(s)" : "service(s)"}
             {activeTab === "PRODUCT" && (
@@ -1064,7 +1065,17 @@ function InventoryContent() {
       <FloatingFilterButton
         onClick={() => setIsMobileFilterOpen(true)}
         activeCount={activeFilterCount}
+        stacked={true}
       />
+
+      {/* Floating Add Action Button (Mobile Only) */}
+      {canManage && (
+        <UnifiedFloatingAddFab
+          onClick={() => handleOpenModal(activeTab)}
+          ariaLabel="Add Inventory Item"
+          dataTestId="inventory-add-fab"
+        />
+      )}
 
       {/* Mobile Slide-Up Filter Sheet */}
       <MobileFilterSheet

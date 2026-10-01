@@ -5,51 +5,32 @@ import { createPortal } from "react-dom";
 import { Filter, X, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 
-interface FloatingFilterButtonProps {
-  onClick: () => void;
-  activeCount?: number;
+import { UnifiedFloatingFilterFab, type UnifiedFloatingFilterFabProps } from "./UnifiedFloatingFilterFab";
+
+export interface FloatingFilterButtonProps extends UnifiedFloatingFilterFabProps {
   label?: string;
-  className?: string;
 }
 
 export function FloatingFilterButton({
   onClick,
   activeCount = 0,
-  label = "Filters",
+  hasActiveFilters,
+  stacked = false,
   className,
+  ariaLabel = "Open filters drawer",
+  dataTestId,
 }: FloatingFilterButtonProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  const content = (
-    <button
-      type="button"
+  return (
+    <UnifiedFloatingFilterFab
       onClick={onClick}
-      style={{
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)",
-      }}
-      className={clsx(
-        "fixed right-4 z-40 md:hidden flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-full active:scale-95 transition-all text-xs border border-emerald-500",
-        className
-      )}
-      aria-label="Open filters drawer"
-    >
-      <Filter className="w-4 h-4 text-white" />
-      <span className="font-bold tracking-wide text-white">{label}</span>
-      {activeCount > 0 && (
-        <span className="w-5 h-5 rounded-full bg-zinc-950 text-emerald-400 text-[11px] font-bold flex items-center justify-center border border-zinc-700">
-          {activeCount}
-        </span>
-      )}
-    </button>
+      activeCount={activeCount}
+      hasActiveFilters={hasActiveFilters}
+      stacked={stacked}
+      className={className}
+      ariaLabel={ariaLabel}
+      dataTestId={dataTestId}
+    />
   );
-
-  return createPortal(content, document.body);
 }
 
 interface MobileFilterSheetProps {

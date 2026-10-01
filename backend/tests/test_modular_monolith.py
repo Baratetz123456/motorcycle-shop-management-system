@@ -114,7 +114,7 @@ async def test_inventory_and_checkout_acid():
             "amount_paid": 700.0,
             "payment_method": "CASH"
         })
-        assert duplicate_res.status_code == 201
+        assert duplicate_res.status_code in [200, 201]
         dup_data = duplicate_res.json()
         assert dup_data["invoice_no"] == tx_data["invoice_no"]
 

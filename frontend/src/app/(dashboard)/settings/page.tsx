@@ -40,6 +40,7 @@ import clsx from "clsx";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
 import { 
   getSystemSettings, 
   saveSystemSettings, 
@@ -1591,7 +1592,7 @@ function SettingsContent() {
 
               <Link
                 href="/users/register"
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0"
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500 rounded-xl font-bold transition-colors text-xs self-start sm:self-auto shrink-0"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>+ Add Staff</span>
@@ -1805,8 +1806,8 @@ function SettingsContent() {
                 </table>
               </div>
 
-              {/* Pinned Pagination Controls */}
-              <div className="p-3.5 border-t border-white/10 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
+              {/* Pinned Pagination Controls (Desktop Only - Hidden on Mobile) */}
+              <div className="hidden md:flex p-3.5 border-t border-white/10 bg-zinc-950 flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
                 <div className="text-center sm:text-left">
                   Showing <span className="font-bold text-white">{staffUsers.length}</span> of{" "}
                   <span className="font-bold text-white">{staffTotal}</span> registered staff members (Page{" "}
@@ -1841,6 +1842,15 @@ function SettingsContent() {
             <FloatingFilterButton
               onClick={() => setIsStaffFilterOpen(true)}
               activeCount={staffActiveFilterCount}
+              stacked={true}
+            />
+
+            {/* Floating Add Staff Action Button on Mobile */}
+            <UnifiedFloatingAddFab
+              href="/users/register"
+              icon="user-plus"
+              ariaLabel="Add Staff User"
+              dataTestId="settings-users-add-fab"
             />
 
             {/* Mobile Slide-Up Filter Sheet */}

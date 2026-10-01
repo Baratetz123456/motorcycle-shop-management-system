@@ -617,8 +617,8 @@ export default function CustomerRepairHistoryPage() {
           </table>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs text-zinc-500 shrink-0">
+        {/* Footer (Desktop Only - Hidden on Mobile) */}
+        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-950 items-center justify-between text-xs text-zinc-500 shrink-0">
           <div>Showing {filteredHistories.length} customer record(s)</div>
           <div className="flex gap-4 items-center text-zinc-500">
             <span>• Accessible by Admin, Manager, and Mechanic</span>

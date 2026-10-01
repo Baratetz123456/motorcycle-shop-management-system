@@ -20,6 +20,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, ConfirmModal } from "@/comp
 import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
 
 export interface MotorcycleProfile {
   id: string;
@@ -403,7 +404,7 @@ export default function MotorcycleProfilesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <button
             onClick={() => {
               setFormBrand("Yamaha");
@@ -727,8 +728,8 @@ export default function MotorcycleProfilesPage() {
           </table>
         </div>
 
-        {/* Footer (Matching Customer Records) */}
-        <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs text-zinc-500 shrink-0">
+        {/* Footer (Desktop Only - Hidden on Mobile) */}
+        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-950 items-center justify-between text-xs text-zinc-500 shrink-0">
           <div>Showing {filteredAndSortedProfiles.length} motorcycle profile(s)</div>
           <div className="flex gap-4 items-center text-zinc-500">
             <span>• Accessible by Admin, Manager, and Mechanic</span>
@@ -1002,6 +1003,20 @@ export default function MotorcycleProfilesPage() {
       <FloatingFilterButton
         onClick={() => setIsMobileFilterOpen(true)}
         activeCount={activeFilterCount}
+        stacked={true}
+      />
+
+      {/* Floating Add Action Button (Mobile Only) */}
+      <UnifiedFloatingAddFab
+        onClick={() => {
+          setFormBrand("Yamaha");
+          setFormModel("");
+          setFormYear(new Date().getFullYear());
+          setFormCategory("Scooter");
+          setIsRegisterModalOpen(true);
+        }}
+        ariaLabel="Add Bike Model"
+        dataTestId="motorcycles-add-fab"
       />
 
       {/* Mobile Slide-Up Filter Sheet */}

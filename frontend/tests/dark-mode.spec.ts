@@ -384,7 +384,7 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
 
     // 10. Click Back to Payroll and assert it returns directly to Commission & Payslips tab with Cashier table active
     await page.locator('button:has-text("Back to Payroll")').first().click();
-    await page.waitForURL(/.*payroll\?tab=COMMISSIONS&subtab=CASHIERS/);
+    await page.waitForURL(/.*payroll\/?\?tab=COMMISSIONS&subtab=CASHIERS/);
     await expect(page.locator('[data-cashier-table="true"]')).toBeVisible({ timeout: 10000 });
 
     // 11. Switch to Mechanics, open payslip, click Back, assert returns to Mechanics table
@@ -396,7 +396,7 @@ test.describe('MotoShop Dark Mode & Theme Toggle Suite', () => {
     await page.waitForURL(/.*payroll\/payslip.*/);
     expect(page.url()).toContain('subtab=MECHANICS');
     await page.locator('button:has-text("Back to Payroll")').first().click();
-    await page.waitForURL(/.*payroll\?tab=COMMISSIONS&subtab=MECHANICS/);
+    await page.waitForURL(/.*payroll\/?\?tab=COMMISSIONS&subtab=MECHANICS/);
     await expect(page.locator('[data-technician-table="true"]')).toBeVisible({ timeout: 10000 });
   });
 

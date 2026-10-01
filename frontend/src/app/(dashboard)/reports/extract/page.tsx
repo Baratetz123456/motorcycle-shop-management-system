@@ -34,6 +34,7 @@ import { getSystemSettings, SystemSettings } from "@/lib/settings";
 import { fetchStaffCompensationFromDB, extractInvoiceLaborAndCommission } from "@/lib/compensation";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
 import { 
   PrintableFinancialReportDocument, 
   getFinancialReportDocumentHtml, 
@@ -437,7 +438,7 @@ export default function FinancialAndSalesExtractPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setIsExpenseModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm"
+              className="hidden md:flex px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all items-center gap-2 text-xs font-semibold shadow-sm"
             >
               <Plus className="w-3.5 h-3.5 text-lime-400" />
               <span>Record Expense</span>
@@ -791,7 +792,15 @@ export default function FinancialAndSalesExtractPage() {
         {/* Mobile Filter Sheet & Button */}
         <FloatingFilterButton
           activeCount={activeFilterCount}
+          stacked={true}
           onClick={() => setIsMobileFilterOpen(true)}
+        />
+
+        {/* Floating Add Action Button on Mobile */}
+        <UnifiedFloatingAddFab
+          onClick={() => setIsExpenseModalOpen(true)}
+          ariaLabel="Record Expense"
+          dataTestId="reports-extract-add-fab"
         />
         <MobileFilterSheet
           isOpen={isMobileFilterOpen}

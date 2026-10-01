@@ -5,44 +5,29 @@ import { createPortal } from "react-dom";
 import { Filter, X, Search, Wrench, Package, Check } from "lucide-react";
 import clsx from "clsx";
 
-interface FloatingFilterFabProps {
-  onClick: () => void;
-  hasActiveFilters?: boolean;
-}
+import { UnifiedFloatingFilterFab, type UnifiedFloatingFilterFabProps } from "@/components/ui/UnifiedFloatingFilterFab";
 
-export function FloatingFilterFab({ onClick, hasActiveFilters = false }: FloatingFilterFabProps) {
-  const [mounted, setMounted] = useState(false);
+export interface FloatingFilterFabProps extends UnifiedFloatingFilterFabProps {}
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  return createPortal(
-    <div
-      style={{
-        position: "fixed",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 9rem)",
-        right: "1rem",
-        zIndex: 50,
-      }}
-      className="md:hidden animate-in fade-in zoom-in-95 duration-200"
-    >
-      <button
-        onClick={onClick}
-        type="button"
-        aria-label="Filter Catalog"
-        data-testid="pos-mobile-filter-fab"
-        className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500 shadow-none transition-all transform active:scale-95 flex items-center justify-center relative cursor-pointer"
-      >
-        <Filter className="w-6 h-6 text-white" />
-        {hasActiveFilters && (
-          <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-white border-2 border-emerald-600" />
-        )}
-      </button>
-    </div>,
-    document.body
+export function FloatingFilterFab({
+  onClick,
+  hasActiveFilters = false,
+  activeCount = 0,
+  stacked = true,
+  className,
+  ariaLabel = "Filter Catalog",
+  dataTestId = "pos-mobile-filter-fab",
+}: FloatingFilterFabProps) {
+  return (
+    <UnifiedFloatingFilterFab
+      onClick={onClick}
+      hasActiveFilters={hasActiveFilters}
+      activeCount={activeCount}
+      stacked={stacked}
+      className={className}
+      ariaLabel={ariaLabel}
+      dataTestId={dataTestId}
+    />
   );
 }
 
