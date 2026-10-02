@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, AlertTriangle, AlertCircle, Info } from "lucide-react";
 import clsx from "clsx";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl";
 export type ModalVariant = "lime" | "cyan" | "purple" | "emerald" | "amber" | "rose";
@@ -45,7 +46,7 @@ function renderModalIcon(icon: ModalIconProp) {
   if (React.isValidElement(icon)) {
     return icon;
   }
-  if (typeof icon === "function" || (typeof icon === "object" && icon !== null && "render" in (icon as any))) {
+  if (typeof icon === "function" || (typeof icon === "object" && icon !== null && "render" in (icon as { render?: unknown }))) {
     const IconComponent = icon as React.ComponentType<{ className?: string }>;
     return <IconComponent className="w-5 h-5" />;
   }
@@ -65,12 +66,7 @@ export function Modal({
   className,
 }: ModalProps) {
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   // Close on Escape key
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { 
   FileText, 
@@ -14,6 +14,7 @@ import {
   X 
 } from "lucide-react";
 import clsx from "clsx";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 interface FloatingDocActionsButtonProps {
   onClick: () => void;
@@ -26,11 +27,7 @@ export function FloatingDocActionsButton({
   label = "Actions",
   className,
 }: FloatingDocActionsButtonProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   if (!mounted) return null;
 
@@ -102,11 +99,7 @@ export function MobileDocActionsSheet({
   voidRestrictedText,
   children,
 }: MobileDocActionsSheetProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   // Lock scroll when open
   useEffect(() => {

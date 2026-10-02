@@ -11,13 +11,13 @@ const THROTTLE_INTERVAL_MS = 5000; // Only update activity timestamp at most onc
 
 export function useIdleTimer() {
   const router = useRouter();
-  const lastActivityRef = useRef<number>(Date.now());
+  const lastActivityRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const performIdleLogout = useCallback(async () => {
     try {
       await apiClient.post("/auth/logout");
-    } catch (_) {
+    } catch {
       // Ignore network errors on logout
     } finally {
       tokenStore.clearToken();

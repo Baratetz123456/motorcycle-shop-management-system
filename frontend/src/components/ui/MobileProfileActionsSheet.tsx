@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { 
   SlidersHorizontal, 
   X 
 } from "lucide-react";
 import clsx from "clsx";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 interface FloatingProfileActionsButtonProps {
   onClick: () => void;
@@ -21,11 +22,7 @@ export function FloatingProfileActionsButton({
   className,
   icon,
 }: FloatingProfileActionsButtonProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   if (!mounted) return null;
 
@@ -75,11 +72,7 @@ export function MobileProfileActionsSheet({
   subtitle,
   actions,
 }: MobileProfileActionsSheetProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   // Prevent background body scroll when open
   useEffect(() => {

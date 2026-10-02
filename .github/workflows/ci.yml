@@ -111,6 +111,7 @@ jobs:
           JWT_SECRET_KEY: test-secret-key-for-ci-pipeline
           COOKIE_SECURE: "false"
           ENVIRONMENT: test
+          PYTHONPATH: .
         run: |
           cd backend
           pytest tests/ -v --tb=short

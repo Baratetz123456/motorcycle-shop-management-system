@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Filter, X, Search, Wrench, Package, Check } from "lucide-react";
 import clsx from "clsx";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 import { UnifiedFloatingFilterFab, type UnifiedFloatingFilterFabProps } from "@/components/ui/UnifiedFloatingFilterFab";
 
-export interface FloatingFilterFabProps extends UnifiedFloatingFilterFabProps {}
+export type FloatingFilterFabProps = UnifiedFloatingFilterFabProps;
 
 export function FloatingFilterFab({
   onClick,
@@ -58,11 +59,7 @@ export function MobilePosFilterSheet({
   onReset,
   totalResults,
 }: MobilePosFilterSheetProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   useEffect(() => {
     if (isOpen) {
