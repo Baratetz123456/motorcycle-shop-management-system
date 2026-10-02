@@ -94,9 +94,7 @@ async def login(
         "role": user.role,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "avatar": user.avatar or "avatar-1",
-        "theme": getattr(user, "theme", "cyan") or "cyan",
-        "display_mode": getattr(user, "display_mode", "dark") or "dark"
+        "avatar": user.avatar or "avatar-1"
     }
 
 @router.post("/refresh")
@@ -278,8 +276,6 @@ async def get_me(
         "email": u.email,
         "role": u.role,
         "avatar": u.avatar or "avatar-1",
-        "theme": getattr(u, "theme", "cyan") or "cyan",
-        "display_mode": getattr(u, "display_mode", "dark") or "dark",
         "commission_rate": float(u.commission_rate) if u.commission_rate is not None else None,
         "base_wage": float(u.base_wage) if u.base_wage is not None else None,
         "created_at": u.created_at.isoformat() if u.created_at else None
@@ -408,8 +404,6 @@ async def get_users(
             "email": u.email,
             "role": u.role,
             "avatar": u.avatar or "avatar-1",
-            "theme": getattr(u, "theme", "cyan") or "cyan",
-            "display_mode": getattr(u, "display_mode", "dark") or "dark",
             "commission_rate": float(u.commission_rate) if u.commission_rate is not None else (40.0 if u.role == "mechanic" else None),
             "base_wage": float(u.base_wage) if u.base_wage is not None else (650.0 if u.role == "cashier" else None),
             "created_at": u.created_at.isoformat() if u.created_at else None
@@ -445,8 +439,6 @@ async def register_user(
         password_hash=hashed_pw,
         role=user_data.role,
         avatar=user_data.avatar if user_data.avatar else "avatar-1",
-        theme=user_data.theme if user_data.theme else "cyan",
-        display_mode=user_data.display_mode if user_data.display_mode else "dark",
         commission_rate=user_data.commission_rate if user_data.commission_rate is not None else 40.0,
         base_wage=user_data.base_wage if user_data.base_wage is not None else 650.0
     )
@@ -520,10 +512,6 @@ async def update_user(
 
     if update_data.avatar:
         db_user.avatar = update_data.avatar
-    if update_data.theme:
-        db_user.theme = update_data.theme
-    if update_data.display_mode:
-        db_user.display_mode = update_data.display_mode
 
     if role_changed:
         db_user.token_version += 1
@@ -585,10 +573,6 @@ async def patch_user(
         db_user.last_name = update_data.last_name
     if update_data.avatar is not None:
         db_user.avatar = update_data.avatar
-    if update_data.theme is not None:
-        db_user.theme = update_data.theme
-    if update_data.display_mode is not None:
-        db_user.display_mode = update_data.display_mode
 
     await session.commit()
     await session.refresh(db_user)

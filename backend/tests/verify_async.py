@@ -153,14 +153,12 @@ async def main():
         print("\n--- 10. Testing User Profile Partial Update (PATCH /api/v1/auth/users/{id}) ---")
         user_id = token_data["user_id"]
         patch_res = await client.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
-            "theme": "emerald",
-            "display_mode": "dark"
+            "avatar": "avatar-3"
         })
         assert patch_res.status_code == 200, f"Patch user failed: {patch_res.text}"
         patched_user = patch_res.json()
-        assert patched_user["theme"] == "emerald"
-        assert patched_user["display_mode"] == "dark"
-        print(f"✅ User profile patch verified: theme={patched_user['theme']}, mode={patched_user['display_mode']}")
+        assert patched_user["avatar"] == "avatar-3"
+        print(f"✅ User profile patch verified: avatar={patched_user['avatar']}")
 
     print("\n=======================================================")
     print("🎉 ALL MODULAR MONOLITH INTEGRATION TESTS PASSED (100%)")

@@ -98,7 +98,7 @@ async def test_register_duplicate_email(client: AsyncClient, admin_headers: dict
 
 @pytest.mark.asyncio
 async def test_patch_user_profile(client: AsyncClient, admin_headers: dict):
-    """Verify user profile customization patch (theme and display_mode)."""
+    """Verify user profile customization patch (avatar and name)."""
     login_res = await client.post("/api/v1/auth/login", json={
         "email": "admin@motoshop.com",
         "password": "admin123"
@@ -106,14 +106,13 @@ async def test_patch_user_profile(client: AsyncClient, admin_headers: dict):
     user_id = str(login_res.json()["user_id"])
 
     patch_res = await client.patch(f"/api/v1/auth/users/{user_id}", headers=admin_headers, json={
-        "theme": "emerald",
-        "display_mode": "dark",
+        "avatar": "avatar-5",
         "first_name": "SuperAdmin"
     })
     assert patch_res.status_code == 200
     updated = patch_res.json()
-    assert updated["theme"] == "emerald"
-    assert updated["display_mode"] == "dark"
+    assert updated["avatar"] == "avatar-5"
+    assert updated["first_name"] == "SuperAdmin"
 
 @pytest.mark.asyncio
 async def test_list_staff_users(client: AsyncClient, admin_headers: dict):

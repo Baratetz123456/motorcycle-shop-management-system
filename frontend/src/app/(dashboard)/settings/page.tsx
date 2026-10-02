@@ -24,16 +24,13 @@ import {
   Users,
   KeyRound,
   Activity,
-  Palette,
   Check,
   UserPlus,
   Search,
   ChevronLeft,
   ChevronRight,
   Filter,
-  Wrench,
-  Sun,
-  Moon
+  Wrench
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
@@ -57,20 +54,7 @@ import {
   saveCustomPermissions, 
   resetCustomPermissions 
 } from "@/lib/permissions";
-import { 
-  THEME_OPTIONS, 
-  getAppTheme, 
-  saveAppTheme, 
-  applyThemeToDocument, 
-  AppTheme,
-  getAppMode,
-  saveAppMode,
-  applyModeToDocument,
-  AppMode,
-  getThemesForMode,
-  getDefaultThemeForMode,
-  useTheme
-} from "@/lib/theme";
+import { applyModeToDocument, applyThemeToDocument } from "@/lib/theme";
 import { AVATAR_PRESETS, UserAvatar } from "@/lib/avatars";
 import { recordUserAuditLog } from "@/lib/audit";
 
@@ -83,8 +67,6 @@ interface UserProfileData {
   email: string;
   role: string;
   avatar?: string | null;
-  theme?: string | null;
-  display_mode?: string | null;
 }
 
 interface RecentAuditItem {
@@ -128,7 +110,6 @@ function SettingsContent() {
   // Tab 1: General Preferences State (Admin only)
   const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [generalSuccess, setGeneralSuccess] = useState<string | null>(null);
-  const { theme: activeThemeMode, setTheme: setActiveThemeMode } = useTheme();
 
   // Tab 2: Role Accessibility State (Admin only)
   const [modulePermissions, setModulePermissions] = useState<Record<string, UserRole[]>>({});
@@ -169,17 +150,6 @@ function SettingsContent() {
   const [totalLogsCount, setTotalLogsCount] = useState<number>(0);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
-  // Theme State (All users)
-  const [activeTheme, setActiveTheme] = useState<AppTheme>("cyan");
-  const [savedTheme, setSavedTheme] = useState<AppTheme>("cyan");
-  const savedThemeRef = useRef<AppTheme>("cyan");
-  const [themeSuccess, setThemeSuccess] = useState<string | null>(null);
-
-  // Appearance Mode State (All users: Dark vs Light)
-  const [activeMode, setActiveMode] = useState<AppMode>("dark");
-  const [savedMode, setSavedMode] = useState<AppMode>("dark");
-  const savedModeRef = useRef<AppMode>("dark");
-
   // Avatar State (All users)
   const [selectedAvatar, setSelectedAvatar] = useState<string>("avatar-1");
   const [savedAvatar, setSavedAvatar] = useState<string>("avatar-1");
@@ -187,18 +157,8 @@ function SettingsContent() {
   const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState<boolean>(false);
 
   // Dirty Flags
-  const isThemeDirty = activeTheme !== savedTheme;
-  const isModeDirty = activeMode !== savedMode;
   const isAvatarDirty = selectedAvatar !== savedAvatar;
-  const isProfileDirty = isAvatarDirty || isThemeDirty || isModeDirty;
-
-  useEffect(() => {
-    savedThemeRef.current = savedTheme;
-  }, [savedTheme]);
-
-  useEffect(() => {
-    savedModeRef.current = savedMode;
-  }, [savedMode]);
+  const isProfileDirty = isAvatarDirty;
 
   useEffect(() => {
     savedAvatarRef.current = savedAvatar;
@@ -219,28 +179,13 @@ function SettingsContent() {
     const adminCheck = role === "admin";
     setIsAdmin(adminCheck);
 
-    // Initialize Theme & Appearance Mode
-    const storedTheme = getAppTheme();
-    setActiveTheme(storedTheme);
-    setSavedTheme(storedTheme);
-    savedThemeRef.current = storedTheme;
-
-    const storedMode = getAppMode();
-    setActiveMode(storedMode);
-    setSavedMode(storedMode);
-    savedModeRef.current = storedMode;
-
     // Check tab from query param
     const tabParam = searchParams.get("tab") as SettingsTab;
     if (adminCheck && tabParam && ["general", "roles", "users", "profile", "logs"].includes(tabParam)) {
       setActiveTab(tabParam);
     } else if (!adminCheck) {
-      // Non-admins have access to appearance (general) and profile
-      if (tabParam === "profile") {
-        setActiveTab("profile");
-      } else {
-        setActiveTab("general");
-      }
+      // Non-admins have direct access to their profile tab
+      setActiveTab("profile");
     }
 
     // 1. Load User Profile (for all roles)
@@ -276,27 +221,6 @@ function SettingsContent() {
     }
   }, [staffRoleFilter, staffSearch, activeTab, isAdmin]);
 
-  // Sync activeTheme if updated globally or via broadcast
-  useEffect(() => {
-    const handleThemeSync = (e: any) => {
-      if (e.detail?.theme) {
-        setActiveTheme(e.detail.theme);
-        setSavedTheme(e.detail.theme);
-        savedThemeRef.current = e.detail.theme;
-      }
-    };
-    window.addEventListener("theme_updated", handleThemeSync);
-    return () => window.removeEventListener("theme_updated", handleThemeSync);
-  }, []);
-
-  // Cleanly revert any uncommitted live preview when leaving settings page
-  useEffect(() => {
-    return () => {
-      applyModeToDocument(savedModeRef.current);
-      applyThemeToDocument(savedThemeRef.current);
-    };
-  }, []);
-
   const loadUserProfile = async (id: string, fallbackEmail: string, currentRole: string) => {
     try {
       const res = await apiClient.get<UserProfileData>(`/auth/users/${id}`);
@@ -308,29 +232,12 @@ function SettingsContent() {
           email: res.data.email || fallbackEmail,
           role: res.data.role || currentRole,
           avatar: res.data.avatar || "avatar-1",
-          theme: res.data.theme || null,
-          display_mode: res.data.display_mode || null,
         });
         const activeAvatar = res.data.avatar || localStorage.getItem("user_avatar") || "avatar-1";
         setSelectedAvatar(activeAvatar);
         setSavedAvatar(activeAvatar);
         savedAvatarRef.current = activeAvatar;
         localStorage.setItem("user_avatar", activeAvatar);
-
-        if (res.data.theme) {
-          setActiveTheme(res.data.theme as AppTheme);
-          setSavedTheme(res.data.theme as AppTheme);
-          savedThemeRef.current = res.data.theme as AppTheme;
-          saveAppTheme(res.data.theme as AppTheme, id);
-        }
-        if (res.data.display_mode) {
-          const localMode = localStorage.getItem("motoshop_app_mode") as AppMode;
-          const effectiveMode = localMode || (res.data.display_mode as AppMode);
-          setActiveMode(effectiveMode);
-          setSavedMode(effectiveMode);
-          savedModeRef.current = effectiveMode;
-          saveAppMode(effectiveMode, id);
-        }
       }
     } catch (e) {
       setProfile({
@@ -389,19 +296,6 @@ function SettingsContent() {
   const handleTabChange = (newTab: SettingsTab) => {
     if (activeTab === newTab) return;
 
-    // Revert temporary unsaved theme preview back to saved state
-    if (activeTheme !== savedThemeRef.current) {
-      setActiveTheme(savedThemeRef.current);
-      applyThemeToDocument(savedThemeRef.current);
-    }
-
-    // Revert temporary unsaved mode preview back to saved state
-    if (activeMode !== savedModeRef.current) {
-      setActiveMode(savedModeRef.current);
-      setActiveThemeMode(savedModeRef.current);
-      applyModeToDocument(savedModeRef.current);
-    }
-
     // Revert temporary unsaved avatar preview back to saved state
     if (selectedAvatar !== savedAvatarRef.current) {
       setSelectedAvatar(savedAvatarRef.current);
@@ -412,21 +306,6 @@ function SettingsContent() {
       fetchStaffUsers(1, staffRoleFilter, staffSearch);
     }
   };
-
-  // --- Theme Selection Handler (Live preview only until Save is clicked) ---
-  const handleSelectTheme = (themeId: AppTheme) => {
-    setActiveTheme(themeId);
-    applyThemeToDocument(themeId); // Temporary live preview
-  };
-
-  // --- Appearance Mode Selection Handler (Live preview only until Save is clicked) ---
-  const handleSelectThemeMode = (mode: AppMode) => {
-    setActiveMode(mode);
-    setActiveThemeMode(mode);
-    applyModeToDocument(mode); // Temporary live preview
-  };
-
-  const handleSelectMode = handleSelectThemeMode;
 
   // --- Avatar Selection Handler (In-page preview until Save is clicked) ---
   const handleSelectAvatar = (avatarId: string) => {
@@ -473,23 +352,6 @@ function SettingsContent() {
     setTimeout(() => setGeneralSuccess(null), 4000);
   };
 
-  const handleSaveAppearanceOnly = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    saveAppMode(activeMode, currentUserId);
-    saveAppTheme(activeTheme, currentUserId);
-    setSavedMode(activeMode);
-    savedModeRef.current = activeMode;
-    setSavedTheme(activeTheme);
-    savedThemeRef.current = activeTheme;
-
-    recordUserAuditLog("APPEARANCE_SETTINGS_UPDATED", "/settings", {
-      mode: activeMode,
-      theme: activeTheme,
-    });
-
-    setGeneralSuccess("Appearance preferences permanently saved across your session.");
-    setTimeout(() => setGeneralSuccess(null), 4000);
-  };
 
   const handleResetGeneral = () => {
     setSettings(DEFAULT_SETTINGS);
@@ -590,8 +452,6 @@ function SettingsContent() {
         email: profile.email,
         role: profile.role,
         avatar: selectedAvatar,
-        theme: activeTheme,
-        display_mode: activeMode,
       });
 
       if (res.data) {
@@ -602,8 +462,6 @@ function SettingsContent() {
           email: res.data.email || profile.email,
           role: res.data.role || profile.role,
           avatar: res.data.avatar || selectedAvatar,
-          theme: res.data.theme || activeTheme,
-          display_mode: res.data.display_mode || activeMode,
         });
         localStorage.setItem("user_email", res.data.email || profile.email);
         const updatedName = [res.data.first_name || profile.first_name, res.data.last_name || profile.last_name].filter(Boolean).join(" ");
@@ -619,20 +477,7 @@ function SettingsContent() {
       setSavedAvatar(selectedAvatar);
       savedAvatarRef.current = selectedAvatar;
 
-      // Commit Theme & Appearance Mode to User-Scoped Storage
-      if (activeTheme !== savedTheme) {
-        saveAppTheme(activeTheme, currentUserId);
-        setSavedTheme(activeTheme);
-        savedThemeRef.current = activeTheme;
-      }
-
-      if (activeMode !== savedMode) {
-        saveAppMode(activeMode, currentUserId);
-        setSavedMode(activeMode);
-        savedModeRef.current = activeMode;
-      }
-
-      setProfileSuccess("Your personal profile, avatar, and appearance preferences have been saved successfully.");
+      setProfileSuccess("Your personal profile and avatar have been saved successfully.");
       setTimeout(() => setProfileSuccess(null), 4000);
     } catch (err: any) {
       console.error("Failed to update profile", err);
@@ -647,101 +492,6 @@ function SettingsContent() {
     return "bg-zinc-800 text-zinc-300 border-zinc-700 font-bold";
   };
 
-  // Reusable Theme Preference Selector
-  const renderThemeSelector = () => {
-    const currentThemes = getThemesForMode(activeMode);
-
-    return (
-      <div className="bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Palette className="w-4 h-4 text-emerald-500" />
-              App Theme & Visual Identity ({activeMode === "light" ? "Daylight Themes" : "Neon Dark Themes"})
-            </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              {activeMode === "light"
-                ? "Choose from 4 high-contrast daylight palettes tailored for crisp daytime clarity."
-                : "Choose from 4 vibrant electric palettes tailored for deep dark mode aesthetics."}
-            </p>
-          </div>
-          {isThemeDirty ? (
-            <span className="text-xs text-zinc-300 bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 self-start sm:self-auto">
-              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-              Unsaved Theme Preview (Click Save to apply)
-            </span>
-          ) : themeSuccess ? (
-            <span className="text-xs text-emerald-400 font-medium animate-in fade-in flex items-center gap-1.5 self-start sm:self-auto">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              {themeSuccess}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-          {currentThemes.map((theme) => {
-            const isSelected = activeTheme === theme.id;
-            const isCurrentSaved = savedTheme === theme.id;
-
-            return (
-              <button
-                key={theme.id}
-                type="button"
-                onClick={() => handleSelectTheme(theme.id)}
-                className={clsx(
-                  "p-4 rounded-2xl border text-left transition-colors relative overflow-hidden group flex flex-col justify-between h-32",
-                  isSelected
-                    ? "bg-zinc-900 border-emerald-500 ring-1 ring-emerald-500/30"
-                    : "bg-zinc-900/40 border-white/5 hover:border-white/20 hover:bg-zinc-900/70"
-                )}
-              >
-                <div className="flex items-start justify-between w-full">
-                  <div>
-                    <div className="font-bold text-sm text-white flex items-center gap-1.5">
-                      <span>{theme.name}</span>
-                    </div>
-                    <div className="text-[11px] text-zinc-400 mt-0.5">{theme.tagline}</div>
-                  </div>
-                  {isSelected && (
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-emerald-600 text-white font-bold">
-                      {isThemeDirty ? (
-                        <Sparkles className="w-3 h-3 stroke-[2.5]" />
-                      ) : (
-                        <Check className="w-3 h-3 stroke-[3]" />
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 pt-3 border-t border-white/5">
-                  <div className="flex items-center -space-x-1.5">
-                    {theme.previewSwatches.map((color, i) => (
-                      <div
-                        key={i}
-                        className="w-5 h-5 rounded-full border border-zinc-900"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                  <div className="ml-auto flex items-center gap-1.5">
-                    {isCurrentSaved && (
-                      <span className="text-[9px] uppercase tracking-wider text-zinc-300 font-mono font-bold bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
-                        Saved
-                      </span>
-                    )}
-                    <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-bold">
-                      {theme.id}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-visible md:overflow-hidden">
       {/* Top Header & Navigation Tabs */}
@@ -751,12 +501,12 @@ function SettingsContent() {
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
               <Settings className="w-7 h-7 text-cyan-500 dark:text-cyan-400" />
-              {isAdmin ? "Shop Settings" : "Appearance & Settings"}
+              {isAdmin ? "Shop Settings" : "Account Settings"}
             </h1>
             <p className="text-zinc-500 dark:text-zinc-400 mt-0.5 text-xs">
               {isAdmin 
                 ? "Configure store currency, timezone, staff access, and operational policies."
-                : "Manage your workshop appearance mode, theme palette, and user profile."}
+                : "Manage your user profile details, avatar, and account password."}
             </p>
           </div>
         </div>
@@ -773,7 +523,7 @@ function SettingsContent() {
               onChange={(e) => handleTabChange(e.target.value as SettingsTab)}
               className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer"
             >
-              <option value="general">{isAdmin ? "🌐 General Preferences" : "🎨 Appearance & Theme"}</option>
+              {isAdmin && <option value="general">🌐 General Preferences</option>}
               {isAdmin && <option value="roles">🎛️ Role Access Matrix</option>}
               {isAdmin && <option value="users">👥 Staff & Users</option>}
               <option value="profile">👤 My Profile</option>
@@ -783,18 +533,20 @@ function SettingsContent() {
 
           {/* Desktop Segmented Navigation Tabs */}
           <div className="hidden md:flex bg-slate-100 dark:bg-zinc-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-700 gap-1.5 mt-3">
-            <button
-              onClick={() => handleTabChange("general")}
-              className={clsx(
-                "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
-                activeTab === "general"
-                  ? "bg-emerald-600 text-white font-bold"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
-              )}
-            >
-              {isAdmin ? <Globe className="w-4 h-4 shrink-0" /> : <Palette className="w-4 h-4 shrink-0" />}
-              <span>{isAdmin ? "General Preferences" : "Appearance & Theme"}</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => handleTabChange("general")}
+                className={clsx(
+                  "px-4 py-2.5 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-2 flex-1 whitespace-nowrap",
+                  activeTab === "general"
+                    ? "bg-emerald-600 text-white font-bold"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-700/60"
+                )}
+              >
+                <Globe className="w-4 h-4 shrink-0" />
+                <span>General Preferences</span>
+              </button>
+            )}
 
             {isAdmin && (
               <button
@@ -1246,56 +998,6 @@ function SettingsContent() {
                 </button>
               </div>
             </form>
-          </div>
-        )}
-
-        {/* TAB 1: APPEARANCE & THEME (For Cashiers & Non-Admin Staff) */}
-        {!isAdmin && activeTab === "general" && (
-          <div className="md:flex-1 md:min-h-0 flex flex-col overflow-visible md:overflow-hidden">
-            <div className="md:flex-1 md:min-h-0 overflow-visible md:overflow-y-auto px-3 sm:px-4 md:px-6 py-4 space-y-8">
-              <div className="pb-8 border-b border-zinc-800/80 space-y-6 animate-in fade-in">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/60">
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Palette className="w-5 h-5 text-emerald-500" />
-                      Appearance & Theme
-                    </h2>
-                    <p className="text-xs text-zinc-400 mt-1">
-                      Customize your workspace color theme and view mode.
-                    </p>
-                  </div>
-                </div>
-
-                {renderThemeSelector()}
-              </div>
-            </div>
-
-            {/* Unified Sticky Bottom Footer */}
-            <div className="shrink-0 px-6 py-3.5 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 z-30">
-              <div className="flex items-center gap-3">
-                {themeSuccess ? (
-                  <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium animate-in fade-in">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    {themeSuccess}
-                  </span>
-                ) : (
-                  <span className="text-xs text-zinc-500">
-                    {isModeDirty || isThemeDirty
-                      ? "Unsaved appearance preview (click Save to commit)"
-                      : "Appearance preferences are saved"}
-                  </span>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSaveAppearanceOnly}
-                className="w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-500"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save Appearance Preferences</span>
-              </button>
-            </div>
           </div>
         )}
 
@@ -2102,10 +1804,7 @@ function SettingsContent() {
                   {isProfileDirty ? (
                     <span className="text-xs text-zinc-300 flex items-center gap-1.5 font-medium">
                       <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-                      Unsaved changes ({[
-                        isAvatarDirty ? "Avatar" : null,
-                        isModeDirty ? "Appearance Mode" : null,
-                      ].filter(Boolean).join(" & ")}). Click Save to persist.
+                      Unsaved changes (Avatar). Click Save to persist.
                     </span>
                   ) : profileSuccess ? (
                     <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium animate-in fade-in">

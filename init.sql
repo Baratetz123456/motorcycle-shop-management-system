@@ -17,8 +17,6 @@ CREATE TABLE auth.users (
     commission_rate NUMERIC(5, 2) DEFAULT 40.0,
     base_wage NUMERIC(10, 2) DEFAULT 650.0,
     avatar VARCHAR(50) NOT NULL DEFAULT 'avatar-1',
-    theme VARCHAR(50) NOT NULL DEFAULT 'cyan',
-    display_mode VARCHAR(20) NOT NULL DEFAULT 'dark',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON auth.users(email);

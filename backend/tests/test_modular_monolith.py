@@ -147,19 +147,12 @@ async def test_user_profile_patch_and_audit_logs():
         user_id = str(login_res.json()["user_id"])
         headers = {"Authorization": f"Bearer {token}"}
 
-        # 3. Test PATCH /api/v1/auth/users/{user_id} with theme
-        patch_theme_res = await ac.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
-            "theme": "emerald"
+        # 3. Test PATCH /api/v1/auth/users/{user_id} with avatar
+        patch_avatar_res = await ac.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
+            "avatar": "avatar-5"
         })
-        assert patch_theme_res.status_code == 200
-        assert patch_theme_res.json()["theme"] == "emerald"
-
-        # 4. Test PATCH /api/v1/auth/users/{user_id} with display_mode
-        patch_mode_res = await ac.patch(f"/api/v1/auth/users/{user_id}", headers=headers, json={
-            "display_mode": "dark"
-        })
-        assert patch_mode_res.status_code == 200
-        assert patch_mode_res.json()["display_mode"] == "dark"
+        assert patch_avatar_res.status_code == 200
+        assert patch_avatar_res.json()["avatar"] == "avatar-5"
 
         # 5. Test GET /api/v1/audit-logs
         get_audit_res = await ac.get("/api/v1/audit-logs?page=1&page_size=10", headers=headers)

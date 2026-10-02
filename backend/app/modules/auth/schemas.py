@@ -15,8 +15,6 @@ class TokenResponse(BaseModel):
     first_name: Optional[str] = ""
     last_name: Optional[str] = ""
     avatar: Optional[str] = "avatar-1"
-    theme: Optional[str] = "cyan"
-    display_mode: Optional[str] = "dark"
 
 class UserRegisterRequest(BaseModel):
     first_name: str = Field(..., min_length=1)
@@ -25,8 +23,6 @@ class UserRegisterRequest(BaseModel):
     role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
     password: str = Field(default="Welcome123!")
     avatar: Optional[str] = "avatar-1"
-    theme: Optional[str] = "cyan"
-    display_mode: Optional[str] = "dark"
     commission_rate: Optional[float] = None
     base_wage: Optional[float] = None
 
@@ -36,8 +32,6 @@ class UserUpdateRequest(BaseModel):
     email: EmailStr
     role: str = Field(..., pattern="^(admin|cashier|mechanic|manager)$")
     avatar: Optional[str] = None
-    theme: Optional[str] = None
-    display_mode: Optional[str] = None
     commission_rate: Optional[float] = None
     base_wage: Optional[float] = None
 
@@ -46,8 +40,6 @@ class UserProfileUpdateRequest(BaseModel):
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
     avatar: Optional[str] = None
-    theme: Optional[str] = None
-    display_mode: Optional[str] = None
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
@@ -61,8 +53,6 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: str
     avatar: Optional[str] = "avatar-1"
-    theme: Optional[str] = "cyan"
-    display_mode: Optional[str] = "dark"
     commission_rate: Optional[float] = None
     base_wage: Optional[float] = None
     created_at: Optional[datetime] = None
