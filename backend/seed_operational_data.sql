@@ -6,6 +6,9 @@ BEGIN
     END IF;
 END $$;
 
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS theme VARCHAR(50) NOT NULL DEFAULT 'cyan';
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS display_mode VARCHAR(20) NOT NULL DEFAULT 'dark';
+
 ALTER TABLE inventory.items ADD COLUMN IF NOT EXISTS item_type inventory.item_type NOT NULL DEFAULT 'PRODUCT';
 
 ALTER TABLE sales.transactions ADD COLUMN IF NOT EXISTS cashier_name VARCHAR(255);

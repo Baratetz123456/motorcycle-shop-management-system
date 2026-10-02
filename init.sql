@@ -17,9 +17,25 @@ CREATE TABLE auth.users (
     commission_rate NUMERIC(5, 2) DEFAULT 40.0,
     base_wage NUMERIC(10, 2) DEFAULT 650.0,
     avatar VARCHAR(50) NOT NULL DEFAULT 'avatar-1',
+    theme VARCHAR(50) NOT NULL DEFAULT 'cyan',
+    display_mode VARCHAR(20) NOT NULL DEFAULT 'dark',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON auth.users(email);
+
+CREATE TABLE IF NOT EXISTS auth.user_sessions (
+    session_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    role VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    current_jti VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_active_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    absolute_expiry TIMESTAMP WITH TIME ZONE NOT NULL,
+    user_agent VARCHAR(500),
+    ip VARCHAR(45)
+);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_jti ON auth.user_sessions(current_jti);
 
 CREATE TABLE IF NOT EXISTS auth.revoked_tokens (
     token_jti VARCHAR(255) PRIMARY KEY,
