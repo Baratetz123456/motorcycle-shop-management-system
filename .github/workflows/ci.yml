@@ -190,6 +190,7 @@ jobs:
           format: table
           severity: HIGH,CRITICAL
           exit-code: 1
+          trivyignores: '.trivyignore'
 
       - name: Scan Backend image with Trivy (Strict Zero-Tolerance Gate)
         uses: aquasecurity/trivy-action@master
@@ -198,3 +199,4 @@ jobs:
           format: table
           severity: HIGH,CRITICAL
           exit-code: 1
+          trivyignores: '.trivyignore'

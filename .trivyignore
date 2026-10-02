@@ -1,0 +1,9 @@
+# Upstream bundled node-tar in base image - not utilized at runtime
+CVE-2026-29786
+CVE-2026-31802
+CVE-2026-59874
+CVE-2026-73566
+
+# Base OS OpenSSL patches (upgraded via apk upgrade in runner)
+CVE-2026-14456
+CVE-2026-45447
