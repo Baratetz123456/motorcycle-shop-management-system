@@ -1,17 +1,8 @@
 import type { NextConfig } from "next";
 
-const outputMode: NextConfig["output"] =
-  process.env.NEXT_OUTPUT_MODE === "standalone"
-    ? "standalone"
-    : process.env.NEXT_OUTPUT_MODE === "export"
-    ? "export"
-    : process.env.NODE_ENV === "production"
-    ? "export"
-    : undefined;
-
 const nextConfig: NextConfig = {
-  // Support standalone mode for containerized Docker deployments and static export for S3/production
-  ...(outputMode ? { output: outputMode } : {}),
+  // Support standalone mode by default for containerized Docker deployments, and static export for AWS S3
+  output: process.env.NEXT_OUTPUT_MODE === "export" ? "export" : "standalone",
   images: {
     unoptimized: true,
   },
