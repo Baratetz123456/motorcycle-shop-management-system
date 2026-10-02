@@ -3,7 +3,11 @@ import sys
 from typing import List, Dict, Any, Optional
 from uuid import UUID
 from fastapi import Request, HTTPException, status, Depends
-from jose import jwt, JWTError
+try:
+    import jwt
+    from jwt.exceptions import PyJWTError as JWTError
+except ImportError:
+    from jose import jwt, JWTError
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -9,7 +9,6 @@ from fastapi import FastAPI, Depends, HTTPException, status, Request, Response, 
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func, or_
-from jose import jwt
 import bcrypt
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

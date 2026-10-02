@@ -3,7 +3,11 @@ from typing import List, Dict, Any, Optional
 from uuid import UUID
 from datetime import datetime, timedelta, timezone
 from fastapi import Request, HTTPException, status, Depends, Response
-from jose import jwt, JWTError
+try:
+    import jwt
+    from jwt.exceptions import PyJWTError as JWTError
+except ImportError:
+    from jose import jwt, JWTError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 import bcrypt
