@@ -9,7 +9,7 @@ if str(backend_dir) not in sys.path:
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
-from app.core.database import engine
+from app.core.database import engine, Base, init_db_schemas
 
 @pytest.fixture(autouse=True)
 async def cleanup_db_connections():
@@ -25,6 +25,10 @@ async def client():
     """
     Reusable HTTP async test client communicating directly with ASGI app.
     """
+    try:
+        await init_db_schemas(engine, Base.metadata)
+    except Exception:
+        pass
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
