@@ -476,7 +476,7 @@ POST /api/v1/sales/transactions HTTP/1.1
 Host: localhost:8080
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDRhNzg0LTU3MzRhNDQwMDAwMCIsInJvbGUiOiJjYXNoaWVyIiwiZW1haWwiOiJjYXNoaWVyQG1vdG9zaG9wLmNvbSIsInRva2VuX3ZlcnNpb24iOjEsImV4cCI6MTc1NzE2OTAwMH0...
 Content-Type: application/json
-Idempotency-Key: b4a1c6e2-9d3f-4e8a-8a12-fc7e42d87e1a
+Idempotency-Key: 00000000-0000-4000-8000-000000000001
 X-Forwarded-For: 192.168.1.105
 Accept: application/json
 

@@ -9,6 +9,7 @@ paths = [
     '''\.env\.example''',
     '''backend/tests/.*''',
     '''frontend/tests/.*''',
+    '''docs/.*''',
 ]
 stopwords = [
     "your-super-secret-key-for-local-dev",
@@ -16,4 +17,8 @@ stopwords = [
     "test-secret-key-for-ci-pipeline",
     "postgres:123",
     "admin123",
+    "b4a1c6e2-9d3f-4e8a-8a12-fc7e42d87e1a",
+]
+commits = [
+    "b91d9f64e7b0181c0e8fcd5a20fece749620da53",
 ]
