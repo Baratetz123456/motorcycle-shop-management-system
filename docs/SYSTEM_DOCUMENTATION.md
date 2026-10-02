@@ -89,7 +89,7 @@
 | `pydantic` | `>= 2.9.0` | Data Validation | **Critical** | `schemas.py` across all modules | Unchecked JSON deserialization; mass assignment vulnerabilities, SQL errors on malformed types. |
 | `SQLAlchemy` | `2.0.31` | Database ORM | **Critical** | `core/database.py`, all `models.py` | Total persistence failure; backend loses all database querying capabilities. |
 | `asyncpg` | `0.29.0` | DB Driver | **Critical** | `core/database.py` (via connection URL) | SQLAlchemy cannot establish async connections to PostgreSQL 16. |
-| `python-jose[cryptography]` | `>= 3.3.0` | Auth & Tokens | **Security Critical** | `core/security.py`, `modules/auth/` | Inability to sign, decode, or verify JWT authorization tokens. |
+| `PyJWT[crypto]` | `>= 2.9.0` | Auth & Tokens | **Security Critical** | `core/security.py`, `modules/auth/` | Inability to sign, decode, or verify JWT authorization tokens. |
 | `passlib[bcrypt]` | `1.7.4` / `bcrypt` | Password Hashing | **Security Critical** | `core/security.py` | Passwords cannot be salted or hashed; authentication is disabled. |
 | `python-multipart` | `>= 0.0.20` | Form Parsing | **Security Critical** | OAuth2 password request parsing | Form parsing fails; secure password grant flow disabled. |
 | `mangum` | `0.17.0` | Serverless Adapter | **Critical** | `app/main.py` | AWS Lambda cannot handle API Gateway requests in production. |
@@ -718,7 +718,7 @@ flowchart TD
 ---
 
 ### 13.2 Authentication Security
-- **Algorithm**: HMAC-SHA256 (`HS256`) via `python-jose` ([`backend/shared/security.py:14`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/security.py#L14)).
+- **Algorithm**: HMAC-SHA256 (`HS256`) via `PyJWT` ([`backend/shared/security.py:14`](file:///d:/POS/motorcycle-shop-management-system/backend/shared/security.py#L14)).
 - **Password Hashing**: `bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())` ([`backend/auth_service/main.py:33`](file:///d:/POS/motorcycle-shop-management-system/backend/auth_service/main.py#L33)).
 - **Token Claims**:
   - `sub`: User UUID string.
