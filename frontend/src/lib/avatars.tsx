@@ -349,7 +349,7 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
 export function UserAvatar({
   avatarId,
   className = "w-8 h-8",
-  showRing = false, // Ignored: invariant mandates 100% borderless
+  showRing: _showRing = false, // Ignored: invariant mandates 100% borderless
 }: {
   avatarId?: string | null;
   className?: string;

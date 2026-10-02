@@ -113,19 +113,13 @@ export function LegalHub({ initialTab = "privacy" }: LegalHubProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSectionId, setActiveSectionId] = useState<string>("");
   const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated] = useState(() => typeof window !== "undefined" && Boolean(localStorage.getItem("user_role")));
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync settings and check auth state
+  // Sync settings and listen for updates
   useEffect(() => {
-    setSettings(getSystemSettings());
     const handleSettingsUpdate = () => setSettings(getSystemSettings());
     window.addEventListener("system_settings_updated", handleSettingsUpdate);
-
-    if (typeof window !== "undefined") {
-      const storedRole = localStorage.getItem("user_role");
-      setIsAuthenticated(Boolean(storedRole));
-    }
 
     return () => window.removeEventListener("system_settings_updated", handleSettingsUpdate);
   }, []);

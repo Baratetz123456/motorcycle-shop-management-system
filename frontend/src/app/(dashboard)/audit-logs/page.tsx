@@ -8,21 +8,17 @@ import {
   Download, 
   ChevronLeft, 
   ChevronRight, 
-  ChevronDown, 
-  ChevronUp, 
   ArrowLeft, 
-  ShieldCheck, 
-  RotateCcw,
-  SlidersHorizontal,
-  Code2,
-  Calendar,
-  X,
-  Filter
+  Code2, 
+  Calendar, 
+  X 
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+
+export type AuditLogDetails = Record<string, string | number | boolean | null | undefined>;
 
 export interface AuditLogItem {
   id: string;
@@ -33,7 +29,7 @@ export interface AuditLogItem {
   user_email?: string | null;
   action: string;
   resource: string;
-  details: any;
+  details: AuditLogDetails | null;
   ip_address: string | null;
 }
 
@@ -185,16 +181,16 @@ export function formatChangesSummary(log: AuditLogItem): string {
     const email = details.created_email || details.email || "";
     const role = details.assigned_role || details.role || "";
     const name = details.name || "";
-    return `Created new ${role ? role.toUpperCase() : "staff"} account for "${name || email}".`;
+    return `Created new ${role ? String(role).toUpperCase() : "staff"} account for "${name || email}".`;
   }
   if (action === "UPDATE_USER") {
     const email = details.updated_email || details.email || "";
-    const role = details.role ? ` with role ${details.role.toUpperCase()}` : "";
+    const role = details.role ? ` with role ${String(details.role).toUpperCase()}` : "";
     return `Updated staff profile details for "${email}"${role}.`;
   }
   if (action === "CHANGE_ROLE") {
-    const oldR = (details.old_role || "").toUpperCase();
-    const newR = (details.new_role || "").toUpperCase();
+    const oldR = String(details.old_role || "").toUpperCase();
+    const newR = String(details.new_role || "").toUpperCase();
     return `Transferred permissions from ${oldR} to ${newR}.`;
   }
   if (action === "DELETE_USER") {
@@ -232,7 +228,7 @@ export function formatChangesSummary(log: AuditLogItem): string {
   if (action === "REPAIR_STATUS_UPDATED") {
     const job = details.job_order_id ? `#${String(details.job_order_id).slice(0, 8)}` : "job";
     const status = details.new_status || details.status || "Updated";
-    return `Progressed repair job ${job} to ${status.toUpperCase()}.`;
+    return `Progressed repair job ${job} to ${String(status).toUpperCase()}.`;
   }
   if (action === "REPAIR_ORDER_CREATED") {
     const job = details.jobId ? `#${String(details.jobId).slice(0, 8)}` : "job";
@@ -322,6 +318,7 @@ export default function SystemLogsPage() {
 
   const handleSelectPreset = (preset: DatePreset) => {
     setDatePreset(preset);
+    setPage(1);
     const today = new Date();
     const formatYMD = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -349,12 +346,14 @@ export default function SystemLogsPage() {
     setStartDate(start);
     setEndDate(end);
     setDatePreset("CUSTOM");
+    setPage(1);
   };
 
   const handleClearDateFilter = () => {
     setDatePreset("ALL");
     setStartDate("");
     setEndDate("");
+    setPage(1);
   };
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -373,57 +372,63 @@ export default function SystemLogsPage() {
     setSelectedPage("ALL");
     setRoleFilter("ALL");
     handleClearDateFilter();
-  };
-
-  const fetchAuditLogs = async () => {
-    setIsLoading(true);
-    let fetchedList: AuditLogItem[] = [];
-    try {
-      const response = await apiClient.get("/audit-logs", {
-        params: {
-          page: 1,
-          page_size: 200,
-          mutations_only: true,
-        },
-      });
-      if (Array.isArray(response.data?.items)) {
-        fetchedList = response.data.items;
-      }
-    } catch (err) {
-      // Backend fallback
-    }
-
-    // Merge with localStorage motoshop_audit_logs fallback
-    try {
-      const localStored = localStorage.getItem("motoshop_audit_logs");
-      if (localStored) {
-        const parsed = JSON.parse(localStored);
-        if (Array.isArray(parsed)) {
-          const existingIds = new Set(fetchedList.map((x) => x.id));
-          for (const item of parsed) {
-            if (!existingIds.has(item.id)) {
-              fetchedList.push(item);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // Filter out read-only / noisy events
-    const NON_MUTATING = ["AUDIT_LOGS_VIEWED", "LOGIN_SUCCESS", "LOGOUT", "LOGIN_FAILURE", "AUDIT_EXPORT"];
-    const filteredMutations = fetchedList.filter((l) => !NON_MUTATING.includes(l.action));
-
-    // Sort descending by timestamp
-    filteredMutations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-    setAllLogs(filteredMutations);
-    setIsLoading(false);
+    setPage(1);
   };
 
   useEffect(() => {
+    let isMounted = true;
+    const fetchAuditLogs = async () => {
+      let fetchedList: AuditLogItem[] = [];
+      try {
+        const response = await apiClient.get("/audit-logs", {
+          params: {
+            page: 1,
+            page_size: 200,
+            mutations_only: true,
+          },
+        });
+        if (Array.isArray(response.data?.items)) {
+          fetchedList = response.data.items;
+        }
+      } catch (_err) {
+        // Backend fallback
+      }
+
+      // Merge with localStorage motoshop_audit_logs fallback
+      try {
+        const localStored = localStorage.getItem("motoshop_audit_logs");
+        if (localStored) {
+          const parsed = JSON.parse(localStored);
+          if (Array.isArray(parsed)) {
+            const existingIds = new Set(fetchedList.map((x) => x.id));
+            for (const item of parsed) {
+              if (!existingIds.has(item.id)) {
+                fetchedList.push(item);
+              }
+            }
+          }
+        }
+      } catch (_e) {
+        // ignore
+      }
+
+      // Filter out read-only / noisy events
+      const NON_MUTATING = ["AUDIT_LOGS_VIEWED", "LOGIN_SUCCESS", "LOGOUT", "LOGIN_FAILURE", "AUDIT_EXPORT"];
+      const filteredMutations = fetchedList.filter((l) => !NON_MUTATING.includes(l.action));
+
+      // Sort descending by timestamp
+      filteredMutations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      if (isMounted) {
+        setAllLogs(filteredMutations);
+        setIsLoading(false);
+      }
+    };
+
     fetchAuditLogs();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Filter logs locally
@@ -476,16 +481,12 @@ export default function SystemLogsPage() {
     });
   }, [allLogs, selectedPage, roleFilter, search, startDate, endDate]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [selectedPage, roleFilter, search, startDate, endDate]);
-
   const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
   const paginatedLogs = useMemo(() => {
-    const start = (page - 1) * pageSize;
+    const start = (currentPage - 1) * pageSize;
     return filteredLogs.slice(start, start + pageSize);
-  }, [filteredLogs, page, pageSize]);
+  }, [filteredLogs, currentPage, pageSize]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -519,14 +520,19 @@ export default function SystemLogsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (e) {
-      console.error("Failed to export logs:", e);
+    } catch (_e) {
+      // silent handle export failure
     } finally {
       setIsExporting(false);
     }
   };
 
-  const getRoleBadgeStyle = (r: string | null) => {
+  const getRoleBadgeStyle = (role: string | null) => {
+    const r = (role || "").toLowerCase();
+    if (r === "admin") return "bg-red-500/10 text-red-400 border-red-500/20 font-bold";
+    if (r === "manager") return "bg-amber-500/10 text-amber-400 border-amber-500/20 font-bold";
+    if (r === "cashier") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-bold";
+    if (r === "mechanic") return "bg-blue-500/10 text-blue-400 border-blue-500/20 font-bold";
     return "bg-zinc-800 text-zinc-300 border-zinc-700 font-bold";
   };
 
@@ -582,7 +588,10 @@ export default function SystemLogsPage() {
               type="text"
               placeholder="Search staff, action, changes..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-1.5 pl-9 pr-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
             />
           </div>
@@ -593,7 +602,10 @@ export default function SystemLogsPage() {
               {PAGE_FILTERS.map((f) => (
                 <button
                   key={f.value}
-                  onClick={() => setSelectedPage(f.value)}
+                  onClick={() => {
+                    setSelectedPage(f.value);
+                    setPage(1);
+                  }}
                   className={clsx(
                     "px-2.5 py-1 rounded-lg font-semibold transition-colors text-xs flex items-center gap-1 whitespace-nowrap shrink-0",
                     selectedPage === f.value
@@ -679,7 +691,10 @@ export default function SystemLogsPage() {
               <span className="text-zinc-400 text-xs">Staff Role:</span>
               <select
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
+                onChange={(e) => {
+                  setRoleFilter(e.target.value);
+                  setPage(1);
+                }}
                 className="bg-zinc-950 border border-zinc-700 rounded-xl py-1 px-2.5 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
                 <option value="ALL">All Roles</option>
@@ -951,7 +966,10 @@ export default function SystemLogsPage() {
               type="text"
               placeholder="Search staff, action, changes..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full bg-zinc-900 border border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
             />
           </div>
@@ -965,7 +983,10 @@ export default function SystemLogsPage() {
               <button
                 key={f.value}
                 type="button"
-                onClick={() => setSelectedPage(f.value)}
+                onClick={() => {
+                  setSelectedPage(f.value);
+                  setPage(1);
+                }}
                 className={clsx(
                   "px-3 py-2 rounded-xl text-xs font-bold text-center transition-colors border",
                   selectedPage === f.value
@@ -987,7 +1008,10 @@ export default function SystemLogsPage() {
               <button
                 key={r}
                 type="button"
-                onClick={() => setRoleFilter(r)}
+                onClick={() => {
+                  setRoleFilter(r);
+                  setPage(1);
+                }}
                 className={clsx(
                   "px-2.5 py-2 rounded-xl text-xs font-bold capitalize text-center transition-colors border",
                   roleFilter === r

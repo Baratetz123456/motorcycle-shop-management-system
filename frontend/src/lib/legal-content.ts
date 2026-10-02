@@ -217,7 +217,7 @@ export function getTermsOfServiceSections(settings: SystemSettings): {
         title: "8. Dispute Resolution & Governing Law",
         content: [
           `These Terms and Conditions shall be interpreted, construed, and enforced strictly in accordance with the substantive laws of the Republic of the Philippines.`,
-          `In the event of any operational or warranty dispute, the parties agree to first seek amicable settlement through informal dialogue and DTI Consumer Mediation before initiating legal action. Any formal legal proceedings shall be instituted exclusively in the proper courts of jurisdiction covering the location of ${shopAddress}.`
+          `In the event of any operational or warranty dispute, the parties agree to first seek amicable settlement through informal dialogue via ${contactEmail} and DTI Consumer Mediation before initiating legal action. Any formal legal proceedings shall be instituted exclusively in the proper courts of jurisdiction covering the location of ${shopAddress}.`
         ]
       }
     ]

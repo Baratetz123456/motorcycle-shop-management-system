@@ -3,7 +3,6 @@
 import { useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Filter, X, RotateCcw } from "lucide-react";
-import clsx from "clsx";
 import { useIsMounted } from "@/hooks/useIsMounted";
 
 import { UnifiedFloatingFilterFab, type UnifiedFloatingFilterFabProps } from "./UnifiedFloatingFilterFab";

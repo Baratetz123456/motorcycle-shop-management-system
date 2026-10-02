@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
-import clsx from "clsx";
 
 export function PosCatalogCardsSkeleton({ count = 8 }: { count?: number }) {
   return (

@@ -1,6 +1,5 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { usePosStore } from '@/lib/store/pos-store';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -17,23 +16,22 @@ export interface TransactionResult {
 export const useCheckoutSaga = () => {
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [completedTx, setCompletedTx] = useState<TransactionResult | null>(null);
-  const clearCart = usePosStore((state) => state.clearCart);
   
   // 1. Initial Mutation (POST /checkout)
   const checkoutMutation = useMutation({
-    mutationFn: async (payload: any) => {
+    mutationFn: async (payload: Record<string, unknown>) => {
       try {
         const response = await apiClient.post<TransactionResult>('/sales/checkout', payload);
         return response.data;
-      } catch (e) {
+      } catch (_e) {
         // Smooth fallback mode when running offline or without microservice saga events
         const fallbackTx: TransactionResult = {
           id: uuidv4(),
           invoice_no: `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
           status: "COMPLETED",
           total: Number(payload.amount_paid || 0),
-          cashier_name: payload.cashier_name || "Cashier Sarah Connor",
-          mechanic_name: payload.mechanic_name || "Mike Smith",
+          cashier_name: (payload.cashier_name as string) || "Cashier Sarah Connor",
+          mechanic_name: (payload.mechanic_name as string) || "Mike Smith",
           created_at: new Date().toISOString()
         };
         return fallbackTx;
@@ -57,7 +55,7 @@ export const useCheckoutSaga = () => {
       try {
         const response = await apiClient.get<TransactionResult>(`/sales/transactions/${transactionId}`);
         return response.data;
-      } catch (e) {
+      } catch (_e) {
         // Return fallback if transaction not found
         return completedTx || {
           id: transactionId || uuidv4(),
