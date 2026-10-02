@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="engBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#09090b" />
+      <stop offset="50%" stopColor="#18181b" />
+      <stop offset="100%" stopColor="#09090b" />
+    </linearGradient>
+
+    <!-- Technical Grid -->
+    <pattern id="engGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#27272a" stroke-width="0.75" opacity="0.6" />
+    </pattern>
+
+    <!-- Cast Aluminum Cooling Fins -->
+    <linearGradient id="aluFin" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#52525b" />
+      <stop offset="30%" stopColor="#d4d4d8" />
+      <stop offset="70%" stopColor="#71717a" />
+      <stop offset="100%" stopColor="#3f3f46" />
+    </linearGradient>
+
+    <!-- Forged Piston Steel / Ceramic -->
+    <linearGradient id="pistonSteel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#f4f4f5" />
+      <stop offset="25%" stopColor="#e4e4e7" />
+      <stop offset="70%" stopColor="#a1a1aa" />
+      <stop offset="100%" stopColor="#71717a" />
+    </linearGradient>
+
+    <!-- Bronze Connecting Rod -->
+    <linearGradient id="conRod" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#fbbf24" />
+      <stop offset="50%" stopColor="#d97706" />
+      <stop offset="100%" stopColor="#92400e" />
+    </linearGradient>
+
+    <!-- Cylinder Bore Chrome Mirror -->
+    <linearGradient id="boreMirror" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#18181b" />
+      <stop offset="30%" stopColor="#3f3f46" />
+      <stop offset="50%" stopColor="#71717a" />
+      <stop offset="70%" stopColor="#3f3f46" />
+      <stop offset="100%" stopColor="#18181b" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#engBg)" />
+  <rect width="800" height="450" fill="url(#engGrid)" />
+
+  <!-- Ambient Amber Workshop Glow -->
+  <ellipse cx="400" cy="225" rx="360" ry="180" fill="#f59e0b" opacity="0.06" filter="blur(60px)" />
+  <line x1="0" y1="449" x2="800" y2="449" stroke="#3f3f46" stroke-width="1" />
+
+  <!-- Technical Spec Callout -->
+  <g opacity="0.4" stroke="#71717a" stroke-width="0.8">
+    <line x1="140" y1="40" x2="140" y2="410" stroke-dasharray="4 4" />
+    <line x1="660" y1="40" x2="660" y2="410" stroke-dasharray="4 4" />
+    <text x="30" y="38" fill="#a1a1aa" font-family="monospace" font-size="11" letter-spacing="1">MOTORCYCLE ENGINE OVERHAUL // 4-VALVE DOHC SINGLE-CYLINDER BLOCK &amp; FORGED PISTON</text>
+  </g>
+
+  <!-- ============================================== -->
+  <!-- 1. MOTORCYCLE CYLINDER BLOCK WITH COOLING FINS -->
+  <!-- ============================================== -->
+  <g id="cylinderBlock" transform="translate(180, 140)">
+    <!-- Base Mounting Flange to Crankcase -->
+    <rect x="30" y="190" width="220" height="24" rx="4" fill="#27272a" stroke="#52525b" stroke-width="1.5" />
+    <!-- 4 Cylinder Stud Bolt Holes -->
+    <circle cx="50" cy="202" r="6" fill="#09090b" stroke="#71717a" stroke-width="1.2" />
+    <circle cx="230" cy="202" r="6" fill="#09090b" stroke="#71717a" stroke-width="1.2" />
+
+    <!-- Main Aluminum Cylinder Body Core -->
+    <rect x="55" y="40" width="170" height="150" fill="#18181b" stroke="#3f3f46" stroke-width="1.5" />
+
+    <!-- Cast Horizontal Heat Dissipation Cooling Fins (7 tiers) -->
+    <g stroke="#3f3f46" stroke-width="1">
+      <!-- Fin 1 -->
+      <rect x="20" y="45" width="240" height="10" rx="3" fill="url(#aluFin)" />
+      <!-- Fin 2 -->
+      <rect x="15" y="65" width="250" height="10" rx="3" fill="url(#aluFin)" />
+      <!-- Fin 3 -->
+      <rect x="10" y="85" width="260" height="10" rx="3" fill="url(#aluFin)" />
+      <!-- Fin 4 -->
+      <rect x="10" y="105" width="260" height="10" rx="3" fill="url(#aluFin)" />
+      <!-- Fin 5 -->
+      <rect x="15" y="125" width="250" height="10" rx="3" fill="url(#aluFin)" />
+      <!-- Fin 6 -->
+      <rect x="20" y="145" width="240" height="10" rx="3" fill="url(#aluFin)" />
+      <!-- Fin 7 -->
+      <rect x="25" y="165" width="230" height="10" rx="3" fill="url(#aluFin)" />
+    </g>
+
+    <!-- Cross-Section Cylinder Bore Liner (Honed Nikasil / Iron Sleeve) -->
+    <rect x="85" y="40" width="110" height="150" fill="url(#boreMirror)" stroke="#71717a" stroke-width="1.5" />
+    <!-- Cross-hatch Honing Marks -->
+    <g stroke="#a1a1aa" stroke-width="0.5" opacity="0.25">
+      <line x1="85" y1="50" x2="195" y2="90" />
+      <line x1="195" y1="50" x2="85" y2="90" />
+      <line x1="85" y1="90" x2="195" y2="130" />
+      <line x1="195" y1="90" x2="85" y2="130" />
+      <line x1="85" y1="130" x2="195" y2="170" />
+      <line x1="195" y1="130" x2="85" y2="170" />
+    </g>
+
+    <!-- Cam Chain Tunnel on Left Side -->
+    <rect x="35" y="55" width="15" height="120" rx="2" fill="#09090b" stroke="#3f3f46" stroke-width="1" />
+  </g>
+
+  <!-- ============================================== -->
+  <!-- 2. FORGED MOTORCYCLE RACING PISTON & WRIST PIN -->
+  <!-- ============================================== -->
+  <g id="pistonAssembly" transform="translate(480, 80)">
+    <!-- Piston Crown with Valve Relief Pockets -->
+    <path d="M 20 40 
+             C 40 36, 120 36, 140 40 
+             L 145 110 
+             C 145 125, 130 135, 115 135 
+             L 115 115 
+             L 45 115 
+             L 45 135 
+             C 30 135, 15 125, 15 110 Z" 
+          fill="url(#pistonSteel)" stroke="#52525b" stroke-width="1.8" />
+
+    <!-- Valve Relief Pockets on Crown -->
+    <ellipse cx="50" cy="46" rx="18" ry="6" fill="#27272a" stroke="#71717a" stroke-width="0.8" />
+    <ellipse cx="110" cy="46" rx="18" ry="6" fill="#27272a" stroke="#71717a" stroke-width="0.8" />
+
+    <!-- 3 Compression & Oil Control Piston Ring Lands -->
+    <line x1="18" y1="58" x2="142" y2="58" stroke="#18181b" stroke-width="2.5" />
+    <line x1="18" y1="66" x2="142" y2="66" stroke="#18181b" stroke-width="2.5" />
+    <line x1="18" y1="74" x2="142" y2="74" stroke="#18181b" stroke-width="3" />
+
+    <!-- Gold/Titanium Piston Ring Set Floating Out -->
+    <ellipse cx="80" cy="20" rx="64" ry="10" fill="none" stroke="#f59e0b" stroke-width="2" />
+    <ellipse cx="80" cy="28" rx="64" ry="10" fill="none" stroke="#d4d4d8" stroke-width="1.8" />
+
+    <!-- Wrist Pin Bore & Hollow Gudgeon Pin -->
+    <circle cx="80" cy="95" r="14" fill="#27272a" stroke="#71717a" stroke-width="1.5" />
+    <circle cx="80" cy="95" r="9" fill="#09090b" stroke="#a1a1aa" stroke-width="1.2" />
+
+    <!-- Connecting Rod Small End -->
+    <g transform="translate(80, 95)">
+      <!-- Rod I-Beam Shank Disappearing Downward -->
+      <path d="M -8 10 L -12 110 L 12 110 L 8 10 Z" fill="url(#conRod)" stroke="#78350f" stroke-width="1.2" />
+      <circle cx="0" cy="0" r="18" fill="none" stroke="url(#conRod)" stroke-width="5" />
+    </g>
+
+    <!-- Uma / Racing Spec Engraving -->
+    <text x="80" y="108" fill="#52525b" font-family="monospace" font-size="7" font-weight="bold" text-anchor="middle">62.0mm</text>
+  </g>
+
+  <!-- ============================================== -->
+  <!-- 3. MOTORCYCLE OVERHEAD VALVES & CAM SPROCKET   -->
+  <!-- ============================================== -->
+  <g id="valveTrain" transform="translate(480, 240)">
+    <!-- Intake & Exhaust Valves (Stem & Head) -->
+    <!-- Valve 1 -->
+    <g transform="translate(15, 30)">
+      <line x1="0" y1="0" x2="0" y2="80" stroke="url(#pistonSteel)" stroke-width="5" stroke-linecap="round" />
+      <path d="M -16 80 L 16 80 L 12 72 L -12 72 Z" fill="#d4d4d8" stroke="#3f3f46" stroke-width="1" />
+      <!-- Dual Valve Springs -->
+      <rect x="-8" y="15" width="16" height="40" rx="2" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="3 3" />
+    </g>
+    <!-- Valve 2 -->
+    <g transform="translate(45, 30)">
+      <line x1="0" y1="0" x2="0" y2="80" stroke="url(#pistonSteel)" stroke-width="5" stroke-linecap="round" />
+      <path d="M -16 80 L 16 80 L 12 72 L -12 72 Z" fill="#d4d4d8" stroke="#3f3f46" stroke-width="1" />
+      <rect x="-8" y="15" width="16" height="40" rx="2" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="3 3" />
+    </g>
+
+    <!-- NGK Iridium Motorcycle Spark Plug -->
+    <g transform="translate(105, 20)">
+      <!-- Ceramic Insulator Ribs -->
+      <rect x="-4" y="0" width="8" height="25" rx="2" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="0.8" />
+      <!-- Hex Nut Base -->
+      <path d="M -7 25 L 7 25 L 9 35 L -9 35 Z" fill="#71717a" stroke="#18181b" stroke-width="1" />
+      <!-- Threaded Body -->
+      <rect x="-6" y="35" width="12" height="25" fill="#3f3f46" stroke="#18181b" stroke-width="0.8" stroke-dasharray="2 2" />
+      <!-- Ground Electrode -->
+      <path d="M 0 60 L 0 68 L -4 68" fill="none" stroke="#e4e4e7" stroke-width="1.5" />
+      <!-- Fine Wire Iridium Tip -->
+      <circle cx="0" cy="63" r="1" fill="#38bdf8" />
+    </g>
+  </g>
+
+  <!-- Spec Badges in Corners -->
+  <g transform="translate(30, 415)">
+    <rect x="0" y="0" width="145" height="20" rx="4" fill="#18181b" stroke="#3f3f46" stroke-width="0.8" />
+    <text x="72" y="14" fill="#f59e0b" font-family="monospace" font-size="9" font-weight="bold" text-anchor="middle">PRECISION NIKASIL BORE</text>
+  </g>
+
+  <g transform="translate(620, 415)">
+    <rect x="0" y="0" width="150" height="20" rx="4" fill="#18181b" stroke="#3f3f46" stroke-width="0.8" />
+    <text x="75" y="14" fill="#4ade80" font-family="monospace" font-size="9" font-weight="bold" text-anchor="middle">FORGED ALLOY OVERHAUL</text>
+  </g>
+</svg>

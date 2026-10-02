@@ -1,0 +1,15 @@
+FROM public.ecr.aws/lambda/python:3.11
+
+# Install application dependencies
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
+
+# Copy backend codebase
+COPY . ${LAMBDA_TASK_ROOT}/
+
+# Set PYTHONPATH to include lambda task root
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
+
+# Default entrypoint (can be overridden per function in template.yaml or docker run)
+ARG SERVICE_HANDLER="auth_service.main.handler"
+CMD ["sh", "-c", "exec python -m awslambdaric ${SERVICE_HANDLER}"]

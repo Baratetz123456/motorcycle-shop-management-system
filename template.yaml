@@ -1,0 +1,233 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  MotoShop POS - Zero-Cost Serverless Architecture (5 Users)
+  FastAPI Modular Monolith on AWS Lambda + CloudFront CDN + S3 Static SPA
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL connection string for RDS (postgresql+asyncpg://...)
+  JwtSecretKey:
+    Type: String
+    NoEcho: true
+    Default: "change-me-in-production-super-secret-jwt-key"
+    Description: Secret key for signing and verifying JWT tokens
+  CookieSecure:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: Set to true for production HTTPS cookies
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        DATABASE_URL: !Ref DatabaseUrl
+        JWT_SECRET_KEY: !Ref JwtSecretKey
+        COOKIE_SECURE: !Ref CookieSecure
+        PYTHONPATH: /var/task
+
+Resources:
+  # ===========================================================================
+  # 1. AWS HTTP API Gateway ($1/million requests; 1M requests/mo free)
+  # ===========================================================================
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: motoshop-http-api
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+          - Idempotency-Key
+          - Cookie
+          - Accept
+          - X-Forwarded-For
+        MaxAge: 3600
+
+  # ===========================================================================
+  # 2. Consolidated Modular Monolith Lambda
+  # ===========================================================================
+  MonolithFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["app.main.handler"]
+      Events:
+        ApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1
+            Method: ANY
+        ApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/{proxy+}
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: monolith-latest
+
+  # ===========================================================================
+  # 3. Dedicated VPC Migration Lambda (Invoked during GitHub Actions CI/CD)
+  # ===========================================================================
+  MigrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["app.migrations.runner.handler"]
+      Timeout: 120
+      MemorySize: 512
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: migration-latest
+
+  # ===========================================================================
+  # 4. Amazon S3 Bucket for Static SPA Frontend
+  # ===========================================================================
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "motoshop-frontend-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ===========================================================================
+  # 5. CloudFront Origin Access Control (OAC)
+  # ===========================================================================
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: motoshop-frontend-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ===========================================================================
+  # 6. S3 Bucket Policy allowing CloudFront OAC Read Access
+  # ===========================================================================
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipalReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+
+  # ===========================================================================
+  # 7. Unified Amazon CloudFront Distribution (Always Free Tier)
+  # ===========================================================================
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Comment: MotoShop POS Zero-Cost Distribution
+        Origins:
+          - Id: S3FrontendOrigin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+            S3OriginConfig: {}
+          - Id: ApiGatewayOrigin
+            DomainName: !Sub "${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+        DefaultCacheBehavior:
+          TargetOriginId: S3FrontendOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: ApiGatewayOrigin
+            ViewerProtocolPolicy: https-only
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - POST
+              - PATCH
+              - DELETE
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: all
+              Headers:
+                - Authorization
+                - Idempotency-Key
+                - Accept
+                - Content-Type
+            DefaultTTL: 0
+            MinTTL: 0
+            MaxTTL: 0
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+
+Outputs:
+  CloudFrontUrl:
+    Description: "Public HTTPS URL for MotoShop POS"
+    Value: !Sub "https://${CloudFrontDistribution.DomainName}"
+  HttpApiUrl:
+    Description: "Direct Base URL for AWS HTTP API Gateway"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  FrontendBucketName:
+    Description: "S3 Bucket Name for Frontend SPA Deployment"
+    Value: !Ref FrontendBucket
+  CloudFrontDistributionId:
+    Description: "CloudFront Distribution ID for Invalidation"
+    Value: !Ref CloudFrontDistribution
+  MigrationFunctionName:
+    Description: "Lambda function name for VPC database migrations"
+    Value: !Ref MigrationFunction
+

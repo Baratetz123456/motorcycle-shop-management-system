@@ -1,0 +1,24 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow local dev placeholders, test fixtures, and documentation"
+paths = [
+    '''docker-compose\.yml''',
+    '''template\.yaml''',
+    '''\.env\.example''',
+    '''backend/tests/.*''',
+    '''frontend/tests/.*''',
+    '''docs/.*''',
+]
+stopwords = [
+    "your-super-secret-key-for-local-dev",
+    "change-me-in-production-super-secret-jwt-key",
+    "test-secret-key-for-ci-pipeline",
+    "postgres:123",
+    "admin123",
+    "b4a1c6e2-9d3f-4e8a-8a12-fc7e42d87e1a",
+]
+commits = [
+    "b91d9f64e7b0181c0e8fcd5a20fece749620da53",
+]
