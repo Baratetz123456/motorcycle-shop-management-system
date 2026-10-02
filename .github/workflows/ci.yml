@@ -53,6 +53,8 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Build Next.js (standalone)
+        env:
+          NEXT_OUTPUT_MODE: standalone
         run: npm run build
 
       - name: Run npm audit (Strict Zero-Tolerance Gate)
