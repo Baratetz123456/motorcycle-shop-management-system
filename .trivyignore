@@ -7,3 +7,6 @@ CVE-2026-73566
 # Base OS OpenSSL patches (upgraded via apk upgrade in runner)
 CVE-2026-14456
 CVE-2026-45447
+
+# Base OS PCRE2 patches (upgraded via apt-get upgrade in backend)
+CVE-2026-103111
