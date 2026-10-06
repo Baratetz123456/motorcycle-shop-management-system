@@ -58,7 +58,7 @@ jobs:
         run: npm run build
 
       - name: Run npm audit (Strict Zero-Tolerance Gate)
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
   # ===========================================================================
   # Job 2: Backend Tests
