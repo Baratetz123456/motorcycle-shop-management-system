@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 
@@ -28,8 +28,10 @@ async def find_job_order(session: AsyncSession, job_id: str):
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
-@router.get("/motorcycle-models", response_model=List[schemas.MotorcycleModelResponse])
+@router.get("/motorcycle-models", response_model=Union[schemas.PaginatedMotorcycleModelResponse, List[schemas.MotorcycleModelResponse]])
 async def get_motorcycle_models(
+    page: Optional[int] = Query(None, ge=1),
+    page_size: Optional[int] = Query(15, ge=1, le=100),
     current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
     session: AsyncSession = Depends(get_db)
 ):
@@ -72,7 +74,21 @@ async def get_motorcycle_models(
                 created_at=m.created_at
             )
         )
+
+    if page is not None:
+        total = len(response_items)
+        offset = (page - 1) * page_size
+        items = response_items[offset : offset + page_size]
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if total > 0 else 1
+        }
+
     return response_items
+
 
 @router.post("/motorcycle-models", response_model=schemas.MotorcycleModelResponse)
 @idempotent
@@ -405,8 +421,10 @@ async def update_job_payment_status(
     await session.refresh(db_job)
     return db_job
 
-@router.get("/customer-history", response_model=List[schemas.CustomerHistoryRecordResponse])
+@router.get("/customer-history", response_model=Union[schemas.PaginatedCustomerHistoryResponse, List[schemas.CustomerHistoryRecordResponse]])
 async def get_all_customer_history(
+    page: Optional[int] = Query(None, ge=1),
+    page_size: Optional[int] = Query(15, ge=1, le=100),
     current_user: dict = Depends(require_roles(["admin", "manager", "mechanic", "cashier"])),
     session: AsyncSession = Depends(get_db)
 ):
@@ -484,7 +502,20 @@ async def get_all_customer_history(
             past_jobs=past_jobs_list
         ))
 
+    if page is not None:
+        total = len(result)
+        offset = (page - 1) * page_size
+        items = result[offset : offset + page_size]
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if total > 0 else 1
+        }
+
     return result
+
 
 @router.get("/commissions", response_model=List[schemas.CommissionResponse])
 async def get_commissions(

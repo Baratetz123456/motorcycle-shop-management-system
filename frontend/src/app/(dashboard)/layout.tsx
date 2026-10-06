@@ -129,7 +129,7 @@ export default function DashboardLayout({
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans relative flex flex-col">
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans relative flex flex-col md:h-screen md:overflow-hidden">
         {/* Full-Width Top Navbar (Dark Canvas with Emerald Accent) */}
         <header className="fixed top-0 left-0 right-0 h-16 bg-zinc-900 border-b border-zinc-800 z-40 px-4 sm:px-6 flex items-center justify-between shadow-xs select-none">
           {/* Left: Branding & Shop Metadata */}
@@ -245,11 +245,12 @@ export default function DashboardLayout({
         <MobileBottomNav />
 
         {/* Main Content Area (Proper offsets for fixed top navbar and mobile bottom nav) */}
-        <main className="flex-1 min-h-screen pt-16 md:pl-64 pb-20 md:pb-0 overflow-y-auto bg-slate-50 dark:bg-zinc-950 flex flex-col min-w-0 w-full max-w-full">
-          <div key={pathname} className="flex-1 min-h-0 flex flex-col min-w-0 w-full max-w-full animate-page-enter">
+        <main className="flex-1 min-h-screen pt-16 md:pl-64 pb-20 md:pb-0 overflow-y-auto md:h-screen md:min-h-0 md:overflow-hidden bg-slate-50 dark:bg-zinc-950 flex flex-col min-w-0 w-full max-w-full">
+          <div key={pathname} className="flex-1 min-h-0 h-full flex flex-col min-w-0 w-full max-w-full animate-page-enter">
             {children}
           </div>
         </main>
+
 
         {/* Change Password Modal */}
         <ChangePasswordModal

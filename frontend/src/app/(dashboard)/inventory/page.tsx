@@ -38,6 +38,8 @@ import {
   downloadCsvFile, 
   printIsolatedDocument 
 } from "@/components/documents/reportExportUtils";
+import { PaginationFooter } from "@/components/ui/PaginationFooter";
+
 
 export interface CatalogItem {
   id: string;
@@ -276,7 +278,22 @@ function InventoryContent() {
       });
   }, [items, search, activeTab, selectedCategory]);
 
+  // Pagination State (Unified Desktop & Mobile)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, activeTab, selectedCategory]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, currentPage, pageSize]);
+
   const handleOpenModal = (type: "PRODUCT" | "SERVICE" = "PRODUCT") => {
+
     setIsRegisteringCategory(false);
     setNewCategoryName("");
     setFormData({
@@ -600,7 +617,7 @@ function InventoryContent() {
 
       {/* Streamlined Catalog Table & Mobile List */}
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col">
-        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+        <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain table-scrollbar">
           {/* Mobile View: Borderless Edge-to-Edge Catalog Rows */}
           <div className="block md:hidden px-1 divide-y divide-zinc-800 pb-24">
             {isLoading ? (
@@ -621,7 +638,7 @@ function InventoryContent() {
                 No matching {activeTab === "PRODUCT" ? "products" : "services"} found.
               </div>
             ) : (
-              filteredItems.map((item) => {
+              paginatedItems.map((item) => {
                 const isProduct = item.item_type === "PRODUCT";
                 const isOutOfStock = isProduct && item.current_stock === 0;
                 const isLowStock = isProduct && item.current_stock <= item.reorder_level;
@@ -734,7 +751,7 @@ function InventoryContent() {
                   </td>
                 </tr>
               ) : (
-                filteredItems.map((item) => {
+                paginatedItems.map((item) => {
                   const isProduct = item.item_type === "PRODUCT";
                   const isOutOfStock = isProduct && item.current_stock === 0;
                   const isLowStock = isProduct && item.current_stock <= item.reorder_level;
@@ -828,20 +845,17 @@ function InventoryContent() {
           </table>
         </div>
 
-        {/* Footer Info (Desktop Only - Hidden on Mobile) */}
-        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-950 flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400 shrink-0">
-          <div>
-            Displaying <span className="font-semibold text-white">{filteredItems.length}</span> {activeTab === "PRODUCT" ? "product(s)" : "service(s)"}
-            {activeTab === "PRODUCT" && (
-              <span className="text-zinc-500 ml-2">
-                (Sorted by critical deficit & proximity to reorder threshold)
-              </span>
-            )}
-          </div>
-          <div className="flex gap-4 items-center text-zinc-500">
-            <span>• Click any row to view full profile, margins & controls</span>
-          </div>
-        </div>
+        {/* Responsive Pagination Footer (Desktop & Mobile) */}
+        <PaginationFooter
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredItems.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel={activeTab === "PRODUCT" ? "product(s)" : "service(s)"}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Registration Modal */}

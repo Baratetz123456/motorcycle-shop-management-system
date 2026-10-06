@@ -35,8 +35,16 @@ class ItemResponse(ItemBase):
     
     model_config = ConfigDict(from_attributes=True)
 
+class PaginatedItemResponse(BaseModel):
+    items: List[ItemResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
 class StockMovementCreate(BaseModel):
     item_id: UUID
     type: MovementType
     quantity_changed: int
     reference_id: Optional[UUID] = None
+

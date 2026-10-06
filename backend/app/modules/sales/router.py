@@ -3,12 +3,12 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, cast, String, extract, Date as SADate, text
+from sqlalchemy import select, cast, String, extract, Date as SADate, text, func
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
@@ -25,14 +25,32 @@ router = APIRouter(prefix="/sales", tags=["Sales"])
 def generate_invoice_no():
     return f"INV-{uuid.uuid4().hex[:8].upper()}"
 
-@router.get("/transactions", response_model=List[schemas.TransactionResponse])
+@router.get("/transactions", response_model=Union[schemas.PaginatedTransactionResponse, List[schemas.TransactionResponse]])
 async def get_transactions(
+    page: Optional[int] = Query(None, ge=1),
+    page_size: Optional[int] = Query(15, ge=1, le=100),
     current_user: dict = Depends(require_roles(["admin", "cashier", "manager"])),
     session: AsyncSession = Depends(get_db)
 ):
     stmt = select(models.Transaction).order_by(models.Transaction.created_at.desc())
+    if page is not None:
+        count_query = select(func.count()).select_from(models.Transaction)
+        total = (await session.execute(count_query)).scalar() or 0
+        offset = (page - 1) * page_size
+        paged_stmt = stmt.offset(offset).limit(page_size)
+        result = await session.execute(paged_stmt)
+        items = result.scalars().all()
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if total > 0 else 1
+        }
+
     result = await session.execute(stmt)
     return result.scalars().all()
+
 
 @router.get("/transactions/{transaction_id}", response_model=schemas.TransactionResponse)
 async def get_transaction(

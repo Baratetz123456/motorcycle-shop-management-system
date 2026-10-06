@@ -21,6 +21,7 @@ import { recordUserAuditLog } from "@/lib/audit";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
+import { PaginationFooter } from "@/components/ui/PaginationFooter";
 
 export interface MotorcycleProfile {
   id: string;
@@ -249,6 +250,20 @@ export default function MotorcycleProfilesPage() {
         return 0;
       });
   }, [profiles, search, selectedCategory, selectedBrand, sortBy]);
+
+  // Pagination State (Unified Desktop & Mobile)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCategory, selectedBrand, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedProfiles.length / pageSize));
+  const paginatedProfiles = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredAndSortedProfiles.slice(start, start + pageSize);
+  }, [filteredAndSortedProfiles, currentPage, pageSize]);
 
   // Open Edit Modal with Profile Data
   const openEditModal = (profile: MotorcycleProfile) => {
@@ -522,7 +537,7 @@ export default function MotorcycleProfilesPage() {
 
       {/* Motorcycles Data Container (Aligned with Customer Records Table) */}
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none">
-        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+        <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain table-scrollbar">
           {/* Mobile View: Borderless Edge-to-Edge Motorcycle Rows */}
           <div className="block md:hidden px-1 divide-y divide-zinc-800/80 pb-24">
             {loading ? (
@@ -561,7 +576,7 @@ export default function MotorcycleProfilesPage() {
                 )}
               </div>
             ) : (
-              filteredAndSortedProfiles.map((p) => (
+              paginatedProfiles.map((p) => (
                 <div
                   key={p.id}
                   onClick={() => openEditModal(p)}
@@ -671,7 +686,7 @@ export default function MotorcycleProfilesPage() {
                   </td>
                 </tr>
               ) : (
-                filteredAndSortedProfiles.map((p) => (
+                paginatedProfiles.map((p) => (
                   <tr
                     key={p.id}
                     onClick={() => openEditModal(p)}
@@ -728,13 +743,17 @@ export default function MotorcycleProfilesPage() {
           </table>
         </div>
 
-        {/* Footer (Desktop Only - Hidden on Mobile) */}
-        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-950 items-center justify-between text-xs text-zinc-500 shrink-0">
-          <div>Showing {filteredAndSortedProfiles.length} motorcycle profile(s)</div>
-          <div className="flex gap-4 items-center text-zinc-500">
-            <span>• Accessible by Admin, Manager, and Mechanic</span>
-          </div>
-        </div>
+        {/* Responsive Pagination Footer (Desktop & Mobile) */}
+        <PaginationFooter
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredAndSortedProfiles.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="motorcycle profile(s)"
+          isLoading={loading}
+        />
       </div>
 
       {/* Modal: Register Motorcycle Profile */}

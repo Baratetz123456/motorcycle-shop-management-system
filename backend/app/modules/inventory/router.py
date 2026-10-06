@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.core.database import get_db
 from app.core.idempotency import idempotent
@@ -12,12 +12,14 @@ from app.modules.inventory import models, schemas
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
-@router.get("", response_model=List[schemas.ItemResponse])
-@router.get("/", response_model=List[schemas.ItemResponse])
-@router.get("/items", response_model=List[schemas.ItemResponse])
+@router.get("", response_model=Union[schemas.PaginatedItemResponse, List[schemas.ItemResponse]])
+@router.get("/", response_model=Union[schemas.PaginatedItemResponse, List[schemas.ItemResponse]])
+@router.get("/items", response_model=Union[schemas.PaginatedItemResponse, List[schemas.ItemResponse]])
 async def get_items(
     item_type: Optional[str] = None,
     include_inactive: bool = False,
+    page: Optional[int] = Query(None, ge=1),
+    page_size: Optional[int] = Query(15, ge=1, le=100),
     current_user: dict = Depends(require_roles(["admin", "cashier", "manager", "mechanic"])),
     session: AsyncSession = Depends(get_db)
 ):
@@ -26,8 +28,25 @@ async def get_items(
         query = query.where(models.Item.is_active == True)
     if item_type:
         query = query.where(models.Item.item_type == item_type)
+
+    if page is not None:
+        count_query = select(func.count()).select_from(query.subquery())
+        total = (await session.execute(count_query)).scalar() or 0
+        offset = (page - 1) * page_size
+        paged_query = query.order_by(models.Item.name.asc()).offset(offset).limit(page_size)
+        result = await session.execute(paged_query)
+        items = result.scalars().all()
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if total > 0 else 1
+        }
+
     result = await session.execute(query)
     return result.scalars().all()
+
 
 @router.get("/{item_id}", response_model=schemas.ItemResponse)
 @router.get("/items/{item_id}", response_model=schemas.ItemResponse)

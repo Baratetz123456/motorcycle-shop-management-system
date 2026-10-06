@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
 import { UnifiedFloatingAddFab } from "@/components/ui/UnifiedFloatingAddFab";
+import { PaginationFooter } from "@/components/ui/PaginationFooter";
 import { 
   getSystemSettings, 
   saveSystemSettings, 
@@ -119,6 +120,7 @@ function SettingsContent() {
   const [staffUsers, setStaffUsers] = useState<StaffUserItem[]>([]);
   const [staffTotal, setStaffTotal] = useState(0);
   const [staffPage, setStaffPage] = useState(1);
+  const [staffPageSize, setStaffPageSize] = useState(10);
   const [staffTotalPages, setStaffTotalPages] = useState(1);
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffSearch, setStaffSearch] = useState("");
@@ -265,11 +267,11 @@ function SettingsContent() {
     }
   };
 
-  const fetchStaffUsers = async (page = staffPage, roleFilter = staffRoleFilter, search = staffSearch) => {
+  const fetchStaffUsers = async (page = staffPage, roleFilter = staffRoleFilter, search = staffSearch, pageSize = staffPageSize) => {
     setStaffLoading(true);
     setStaffError(null);
     try {
-      const params: any = { page, page_size: 10, search };
+      const params: any = { page, page_size: pageSize, search };
       if (roleFilter && roleFilter !== "ALL") {
         params.role = roleFilter;
       }
@@ -1347,7 +1349,7 @@ function SettingsContent() {
 
             {/* Staff Users Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
             <div className="md:flex-1 md:min-h-0 md:overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/30 flex flex-col">
-              <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+              <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain table-scrollbar">
                 {/* Mobile View: Adaptive Staff Account Cards */}
                 <div className="block md:hidden p-3 space-y-3">
                   {staffLoading ? (
@@ -1508,36 +1510,21 @@ function SettingsContent() {
                 </table>
               </div>
 
-              {/* Pinned Pagination Controls (Desktop Only - Hidden on Mobile) */}
-              <div className="hidden md:flex p-3.5 border-t border-white/10 bg-zinc-950 flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
-                <div className="text-center sm:text-left">
-                  Showing <span className="font-bold text-white">{staffUsers.length}</span> of{" "}
-                  <span className="font-bold text-white">{staffTotal}</span> registered staff members (Page{" "}
-                  <span className="font-bold text-white">{staffPage}</span> of{" "}
-                  <span className="font-bold text-white">{staffTotalPages || 1}</span>)
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleStaffPageChange(staffPage - 1)}
-                    disabled={staffPage <= 1 || staffLoading}
-                    className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
-                    title="Previous Page"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleStaffPageChange(staffPage + 1)}
-                    disabled={staffPage >= staffTotalPages || staffLoading}
-                    className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
-                    title="Next Page"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              {/* Responsive Pagination Controls (Desktop & Mobile) */}
+              <PaginationFooter
+                currentPage={staffPage}
+                totalPages={staffTotalPages || 1}
+                totalItems={staffTotal}
+                pageSize={staffPageSize}
+                onPageChange={handleStaffPageChange}
+                onPageSizeChange={(newSize) => {
+                  setStaffPageSize(newSize);
+                  setStaffPage(1);
+                  fetchStaffUsers(1, staffRoleFilter, staffSearch, newSize);
+                }}
+                itemLabel="registered staff member(s)"
+                isLoading={staffLoading}
+              />
             </div>
 
             {/* Floating Filter FAB (Mobile Only for Staff Users) */}

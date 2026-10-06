@@ -17,6 +17,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { PaginationFooter } from "@/components/ui/PaginationFooter";
 
 export type AuditLogDetails = Record<string, string | number | boolean | null | undefined>;
 
@@ -714,7 +715,7 @@ export default function SystemLogsPage() {
 
       {/* Main Data Table Container (Fixed Viewport, Scrollable Body, Pinned Footer) */}
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-transparent md:bg-zinc-900/40 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col">
-        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+        <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain table-scrollbar">
           {/* Mobile View: Borderless Edge-to-Edge Event Rows */}
           <div className="block md:hidden px-1 divide-y divide-zinc-800/60 pb-24">
             {isLoading ? (
@@ -914,33 +915,16 @@ export default function SystemLogsPage() {
       </table>
     </div>
 
-    {/* Pinned Bottom Pagination Footer (Desktop Only - Hidden on Mobile) */}
-    <div className="hidden md:flex p-3.5 border-t border-zinc-800 bg-zinc-950 flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 shrink-0">
-      <div className="text-center sm:text-left">
-        Showing <span className="font-bold text-white">{paginatedLogs.length}</span> of{" "}
-        <span className="font-bold text-white">{filteredLogs.length}</span> events (Page{" "}
-        <span className="font-bold text-white">{page}</span> of{" "}
-        <span className="font-bold text-white">{totalPages}</span>)
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => handlePageChange(page - 1)}
-          disabled={page === 1}
-          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
-          title="Previous Page"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => handlePageChange(page + 1)}
-          disabled={page === totalPages}
-          className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:bg-zinc-900/50 disabled:border-zinc-800/50 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
-          title="Next Page"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
+    {/* Responsive Pagination Footer (Desktop & Mobile) */}
+    <PaginationFooter
+      currentPage={currentPage}
+      totalPages={totalPages}
+      totalItems={filteredLogs.length}
+      pageSize={pageSize}
+      onPageChange={handlePageChange}
+      itemLabel="event(s)"
+      isLoading={isLoading}
+    />
   </div>
 
   {/* Floating Filter FAB (Mobile Only) */}

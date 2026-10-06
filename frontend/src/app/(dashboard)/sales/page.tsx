@@ -31,6 +31,7 @@ import {
   downloadCsvFile, 
   printIsolatedDocument 
 } from "@/components/documents/reportExportUtils";
+import { PaginationFooter } from "@/components/ui/PaginationFooter";
 
 export interface TransactionRecord {
   id: string;
@@ -179,6 +180,20 @@ export default function SalesManagementPage() {
 
     return true;
   });
+
+  // Pagination State (Unified Desktop & Mobile)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, startDate, endDate, datePreset]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredTransactions.slice(start, start + pageSize);
+  }, [filteredTransactions, currentPage, pageSize]);
 
   const activeFilterCount = [
     search.trim() ? 1 : 0,
@@ -531,7 +546,7 @@ export default function SalesManagementPage() {
 
       {/* Transactions Table & Mobile Cards */}
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none md:shadow-sm">
-        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+        <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain table-scrollbar">
           {/* Mobile View: Borderless Edge-to-Edge List Rows */}
           <div className="block md:hidden px-1 divide-y divide-zinc-800/80 pb-24">
             {isLoading ? (
@@ -566,7 +581,7 @@ export default function SalesManagementPage() {
                 )}
               </div>
             ) : (
-              filteredTransactions.map((tx) => {
+              paginatedTransactions.map((tx) => {
                 const isCompleted = tx.status === "COMPLETED";
                 return (
                   <div
@@ -669,7 +684,7 @@ export default function SalesManagementPage() {
                   </td>
                 </tr>
               ) : (
-                filteredTransactions.map((tx) => {
+                paginatedTransactions.map((tx) => {
                   const isCompleted = tx.status === "COMPLETED";
 
                   return (
@@ -722,13 +737,17 @@ export default function SalesManagementPage() {
           </table>
         </div>
 
-        {/* Footer (Desktop Only - Hidden on Mobile) */}
-        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-900 flex-col sm:flex-row gap-2 items-center justify-between text-xs text-zinc-400 shrink-0">
-          <div>Displaying {filteredTransactions.length} transaction record(s)</div>
-          <div className="flex gap-4 items-center text-zinc-400 text-[11px] sm:text-xs">
-            <span>• Commission rates are determined by each assigned mechanic</span>
-          </div>
-        </div>
+        {/* Responsive Pagination Footer (Desktop & Mobile) */}
+        <PaginationFooter
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredTransactions.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="transaction record(s)"
+          isLoading={isLoading}
+        />
       </div>
     </div>
 

@@ -25,6 +25,7 @@ import clsx from "clsx";
 import { apiClient } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { FloatingFilterButton, MobileFilterSheet } from "@/components/ui/MobileFilterSheet";
+import { PaginationFooter } from "@/components/ui/PaginationFooter";
 
 export interface CustomerHistoryRecord {
   customer_id: string;
@@ -323,6 +324,20 @@ export default function CustomerRepairHistoryPage() {
     return true;
   });
 
+  // Pagination State (Unified Desktop & Mobile)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterTab, startDate, endDate]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredHistories.length / pageSize));
+  const paginatedHistories = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredHistories.slice(start, start + pageSize);
+  }, [filteredHistories, currentPage, pageSize]);
+
   return (
     <div className="w-full min-h-full md:h-full flex-1 md:min-h-0 bg-zinc-950 text-zinc-100 p-3 sm:p-4 md:p-6 flex flex-col overflow-visible md:overflow-hidden font-sans">
       
@@ -448,7 +463,7 @@ export default function CustomerRepairHistoryPage() {
 
       {/* History Table Container (Unified Dark Zinc Theme) */}
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-2xl flex flex-col shadow-none">
-        <div className="overflow-visible md:overflow-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain">
+        <div className="overflow-visible md:overflow-y-auto md:flex-1 md:min-h-0 touch-pan-y overscroll-contain table-scrollbar">
           {/* Mobile View: Borderless Edge-to-Edge Customer Rows */}
           <div className="block md:hidden px-1 divide-y divide-zinc-800/80 pb-24">
             {filteredHistories.length === 0 ? (
@@ -470,7 +485,7 @@ export default function CustomerRepairHistoryPage() {
                 )}
               </div>
             ) : (
-              filteredHistories.map((record) => {
+              paginatedHistories.map((record) => {
                 const isActive = record.active_status === "ACTIVE_REPAIR";
 
                 return (
@@ -561,7 +576,7 @@ export default function CustomerRepairHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                filteredHistories.map((record) => {
+                paginatedHistories.map((record) => {
                   const isActive = record.active_status === "ACTIVE_REPAIR";
 
                   return (
@@ -617,13 +632,16 @@ export default function CustomerRepairHistoryPage() {
           </table>
         </div>
 
-        {/* Footer (Desktop Only - Hidden on Mobile) */}
-        <div className="hidden md:flex p-4 border-t border-zinc-800 bg-zinc-950 items-center justify-between text-xs text-zinc-500 shrink-0">
-          <div>Showing {filteredHistories.length} customer record(s)</div>
-          <div className="flex gap-4 items-center text-zinc-500">
-            <span>• Accessible by Admin, Manager, and Mechanic</span>
-          </div>
-        </div>
+        {/* Responsive Pagination Footer (Desktop & Mobile) */}
+        <PaginationFooter
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredHistories.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="customer record(s)"
+        />
       </div>
 
       {/* Floating Filter FAB (Mobile Only) */}

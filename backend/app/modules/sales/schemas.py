@@ -40,3 +40,11 @@ class TransactionResponse(BaseModel):
     created_at: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+class PaginatedTransactionResponse(BaseModel):
+    items: List[TransactionResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+

@@ -182,3 +182,18 @@ class CustomerHistoryRecordResponse(BaseModel):
     active_status: str
     past_jobs: List[CustomerHistoryPastJob] = []
 
+class PaginatedMotorcycleModelResponse(BaseModel):
+    items: List[MotorcycleModelResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+class PaginatedCustomerHistoryResponse(BaseModel):
+    items: List[CustomerHistoryRecordResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
