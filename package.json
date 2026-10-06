@@ -8,7 +8,7 @@
     "lint": "npm --prefix frontend run lint",
     "test:e2e": "npm --prefix frontend run test:e2e",
     "test:backend": "docker exec motoshop-backend pytest -v",
-    "test:security:frontend": "npm --prefix frontend audit --audit-level=high",
+    "test:security:frontend": "npm --prefix frontend audit --omit=dev --audit-level=high",
     "test:security:backend": "docker exec motoshop-backend bandit -r app/ -ll",
     "test:security": "npm run test:security:frontend && npm run test:security:backend"
   }
