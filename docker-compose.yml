@@ -1,0 +1,43 @@
+services:
+  # PostgreSQL Database (Schemas: auth, inventory, sales, repairs, audit)
+  db:
+    image: postgres:16-alpine
+    container_name: motoshop-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: motorcycle_shop
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./backend/seed_operational_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d motorcycle_shop"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Consolidated FastAPI Modular Monolith Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: motoshop-backend
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:123@db:5432/motorcycle_shop
+      - JWT_SECRET_KEY=your-super-secret-key-for-local-dev
+      - ENVIRONMENT=development
+      - COOKIE_SECURE=false
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

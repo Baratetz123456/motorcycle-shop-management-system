@@ -1,0 +1,118 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import ProvidersWrapper from './providers';
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Versiklo | Motorcycle Shop Management",
+  description: "Versiklo — The all-in-one system for running your motorcycle shop.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="dark" data-theme="emerald" data-mode="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  document.documentElement.classList.remove('light');
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.setAttribute('data-mode', 'dark');
+                  document.cookie = 'motoshop_mode=dark; path=/; max-age=31536000';
+                  localStorage.setItem('motoshop_theme_mode', 'dark');
+                  localStorage.setItem('motoshop_app_mode', 'dark');
+                } catch(e) {}
+
+                // Suppress upstream Chromium DevTools injected Live Metrics / web-vitals bug (Chromium Issue 543499029)
+                if (typeof window !== 'undefined') {
+                  // 1. window.onerror hook (returns true to prevent browser console error printing)
+                  var prevOnError = window.onerror;
+                  window.onerror = function(msg, url, lineNo, colNo, error) {
+                    var text = String(msg || '') + ' ' + String(error ? error.stack || error.message : '');
+                    if (
+                      text.indexOf('startTime') !== -1 &&
+                      (text.indexOf('Cannot read properties of undefined') !== -1 || text.indexOf('reportAllChanges') !== -1)
+                    ) {
+                      return true; // suppresses standard error printing in DevTools console
+                    }
+                    if (typeof prevOnError === 'function') {
+                      return prevOnError.apply(this, arguments);
+                    }
+                    return false;
+                  };
+
+                  // 2. window.addEventListener('error') capture phase
+                  window.addEventListener('error', function(event) {
+                    var msg = (event && (event.message || (event.error && (event.error.message || event.error.stack)))) || '';
+                    if (
+                      msg.indexOf('startTime') !== -1 &&
+                      (msg.indexOf('Cannot read properties of undefined') !== -1 || msg.indexOf('reportAllChanges') !== -1)
+                    ) {
+                      event.preventDefault();
+                      event.stopImmediatePropagation();
+                      return true;
+                    }
+                  }, true);
+
+                  // 3. Unhandled promise rejections
+                  window.addEventListener('unhandledrejection', function(event) {
+                    var reason = event && event.reason;
+                    var text = String(reason ? (reason.stack || reason.message || reason) : '');
+                    if (
+                      text.indexOf('startTime') !== -1 &&
+                      (text.indexOf('Cannot read properties of undefined') !== -1 || text.indexOf('reportAllChanges') !== -1)
+                    ) {
+                      event.preventDefault();
+                      event.stopImmediatePropagation();
+                      return true;
+                    }
+                  });
+
+                  // 4. Guard console.error from direct DevTools script writes
+                  if (window.console && typeof window.console.error === 'function') {
+                    var origConsoleError = window.console.error;
+                    window.console.error = function() {
+                      for (var i = 0; i < arguments.length; i++) {
+                        var argStr = String(arguments[i] || '');
+                        if (
+                          argStr.indexOf('startTime') !== -1 &&
+                          (argStr.indexOf('Cannot read properties of undefined') !== -1 || argStr.indexOf('reportAllChanges') !== -1)
+                        ) {
+                          return; // silence DevTools internal web-vitals crash
+                        }
+                      }
+                      return origConsoleError.apply(window.console, arguments);
+                    };
+                  }
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-zinc-900 min-h-screen selection:bg-emerald-600 selection:text-white`}
+      >
+        <ProvidersWrapper>
+          {children}
+        </ProvidersWrapper>
+      </body>
+    </html>
+  );
+}
