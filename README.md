@@ -8,6 +8,58 @@
 
 ---
 
+## 📖 System Overview
+
+**MotoShop** is a modern, enterprise-grade Point of Sale (POS), Workshop Job Order management, and Inventory platform purpose-built for physical motorcycle service centers, repair garages, and aftermarket performance parts retailers in the Philippines.
+
+Designed for physical shops operating with up to **5 concurrent internal team members** (Shop Owner/Manager, Cashiers, and Mechanics), MotoShop bridges the critical operational gap between the workshop service floor and the cashier checkout counter. It eliminates paper job tickets, untracked parts requisitions, disputed mechanic labor commissions, and manual VAT accounting with an all-in-one, real-time operating system.
+
+### 🌟 Core Value Propositions
+
+| Pillar | Capability & Business Value |
+|---|---|
+| 💸 **$0.00 / Month Serverless Cloud Cost** | Architected for zero baseline hosting expense using the **AWS Free Tier** (Next.js SPA on S3/CloudFront, containerized FastAPI on AWS Lambda via Mangum, and private RDS PostgreSQL `db.t4g.micro`). |
+| ⚡ **Workshop-to-Register Flow** | Completed repair jobs synchronize directly with the cashier POS terminal in real time. Labor charges and installed parts are consolidated into a single ACID transaction with instant inventory decrement. |
+| 🔧 **40% Mechanic Labor Commission Tracking** | Automated, dispute-free labor commission calculation built directly into job order lifecycles, ensuring transparent payroll tracking and mechanic accountability. |
+| 🇵🇭 **Statutory BIR 12% VAT Compliance** | Generates official **10-Section Commercial Invoices** (`/sales/receipt`) with statutory BIR 12% VAT calculations (VATable sales, VAT-exempt sales, VAT amount), business TIN, and isolated single-page A4 printing. |
+| 🏍️ **Philippine Motorcycle Catalog** | Out-of-the-box photographic bike registry and inventory catalog tailored for popular Philippine motorcycles (*Yamaha NMAX 155, Honda Click 125i/160, Suzuki Raider R150 Fi, Yamaha Sniper 155, Honda ADV 160*) and leading aftermarket brands (*RCB, Uma Racing, Motul 7100, JVT, Maxxis*). |
+| 📱 **Mobile-First Shop Floor Usability** | Optimized for mechanics holding phones or tablets on the shop floor—featuring touch-friendly tabbed repair boards, 2-column POS product grids, and floating action buttons with safe-area insets. |
+
+### 🔄 End-to-End Operational Lifecycle
+
+The diagram below illustrates the end-to-end operational journey across the shop's key roles—from motorcycle intake to cashier checkout and BIR statutory compliance:
+
+```mermaid
+flowchart TD
+    subgraph Intake [1. Customer & Motorcycle Intake]
+        Customer([Customer Arrival]) --> Desk[Service Counter / Reception]
+        Desk --> BikeReg[Bike Registry & Diagnostic Assessment]
+    end
+
+    subgraph Workshop [2. Workshop Floor & Labor]
+        BikeReg --> JobOrder[Open Job Order: PENDING to ONGOING]
+        JobOrder --> Mechanic[Mechanic Assignment]
+        Mechanic --> PartsReq[Requisition Parts: RCB, Motul, Uma Racing]
+        PartsReq --> RepairLabor[Execute Repairs & Log Service Time]
+        RepairLabor --> CompleteJob[Mark Job Order COMPLETED]
+    end
+
+    subgraph POS_Counter [3. Cashier POS Counter]
+        CompleteJob --> POSSync[POS Terminal: Sync Active Job Order]
+        POSSync --> RetailItems[Optionally Add Retail Over-the-Counter Parts]
+        RetailItems --> Checkout[ACID Settlement: Cash, GCash, Card]
+    end
+
+    subgraph Settlement [4. Statutory Invoicing & Accounting]
+        Checkout --> BIRInvoice[Official 10-Section BIR 12% VAT Commercial Invoice]
+        Checkout --> CommissionLedger[Record 40% Mechanic Labor Commission]
+        Checkout --> StockAudit[Real-Time Inventory Stock Decrement]
+        Checkout --> SystemLog[Immutable System Audit Log Entry]
+    end
+```
+
+---
+
 ## 🏗️ Architecture Overview
 
 MotoShop is engineered under a **Dual-Parity Operating Model**:
