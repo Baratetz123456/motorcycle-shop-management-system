@@ -48,7 +48,7 @@ export function printIsolatedDocument(title: string, documentHtml: string) {
       background-color: #ffffff !important;
       background: #ffffff !important;
       color: #09090b !important;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif !important;
       font-size: 10pt;
       line-height: 1.35;
       width: 100%;

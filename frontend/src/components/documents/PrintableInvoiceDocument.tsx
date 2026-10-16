@@ -83,12 +83,12 @@ export function getInvoiceDocumentHtml(props: PrintableInvoiceProps): string {
       const itemTotal = (item.qty * item.price).toFixed(2);
       return `
         <tr style="background-color: #ffffff;">
-          <td style="text-align: center; font-family: monospace; font-size: 8.5pt; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${idx + 1}</td>
+          <td style="text-align: center; font-size: 8.5pt; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${idx + 1}</td>
           <td style="font-weight: 500; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${item.name}</td>
           <td style="text-align: center; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;"><span class="print-pill">${isService ? "SERVICE" : "PART"}</span></td>
-          <td style="text-align: center; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${item.qty}</td>
-          <td style="text-align: right; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${item.price.toFixed(2)}</td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${itemTotal}</td>
+          <td style="text-align: center; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${item.qty}</td>
+          <td style="text-align: right; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${item.price.toFixed(2)}</td>
+          <td style="text-align: right; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${itemTotal}</td>
         </tr>
       `;
     })
@@ -111,22 +111,22 @@ export function getInvoiceDocumentHtml(props: PrintableInvoiceProps): string {
     : "";
 
   return `
-    <div style="padding: 10px; max-width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #09090b; background: #ffffff;">
+    <div style="padding: 10px; max-width: 100%; font-family: Arial, Helvetica, sans-serif; color: #09090b; background: #ffffff;">
       <!-- 1. Header & Letterhead -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 8px; border-bottom: 1px solid #e4e4e7;">
         <div>
           <h1 style="font-size: 16pt; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;">${brandName}</h1>
           <p style="font-size: 8.5pt; font-weight: 600; margin: 1px 0;">${shopDesc}</p>
           <p style="font-size: 8pt; color: #52525b; margin: 1px 0;">${shopAddr}</p>
-          <p style="font-size: 7.5pt; color: #71717a; font-family: monospace; margin: 1px 0;">
+          <p style="font-size: 7.5pt; color: #71717a; margin: 1px 0;">
             Tel: ${contactPhone} • Email: ${contactEmail} • <strong>TIN: ${shopTin}</strong>
           </p>
         </div>
         <div style="text-align: right;">
           <span style="font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block;">Commercial Sales Invoice</span>
-          <span style="font-size: 14pt; font-weight: 900; font-family: monospace; display: block; margin: 1px 0;">${invoiceNo}</span>
-          <div style="font-size: 8pt; font-family: monospace; color: #52525b;">Linked JO: <strong>${jobOrderNumber || "Direct POS Sale"}</strong></div>
-          <div style="font-size: 7.5pt; font-family: monospace; color: #71717a;">${new Date(createdAt).toLocaleString()}</div>
+          <span style="font-size: 14pt; font-weight: 900; display: block; margin: 1px 0;">${invoiceNo}</span>
+          <div style="font-size: 8pt; color: #52525b;">Linked JO: <strong>${jobOrderNumber || "Direct POS Sale"}</strong></div>
+          <div style="font-size: 7.5pt; color: #71717a;">${new Date(createdAt).toLocaleString()}</div>
           <div style="margin-top: 3px;">
             <span class="print-pill">${isCompleted ? "STATUS: COMPLETED (PAID)" : "STATUS: VOIDED"}</span>
           </div>
@@ -138,12 +138,12 @@ export function getInvoiceDocumentHtml(props: PrintableInvoiceProps): string {
         <div>
           <span style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block; margin-bottom: 2px;">Customer Profile</span>
           <p style="font-weight: 700; margin: 0; font-size: 9pt;">${customerName || "Walk-in Customer"}</p>
-          <p style="font-family: monospace; font-size: 8pt; color: #52525b; margin: 1px 0;">Phone: ${customerPhone || "N/A"}</p>
+          <p style="font-size: 8pt; color: #52525b; margin: 1px 0;">Phone: ${customerPhone || "N/A"}</p>
         </div>
         <div>
           <span style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block; margin-bottom: 2px;">Vehicle Profile</span>
-          <p style="font-weight: 700; margin: 0; font-size: 9pt; font-family: monospace;">${motorcycleName || "General Motorcycle"}</p>
-          <p style="font-family: monospace; font-size: 8pt; color: #52525b; margin: 1px 0;">Plate / VIN: ${plateNumber || "N/A"}</p>
+          <p style="font-weight: 700; margin: 0; font-size: 9pt;">${motorcycleName || "General Motorcycle"}</p>
+          <p style="font-size: 8pt; color: #52525b; margin: 1px 0;">Plate / VIN: ${plateNumber || "N/A"}</p>
         </div>
         <div>
           <span style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block; margin-bottom: 2px;">Staff & Settlement</span>
@@ -188,19 +188,19 @@ export function getInvoiceDocumentHtml(props: PrintableInvoiceProps): string {
           <span style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block; margin-bottom: 3px;">BIR Tax Compliance (12% VAT)</span>
           <div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f4f4f5;">
             <span>12% VATable Sales:</span>
-            <span style="font-family: monospace; font-weight: 600; color: #09090b;">₱${vatableSales.toFixed(2)}</span>
+            <span style="font-weight: 600; color: #09090b;">₱${vatableSales.toFixed(2)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f4f4f5;">
             <span>12% Value Added Tax (VAT):</span>
-            <span style="font-family: monospace; font-weight: 600; color: #09090b;">₱${vatAmount.toFixed(2)}</span>
+            <span style="font-weight: 600; color: #09090b;">₱${vatAmount.toFixed(2)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f4f4f5; color: #a1a1aa;">
             <span>VAT-Exempt Sales:</span>
-            <span style="font-family: monospace;">₱0.00</span>
+            <span>₱0.00</span>
           </div>
           <div style="display: flex; justify-content: space-between; padding: 2px 0; color: #a1a1aa;">
             <span>Zero-Rated Sales:</span>
-            <span style="font-family: monospace;">₱0.00</span>
+            <span>₱0.00</span>
           </div>
         </div>
 
@@ -209,21 +209,21 @@ export function getInvoiceDocumentHtml(props: PrintableInvoiceProps): string {
           <span style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block; margin-bottom: 3px;">Financial Settlement</span>
           <div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f4f4f5;">
             <span>Gross Items Subtotal:</span>
-            <span style="font-family: monospace; font-weight: 600; color: #09090b;">₱${subtotal.toFixed(2)}</span>
+            <span style="font-weight: 600; color: #09090b;">₱${subtotal.toFixed(2)}</span>
           </div>
           ${(discountPercentage || 0) > 0 ? `
             <div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f4f4f5; color: #047857;">
               <span>Discount (${discountPercentage}%):</span>
-              <span style="font-family: monospace; font-weight: 600;">-₱${(discountAmount || 0).toFixed(2)}</span>
+              <span style="font-weight: 600;">-₱${(discountAmount || 0).toFixed(2)}</span>
             </div>
           ` : ""}
           <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 2px solid #e4e4e7; font-size: 9.5pt; font-weight: 700; color: #09090b;">
             <span>Net Total Due:</span>
-            <span style="font-family: monospace; font-size: 11pt; font-weight: 900;">₱${total.toFixed(2)}</span>
+            <span style="font-size: 11pt; font-weight: 900;">₱${total.toFixed(2)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; padding: 2px 0; color: #09090b;">
             <span>Total Amount Paid:</span>
-            <span style="font-family: monospace; font-weight: 700;">₱${amountPaid.toFixed(2)}</span>
+            <span style="font-weight: 700;">₱${amountPaid.toFixed(2)}</span>
           </div>
           ${paymentMethod === "CASH" ? `
             <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 7.5pt; color: #71717a;">
@@ -262,7 +262,7 @@ export function getInvoiceDocumentHtml(props: PrintableInvoiceProps): string {
       <!-- 8. Audit Footnote -->
       <div style="margin-top: 8px; padding-top: 4px; text-align: center; font-size: 7pt; color: #71717a; border-top: 1px solid #f4f4f5;">
         <p>Certified Official Commercial System Receipt • Generated: ${new Date().toLocaleString()}</p>
-        <p style="font-family: monospace;">Official Record • ${brandName} Operations</p>
+        <p>Official Record • ${brandName} Operations</p>
       </div>
     </div>
   `;

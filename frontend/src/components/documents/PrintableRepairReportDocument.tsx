@@ -94,10 +94,10 @@ export function getRepairReportDocumentHtml(props: RepairReportProps): string {
           .map(
             (p, idx) => `
         <tr style="background-color: #ffffff;">
-          <td style="text-align: center; font-family: monospace; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
+          <td style="text-align: center; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
           <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${p.name}</td>
-          <td style="text-align: center; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${p.qty}</td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: center; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${p.qty}</td>
+          <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${(p.qty * p.price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
         </tr>
@@ -119,9 +119,9 @@ export function getRepairReportDocumentHtml(props: RepairReportProps): string {
           .map(
             (l, idx) => `
         <tr style="background-color: #ffffff;">
-          <td style="text-align: center; font-family: monospace; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
+          <td style="text-align: center; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
           <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${l.name}</td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${Number(l.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
         </tr>
@@ -135,13 +135,13 @@ export function getRepairReportDocumentHtml(props: RepairReportProps): string {
       <div>
         <div style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a;">Customer & Contact</div>
         <div style="font-size: 10pt; font-weight: 800; color: #09090b; margin-top: 1px;">${customerName}</div>
-        <div style="font-size: 7.5pt; font-family: monospace; color: #52525b;">Phone: ${customerPhone}</div>
+        <div style="font-size: 7.5pt; color: #52525b;">Phone: ${customerPhone}</div>
         <div style="font-size: 7.5pt; color: #52525b; margin-top: 2px;">Status: <span class="print-pill">${status}</span></div>
       </div>
       <div>
         <div style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a;">Motorcycle Specification</div>
         <div style="font-size: 10pt; font-weight: 800; color: #09090b; margin-top: 1px;">${motorcycleName}</div>
-        <div style="font-size: 7.5pt; font-family: monospace; color: #52525b;">
+        <div style="font-size: 7.5pt; color: #52525b;">
           Plate / MV: <strong>${plateNumber}</strong> • Odo: ${mileage}
         </div>
         <div style="font-size: 7.5pt; color: #52525b; margin-top: 2px;">
@@ -183,7 +183,7 @@ export function getRepairReportDocumentHtml(props: RepairReportProps): string {
             ${partsRowsHtml}
             <tr style="background-color: #f4f4f5; font-weight: 700;">
               <td colspan="3" style="text-align: right; padding: 3px 4px; border: 1px solid #e4e4e7; font-size: 7.5pt;">Parts Subtotal:</td>
-              <td style="text-align: right; font-family: monospace; padding: 3px 4px; border: 1px solid #e4e4e7; font-size: 8pt;">₱${totalParts.toFixed(2)}</td>
+              <td style="text-align: right; padding: 3px 4px; border: 1px solid #e4e4e7; font-size: 8pt;">₱${totalParts.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
@@ -206,7 +206,7 @@ export function getRepairReportDocumentHtml(props: RepairReportProps): string {
             ${laborRowsHtml}
             <tr style="background-color: #f4f4f5; font-weight: 700;">
               <td colspan="2" style="text-align: right; padding: 3px 4px; border: 1px solid #e4e4e7; font-size: 7.5pt;">Labor Subtotal:</td>
-              <td style="text-align: right; font-family: monospace; padding: 3px 4px; border: 1px solid #e4e4e7; font-size: 8pt;">₱${totalLabor.toFixed(2)}</td>
+              <td style="text-align: right; padding: 3px 4px; border: 1px solid #e4e4e7; font-size: 8pt;">₱${totalLabor.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
@@ -217,7 +217,7 @@ export function getRepairReportDocumentHtml(props: RepairReportProps): string {
     <!-- Settlement Grand Total Banner -->
     <div style="margin-top: 10px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; background-color: #f4f4f5; border: 1px solid #e4e4e7; padding: 6px 12px; border-radius: 4px;">
       <span style="font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #52525b;">Total Job Order Settlement:</span>
-      <span style="font-size: 14pt; font-weight: 900; font-family: monospace; color: #09090b;">
+      <span style="font-size: 14pt; font-weight: 900; color: #09090b;">
         ₱${grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </span>
     </div>
@@ -317,13 +317,13 @@ export function PrintableRepairReportDocument(props: RepairReportProps) {
           <div>
             <div className="text-[8px] font-bold uppercase text-zinc-500">Customer & Contact</div>
             <div className="text-xs font-bold text-zinc-950 mt-0.5">{customerName}</div>
-            <div className="text-zinc-600 font-mono">Phone: {customerPhone}</div>
+            <div className="text-zinc-600">Phone: {customerPhone}</div>
             <div className="text-zinc-600 mt-1">Status: {status}</div>
           </div>
           <div>
             <div className="text-[8px] font-bold uppercase text-zinc-500">Motorcycle Profile</div>
             <div className="text-xs font-bold text-zinc-950 mt-0.5">{motorcycleName}</div>
-            <div className="text-zinc-600 font-mono">Plate: {plateNumber} • Odo: {mileage}</div>
+            <div className="text-zinc-600">Plate: {plateNumber} • Odo: {mileage}</div>
             <div className="text-zinc-600 mt-1">Release: {releasedAt || "Recorded Service"}</div>
           </div>
         </div>
@@ -356,15 +356,15 @@ export function PrintableRepairReportDocument(props: RepairReportProps) {
                 {partsUsed.map((p, idx) => (
                   <tr key={idx} className="bg-white">
                     <td className="p-1 border border-zinc-200 text-zinc-900">{p.name}</td>
-                    <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-900">{p.qty}</td>
-                    <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
+                    <td className="p-1 border border-zinc-200 text-center text-zinc-900">{p.qty}</td>
+                    <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
                       ₱{(p.qty * p.price).toFixed(2)}
                     </td>
                   </tr>
                 ))}
                 <tr className="bg-zinc-100 font-bold">
                   <td colSpan={2} className="p-1 border border-zinc-200 text-right text-zinc-950">Parts Subtotal:</td>
-                  <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">₱{totalParts.toFixed(2)}</td>
+                  <td className="p-1 border border-zinc-200 text-right text-zinc-950">₱{totalParts.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -383,14 +383,14 @@ export function PrintableRepairReportDocument(props: RepairReportProps) {
                 {laborCharges.map((l, idx) => (
                   <tr key={idx} className="bg-white">
                     <td className="p-1 border border-zinc-200 text-zinc-900">{l.name}</td>
-                    <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
+                    <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
                       ₱{Number(l.amount || 0).toFixed(2)}
                     </td>
                   </tr>
                 ))}
                 <tr className="bg-zinc-100 font-bold">
                   <td className="p-1 border border-zinc-200 text-right text-zinc-950">Labor Subtotal:</td>
-                  <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">₱{totalLabor.toFixed(2)}</td>
+                  <td className="p-1 border border-zinc-200 text-right text-zinc-950">₱{totalLabor.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -400,7 +400,7 @@ export function PrintableRepairReportDocument(props: RepairReportProps) {
         {/* Grand Total */}
         <div className="flex justify-end items-center gap-3 bg-zinc-100 border border-zinc-200 p-2 rounded">
           <span className="text-[9px] font-bold uppercase text-zinc-600">Total Settlement:</span>
-          <span className="text-base font-black font-mono text-zinc-950">
+          <span className="text-base font-black text-zinc-950">
             ₱{grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>

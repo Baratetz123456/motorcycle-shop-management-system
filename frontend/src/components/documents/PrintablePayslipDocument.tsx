@@ -53,10 +53,10 @@ export function getPrintablePayslipHtml(props: PrintablePayslipProps): string {
           Workshop Repair Labor Commission
           <span style="display: block; font-size: 7pt; color: #71717a;">Mechanic labor commission entitlement</span>
         </td>
-        <td style="text-align: center; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${itemsProcessed} orders</td>
-        <td style="text-align: right; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(laborTotal || 0).toFixed(2)}</td>
-        <td style="text-align: center; font-family: monospace; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${commissionRate}%</td>
-        <td style="text-align: right; font-family: monospace; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(totalPayout || 0).toFixed(2)}</td>
+        <td style="text-align: center; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${itemsProcessed} orders</td>
+        <td style="text-align: right; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(laborTotal || 0).toFixed(2)}</td>
+        <td style="text-align: center; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${commissionRate}%</td>
+        <td style="text-align: right; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(totalPayout || 0).toFixed(2)}</td>
       </tr>
     `
     : `
@@ -65,15 +65,15 @@ export function getPrintablePayslipHtml(props: PrintablePayslipProps): string {
           Frontline Cashier Wage & POS Operations
           <span style="display: block; font-size: 7pt; color: #71717a;">Daily wage base + shift transactions</span>
         </td>
-        <td style="text-align: center; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${itemsProcessed} tickets</td>
-        <td style="text-align: right; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(baseWage || 0).toFixed(2)}/day</td>
-        <td style="text-align: center; font-family: monospace; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">100% Base</td>
-        <td style="text-align: right; font-family: monospace; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(totalPayout || 0).toFixed(2)}</td>
+        <td style="text-align: center; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">${itemsProcessed} tickets</td>
+        <td style="text-align: right; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(baseWage || 0).toFixed(2)}/day</td>
+        <td style="text-align: center; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">100% Base</td>
+        <td style="text-align: right; font-weight: 700; background-color: #ffffff; color: #09090b; border: 1px solid #e4e4e7; padding: 4px 6px;">₱${Number(totalPayout || 0).toFixed(2)}</td>
       </tr>
     `;
 
   return `
-    <div style="padding: 10px; max-width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #09090b; background: #ffffff;">
+    <div style="padding: 10px; max-width: 100%; font-family: Arial, Helvetica, sans-serif; color: #09090b; background: #ffffff;">
       <!-- 1. Header & Letterhead -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 8px; border-bottom: 1px solid #e4e4e7;">
         <div>
@@ -81,18 +81,18 @@ export function getPrintablePayslipHtml(props: PrintablePayslipProps): string {
             ${brandName} ${shopDesc}
           </h1>
           <p style="font-size: 8pt; color: #52525b; margin: 1px 0;">${shopAddr}</p>
-          <p style="font-size: 7.5pt; color: #71717a; font-family: monospace; margin: 1px 0;">
+          <p style="font-size: 7.5pt; color: #71717a; margin: 1px 0;">
             BIR Registered TIN: <strong>${shopTin}</strong>
           </p>
-          <p style="font-size: 7.5pt; color: #71717a; font-family: monospace; margin: 1px 0;">
+          <p style="font-size: 7.5pt; color: #71717a; margin: 1px 0;">
             Tel: ${contactPhone} • Email: ${contactEmail}
           </p>
         </div>
         <div style="text-align: right;">
           <span style="font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block;">Official Staff Payslip</span>
-          <span style="font-size: 14pt; font-weight: 900; font-family: monospace; display: block; margin: 1px 0;">${payslipNo}</span>
-          <div style="font-size: 8pt; font-family: monospace; color: #52525b;">Period: <strong>${payPeriod}</strong></div>
-          <div style="font-size: 7.5pt; font-family: monospace; color: #71717a;">Issued: ${issuedDate}</div>
+          <span style="font-size: 14pt; font-weight: 900; display: block; margin: 1px 0;">${payslipNo}</span>
+          <div style="font-size: 8pt; color: #52525b;">Period: <strong>${payPeriod}</strong></div>
+          <div style="font-size: 7.5pt; color: #71717a;">Issued: ${issuedDate}</div>
           <div style="margin-top: 3px;">
             <span class="print-pill">STATUS: ${status}</span>
           </div>
@@ -108,7 +108,7 @@ export function getPrintablePayslipHtml(props: PrintablePayslipProps): string {
         </div>
         <div>
           <span style="font-size: 7pt; font-weight: 700; text-transform: uppercase; color: #71717a; display: block; margin-bottom: 2px;">Settlement Details</span>
-          <p style="font-weight: 700; margin: 0; font-size: 8.5pt; font-family: monospace;">${payPeriod}</p>
+          <p style="font-weight: 700; margin: 0; font-size: 8.5pt;">${payPeriod}</p>
           <p style="font-size: 8pt; color: #52525b; margin: 1px 0;">Voucher: ${payslipNo}</p>
         </div>
         <div>
@@ -148,7 +148,7 @@ export function getPrintablePayslipHtml(props: PrintablePayslipProps): string {
       <!-- 4. Net Payout Banner -->
       <div style="margin-top: 8px; padding: 6px 10px; border: 1px solid #e4e4e7; background: #fafafa; display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 8.5pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">Net Compensation Payable:</span>
-        <span style="font-size: 13pt; font-weight: 900; font-family: monospace;">₱${Number(totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span style="font-size: 13pt; font-weight: 900;">₱${Number(totalPayout || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
       </div>
 
       <!-- 5. Statutory Terms -->
@@ -175,7 +175,7 @@ export function getPrintablePayslipHtml(props: PrintablePayslipProps): string {
       <!-- 7. Audit Footnote -->
       <div style="margin-top: 8px; padding-top: 4px; text-align: center; font-size: 7pt; color: #71717a; border-top: 1px solid #f4f4f5;">
         <p>Certified Official Compensation Voucher • Generated: ${new Date().toLocaleString()}</p>
-        <p style="font-family: monospace;">Reference ID: ${payslipNo} • Official Record • ${brandName} Operations</p>
+        <p>Reference ID: ${payslipNo} • Official Record • ${brandName} Operations</p>
       </div>
     </div>
   `;

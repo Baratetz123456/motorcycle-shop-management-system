@@ -83,13 +83,13 @@ export function getSalesReportDocumentHtml(props: SalesReportProps): string {
           <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${method.toUpperCase()}
           </td>
-          <td style="text-align: center; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: center; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${data.count}
           </td>
-          <td style="text-align: right; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${share}%
           </td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${data.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
         </tr>
@@ -112,19 +112,19 @@ export function getSalesReportDocumentHtml(props: SalesReportProps): string {
           .map(
             (tx, idx) => `
         <tr style="background-color: #ffffff;">
-          <td style="text-align: center; font-family: monospace; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
-          <td style="font-family: monospace; font-weight: 700; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${tx.invoice_no}</td>
+          <td style="text-align: center; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
+          <td style="font-weight: 700; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${tx.invoice_no}</td>
           <td style="font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${tx.customer_name || "Walk-in Customer"}
             ${tx.motorcycle_name ? `<span style="display: block; font-size: 7pt; color: #71717a;">${tx.motorcycle_name}</span>` : ""}
           </td>
-          <td style="text-align: center; font-family: monospace; font-size: 7.5pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: center; font-size: 7.5pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             <span class="print-pill">${tx.payment_method || "CASH"}</span>
           </td>
-          <td style="font-family: monospace; font-size: 7.5pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="font-size: 7.5pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "—"}
           </td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${Number(tx.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
         </tr>
@@ -153,13 +153,13 @@ export function getSalesReportDocumentHtml(props: SalesReportProps): string {
             <td style="text-align: left; padding: 4px 6px; border: 1px solid #e4e4e7; font-size: 8.5pt; color: #09090b;">
               TOTAL SETTLED SALES:
             </td>
-            <td style="text-align: center; font-family: monospace; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: center; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ${transactionCount}
             </td>
-            <td style="text-align: right; font-family: monospace; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: right; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               100.0%
             </td>
-            <td style="text-align: right; font-family: monospace; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: right; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ₱${totalSales.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
           </tr>
@@ -173,7 +173,7 @@ export function getSalesReportDocumentHtml(props: SalesReportProps): string {
         <h3 style="font-size: 9pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #09090b; margin: 0;">
           2. Settled Commercial Invoices Audit Log
         </h3>
-        <span style="font-size: 7pt; color: #71717a; font-family: monospace;">
+        <span style="font-size: 7pt; color: #71717a;">
           Showing ${Math.min(transactions.length, 50)} of ${transactions.length} records
         </span>
       </div>
@@ -298,13 +298,13 @@ export function PrintableSalesReportDocument(props: SalesReportProps) {
                     <td className="p-1 border border-zinc-200 font-medium text-zinc-900">
                       {method.toUpperCase()}
                     </td>
-                    <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-900">
+                    <td className="p-1 border border-zinc-200 text-center text-zinc-900">
                       {data.count}
                     </td>
-                    <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-900">
+                    <td className="p-1 border border-zinc-200 text-right text-zinc-900">
                       {share}%
                     </td>
-                    <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
+                    <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
                       ₱{data.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -314,13 +314,13 @@ export function PrintableSalesReportDocument(props: SalesReportProps) {
                 <td className="p-1 border border-zinc-200 text-zinc-950">
                   TOTAL SETTLED SALES:
                 </td>
-                <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-950">
+                <td className="p-1 border border-zinc-200 text-center text-zinc-950">
                   {transactionCount}
                 </td>
-                <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">
+                <td className="p-1 border border-zinc-200 text-right text-zinc-950">
                   100.0%
                 </td>
-                <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">
+                <td className="p-1 border border-zinc-200 text-right text-zinc-950">
                   ₱{totalSales.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
               </tr>
@@ -334,7 +334,7 @@ export function PrintableSalesReportDocument(props: SalesReportProps) {
             <h3 className="text-[10px] font-black uppercase tracking-wider text-zinc-950">
               2. Settled Commercial Invoices Audit Log
             </h3>
-            <span className="text-[8px] text-zinc-500 font-mono">
+            <span className="text-[8px] text-zinc-500">
               Showing {Math.min(transactions.length, 50)} of {transactions.length} records
             </span>
           </div>
@@ -359,21 +359,21 @@ export function PrintableSalesReportDocument(props: SalesReportProps) {
               ) : (
                 transactions.slice(0, 50).map((tx, idx) => (
                   <tr key={tx.invoice_no || idx} className="bg-white">
-                    <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-600">{idx + 1}</td>
-                    <td className="p-1 border border-zinc-200 font-mono font-bold text-zinc-900">{tx.invoice_no}</td>
+                    <td className="p-1 border border-zinc-200 text-center text-zinc-600">{idx + 1}</td>
+                    <td className="p-1 border border-zinc-200 font-bold text-zinc-900">{tx.invoice_no}</td>
                     <td className="p-1 border border-zinc-200 text-zinc-900 font-medium">
                       {tx.customer_name || "Walk-in Customer"}
                       {tx.motorcycle_name && (
                         <span className="block text-[8px] text-zinc-500">{tx.motorcycle_name}</span>
                       )}
                     </td>
-                    <td className="p-1 border border-zinc-200 text-center font-mono text-[8px] text-zinc-600">
+                    <td className="p-1 border border-zinc-200 text-center text-[8px] text-zinc-600">
                       {tx.payment_method || "CASH"}
                     </td>
-                    <td className="p-1 border border-zinc-200 font-mono text-zinc-600">
+                    <td className="p-1 border border-zinc-200 text-zinc-600">
                       {tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "—"}
                     </td>
-                    <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
+                    <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
                       ₱{Number(tx.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
