@@ -43,7 +43,7 @@ function generatePrintableHtml(
   const shopPhone = settings.contactPhone || "+63 (02) 8123-4567";
 
   return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #09090b; background: #ffffff; padding: 24px; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 11pt;">
+    <div style="font-family: Arial, Helvetica, sans-serif; color: #09090b; background: #ffffff; padding: 24px; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 11pt;">
       <!-- Letterhead Header -->
       <div style="border-bottom: 2px solid #09090b; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
@@ -51,7 +51,7 @@ function generatePrintableHtml(
           <p style="font-size: 8.5pt; color: #52525b; margin: 2px 0 0 0;">Precision Motorcycle Workshop Management Systems</p>
           <p style="font-size: 8pt; color: #71717a; margin: 2px 0 0 0;">${shopAddress} • TIN: ${shopTin} • Tel: ${shopPhone}</p>
         </div>
-        <div style="text-align: right; font-size: 8pt; color: #71717a; font-family: monospace;">
+        <div style="text-align: right; font-size: 8pt; color: #71717a;">
           <div>STATUTORY LEGAL ARCHIVE</div>
           <div>Effective: ${doc.effectiveDate}</div>
           <div>Last Updated: ${doc.lastUpdated}</div>
@@ -72,7 +72,7 @@ function generatePrintableHtml(
           <div style="border-bottom: 1px solid #e4e4e7; padding-bottom: 14px; page-break-inside: avoid;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
               <h3 style="font-size: 10.5pt; font-weight: 700; margin: 0; color: #09090b;">${sec.title}</h3>
-              ${sec.badge ? `<span style="font-size: 7.5pt; font-family: monospace; background: #f4f4f5; border: 1px solid #d4d4d8; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${sec.badge}</span>` : ""}
+              ${sec.badge ? `<span style="font-size: 7.5pt; background: #f4f4f5; border: 1px solid #d4d4d8; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${sec.badge}</span>` : ""}
             </div>
             ${sec.content.map((p) => `<p style="font-size: 9pt; color: #27272a; margin: 4px 0 6px 0; text-align: justify;">${p}</p>`).join("")}
             ${
@@ -100,7 +100,7 @@ function generatePrintableHtml(
       <!-- Statutory Certification Footer -->
       <div style="margin-top: 28px; padding-top: 14px; border-top: 1px dashed #a1a1aa; font-size: 8pt; color: #71717a; text-align: center; page-break-inside: avoid;">
         <p style="margin: 0 0 4px 0;">© ${new Date().getFullYear()} ${appName}. Registered in the Republic of the Philippines. All rights reserved.</p>
-        <p style="font-family: monospace; font-size: 7.5pt; margin: 0;">Republic Act No. 10173 (Data Privacy Act of 2012) • RA 7394 (Consumer Act) • Civil Code Art. 1731 (Mechanic's Lien)</p>
+        <p style="font-size: 7.5pt; margin: 0;">Republic Act No. 10173 (Data Privacy Act of 2012) • RA 7394 (Consumer Act) • Civil Code Art. 1731 (Mechanic's Lien)</p>
       </div>
     </div>
   `;

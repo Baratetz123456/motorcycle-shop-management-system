@@ -1428,6 +1428,7 @@ main, [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-
     color: #09090b !important;
     background-color: #ffffff !important;
     background: #ffffff !important;
+    font-family: Arial, Helvetica, sans-serif !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
@@ -1456,6 +1457,7 @@ main, [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-
     color: #09090b !important;
     border-color: #e4e4e7 !important;
     background-color: transparent !important;
+    font-family: Arial, Helvetica, sans-serif !important;
   }
 
   html.dark .printable-receipt table,

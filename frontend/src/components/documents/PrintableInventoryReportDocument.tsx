@@ -81,16 +81,16 @@ export function getInventoryReportDocumentHtml(props: InventoryReportProps): str
         <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
           ${cat.toUpperCase()}
         </td>
-        <td style="text-align: center; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+        <td style="text-align: center; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
           ${val.count}
         </td>
-        <td style="text-align: center; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+        <td style="text-align: center; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
           ${val.stock.toLocaleString()}
         </td>
-        <td style="text-align: right; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+        <td style="text-align: right; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
           ₱${val.wholesaleValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
-        <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+        <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
           ₱${val.retailValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
       </tr>
@@ -114,21 +114,21 @@ export function getInventoryReportDocumentHtml(props: InventoryReportProps): str
             const totalWholesale = (item.current_stock * (item.cost_price || 0)).toFixed(2);
             return `
         <tr style="background-color: #ffffff;">
-          <td style="text-align: center; font-family: monospace; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
+          <td style="text-align: center; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
           <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${item.name}
-            ${item.sku ? `<span style="display: block; font-size: 7pt; font-family: monospace; color: #71717a;">SKU: ${item.sku}</span>` : ""}
+            ${item.sku ? `<span style="display: block; font-size: 7pt; color: #71717a;">SKU: ${item.sku}</span>` : ""}
           </td>
-          <td style="text-align: center; font-family: monospace; font-weight: 700; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: center; font-weight: 700; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${item.current_stock}
           </td>
-          <td style="text-align: center; font-family: monospace; font-size: 7.5pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: center; font-size: 7.5pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${item.reorder_level || 5}
           </td>
-          <td style="text-align: right; font-family: monospace; font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${Number(item.cost_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
-          <td style="text-align: right; font-family: monospace; font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${Number(item.selling_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
           <td style="text-align: center; padding: 4px 6px; border: 1px solid #e4e4e7;">
@@ -163,16 +163,16 @@ export function getInventoryReportDocumentHtml(props: InventoryReportProps): str
             <td style="text-align: left; padding: 4px 6px; border: 1px solid #e4e4e7; font-size: 8.5pt; color: #09090b;">
               TOTAL INVENTORY:
             </td>
-            <td style="text-align: center; font-family: monospace; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: center; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ${totalItems}
             </td>
-            <td style="text-align: center; font-family: monospace; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: center; font-size: 8.5pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ${totalStockUnits.toLocaleString()}
             </td>
-            <td style="text-align: right; font-family: monospace; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: right; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ₱${totalWholesaleValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
-            <td style="text-align: right; font-family: monospace; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: right; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ₱${totalRetailValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
           </tr>
@@ -186,7 +186,7 @@ export function getInventoryReportDocumentHtml(props: InventoryReportProps): str
         <h3 style="font-size: 9pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #09090b; margin: 0;">
           2. Physical Stock & Reorder Register
         </h3>
-        <span style="font-size: 7pt; color: #71717a; font-family: monospace;">
+        <span style="font-size: 7pt; color: #71717a;">
           Showing ${Math.min(items.length, 100)} of ${items.length} SKUs
         </span>
       </div>
@@ -299,25 +299,25 @@ export function PrintableInventoryReportDocument(props: InventoryReportProps) {
               {Object.entries(categorySummary).map(([cat, val]) => (
                 <tr key={cat} className="bg-white">
                   <td className="p-1 border border-zinc-200 font-medium text-zinc-900">{cat.toUpperCase()}</td>
-                  <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-900">{val.count}</td>
-                  <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-900">{val.stock.toLocaleString()}</td>
-                  <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-900">
-                    ₱{val.wholesaleValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <td className="p-1 border border-zinc-200 text-center text-zinc-900">{val.count}</td>
+                  <td className="p-1 border border-zinc-200 text-center text-zinc-900">{val.stock.toLocaleString()}</td>
+                  <td className="p-1 border border-zinc-200 text-right text-zinc-900">
+                    ₱${val.wholesaleValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
-                  <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
-                    ₱{val.retailValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
+                    ₱${val.retailValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}
               <tr className="bg-zinc-100 font-bold">
                 <td className="p-1 border border-zinc-200 text-zinc-950">TOTAL INVENTORY:</td>
-                <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-950">{totalItems}</td>
-                <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-950">{totalStockUnits.toLocaleString()}</td>
-                <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">
-                  ₱{totalWholesaleValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <td className="p-1 border border-zinc-200 text-center text-zinc-950">{totalItems}</td>
+                <td className="p-1 border border-zinc-200 text-center text-zinc-950">{totalStockUnits.toLocaleString()}</td>
+                <td className="p-1 border border-zinc-200 text-right text-zinc-950">
+                  ₱${totalWholesaleValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
-                <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">
-                  ₱{totalRetailValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <td className="p-1 border border-zinc-200 text-right text-zinc-950">
+                  ₱${totalRetailValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
               </tr>
             </tbody>
@@ -330,7 +330,7 @@ export function PrintableInventoryReportDocument(props: InventoryReportProps) {
             <h3 className="text-[10px] font-black uppercase tracking-wider text-zinc-950">
               2. Physical Stock & Reorder Register
             </h3>
-            <span className="text-[8px] text-zinc-500 font-mono">
+            <span className="text-[8px] text-zinc-500">
               Showing {Math.min(items.length, 100)} of {items.length} SKUs
             </span>
           </div>
@@ -358,21 +358,21 @@ export function PrintableInventoryReportDocument(props: InventoryReportProps) {
                   const isLow = item.current_stock <= (item.reorder_level || 5);
                   return (
                     <tr key={item.id || idx} className="bg-white">
-                      <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-600">{idx + 1}</td>
+                      <td className="p-1 border border-zinc-200 text-center text-zinc-600">{idx + 1}</td>
                       <td className="p-1 border border-zinc-200 text-zinc-900 font-medium">
                         {item.name}
                         {item.sku && <span className="block text-[8px] text-zinc-500">SKU: {item.sku}</span>}
                       </td>
-                      <td className="p-1 border border-zinc-200 text-center font-mono font-bold text-zinc-950">
+                      <td className="p-1 border border-zinc-200 text-center font-bold text-zinc-950">
                         {item.current_stock}
                       </td>
-                      <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-600">
+                      <td className="p-1 border border-zinc-200 text-center text-zinc-600">
                         {item.reorder_level || 5}
                       </td>
-                      <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-600">
+                      <td className="p-1 border border-zinc-200 text-right text-zinc-600">
                         ₱{Number(item.cost_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
+                      <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
                         ₱{Number(item.selling_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="p-1 border border-zinc-200 text-center">

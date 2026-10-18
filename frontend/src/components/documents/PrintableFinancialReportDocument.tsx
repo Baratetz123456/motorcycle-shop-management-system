@@ -82,10 +82,10 @@ export function getFinancialReportDocumentHtml(props: FinancialReportProps): str
           <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${cat.replace(/_/g, " ")}
           </td>
-          <td style="text-align: right; font-family: monospace; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${pct}%
           </td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
         </tr>
@@ -107,14 +107,14 @@ export function getFinancialReportDocumentHtml(props: FinancialReportProps): str
           .map(
             (exp, idx) => `
         <tr style="background-color: #ffffff;">
-          <td style="text-align: center; font-family: monospace; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
-          <td style="font-family: monospace; font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">${exp.date || "—"}</td>
+          <td style="text-align: center; font-size: 8pt; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">${idx + 1}</td>
+          <td style="font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">${exp.date || "—"}</td>
           <td style="font-weight: 600; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ${exp.description}
             <span style="display: block; font-size: 7pt; color: #71717a;">${exp.category.replace(/_/g, " ")} ${exp.vendor ? `• Vendor: ${exp.vendor}` : ""}</span>
           </td>
-          <td style="font-family: monospace; font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">${exp.reference_no || "N/A"}</td>
-          <td style="text-align: right; font-family: monospace; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
+          <td style="font-size: 8pt; color: #52525b; padding: 4px 6px; border: 1px solid #e4e4e7;">${exp.reference_no || "N/A"}</td>
+          <td style="text-align: right; font-weight: 700; color: #09090b; padding: 4px 6px; border: 1px solid #e4e4e7;">
             ₱${Number(exp.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </td>
         </tr>
@@ -142,7 +142,7 @@ export function getFinancialReportDocumentHtml(props: FinancialReportProps): str
             <td colspan="2" style="text-align: right; padding: 4px 6px; border: 1px solid #e4e4e7; font-size: 8.5pt; color: #09090b;">
               TOTAL OVERHEAD EXPENSES:
             </td>
-            <td style="text-align: right; font-family: monospace; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
+            <td style="text-align: right; font-size: 9pt; padding: 4px 6px; border: 1px solid #e4e4e7; color: #09090b;">
               ₱${operatingExpenses.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
           </tr>
@@ -266,10 +266,10 @@ export function PrintableFinancialReportDocument(props: FinancialReportProps) {
                     <td className="p-1 border border-zinc-200 text-zinc-900 font-medium">
                       {cat.replace(/_/g, " ")}
                     </td>
-                    <td className="p-1 border border-zinc-200 text-zinc-900 text-right font-mono">
+                    <td className="p-1 border border-zinc-200 text-zinc-900 text-right">
                       {pct}%
                     </td>
-                    <td className="p-1 border border-zinc-200 text-zinc-900 text-right font-mono font-bold">
+                    <td className="p-1 border border-zinc-200 text-zinc-900 text-right font-bold">
                       ₱{total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -279,7 +279,7 @@ export function PrintableFinancialReportDocument(props: FinancialReportProps) {
                 <td colSpan={2} className="p-1 border border-zinc-200 text-right text-zinc-950">
                   TOTAL OVERHEAD EXPENSES:
                 </td>
-                <td className="p-1 border border-zinc-200 text-right font-mono text-zinc-950">
+                <td className="p-1 border border-zinc-200 text-right text-zinc-950">
                   ₱{operatingExpenses.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
               </tr>
@@ -311,16 +311,16 @@ export function PrintableFinancialReportDocument(props: FinancialReportProps) {
               ) : (
                 expenses.map((exp, idx) => (
                   <tr key={exp.id || idx} className="bg-white">
-                    <td className="p-1 border border-zinc-200 text-center font-mono text-zinc-600">{idx + 1}</td>
-                    <td className="p-1 border border-zinc-200 font-mono text-zinc-600">{exp.date}</td>
+                    <td className="p-1 border border-zinc-200 text-center text-zinc-600">{idx + 1}</td>
+                    <td className="p-1 border border-zinc-200 text-zinc-600">{exp.date}</td>
                     <td className="p-1 border border-zinc-200 text-zinc-900 font-medium">
                       {exp.description}
                       <span className="block text-[8px] text-zinc-500">
                         {exp.category.replace(/_/g, " ")} {exp.vendor ? `• Vendor: ${exp.vendor}` : ""}
                       </span>
                     </td>
-                    <td className="p-1 border border-zinc-200 font-mono text-zinc-600">{exp.reference_no || "N/A"}</td>
-                    <td className="p-1 border border-zinc-200 text-right font-mono font-bold text-zinc-950">
+                    <td className="p-1 border border-zinc-200 text-zinc-600">{exp.reference_no || "N/A"}</td>
+                    <td className="p-1 border border-zinc-200 text-right font-bold text-zinc-950">
                       ₱{Number(exp.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>

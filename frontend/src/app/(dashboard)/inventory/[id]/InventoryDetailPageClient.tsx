@@ -393,7 +393,7 @@ export default function ItemProfilePage() {
 
       {/* Success Notification Banner */}
       {success && (
-        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm flex items-center gap-3 animate-in fade-in">
+        <div className="p-4 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm flex items-center gap-3 animate-in fade-in">
           <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400" />
           <span className="font-medium">{success}</span>
         </div>
@@ -713,30 +713,30 @@ export default function ItemProfilePage() {
         {/* ============ DESKTOP CARDS CANVAS (>= md) ============ */}
         <div className="hidden md:block space-y-8">
           {/* Hero Overview Card */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 relative overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl shrink-0 flex items-center justify-center bg-zinc-800 border border-zinc-700 text-zinc-300">
+                <div className="w-16 h-16 rounded-2xl shrink-0 flex items-center justify-center bg-zinc-900 border border-zinc-700 text-zinc-300">
                   {isProduct ? <Package className="w-8 h-8 text-emerald-500" /> : <Wrench className="w-8 h-8 text-emerald-500" />}
                 </div>
 
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border bg-zinc-800 text-zinc-300 border-zinc-700">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border bg-zinc-900 text-zinc-300 border-zinc-700">
                       {item.item_type}
                     </span>
 
                     {item.brand && (
-                      <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">
                         {item.brand}
                       </span>
                     )}
 
-                    <span className="px-2.5 py-0.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                    <span className="px-2.5 py-0.5 rounded-lg text-xs font-medium bg-zinc-900 text-zinc-300 border border-zinc-700">
                       {item.category}
                     </span>
 
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 text-zinc-300 border border-zinc-700 flex items-center gap-1">
                       <Check className="w-3 h-3 text-emerald-400" />
                       Active in Catalog
                     </span>
@@ -747,7 +747,7 @@ export default function ItemProfilePage() {
                     <span className="text-white font-bold">{item.sku}</span>
                     <button
                       onClick={handleCopySku}
-                      className="p-1 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white transition-colors"
+                      className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
                       title="Copy SKU"
                     >
                       {copiedSku ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -757,7 +757,7 @@ export default function ItemProfilePage() {
               </div>
 
               {/* Large Selling Price Highlight */}
-              <div className="text-left md:text-right border-t md:border-t-0 pt-4 md:pt-0 border-zinc-800">
+              <div className="text-left md:text-right border-t md:border-t-0 pt-4 md:pt-0 border-zinc-700">
                 <div className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-1">Selling Retail Price</div>
                 <div className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">
                   ₱{Number(item.selling_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -772,7 +772,7 @@ export default function ItemProfilePage() {
           {/* Grid: Stock Health & Financials */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Card 1: Stock Status & Inventory Controls */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between">
+            <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -782,23 +782,23 @@ export default function ItemProfilePage() {
 
                   {isProduct ? (
                     isOutOfStock ? (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-900 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
                         <AlertTriangle className="w-3.5 h-3.5 text-zinc-400" />
                         Out of Stock
                       </span>
                     ) : isLowStock ? (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-900 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
                         <AlertTriangle className="w-3.5 h-3.5 text-zinc-400" />
                         Low Stock Alert
                       </span>
                     ) : (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-900 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
                         <Check className="w-3.5 h-3.5 text-zinc-400" />
                         Optimal Stock
                       </span>
                     )
                   ) : (
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-900 text-zinc-300 border border-zinc-700">
                       Labor Service
                     </span>
                   )}
@@ -807,7 +807,7 @@ export default function ItemProfilePage() {
                 {isProduct ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                      <div className="bg-zinc-950 border border-zinc-700/80 rounded-xl p-4">
                         <div className="text-xs text-zinc-400 mb-1 font-medium">Current Stock Level</div>
                         <div className="text-3xl font-black font-mono text-white">
                           {item.current_stock}
@@ -815,7 +815,7 @@ export default function ItemProfilePage() {
                         <div className="text-[11px] text-zinc-500 mt-1">Units available in store</div>
                       </div>
 
-                      <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                      <div className="bg-zinc-950 border border-zinc-700/80 rounded-xl p-4">
                         <div className="text-xs text-zinc-400 mb-1 font-medium">Reorder Threshold</div>
                         <div className="text-3xl font-black font-mono text-zinc-300">
                           {item.reorder_level}
@@ -824,13 +824,13 @@ export default function ItemProfilePage() {
                       </div>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300 flex items-start gap-2.5">
+                    <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-700/80 text-xs text-zinc-300 flex items-start gap-2.5">
                       <Info className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
                         {isOutOfStock ? (
                           <span className="text-zinc-300 font-medium">Critical deficit: Stock is completely depleted. Reorder immediately.</span>
                         ) : isLowStock ? (
-                          <span className="text-zinc-300 font-medium">Stock is at or below the reorder point ({item.current_stock} remaining Γëñ {item.reorder_level} alert level).</span>
+                          <span className="text-zinc-300 font-medium">Stock is at or below the reorder point ({item.current_stock} remaining ≤ {item.reorder_level} alert level).</span>
                         ) : (
                           <span className="text-zinc-300">Healthy stock surplus: {item.current_stock - item.reorder_level} units above reorder alert threshold.</span>
                         )}
@@ -838,7 +838,7 @@ export default function ItemProfilePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6 text-center text-zinc-400 bg-zinc-950 rounded-xl border border-zinc-800 space-y-2">
+                  <div className="p-6 text-center text-zinc-400 bg-zinc-950 rounded-xl border border-zinc-700/80 space-y-2">
                     <Wrench className="w-8 h-8 mx-auto text-zinc-500 opacity-60" />
                     <p className="text-sm text-zinc-200 font-medium">Labor & Workshop Service</p>
                     <p className="text-xs text-zinc-400 max-w-sm mx-auto">
@@ -850,7 +850,7 @@ export default function ItemProfilePage() {
             </div>
 
             {/* Card 2: Financial Metrics & Margins */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between">
+            <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -862,7 +862,7 @@ export default function ItemProfilePage() {
 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                    <div className="bg-zinc-950 border border-zinc-700/80 rounded-xl p-4">
                       <div className="text-xs text-zinc-400 mb-1 font-medium">Cost Price</div>
                       <div className="text-2xl font-bold font-mono text-zinc-300">
                         ₱{Number(item.cost_price).toFixed(2)}
@@ -870,7 +870,7 @@ export default function ItemProfilePage() {
                       <div className="text-[11px] text-zinc-500 mt-1">Acquisition / Unit Cost</div>
                     </div>
 
-                    <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                    <div className="bg-zinc-950 border border-zinc-700/80 rounded-xl p-4">
                       <div className="text-xs text-zinc-400 mb-1 font-medium">Gross Profit / Unit</div>
                       <div className="text-2xl font-bold font-mono text-emerald-400">
                         ₱{marginAmount.toFixed(2)}
@@ -880,7 +880,7 @@ export default function ItemProfilePage() {
                   </div>
 
                   {/* Progress bar representing profit ratio */}
-                  <div className="bg-zinc-950 p-3.5 rounded-xl border border-zinc-800 space-y-2">
+                  <div className="bg-zinc-950 p-3.5 rounded-xl border border-zinc-700/80 space-y-2">
                     <div className="flex justify-between text-xs font-mono">
                       <span className="text-zinc-400">Cost: ₱{Number(item.cost_price).toFixed(2)}</span>
                       <span className="text-emerald-400 font-bold">Margin: {marginPercent.toFixed(0)}%</span>
@@ -904,34 +904,34 @@ export default function ItemProfilePage() {
           </div>
 
           {/* Specifications & System Details */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-6">
             <h2 className="text-base font-bold text-white flex items-center gap-2 mb-4">
               <Layers className="w-5 h-5 text-emerald-500" />
               Catalog Item Specifications
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm font-sans">
-              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800">
+              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-700/80">
                 <div className="text-xs text-zinc-400 mb-1 font-medium">Catalog Classification</div>
                 <div className="text-zinc-200 font-semibold">{isProduct ? "Physical Stock Item" : "Workshop Labor Service"}</div>
               </div>
 
-              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800">
+              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-700/80">
                 <div className="text-xs text-zinc-400 mb-1 font-medium">Assigned Category</div>
                 <div className="text-zinc-200 font-semibold">{item.category}</div>
               </div>
 
-              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800">
+              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-700/80">
                 <div className="text-xs text-zinc-400 mb-1 font-medium">Manufacturer Brand</div>
                 <div className="text-zinc-200 font-semibold">{item.brand || "Generic / Unspecified"}</div>
               </div>
 
-              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800">
+              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-700/80">
                 <div className="text-xs text-zinc-400 mb-1 font-medium">System Internal ID</div>
                 <div className="text-zinc-400 font-mono text-xs truncate">{item.id}</div>
               </div>
 
-              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800">
+              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-700/80">
                 <div className="text-xs text-zinc-400 mb-1 font-medium">POS & Counter Status</div>
                 <div className="text-emerald-400 font-semibold flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" />
@@ -939,7 +939,7 @@ export default function ItemProfilePage() {
                 </div>
               </div>
 
-              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800">
+              <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-700/80">
                 <div className="text-xs text-zinc-400 mb-1 font-medium">Audit Tracking</div>
                 <div className="text-zinc-300 font-semibold">Enabled (Immutable)</div>
               </div>

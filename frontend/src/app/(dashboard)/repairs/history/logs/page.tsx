@@ -277,7 +277,7 @@ function CustomerRepairHistoryLogsContent() {
         <div className="w-full hidden md:flex flex-row items-center justify-between gap-4 no-print">
           <button
             onClick={() => router.push("/repairs/history")}
-            className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-none active:scale-[0.98]"
+            className="px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold w-fit shadow-none active:scale-[0.98]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Repair History</span>
@@ -286,7 +286,7 @@ function CustomerRepairHistoryLogsContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleExportRepairCsv}
-              className="px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-none active:scale-[0.98]"
+              className="px-3.5 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-none active:scale-[0.98]"
               title="Export repair logs as RFC 4180 CSV"
             >
               <Download className="w-4 h-4 text-emerald-400" />
@@ -295,7 +295,7 @@ function CustomerRepairHistoryLogsContent() {
 
             <button
               onClick={() => handlePrintServiceRecord()}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors flex items-center gap-2 text-xs font-bold shadow-none active:scale-[0.98]"
+              className="px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold shadow-none active:scale-[0.98]"
             >
               <Printer className="w-4 h-4 text-emerald-400" />
               <span>Print Service Record</span>
@@ -304,7 +304,7 @@ function CustomerRepairHistoryLogsContent() {
             {isActive ? (
               <button
                 disabled
-                className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
+                className="px-4 py-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700 text-zinc-500 text-xs font-bold flex items-center gap-2 cursor-not-allowed shadow-none"
               >
                 <Lock className="w-4 h-4" />
                 <span>Active in Repair</span>
@@ -325,10 +325,10 @@ function CustomerRepairHistoryLogsContent() {
         <div className="w-full space-y-6">
           
           {/* Customer Profile Header (Card-Free Canvas on Mobile, Structured Panel on Desktop) */}
-          <div className="bg-transparent md:bg-zinc-900 border-0 md:border md:border-zinc-800 rounded-none md:rounded-3xl p-0 md:p-8 shadow-none space-y-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-5 border-b border-zinc-800/80">
+          <div className="bg-transparent md:bg-zinc-800 border-0 md:border md:border-zinc-700 rounded-none md:rounded-3xl p-0 md:p-8 shadow-none space-y-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-5 border-b border-zinc-700/80">
               <div className="flex items-center gap-3.5 sm:gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 font-black text-lg sm:text-xl md:text-2xl shrink-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-emerald-400 font-black text-lg sm:text-xl md:text-2xl shrink-0">
                   {customer.customer_name.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div className="min-w-0">
@@ -339,7 +339,7 @@ function CustomerRepairHistoryLogsContent() {
                         <Wrench className="w-3 h-3" /> Active in Repair
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 shrink-0">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-zinc-900 text-zinc-400 border border-zinc-700 shrink-0">
                         <CheckCircle className="w-3 h-3 text-zinc-500" /> Ready for Service
                       </span>
                     )}
@@ -349,7 +349,7 @@ function CustomerRepairHistoryLogsContent() {
                       <Bike className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       <span className="truncate">{customer.motorcycle_model}</span>
                     </span>
-                    <span className="text-zinc-700 hidden sm:inline">•</span>
+                    <span className="text-zinc-500 hidden sm:inline">•</span>
                     <span className="flex items-center gap-1 font-mono text-zinc-400">
                       <Phone className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                       {customer.contact_number}
@@ -359,7 +359,7 @@ function CustomerRepairHistoryLogsContent() {
               </div>
 
               {/* Stats Chips (Desktop Boxed vs Mobile Grid) */}
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-6 bg-zinc-900/80 md:bg-zinc-950 p-3 sm:p-3.5 px-3.5 sm:px-6 rounded-xl md:rounded-2xl border border-zinc-800/80 shrink-0">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-6 bg-zinc-900/80 md:bg-zinc-950 p-3 sm:p-3.5 px-3.5 sm:px-6 rounded-xl md:rounded-2xl border border-zinc-700/80 shrink-0">
                 <div>
                   <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">Total Sessions</span>
                   <span className="font-mono text-lg sm:text-2xl font-black text-zinc-100">{customer.total_repair_sessions}</span>
@@ -391,12 +391,12 @@ function CustomerRepairHistoryLogsContent() {
               return (
                 <div
                   key={job.job_id}
-                  className="bg-transparent md:bg-zinc-900 border-b md:border border-zinc-800/80 md:border-zinc-800 rounded-none md:rounded-3xl p-0 md:p-8 pb-6 md:pb-8 shadow-none space-y-4 sm:space-y-5 relative"
+                  className="bg-transparent md:bg-zinc-800 border-b md:border border-zinc-800/80 md:border-zinc-700 rounded-none md:rounded-3xl p-0 md:p-8 pb-6 md:pb-8 shadow-none space-y-4 sm:space-y-5 relative"
                 >
                   {/* Job Order Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 sm:pb-4 border-b border-zinc-800/60">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 sm:pb-4 border-b border-zinc-700/60">
                     <div className="flex items-center gap-2.5 flex-wrap">
-                      <span className="font-mono text-emerald-400 font-bold bg-zinc-900 border border-zinc-800 px-2.5 sm:px-3 py-1 rounded-lg sm:rounded-xl text-xs sm:text-sm">
+                      <span className="font-mono text-emerald-400 font-bold bg-zinc-900 border border-zinc-700 px-2.5 sm:px-3 py-1 rounded-lg sm:rounded-xl text-xs sm:text-sm">
                         {job.jo_number}
                       </span>
                       <span className="text-xs text-zinc-400 flex items-center gap-1.5 font-medium">
@@ -422,7 +422,7 @@ function CustomerRepairHistoryLogsContent() {
 
                   {/* Mechanic Diagnostic & Inspection Notes */}
                   {job.mechanic_notes && (
-                    <div className="p-3.5 sm:p-4 bg-zinc-900/60 md:bg-zinc-950 rounded-xl md:rounded-2xl border border-zinc-800/80 space-y-1">
+                    <div className="p-3.5 sm:p-4 bg-zinc-900/60 md:bg-zinc-950 rounded-xl md:rounded-2xl border border-zinc-700/80 space-y-1">
                       <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-emerald-500" />
                         Diagnostic Notes & Service Summary
@@ -442,9 +442,9 @@ function CustomerRepairHistoryLogsContent() {
                       </span>
 
                       {/* Desktop / Tablet Table View */}
-                      <div className="hidden sm:block rounded-xl md:rounded-2xl border border-zinc-800 overflow-hidden">
+                      <div className="hidden sm:block rounded-xl md:rounded-2xl border border-zinc-700 overflow-hidden">
                         <table className="w-full text-sm text-left">
-                          <thead className="bg-zinc-950 text-zinc-400 text-xs font-semibold uppercase tracking-wider border-b border-zinc-800">
+                          <thead className="bg-zinc-950 text-zinc-400 text-xs font-semibold uppercase tracking-wider border-b border-zinc-700">
                             <tr>
                               <th className="p-3 px-4 font-bold">Item / Service Description</th>
                               <th className="p-3 px-4 text-center font-bold">Type</th>
@@ -453,7 +453,7 @@ function CustomerRepairHistoryLogsContent() {
                               <th className="p-3 px-4 text-right font-bold">Subtotal</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-zinc-800/80 bg-zinc-900/40">
+                          <tbody className="divide-y divide-zinc-700/60 bg-zinc-950">
                             {job.items_used.map((it, i) => {
                               const nameLower = (it.name || "").toLowerCase();
                               const isService =
@@ -468,7 +468,7 @@ function CustomerRepairHistoryLogsContent() {
                                 nameLower.includes("wiring");
 
                               return (
-                                <tr key={i} className="hover:bg-zinc-800/40 transition-colors">
+                                <tr key={i} className="hover:bg-zinc-900/60 transition-colors">
                                   <td className="p-3 px-4 font-bold text-zinc-200">{it.name}</td>
                                   <td className="p-3 px-4 text-center">
                                     <span className={clsx(
@@ -538,7 +538,7 @@ function CustomerRepairHistoryLogsContent() {
                   )}
 
                   {/* Financial Settlement Breakdown */}
-                  <div className="p-3.5 sm:p-4 bg-zinc-900/60 md:bg-zinc-950 rounded-xl md:rounded-2xl border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="p-3.5 sm:p-4 bg-zinc-900/60 md:bg-zinc-950 rounded-xl md:rounded-2xl border border-zinc-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                       <div>
                         <span className="text-zinc-500 block text-[10px] uppercase font-semibold">Service Labor</span>
@@ -560,7 +560,7 @@ function CustomerRepairHistoryLogsContent() {
                       )}
                     </div>
 
-                    <div className="text-left sm:text-right border-t sm:border-t-0 border-zinc-800/80 pt-2 sm:pt-0 flex sm:flex-col justify-between sm:justify-center items-center sm:items-end">
+                    <div className="text-left sm:text-right border-t sm:border-t-0 border-zinc-700/80 pt-2 sm:pt-0 flex sm:flex-col justify-between sm:justify-center items-center sm:items-end">
                       <span className="text-zinc-400 block text-[10px] uppercase font-bold">Total Service Billed</span>
                       <span className="font-mono text-emerald-400 font-black text-base sm:text-lg">₱{totalCost.toFixed(2)}</span>
                     </div>

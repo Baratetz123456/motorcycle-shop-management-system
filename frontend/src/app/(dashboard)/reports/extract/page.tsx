@@ -396,7 +396,7 @@ export default function FinancialAndSalesExtractPage() {
           <div>
             <h2 className="text-2xl font-black text-white">Access Restricted</h2>
             <p className="text-sm text-zinc-400 mt-2">
-              Financial extraction reports, operating expense logs, and P&L balances are strictly restricted to <span className="text-lime-400 font-bold">Administrators</span> and <span className="text-lime-400 font-bold">Managers</span>.
+              Financial extraction reports, operating expense logs, and P&L balances are strictly restricted to <span className="text-emerald-400 font-bold">Administrators</span> and <span className="text-emerald-400 font-bold">Managers</span>.
             </p>
           </div>
           <div className="pt-2">
@@ -422,10 +422,10 @@ export default function FinancialAndSalesExtractPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
-                <FileText className="w-7 h-7 text-lime-400" />
+                <FileText className="w-7 h-7 text-emerald-400" />
                 Shop Financial Ledger
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-lime-500/10 text-lime-400 border border-lime-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                 Live Audited
               </span>
             </div>
@@ -438,31 +438,31 @@ export default function FinancialAndSalesExtractPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setIsExpenseModalOpen(true)}
-              className="hidden md:flex px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all items-center gap-2 text-xs font-semibold shadow-sm"
+              className="hidden md:flex px-3.5 py-2 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all items-center gap-2 text-xs font-semibold shadow-sm"
             >
-              <Plus className="w-3.5 h-3.5 text-lime-400" />
+              <Plus className="w-3.5 h-3.5 text-emerald-400" />
               <span>Record Expense</span>
             </button>
 
             <button
               onClick={handleExportCSV}
               disabled={isExporting}
-              className="px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 hover:text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm disabled:opacity-50"
+              className="px-3.5 py-2 rounded-xl bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm disabled:opacity-50"
               title="Download formatted RFC 4180 CSV dataset with UTF-8 BOM"
             >
               {isExporting ? (
-                <Loader2 className="w-3.5 h-3.5 text-lime-400 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
               ) : (
-                <Download className="w-3.5 h-3.5 text-lime-400" />
+                <Download className="w-3.5 h-3.5 text-emerald-400" />
               )}
               <span>Export CSV</span>
             </button>
 
             <button
               onClick={handlePrintReport}
-              className="px-4 py-2 rounded-xl bg-lime-500 hover:bg-lime-400 active:bg-lime-600 text-zinc-950 font-black text-xs transition-all flex items-center gap-2 shadow-sm active:scale-95"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-2 shadow-sm active:scale-95 border border-emerald-500"
             >
-              <Printer className="w-3.5 h-3.5 text-zinc-950" />
+              <Printer className="w-3.5 h-3.5 text-white" />
               <span>Print / Export PDF</span>
             </button>
           </div>
@@ -482,7 +482,7 @@ export default function FinancialAndSalesExtractPage() {
                 className={clsx(
                   "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
                   reportType === item.key
-                    ? "bg-lime-500 text-zinc-950 shadow-sm"
+                    ? "bg-emerald-600 text-white font-bold shadow-sm"
                     : "text-zinc-400 hover:text-zinc-200"
                 )}
               >
@@ -493,7 +493,7 @@ export default function FinancialAndSalesExtractPage() {
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-              <Calendar className="w-3.5 h-3.5 text-lime-400" />
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
               <span className="font-semibold">Target Period:</span>
             </div>
 
@@ -502,7 +502,7 @@ export default function FinancialAndSalesExtractPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-lime-500"
+                className="bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-emerald-500"
               />
             )}
 
@@ -511,7 +511,7 @@ export default function FinancialAndSalesExtractPage() {
                 type="month"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-lime-500"
+                className="bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-emerald-500"
               />
             )}
 
@@ -519,7 +519,7 @@ export default function FinancialAndSalesExtractPage() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-lime-500"
+                className="bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-xl text-xs font-mono text-zinc-100 focus:outline-none focus:border-emerald-500"
               >
                 {[2024, 2025, 2026, 2027].map((y) => (
                   <option key={y} value={String(y)}>
@@ -575,11 +575,11 @@ export default function FinancialAndSalesExtractPage() {
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between text-zinc-400 mb-2">
               <span className="text-xs font-bold uppercase tracking-wider">Net Operating Income</span>
-              <TrendingUp className="w-4 h-4 text-lime-400" />
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
             </div>
             <div className={clsx(
               "text-2xl sm:text-3xl font-black font-mono",
-              netIncome >= 0 ? "text-lime-400" : "text-rose-400"
+              netIncome >= 0 ? "text-emerald-400" : "text-rose-400"
             )}>
               ₱{netIncome.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
@@ -678,7 +678,7 @@ export default function FinancialAndSalesExtractPage() {
         <Modal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)}>
           <ModalHeader onClose={() => setIsExpenseModalOpen(false)}>
             <div className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-lime-400" />
+              <Plus className="w-5 h-5 text-emerald-400" />
               <span>Record Operating Expense</span>
             </div>
           </ModalHeader>
@@ -691,7 +691,7 @@ export default function FinancialAndSalesExtractPage() {
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value as any)}
-                  className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-lime-500"
+                  className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-emerald-500"
                 >
                   <option value="ELECTRICITY_UTILITIES">Electricity & Utilities</option>
                   <option value="RENT">Shop Rent & Lease</option>
@@ -711,7 +711,7 @@ export default function FinancialAndSalesExtractPage() {
                   placeholder="e.g. Meralco Electric Bill for October"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-lime-500"
+                  className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -726,7 +726,7 @@ export default function FinancialAndSalesExtractPage() {
                     placeholder="0.00"
                     value={newAmount}
                     onChange={(e) => setNewAmount(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 font-mono focus:outline-none focus:border-lime-500"
+                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 font-mono focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
@@ -737,7 +737,7 @@ export default function FinancialAndSalesExtractPage() {
                     type="date"
                     value={expenseDate}
                     onChange={(e) => setExpenseDate(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-lime-500"
+                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -752,7 +752,7 @@ export default function FinancialAndSalesExtractPage() {
                     placeholder="e.g. Meralco"
                     value={newVendor}
                     onChange={(e) => setNewVendor(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-lime-500"
+                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
@@ -764,7 +764,7 @@ export default function FinancialAndSalesExtractPage() {
                     placeholder="e.g. OR-884920"
                     value={newRef}
                     onChange={(e) => setNewRef(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-lime-500"
+                    className="w-full bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl text-zinc-100 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -774,14 +774,14 @@ export default function FinancialAndSalesExtractPage() {
             <div className="flex gap-2 justify-end w-full">
               <button
                 onClick={() => setIsExpenseModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-xs transition-colors"
+                className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 font-semibold text-xs transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddExpense}
                 disabled={!newDescription.trim() || !newAmount}
-                className="px-5 py-2 rounded-xl bg-lime-500 hover:bg-lime-400 active:bg-lime-600 text-zinc-950 font-black text-xs transition-all disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition-all disabled:opacity-50 border border-emerald-500"
               >
                 Save Disbursement
               </button>
@@ -819,7 +819,7 @@ export default function FinancialAndSalesExtractPage() {
                     onClick={() => setReportType(t)}
                     className={clsx(
                       "py-2 rounded-lg font-bold text-center",
-                      reportType === t ? "bg-lime-500 text-zinc-950" : "bg-zinc-800 text-zinc-300"
+                      reportType === t ? "bg-emerald-600 text-white font-bold" : "bg-zinc-800 text-zinc-300"
                     )}
                   >
                     {t}

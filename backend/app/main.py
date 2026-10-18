@@ -1,6 +1,7 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import engine, Base, init_db_schemas
@@ -40,6 +41,13 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Set-Cookie"]
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}"}
+    )
 
 # Mount domain routers under /api/v1
 app.include_router(auth_router, prefix="/api/v1")

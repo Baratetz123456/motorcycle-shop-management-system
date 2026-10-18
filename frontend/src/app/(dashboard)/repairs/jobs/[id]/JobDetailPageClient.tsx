@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -531,13 +531,13 @@ export default function JobCardProfilePage() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col font-sans p-4 sm:p-6 lg:p-8 overflow-y-auto pb-16 bg-zinc-950 text-zinc-100">
-      <div className="w-full space-y-8 animate-profile-enter">
+      <div className="w-full space-y-4 md:space-y-8 animate-profile-enter">
 
         {/* ============ TOP NAVIGATION & ACTION BAR (Desktop Only >= md) ============ */}
         <div className="hidden md:flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             onClick={() => router.push("/repairs/board")}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors bg-zinc-900 border border-zinc-800 px-4 py-2.5 rounded-xl hover:bg-zinc-800 self-start group"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors bg-zinc-800 border border-zinc-700 px-4 py-2.5 rounded-xl hover:bg-zinc-700 self-start group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Back to Workshop Board</span>
@@ -546,7 +546,7 @@ export default function JobCardProfilePage() {
           {canDelete && (
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 text-xs font-bold transition-all self-start sm:self-auto active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-bold transition-all self-start sm:self-auto active:scale-[0.98]"
               title="Cancel or remove this job card"
             >
               <Trash2 className="w-4 h-4" />
@@ -556,7 +556,7 @@ export default function JobCardProfilePage() {
         </div>
 
         {/* ============ MAIN HEADER BANNER ============ */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 pb-3 md:pb-6 border-b border-zinc-800">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl sm:text-4xl font-black text-zinc-100 tracking-tight flex items-center gap-3">
@@ -582,8 +582,8 @@ export default function JobCardProfilePage() {
                 )}
               </div>
             </div>
-            <p className="text-zinc-400 text-xs sm:text-sm mt-1.5">
-              Workshop Job Order profile ΓÇó Detailed diagnostics, mechanic notes, and bike service history
+            <p className="text-zinc-400 text-xs sm:text-sm mt-1 sm:mt-1.5">
+              Workshop Job Order profile • Detailed diagnostics, mechanic notes, and bike service history
             </p>
           </div>
         </div>
@@ -796,7 +796,7 @@ export default function JobCardProfilePage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-xs">
                             <span className="font-bold text-zinc-100">{entry.author}</span>
-                            <span className="text-zinc-600">ΓÇó</span>
+                            <span className="text-zinc-500">•</span>
                             <span className="font-mono text-[10px] text-zinc-400">
                               {new Date(entry.timestamp).toLocaleString(undefined, {
                                 month: "short",
@@ -989,13 +989,13 @@ export default function JobCardProfilePage() {
         {/* ============ DESKTOP CARD-BASED LAYOUT (>= md) ============ */}
         <div className="hidden md:block space-y-8">
           {/* ============ STAGE STEPPER (read-only) ============ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-3xl p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-zinc-400" />
                 Workshop Stage Progression
               </h3>
-              <span className="text-[11px] font-medium text-zinc-500 italic">
+              <span className="text-[11px] font-medium text-zinc-400 italic">
                 Stage changes are controlled on the Workshop Board via drag &amp; drop
               </span>
             </div>
@@ -1010,8 +1010,8 @@ export default function JobCardProfilePage() {
                     className={clsx(
                       "p-4 rounded-2xl border transition-all duration-300 flex items-center gap-3.5 min-h-[72px]",
                       isCurrent && "bg-zinc-950 border-emerald-500/50 ring-1 ring-emerald-500/50",
-                      isCompleted && "bg-zinc-950 border-zinc-800 text-zinc-300",
-                      !isCurrent && !isCompleted && "bg-zinc-950/40 border-zinc-800/60 text-zinc-500 opacity-80"
+                      isCompleted && "bg-zinc-950 border-zinc-700/80 text-zinc-300",
+                      !isCurrent && !isCompleted && "bg-zinc-950/40 border-zinc-700/50 text-zinc-500 opacity-80"
                     )}
                   >
                     <div
@@ -1039,8 +1039,8 @@ export default function JobCardProfilePage() {
           </div>
 
           {/* ============ CUSTOMER & BIKE DETAILS ============ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="border-b border-zinc-800 pb-4">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="border-b border-zinc-700 pb-4">
               <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <User className="w-5 h-5 text-emerald-400" />
                 Customer &amp; Motorcycle Details
@@ -1095,7 +1095,7 @@ export default function JobCardProfilePage() {
             </div>
 
             {/* Mechanic Reassignment Bar */}
-            <form onSubmit={handleSaveMechanic} className="pt-4 border-t border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <form onSubmit={handleSaveMechanic} className="pt-4 border-t border-zinc-700 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
                 <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5 whitespace-nowrap">
                   <ShieldCheck className="w-4 h-4 text-zinc-400" />
@@ -1104,7 +1104,7 @@ export default function JobCardProfilePage() {
                 <select
                   value={assignedMechanic}
                   onChange={(e) => setAssignedMechanic(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-100 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 max-w-xs"
+                  className="bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-zinc-100 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 max-w-xs"
                 >
                   {mechanicsList.map((m) => (
                     <option key={m.id} value={m.name}>{m.name}</option>
@@ -1131,8 +1131,8 @@ export default function JobCardProfilePage() {
           </div>
 
           {/* ============ DIAGNOSIS LOG (Add / Edit / Delete) ============ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-700 pb-4">
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-emerald-400" />
@@ -1142,13 +1142,13 @@ export default function JobCardProfilePage() {
                   Record observations, repair findings, and service notes. Each entry is timestamped and attributed.
                 </p>
               </div>
-              <span className="bg-zinc-800 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-700">
+              <span className="bg-zinc-900 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-700">
                 {diagnosisLog.length} {diagnosisLog.length === 1 ? "Entry" : "Entries"}
               </span>
             </div>
 
             {/* Add New Entry Form */}
-            <div className="space-y-3 bg-zinc-950 p-4 sm:p-5 rounded-2xl border border-zinc-800">
+            <div className="space-y-3 bg-zinc-950 p-4 sm:p-5 rounded-2xl border border-zinc-700">
               <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
                 <Plus className="w-3.5 h-3.5 text-emerald-400" />
                 Add New Diagnosis or Observation
@@ -1165,11 +1165,11 @@ export default function JobCardProfilePage() {
                       handleAddDiagnosis();
                     }
                   }}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500 placeholder:text-zinc-500 transition-all resize-none"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500 placeholder:text-zinc-500 transition-all resize-none"
                 />
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-zinc-500 hidden sm:inline">
-                    Attributed as <strong className="text-zinc-300">{userName}</strong>
+                  <span className="text-[11px] text-zinc-400 hidden sm:inline">
+                    Attributed as <strong className="text-zinc-200">{userName}</strong>
                   </span>
                   <button
                     type="button"
@@ -1186,7 +1186,7 @@ export default function JobCardProfilePage() {
 
             {/* Diagnosis Entries List */}
             {diagnosisLog.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-zinc-800 rounded-2xl space-y-2">
+              <div className="text-center py-10 border border-dashed border-zinc-700/80 rounded-2xl space-y-2">
                 <FileText className="w-8 h-8 text-zinc-500 mx-auto" />
                 <p className="text-zinc-400 text-xs font-medium">No diagnosis notes recorded yet.</p>
                 <p className="text-zinc-500 text-[11px]">Use the input above to document motorcycle symptoms and bench findings.</p>
@@ -1204,7 +1204,7 @@ export default function JobCardProfilePage() {
                         "p-4 sm:p-5 rounded-2xl border transition-all",
                         isEditing
                           ? "bg-zinc-950 border-emerald-500"
-                          : "bg-zinc-950 border-zinc-800 hover:bg-zinc-900/50"
+                          : "bg-zinc-950 border-zinc-700/80 hover:border-zinc-600"
                       )}
                     >
                       {/* Entry Header */}
@@ -1214,8 +1214,8 @@ export default function JobCardProfilePage() {
                             <User className="w-3.5 h-3.5 text-zinc-400" />
                             {entry.author}
                           </span>
-                          <span className="text-zinc-600">ΓÇó</span>
-                          <span className="font-mono text-[11px] text-zinc-500">
+                          <span className="text-zinc-500">•</span>
+                          <span className="font-mono text-[11px] text-zinc-400">
                             {new Date(entry.timestamp).toLocaleString(undefined, {
                               month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
                             })}
@@ -1251,7 +1251,7 @@ export default function JobCardProfilePage() {
                             rows={3}
                             value={editingText}
                             onChange={(e) => setEditingText(e.target.value)}
-                            className="w-full bg-zinc-900 border border-zinc-800 focus:border-emerald-500 rounded-xl p-3 text-zinc-100 text-sm focus:outline-none resize-none"
+                            className="w-full bg-zinc-900 border border-zinc-700 focus:border-emerald-500 rounded-xl p-3 text-zinc-100 text-sm focus:outline-none resize-none"
                             autoFocus
                           />
                           <div className="flex items-center gap-2 justify-end">
@@ -1285,8 +1285,8 @@ export default function JobCardProfilePage() {
 
           {/* ============ PAST CUSTOMER HISTORY (read-only) ============ */}
           {pastHistory.length > 0 && (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+            <div className="bg-zinc-800 border border-zinc-700 rounded-3xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-700 pb-4">
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     <History className="w-5 h-5 text-zinc-400" />
@@ -1296,7 +1296,7 @@ export default function JobCardProfilePage() {
                     Past repair records for <strong className="text-zinc-200">{job.customer}</strong> on <strong className="text-zinc-200">{job.motorcycle}</strong>. These records are read-only.
                   </p>
                 </div>
-                <span className="bg-zinc-800 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-700">
+                <span className="bg-zinc-900 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-700">
                   {pastHistory.length} Past {pastHistory.length === 1 ? "Session" : "Sessions"}
                 </span>
               </div>
@@ -1305,7 +1305,7 @@ export default function JobCardProfilePage() {
                 {pastHistory.map((pj, idx) => (
                   <div
                     key={pj.job_id || idx}
-                    className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3"
+                    className="p-5 rounded-2xl bg-zinc-950 border border-zinc-700/80 space-y-3"
                   >
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2.5">
@@ -1319,10 +1319,10 @@ export default function JobCardProfilePage() {
                           {pj.status}
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-zinc-500">
+                      <span className="text-[11px] font-mono text-zinc-400">
                         {pj.date_repaired ? new Date(pj.date_repaired).toLocaleDateString(undefined, {
                           month: "short", day: "numeric", year: "numeric"
-                        }) : "ΓÇö"}
+                        }) : "—"}
                       </span>
                     </div>
 
@@ -1334,7 +1334,7 @@ export default function JobCardProfilePage() {
                     </div>
 
                     {pj.mechanic_notes && (
-                      <div className="p-3.5 bg-zinc-900 rounded-xl border border-zinc-800">
+                      <div className="p-3.5 bg-zinc-900 rounded-xl border border-zinc-700/80">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1 mb-1">
                           <FileText className="w-3 h-3 text-zinc-400" /> Historical Diagnosis Notes
                         </span>
@@ -1346,7 +1346,7 @@ export default function JobCardProfilePage() {
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {pj.items_used.map((item, iIdx) => (
                           <span key={iIdx} className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
-                            {item.name} ├ù{item.qty}
+                            {item.name} ×{item.qty}
                           </span>
                         ))}
                       </div>
@@ -1358,8 +1358,8 @@ export default function JobCardProfilePage() {
           )}
 
           {/* ============ PARTS & SERVICES USED (no prices) ============ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-700 pb-4">
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                   <Layers className="w-5 h-5 text-emerald-400" />
@@ -1369,31 +1369,31 @@ export default function JobCardProfilePage() {
                   Items and labor services logged to this motorcycle session.
                 </p>
               </div>
-              <span className="bg-zinc-800 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-700">
+              <span className="bg-zinc-900 px-3 py-1 rounded-full text-xs font-mono font-bold text-zinc-300 border border-zinc-700">
                 {cartItems.length} {cartItems.length === 1 ? "Item" : "Items"}
               </span>
             </div>
 
             {cartItems.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-zinc-800 rounded-2xl space-y-2">
+              <div className="text-center py-10 border border-dashed border-zinc-700/80 rounded-2xl space-y-2">
                 <Layers className="w-8 h-8 text-zinc-500 mx-auto" />
                 <p className="text-zinc-400 text-xs font-medium">
                   No parts or labor services have been added to this job card yet.
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border border-zinc-800">
+              <div className="overflow-x-auto rounded-2xl border border-zinc-700">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-zinc-950 text-zinc-400 font-bold border-b border-zinc-800">
+                  <thead className="bg-zinc-950 text-zinc-400 font-bold border-b border-zinc-700">
                     <tr>
                       <th className="p-3.5 w-28">Type</th>
                       <th className="p-3.5">Description</th>
                       <th className="p-3.5 text-center w-24">Quantity</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800 font-medium bg-zinc-900">
+                  <tbody className="divide-y divide-zinc-700/60 font-medium bg-zinc-950">
                     {cartItems.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-zinc-800/40 transition-colors">
+                      <tr key={idx} className="hover:bg-zinc-900/60 transition-colors">
                         <td className="p-3.5">
                           <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block bg-zinc-800 text-zinc-300 border border-zinc-700">
                             {item.type === "service" ? "Service" : "Part"}

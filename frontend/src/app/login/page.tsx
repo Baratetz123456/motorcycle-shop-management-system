@@ -6,7 +6,7 @@ import Link from "next/link";
 import { apiClient, refreshTokenOnce } from "@/lib/api-client";
 import { tokenStore } from "@/lib/auth-token";
 import { recordUserAuditLog } from "@/lib/audit";
-import { UserRole, getEffectiveLandingPage, getRouteFriendlyName, isRouteAllowed } from "@/lib/permissions";
+import { UserRole, getEffectiveLandingPage, isRouteAllowed } from "@/lib/permissions";
 import { syncUserPreferences, getAppTheme, applyThemeToDocument, getAppMode, applyModeToDocument } from "@/lib/theme";
 import { 
   KeyRound, 
@@ -15,7 +15,6 @@ import {
   ArrowRight, 
   Wrench, 
   Sparkles, 
-  CheckCircle2, 
   Bike,
   Check,
   Activity,
@@ -32,7 +31,6 @@ function LoginForm() {
   const [password, setPassword] = useState("admin123");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     // Show banner if redirected due to idle inactivity or session expiry
@@ -85,7 +83,6 @@ function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const response = await apiClient.post("/auth/login", {
@@ -113,6 +110,7 @@ function LoginForm() {
         } catch (e) {}
 
         setError(`Access Denied: Your assigned role (${userRole.toUpperCase()}) currently has no accessible store workspaces. Please contact a system administrator.`);
+        setIsLoading(false);
         return;
       }
 
@@ -140,12 +138,9 @@ function LoginForm() {
 
       const returnUrl = searchParams.get("returnUrl");
       const landingPage = returnUrl && isRouteAllowed(returnUrl, userRole) ? returnUrl : (effectiveLanding || "/reports");
-      const friendlyName = getRouteFriendlyName(landingPage);
-      setSuccess(`Authenticated as ${userRole.toUpperCase()}! Redirecting to ${friendlyName}...`);
       
-      setTimeout(() => {
-        router.push(landingPage);
-      }, 800);
+      // Instant redirection without confirmation banner or delay
+      router.push(landingPage);
     } catch (err: any) {
       console.error("Login error:", err);
       const detail = err.response?.data?.detail;
@@ -156,7 +151,6 @@ function LoginForm() {
       } else {
         setError("Failed to log in. Please ensure services are running.");
       }
-    } finally {
       setIsLoading(false);
     }
   };
@@ -278,13 +272,6 @@ function LoginForm() {
             <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-3 animate-in fade-in">
               <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
               <div className="font-medium">{error}</div>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center gap-3 animate-in fade-in">
-              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
-              <div className="font-medium">{success}</div>
             </div>
           )}
 

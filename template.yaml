@@ -19,6 +19,17 @@ Parameters:
     Default: "true"
     AllowedValues: ["true", "false"]
     Description: Set to true for production HTTPS cookies
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: (Optional) Comma-separated list of private VPC Subnet IDs for RDS connectivity
+  VpcSecurityGroupIds:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: (Optional) Comma-separated list of Security Group IDs for Lambda VPC connectivity
+
+Conditions:
+  HasVpcConfig: !Not [!Equals [!Join ["", !Ref VpcSubnetIds], ""]]
 
 Globals:
   Function:
@@ -30,6 +41,15 @@ Globals:
         JWT_SECRET_KEY: !Ref JwtSecretKey
         COOKIE_SECURE: !Ref CookieSecure
         PYTHONPATH: /var/task
+    Policies:
+      - AWSLambdaVPCAccessExecutionRole
+    VpcConfig: !If
+      - HasVpcConfig
+      - SubnetIds: !Ref VpcSubnetIds
+        SecurityGroupIds: !Ref VpcSecurityGroupIds
+      - !Ref "AWS::NoValue"
+
+
 
 Resources:
   # ===========================================================================
